@@ -196,3 +196,105 @@ class DockerSandbox:
                 timed_out=True,
             )
         return SandboxResult(proc.returncode, proc.stdout, proc.stderr)
+
+
+# --------------------------------------------------------------------------
+# Persistent sessions
+# --------------------------------------------------------------------------
+
+
+class SandboxSession:
+    """A container held open across many commands.
+
+    Starting a container costs about four seconds on Docker Desktop. A full
+    probe battery replays a dozen policies, so paying that per command puts the
+    audit into the minutes and makes the reproduction guide a worse promise.
+    `docker exec` into a container that is already running costs roughly a
+    fifth of a second.
+
+    Isolation is unchanged -- same network, capability, filesystem, and
+    resource policy, applied once at creation. What is traded is isolation
+    *between episodes inside one session*: they share a filesystem namespace,
+    separated by directory rather than by container. Each episode gets its own
+    subdirectory under the session root and runs with that as its working
+    directory. For policies Assay itself constructs this is safe; a session is
+    never shared across two different environments under audit.
+    """
+
+    def __init__(
+        self,
+        sandbox: "DockerSandbox",
+        policy: SandboxPolicy,
+        mounts: list[Mount],
+        *,
+        label: str = "assay",
+    ) -> None:
+        self.sandbox = sandbox
+        self.policy = policy
+        self.mounts = mounts
+        self.label = label
+        self.container_id: str | None = None
+        self.exec_count = 0
+
+    # -- lifecycle ---------------------------------------------------------
+
+    def start(self) -> "SandboxSession":
+        if not docker_available():
+            raise SandboxUnavailable("docker is not installed or the daemon is not running")
+        request = ExecRequest(
+            policy=self.policy,
+            command=["sh", "-c", "while :; do sleep 3600; done"],
+            mounts=self.mounts,
+        )
+        if not self.sandbox.approver(request):
+            raise ApprovalDenied(
+                f"opening a sandbox session in {self.policy.image} was not approved; "
+                "nothing ran"
+            )
+        self.sandbox.approvals.append(request)
+
+        argv = self.sandbox._argv(request)
+        # `--rm` cannot be combined with detached reuse; drop it and remove
+        # explicitly in stop(), so a crash never leaves a container behind
+        # silently -- it leaves one named for this label.
+        argv = [a for a in argv if a != "--rm"]
+        argv.insert(2, "-d")
+        argv.insert(3, "--label")
+        argv.insert(4, f"assay-session={self.label}")
+        proc = subprocess.run(argv, capture_output=True, text=True, timeout=120)
+        if proc.returncode != 0:
+            raise SandboxUnavailable(f"could not start session container: {proc.stderr.strip()}")
+        self.container_id = proc.stdout.strip()
+        return self
+
+    def stop(self) -> None:
+        if self.container_id:
+            subprocess.run(
+                ["docker", "rm", "-f", self.container_id],
+                capture_output=True,
+                timeout=60,
+            )
+            self.container_id = None
+
+    def __enter__(self) -> "SandboxSession":
+        return self.start()
+
+    def __exit__(self, *exc) -> None:
+        self.stop()
+
+    # -- execution ---------------------------------------------------------
+
+    def exec(self, command: list[str], workdir: str = "/work") -> SandboxResult:
+        if not self.container_id:
+            raise SandboxUnavailable("session is not running; call start() first")
+        self.exec_count += 1
+        try:
+            proc = subprocess.run(
+                ["docker", "exec", "--workdir", workdir, self.container_id, *command],
+                capture_output=True,
+                text=True,
+                timeout=self.policy.wall_seconds,
+            )
+        except subprocess.TimeoutExpired:
+            return SandboxResult(124, "", "wall-clock limit exceeded", timed_out=True)
+        return SandboxResult(proc.returncode, proc.stdout, proc.stderr)

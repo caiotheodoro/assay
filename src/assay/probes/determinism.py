@@ -34,7 +34,12 @@ class SeedDeterminism(Probe):
         for task in adapter.manifest().tasks:
             actions = self._policy(adapter, task.task_id)
             fingerprints = []
+            clear = getattr(adapter, "clear_cache", None)
             for _ in range(REPEATS):
+                # A cached verification would answer with a memory rather than a
+                # run, which is exactly what this probe must not accept.
+                if clear:
+                    clear()
                 transcript = run_policy(adapter, task.task_id, actions, seed=1234)
                 score = adapter.verify(transcript)
                 fingerprints.append(
