@@ -1,7 +1,14 @@
-from .base import Attempt, Challenger, action_template  # noqa: F401
+from .base import Attempt, Challenger, action_template, action_vocabulary  # noqa: F401
 from .scripted import ScriptedChallenger  # noqa: F401
 
-__all__ = ["Attempt", "Challenger", "ScriptedChallenger", "PromptedChallenger", "action_template"]
+__all__ = [
+    "Attempt",
+    "Challenger",
+    "ScriptedChallenger",
+    "PromptedChallenger",
+    "action_template",
+    "action_vocabulary",
+]
 
 
 def __getattr__(name: str):

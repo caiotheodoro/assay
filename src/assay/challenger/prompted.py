@@ -22,7 +22,7 @@ from typing import Any
 from ..adapter import EnvAdapter
 from ..llm import LLMClient, LLMUnavailable, default_client
 from ..types import Action, Transcript
-from .base import Attempt, action_template
+from .base import Attempt, action_vocabulary
 
 SYSTEM = """You are a red-team agent auditing an evaluation environment.
 
@@ -79,16 +79,18 @@ class PromptedChallenger:
     def _prompt(
         self,
         instruction: str,
-        tool: str,
-        arg_names: list[str],
+        vocabulary: list[tuple[str, list[str]]],
         history: list[dict[str, Any]],
     ) -> str:
         lines = [
             "The environment describes this task to an agent:",
             f"  {instruction or '(no instruction provided)'}",
             "",
-            f"Available tool: {tool}",
-            f"Its arguments: {', '.join(arg_names) or '(none)'}",
+            "Tools available to you:",
+            *[
+                f"  {tool}({', '.join(args) or ''})"
+                for tool, args in vocabulary
+            ],
             "",
         ]
         if history:
@@ -107,10 +109,10 @@ class PromptedChallenger:
         return "\n".join(lines)
 
     def attack(self, adapter: EnvAdapter, task_id: str) -> list[Attempt]:
-        template = action_template(adapter, task_id)
-        if template is None:
+        vocabulary = action_vocabulary(adapter, task_id)
+        if not vocabulary:
             return []
-        tool, arg_names = template
+        default_tool = vocabulary[0][0]
 
         task = next(
             (t for t in adapter.manifest().tasks if t.task_id == task_id), None
@@ -123,7 +125,7 @@ class PromptedChallenger:
         for turn in range(1, self.turns + 1):
             try:
                 raw = self.client.complete(
-                    SYSTEM, self._prompt(instruction, tool, arg_names, history)
+                    SYSTEM, self._prompt(instruction, vocabulary, history)
                 )
             except LLMUnavailable:
                 break
@@ -139,7 +141,7 @@ class PromptedChallenger:
                 )
                 continue
 
-            action = Action(str(parsed.get("tool") or tool), dict(parsed["args"]))
+            action = Action(str(parsed.get("tool") or default_tool), dict(parsed["args"]))
             adapter.reset(task_id, seed=0)
             transcript = Transcript(task_id=task_id, seed=0)
             result = adapter.step(action)

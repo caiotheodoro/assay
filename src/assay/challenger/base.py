@@ -30,15 +30,29 @@ class Challenger(Protocol):
     def attack(self, adapter: EnvAdapter, task_id: str) -> list[Attempt]: ...
 
 
-def action_template(adapter: EnvAdapter, task_id: str) -> tuple[str, list[str]] | None:
-    """Infer the action vocabulary from the policies the adapter already
-    defines, so a Challenger works on any ecosystem without a bespoke schema."""
+def action_vocabulary(adapter: EnvAdapter, task_id: str) -> list[tuple[str, list[str]]]:
+    """Infer the action vocabulary from policies the adapter already defines,
+    so a Challenger works on any ecosystem without a bespoke schema.
+
+    Ordered richest-first, by argument count. A no-argument tool is usually the
+    least useful thing to hand an attacker as its example -- an environment
+    whose first trivial policy is `noop` would otherwise teach the attacker
+    that doing nothing is the whole vocabulary.
+    """
     try:
         policies = adapter.trivial_policies(task_id)
-    except Exception:  # noqa: BLE001
-        return None
+    except Exception:  # noqa: BLE001 - absence is not a failure
+        return []
+    seen: dict[str, set[str]] = {}
     for actions in policies.values():
-        if actions:
-            first = actions[0]
-            return first.tool, sorted(first.args.keys())
-    return None
+        for action in actions:
+            seen.setdefault(action.tool, set()).update(action.args.keys())
+    return sorted(
+        ((tool, sorted(args)) for tool, args in seen.items()),
+        key=lambda pair: (-len(pair[1]), pair[0]),
+    )
+
+
+def action_template(adapter: EnvAdapter, task_id: str) -> tuple[str, list[str]] | None:
+    vocabulary = action_vocabulary(adapter, task_id)
+    return vocabulary[0] if vocabulary else None
