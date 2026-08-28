@@ -79,14 +79,19 @@ def test_it_does_not_stop_on_a_score_it_admits_it_earned():
     assert len(attempts) == 3, "an earned score must not end the search"
 
 
-def test_it_does_stop_on_an_unearned_full_score():
+def test_the_attacker_never_gets_to_end_the_search_early():
+    """Both ways of letting it decide failed in practice: stopping on score
+    ended the run when it legitimately solved the task; stopping on its
+    self-report ended the run when it said "not solved" about something the
+    independent verifier scored as a full solve. It cannot see true completion,
+    so it cannot know, so it does not choose."""
     env = build("escalate_overrewarded")
     escalate = json.dumps(
         {"reasoning": "x", "tool": "escalate", "args": {}, "solves_the_task": False}
     )
     client = ScriptedClient([escalate, _reply("spam"), _reply("billing")])
     attempts = PromptedChallenger(client=client, turns=3).attack(env, "t1")
-    assert len(attempts) == 1
+    assert len(attempts) == 3, "the whole budget is spent; the probe picks the best gap"
 
 
 def test_the_prompt_reports_the_best_unearned_score_not_the_best_score():
