@@ -24,7 +24,7 @@ from assay import audit  # noqa: E402
 from assay.adapters import HarborAdapter  # noqa: E402
 from assay.challenger import ScriptedChallenger  # noqa: E402
 from assay.challenger.prompted import PromptedChallenger  # noqa: E402
-from assay.llm import OllamaClient  # noqa: E402
+from assay.llm import ClaudeCLIClient, OllamaClient  # noqa: E402
 from assay.sandbox import AutoApprove, DockerSandbox  # noqa: E402
 from assay.types import DefectClass  # noqa: E402
 
@@ -44,6 +44,12 @@ def main() -> int:
     ap.add_argument("--task", default="self-graded")
     ap.add_argument("--turns", type=int, default=8)
     ap.add_argument("--models", nargs="*", default=["qwen3:1.7b", "qwen3:8b"])
+    ap.add_argument(
+        "--claude",
+        action="store_true",
+        help="also run a stronger model via the Claude CLI, to separate a loop "
+        "that cannot find the exploit from a model that cannot",
+    )
     ap.add_argument("--out", default="results/challenger_ablation.json")
     args = ap.parse_args()
 
@@ -57,6 +63,14 @@ def main() -> int:
         else:
             skipped.append({"model": model, "reason": reason})
             print(f"SKIPPING {model}: {reason}")
+    if args.claude:
+        client = ClaudeCLIClient()
+        usable, reason = client.availability()
+        if usable:
+            arms.append(("prompted:claude-cli", PromptedChallenger(client=client, turns=args.turns)))
+        else:
+            skipped.append({"model": "claude-cli", "reason": reason})
+            print(f"SKIPPING claude-cli: {reason}")
     if skipped:
         print("an arm missing from a comparison is a result about the run, not the method\n")
 

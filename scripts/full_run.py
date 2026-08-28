@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
-from assay.baselines import StructuralCheckArm  # noqa: E402
+from assay.baselines import DirectPromptArm, StructuralCheckArm, ToolAgentArm  # noqa: E402
 from assay.corpus import availability, entries, ground_truth  # noqa: E402
 from assay.costs import all_profiles, load  # noqa: E402
 from assay.metrics import ArmResult, Outcome, normalized_loss, trivial_arms  # noqa: E402
@@ -53,6 +53,18 @@ def run_assay(corpus) -> ArmResult:
     return arm
 
 
+def run_arm(corpus, arm) -> tuple[ArmResult, dict]:
+    """Any baseline exposing .run(adapter) -> (detected, log)."""
+    result = ArmResult(arm.arm)
+    logs = {}
+    for env_id, factory, planted in corpus:
+        with _closing(factory()) as adapter:
+            detected, log = arm.run(adapter)
+        result.outcomes.append(Outcome(env_id, planted, frozenset(detected)))
+        logs[env_id] = log
+    return result, logs
+
+
 def run_check_env(corpus) -> tuple[ArmResult, dict]:
     arm = ArmResult("check_env")
     issues = {}
@@ -71,6 +83,11 @@ def main() -> int:
     ap.add_argument("--profile", default="research-run")
     ap.add_argument("--no-inspect", action="store_true")
     ap.add_argument("--no-harbor", action="store_true")
+    ap.add_argument(
+        "--llm-arms",
+        metavar="MODEL",
+        help="also run the two LLM baselines with this ollama model (e.g. qwen3:8b)",
+    )
     args = ap.parse_args()
 
     have = availability()
@@ -86,6 +103,22 @@ def main() -> int:
     check_arm, check_issues = run_check_env(corpus)
     arms["check_env"] = check_arm
     arms.update(trivial_arms(truth))
+
+    arm_logs: dict[str, dict] = {"check_env": check_issues}
+    if args.llm_arms:
+        from assay.llm import OllamaClient
+
+        client = OllamaClient(args.llm_arms)
+        usable, reason = client.availability()
+        if not usable:
+            print(f"SKIPPING llm arms: {reason}")
+            print("an arm missing from a comparison is a result about the run, not the method")
+        else:
+            for arm in (DirectPromptArm(client), ToolAgentArm(client)):
+                print(f"running baseline arm: {arm.arm} ({client.name}) ...", flush=True)
+                result, logs = run_arm(corpus, arm)
+                arms[arm.arm] = result
+                arm_logs[arm.arm] = logs
 
     rows = {}
     for name, arm in arms.items():
@@ -110,7 +143,7 @@ def main() -> int:
             }
             for o in arms["assay"].outcomes
         },
-        "check_env_structural_issues": check_issues,
+        "arm_logs": arm_logs,
     }
     (out / "full_run.json").write_text(json.dumps(payload, indent=2, sort_keys=True))
 
