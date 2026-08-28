@@ -48,12 +48,17 @@ def main() -> int:
     args = ap.parse_args()
 
     arms = [("scripted", ScriptedChallenger())]
+    skipped = []
     for model in args.models:
         client = OllamaClient(model)
-        if client.available():
+        usable, reason = client.availability()
+        if usable:
             arms.append((f"prompted:{model}", PromptedChallenger(client=client, turns=args.turns)))
         else:
-            print(f"skipping {model}: not pulled")
+            skipped.append({"model": model, "reason": reason})
+            print(f"SKIPPING {model}: {reason}")
+    if skipped:
+        print("an arm missing from a comparison is a result about the run, not the method\n")
 
     rows = []
     for name, challenger in arms:
@@ -71,13 +76,16 @@ def main() -> int:
             "attempts": per_task.get("n_attempts", 0),
             "seconds": round(time.time() - started, 1),
         }
+        # Recorded either way. What the attacker tried and failed at is the
+        # part that tells you whether to reach for a better model or a better
+        # loop.
+        row["attacker_trace"] = per_task.get("attacker_trace", [])
         if found:
             evidence = [f for f in report.findings if f.defect is DefectClass.REWARD_HACKABLE][0]
             row["exploit"] = {
                 "policy": evidence.evidence["exploit_policy"],
                 "reported": evidence.evidence["reported_score"],
                 "true_completion": evidence.evidence["true_completion"],
-                "trace": evidence.evidence.get("attacker_trace", [])[-3:],
             }
         rows.append(row)
         print(
@@ -89,7 +97,12 @@ def main() -> int:
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"task": args.task, "turns": args.turns, "arms": rows}, indent=2))
+    out.write_text(
+        json.dumps(
+            {"task": args.task, "turns": args.turns, "arms": rows, "skipped": skipped},
+            indent=2,
+        )
+    )
     print(f"\nwrote {out}")
     return 0
 

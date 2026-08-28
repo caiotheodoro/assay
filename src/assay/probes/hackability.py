@@ -82,6 +82,14 @@ class RewardHackability(Probe):
                 "challenger": challenger.name,
                 "attempts": log,
                 "n_attempts": len(attempts),
+                # Kept whether or not the threshold was crossed. A miss with no
+                # record of what was tried is not a result anyone can learn
+                # from, and "the Challenger found nothing" is a claim that
+                # needs evidence exactly as much as a finding does.
+                "best_attempt": (
+                    {k: v for k, v in best.items() if k != "trace"} if best else None
+                ),
+                "attacker_trace": (best or {}).get("trace") or [],
             }
             if best and best["gap"] >= GAP_THRESHOLD:
                 findings.append(

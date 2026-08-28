@@ -52,13 +52,28 @@ class OllamaClient:
     def name(self) -> str:
         return f"ollama:{self.model}"
 
-    def available(self) -> bool:
+    def availability(self) -> tuple[bool, str]:
+        """(usable, reason). Never collapses "daemon busy" into "model absent".
+
+        The five-second probe used to time out whenever the daemon was serving
+        another request, and the caller read that as the model not being
+        installed -- so an arm disappeared from an ablation with no error and
+        no row. A silently shrunken experiment is worse than a failed one.
+        """
         try:
-            with urllib.request.urlopen(f"{self.host}/api/tags", timeout=5) as resp:
+            with urllib.request.urlopen(f"{self.host}/api/tags", timeout=30) as resp:
                 tags = json.loads(resp.read())
-        except (urllib.error.URLError, OSError, json.JSONDecodeError):
-            return False
-        return any(m.get("name") == self.model for m in tags.get("models", []))
+        except (urllib.error.URLError, OSError) as exc:
+            return False, f"ollama daemon unreachable at {self.host}: {exc}"
+        except json.JSONDecodeError as exc:
+            return False, f"ollama returned unparseable tags: {exc}"
+        names = [m.get("name") for m in tags.get("models", [])]
+        if self.model in names:
+            return True, "ok"
+        return False, f"model {self.model!r} not pulled; available: {names}"
+
+    def available(self) -> bool:
+        return self.availability()[0]
 
     def complete(self, system: str, user: str) -> str:
         payload = json.dumps(
@@ -101,16 +116,15 @@ class ClaudeCLIClient:
     def name(self) -> str:
         return f"claude-cli:{self.model}"
 
-    def available(self) -> bool:
+    def availability(self) -> tuple[bool, str]:
         try:
-            return (
-                subprocess.run(
-                    ["claude", "--version"], capture_output=True, timeout=15
-                ).returncode
-                == 0
-            )
-        except (OSError, subprocess.SubprocessError):
-            return False
+            proc = subprocess.run(["claude", "--version"], capture_output=True, timeout=30)
+        except (OSError, subprocess.SubprocessError) as exc:
+            return False, f"claude CLI not usable: {exc}"
+        return (True, "ok") if proc.returncode == 0 else (False, "claude CLI returned nonzero")
+
+    def available(self) -> bool:
+        return self.availability()[0]
 
     def complete(self, system: str, user: str) -> str:
         try:
