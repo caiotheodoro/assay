@@ -44,7 +44,24 @@ def _audit(args) -> int:
             print(f"  {env_id}", file=sys.stderr)
         return 2
     env_id, factory, _ = found[0]
-    report = audit(factory())
+    adapter = factory()
+    try:
+        report = audit(adapter)
+    finally:
+        close = getattr(adapter, "close", None)
+        if close:
+            close()
+
+    if args.card:
+        from .card import to_html, to_markdown
+        from pathlib import Path
+
+        path = Path(args.card)
+        render = to_html if path.suffix == ".html" else to_markdown
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render(report, signed_by=args.signed_by))
+        print(f"wrote {path}")
+
     if args.json:
         print(report.to_json())
     else:
@@ -74,6 +91,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("audit", help="audit one environment from the corpus")
     p.add_argument("env")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--card", metavar="PATH", help="write an Environment Card (.md or .html)")
+    p.add_argument("--signed-by", metavar="NAME", help="record a human reviewer on the card")
     p.set_defaults(func=_audit)
 
     p = sub.add_parser("list", help="list the audited corpus and its planted defects")
