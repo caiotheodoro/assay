@@ -126,8 +126,11 @@ class Separability(Probe):
 class DifficultyBand(Probe):
     """Always-fail and always-pass tasks contribute noise, not learning.
 
-    Needs a solve-rate estimate, which needs real rollouts. Without one this
-    reports NOT_APPLICABLE rather than inventing a number.
+    A solve rate is a property of an (environment, policy) PAIR, never of the
+    environment alone. A task that is impossible for a 1.7B model may sit
+    comfortably in band for a frontier one, so the source of the estimate is
+    recorded in every finding and belongs in the card next to the number.
+    Without an estimate this reports NOT_APPLICABLE rather than inventing one.
     """
 
     family = "difficulty_band"
@@ -140,6 +143,7 @@ class DifficultyBand(Probe):
             return self.na(
                 "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler"
             )
+        source = ctx.get("solve_rate_source", "unspecified policy")
         findings = []
         for task in adapter.manifest().tasks:
             rate = rates.get(task.task_id)
@@ -151,7 +155,12 @@ class DifficultyBand(Probe):
                         defect=DefectClass.DIFFICULTY_SATURATED,
                         severity=DEFAULT_SEVERITY[DefectClass.DIFFICULTY_SATURATED],
                         task_id=task.task_id,
-                        evidence={"solve_rate": rate, "band": [self.LOW, self.HIGH]},
+                        evidence={
+                            "solve_rate": rate,
+                            "band": [self.LOW, self.HIGH],
+                            "measured_with": source,
+                            "note": "solve rate is relative to the policy that produced it",
+                        },
                     )
                 )
             elif rate < self.LOW:
@@ -160,7 +169,12 @@ class DifficultyBand(Probe):
                         defect=DefectClass.DIFFICULTY_IMPOSSIBLE,
                         severity=DEFAULT_SEVERITY[DefectClass.DIFFICULTY_IMPOSSIBLE],
                         task_id=task.task_id,
-                        evidence={"solve_rate": rate, "band": [self.LOW, self.HIGH]},
+                        evidence={
+                            "solve_rate": rate,
+                            "band": [self.LOW, self.HIGH],
+                            "measured_with": source,
+                            "note": "solve rate is relative to the policy that produced it",
+                        },
                     )
                 )
-        return self.defects(findings, solve_rates=rates)
+        return self.defects(findings, solve_rates=rates, measured_with=source)

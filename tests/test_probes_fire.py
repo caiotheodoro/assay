@@ -59,6 +59,15 @@ def test_difficulty_band_fires_with_solve_rates():
     assert DefectClass.DIFFICULTY_IMPOSSIBLE in report.detected
 
 
+def test_difficulty_findings_name_the_policy_that_produced_the_rate():
+    """A solve rate belongs to an (environment, policy) pair. A card that
+    reports the number without the policy is reporting half a fact."""
+    ctx = {"solve_rates": {"t1": 0.02}, "solve_rate_source": "ollama:qwen3:1.7b"}
+    report = audit(build("healthy"), ctx)
+    finding = [f for f in report.findings if f.defect is DefectClass.DIFFICULTY_IMPOSSIBLE][0]
+    assert finding.evidence["measured_with"] == "ollama:qwen3:1.7b"
+
+
 def test_difficulty_band_is_not_applicable_without_rates():
     report = audit(build("healthy"))
     band = [r for r in report.results if r.family == "difficulty_band"][0]
