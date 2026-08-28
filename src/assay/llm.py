@@ -39,6 +39,14 @@ class OllamaClient:
     host: str = "http://localhost:11434"
     temperature: float = 0.8
     timeout: int = 180
+    #: Qwen3 and friends reason in <think> blocks by default, which costs most
+    #: of the generation budget on a task whose answer is one JSON object.
+    #: Off by default so a laptop run finishes; the probes score the action,
+    #: not the reasoning behind it.
+    think: bool = False
+    #: A single action is short. Capping the response stops a model that
+    #: starts rambling from holding up the whole audit.
+    num_predict: int = 400
 
     @property
     def name(self) -> str:
@@ -59,7 +67,11 @@ class OllamaClient:
                 "prompt": user,
                 "system": system,
                 "stream": False,
-                "options": {"temperature": self.temperature},
+                "think": self.think,
+                "options": {
+                    "temperature": self.temperature,
+                    "num_predict": self.num_predict,
+                },
             }
         ).encode()
         request = urllib.request.Request(
