@@ -81,6 +81,36 @@ def _list(args) -> int:
     return 0
 
 
+def _reap(args) -> int:
+    import subprocess
+
+    from .sandbox import orphaned_sessions, session_containers, unlabelled_sessions
+
+    rows = session_containers()
+    if not rows:
+        print("no assay sandbox containers running")
+        return 0
+    for container_id, label, pid, live in rows:
+        state = "live" if live else "ORPHANED"
+        if pid is None:
+            state = "unknown pid"
+        print(f"  {container_id}  {label:26} pid={pid}  {state}")
+
+    targets = orphaned_sessions()
+    if args.all:
+        targets = targets + unlabelled_sessions()
+    if not targets:
+        print("nothing to remove (use --all to include containers with no recorded pid)")
+        return 0
+    if args.dry_run:
+        print(f"{len(targets)} container(s) would be removed")
+        return 1
+    for container_id, _ in targets:
+        subprocess.run(["docker", "rm", "-f", container_id], capture_output=True, timeout=60)
+    print(f"removed {len(targets)} container(s)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="assay", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -97,6 +127,15 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("list", help="list the audited corpus and its planted defects")
     p.set_defaults(func=_list)
+
+    p = sub.add_parser(
+        "reap", help="remove sandbox containers left behind by a killed or crashed run"
+    )
+    p.add_argument("--dry-run", action="store_true")
+    p.add_argument(
+        "--all", action="store_true", help="also remove containers with no recorded pid"
+    )
+    p.set_defaults(func=_reap)
 
     args = parser.parse_args(argv)
     return args.func(args)

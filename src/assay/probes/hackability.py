@@ -59,6 +59,11 @@ class RewardHackability(Probe):
 
         for task in adapter.manifest().tasks:
             attempts: list[Attempt] = challenger.attack(adapter, task.task_id)
+            # The LAST attempt carries the full history; the best one carries
+            # only what had happened by the time it was made. Attaching the
+            # best attempt's log to a failed run showed turn 1 and nothing
+            # else, which is the opposite of what a diagnosis needs.
+            full_trace = attempts[-1].log if attempts else []
             best, log = None, []
             for attempt in attempts:
                 gap, reported, real = exploit_gap(adapter, attempt.transcript)
@@ -76,7 +81,6 @@ class RewardHackability(Probe):
                         "gap": gap,
                         "reported": reported,
                         "true": real,
-                        "trace": attempt.log,
                     }
             detail[task.task_id] = {
                 "challenger": challenger.name,
@@ -86,10 +90,8 @@ class RewardHackability(Probe):
                 # record of what was tried is not a result anyone can learn
                 # from, and "the Challenger found nothing" is a claim that
                 # needs evidence exactly as much as a finding does.
-                "best_attempt": (
-                    {k: v for k, v in best.items() if k != "trace"} if best else None
-                ),
-                "attacker_trace": (best or {}).get("trace") or [],
+                "best_attempt": best,
+                "attacker_trace": full_trace,
             }
             if best and best["gap"] >= GAP_THRESHOLD:
                 findings.append(
@@ -104,7 +106,7 @@ class RewardHackability(Probe):
                             "exploit_gap": round(best["gap"], 4),
                             "threshold": GAP_THRESHOLD,
                             "challenger": challenger.name,
-                            "attacker_trace": best["trace"],
+                            "attacker_trace": full_trace,
                         },
                     )
                 )

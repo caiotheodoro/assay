@@ -17,6 +17,7 @@ explicitly, so approval is always a decision somebody made.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from dataclasses import dataclass, field
@@ -261,6 +262,10 @@ class SandboxSession:
         argv.insert(2, "-d")
         argv.insert(3, "--label")
         argv.insert(4, f"assay-session={self.label}")
+        # The creating pid, so a later reap can tell a live session from a
+        # container left behind by a process that is gone.
+        argv.insert(5, "--label")
+        argv.insert(6, f"assay-pid={os.getpid()}")
         proc = subprocess.run(argv, capture_output=True, text=True, timeout=120)
         if proc.returncode != 0:
             raise SandboxUnavailable(f"could not start session container: {proc.stderr.strip()}")
@@ -298,3 +303,78 @@ class SandboxSession:
         except subprocess.TimeoutExpired:
             return SandboxResult(124, "", "wall-clock limit exceeded", timed_out=True)
         return SandboxResult(proc.returncode, proc.stdout, proc.stderr)
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # exists, owned by someone else
+    return True
+
+
+def session_containers() -> list[tuple[str, str, int | None, bool]]:
+    """Every Assay session container: (id, label, creating pid, still live)."""
+    if not docker_available():
+        return []
+    proc = subprocess.run(
+        [
+            "docker", "ps", "--filter", "label=assay-session",
+            # .Labels is a comma-joined string in ps templates, not a map --
+            # `index` on it silently yields nothing and every container
+            # disappears from the listing.
+            "--format", '{{.ID}}\t{{.Label "assay-session"}}\t{{.Label "assay-pid"}}',
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    rows = []
+    for line in proc.stdout.strip().splitlines():
+        parts = line.split("\t")
+        if not parts or not parts[0]:
+            continue
+        container_id = parts[0]
+        label = parts[1] if len(parts) > 1 else ""
+        pid = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else None
+        # No pid label means the container predates pid labelling. Unknown, so
+        # treated as live: reaping something that might be in use is worse than
+        # leaving it for an explicit --all.
+        live = _pid_alive(pid) if pid is not None else True
+        rows.append((container_id, label, pid, live))
+    return rows
+
+
+def orphaned_sessions() -> list[tuple[str, str]]:
+    """Containers whose creating process is gone.
+
+    A session is removed in stop(), but a killed or crashed process never gets
+    there. Liveness is decided by whether the creating pid still exists -- an
+    earlier version reaped by label alone, which would have torn down a running
+    audit to tidy up after a dead one.
+    """
+    return [
+        (container_id, label)
+        for container_id, label, _pid, live in session_containers()
+        if not live
+    ]
+
+
+def unlabelled_sessions() -> list[tuple[str, str]]:
+    """Session containers with no creating pid recorded, so liveness is
+    unknown. Removed only when explicitly asked for."""
+    return [
+        (container_id, label)
+        for container_id, label, pid, _live in session_containers()
+        if pid is None
+    ]
+
+
+def reap_sessions() -> int:
+    """Remove every orphaned session container. Returns how many."""
+    orphans = orphaned_sessions()
+    for container_id, _ in orphans:
+        subprocess.run(["docker", "rm", "-f", container_id], capture_output=True, timeout=60)
+    return len(orphans)
