@@ -37,12 +37,51 @@ def inspect_entries() -> list[CorpusEntry]:
     return build_inspect_environments(InspectAdapter)
 
 
-def entries(include_inspect: bool = True) -> list[CorpusEntry]:
+def harbor_entries(approval_reason: str = "assay corpus run") -> list[CorpusEntry]:
+    """Real Harbor task directories, audited in real containers.
+
+    Requires Docker. Returns nothing when it is unavailable -- and the caller
+    is told, because an absent runtime must not silently shrink the corpus and
+    flatter the results.
+    """
+    from .sandbox import AutoApprove, DockerSandbox, docker_available
+
+    if not docker_available():
+        return []
+    from ._harbor_corpus import build_harbor_environments
+    from .adapters.harbor import HarborAdapter
+
+    return build_harbor_environments(
+        HarborAdapter, lambda: DockerSandbox(AutoApprove(approval_reason))
+    )
+
+
+def entries(include_inspect: bool = True, include_harbor: bool = True) -> list[CorpusEntry]:
     out = fixture_entries()
     if include_inspect:
         out += inspect_entries()
+    if include_harbor:
+        out += harbor_entries()
     return out
 
 
-def ground_truth(include_inspect: bool = True) -> dict[str, frozenset[DefectClass]]:
-    return {env_id: defects for env_id, _, defects in entries(include_inspect)}
+def ground_truth(
+    include_inspect: bool = True, include_harbor: bool = True
+) -> dict[str, frozenset[DefectClass]]:
+    return {
+        env_id: defects for env_id, _, defects in entries(include_inspect, include_harbor)
+    }
+
+
+def availability() -> dict[str, bool]:
+    """What the corpus can actually run here. Reported alongside every result
+    so a shrunken corpus is never mistaken for a clean one."""
+    from .sandbox import docker_available
+
+    try:
+        import inspect_ai  # noqa: F401
+
+        has_inspect = True
+    except ImportError:
+        has_inspect = False
+    return {"inspect_ai": has_inspect, "docker": docker_available()}

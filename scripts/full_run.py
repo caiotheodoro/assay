@@ -23,15 +23,32 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
 from assay.baselines import StructuralCheckArm  # noqa: E402
-from assay.corpus import entries, ground_truth  # noqa: E402
+from assay.corpus import availability, entries, ground_truth  # noqa: E402
 from assay.costs import all_profiles, load  # noqa: E402
 from assay.metrics import ArmResult, Outcome, normalized_loss, trivial_arms  # noqa: E402
+
+
+def _closing(adapter):
+    """Some adapters hold a container open; give them the chance to clean up."""
+    return adapter if hasattr(adapter, "__enter__") else _NullCtx(adapter)
+
+
+class _NullCtx:
+    def __init__(self, value):
+        self.value = value
+
+    def __enter__(self):
+        return self.value
+
+    def __exit__(self, *exc):
+        return False
 
 
 def run_assay(corpus) -> ArmResult:
     arm = ArmResult("assay")
     for env_id, factory, planted in corpus:
-        report = audit(factory())
+        with _closing(factory()) as adapter:
+            report = audit(adapter)
         arm.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
     return arm
 
@@ -41,7 +58,8 @@ def run_check_env(corpus) -> tuple[ArmResult, dict]:
     issues = {}
     checker = StructuralCheckArm()
     for env_id, factory, planted in corpus:
-        detected, found = checker.run(factory())
+        with _closing(factory()) as adapter:
+            detected, found = checker.run(adapter)
         arm.outcomes.append(Outcome(env_id, planted, detected))
         issues[env_id] = found
     return arm, issues
@@ -52,10 +70,16 @@ def main() -> int:
     ap.add_argument("--out", default="results")
     ap.add_argument("--profile", default="research-run")
     ap.add_argument("--no-inspect", action="store_true")
+    ap.add_argument("--no-harbor", action="store_true")
     args = ap.parse_args()
 
-    corpus = entries(include_inspect=not args.no_inspect)
-    truth = ground_truth(include_inspect=not args.no_inspect)
+    have = availability()
+    corpus = entries(
+        include_inspect=not args.no_inspect, include_harbor=not args.no_harbor
+    )
+    truth = ground_truth(
+        include_inspect=not args.no_inspect, include_harbor=not args.no_harbor
+    )
     profile = load(args.profile)
 
     arms = {"assay": run_assay(corpus)}
@@ -72,6 +96,7 @@ def main() -> int:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     payload = {
+        "runtime_availability": have,
         "corpus_size": len(corpus),
         "total_planted_defects": sum(len(v) for v in truth.values()),
         "cost_profile": {"name": profile.name, "description": profile.description},
@@ -91,6 +116,9 @@ def main() -> int:
 
     width = max(len(n) for n in rows)
     print(f"corpus: {len(corpus)} environments, {payload['total_planted_defects']} planted defects")
+    missing = [k for k, v in have.items() if not v]
+    if missing:
+        print(f"WARNING: unavailable here, corpus is reduced: {', '.join(missing)}")
     print(f"cost profile: {profile.name}\n")
     header = f"{'arm':{width}}  {'exp.loss':>9} {'norm':>7} {'recall':>7} {'prec':>7} {'miss':>5} {'spur':>5}"
     print(header)

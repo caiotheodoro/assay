@@ -1,0 +1,15 @@
+schema_version = "1.0"
+
+[task]
+name = "vacuous-tests"
+version = "0.1.0"
+description = "The verifier always exits 0. Nothing it reports means anything."
+authors = ["assay fixtures"]
+
+[verifier]
+timeout_sec = 60
+network_mode = "no-network"
+environment_mode = "separate"
+
+[environment]
+docker_image = "alpine:3.20"

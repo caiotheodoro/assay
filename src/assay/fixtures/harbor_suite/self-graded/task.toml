@@ -1,0 +1,15 @@
+schema_version = "1.0"
+
+[task]
+name = "self-graded"
+version = "0.1.0"
+description = "The verifier reads its own expectation from the workspace."
+authors = ["assay fixtures"]
+
+[verifier]
+timeout_sec = 60
+network_mode = "no-network"
+environment_mode = "separate"
+
+[environment]
+docker_image = "alpine:3.20"
