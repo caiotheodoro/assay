@@ -7,9 +7,9 @@ Point Assay at an environment. It runs a battery of probes and emits a signed
 result, plus machine-readable JSON and a nonzero exit code that blocks a
 training run.
 
-> Status: early. Core, all nine probe families, and the inspect_ai adapter are
-> implemented and tested. Harbor and OpenEnv adapters, the learned Challenger,
-> and the wild sweep are not built yet.
+> Status: early. Core, all nine probe families, and the inspect_ai and Harbor
+> adapters are implemented and tested. The OpenEnv adapter, the prompted and
+> learned Challengers, and the wild sweep are not built yet.
 
 ## The problem
 
@@ -34,24 +34,25 @@ claims."* They do not even verify that seeding makes behaviour reproducible
 
 ## First measured result
 
-17 environments, 35 planted defects, `research-run` cost profile. No GPU, no
-API key, no network — `uv run --extra adapters python scripts/full_run.py`.
+21 environments, 44 planted defects, `research-run` cost profile. Needs Docker
+for the Harbor tasks. No GPU, no API key, no network —
+`uv run --extra adapters python scripts/full_run.py`.
 
-| arm | expected loss | normalized | recall | precision |
-|---|---|---|---|---|
-| assay | **0.0** | 0.000 | 1.000 | 1.000 |
-| flag_everything | 203.0 | 1.000 | 1.000 | 0.147 |
-| **check_env** (incumbent) | **2248.0** | 11.074 | **0.000** | 0.000 |
-| flag_nothing | 2248.0 | 11.074 | 0.000 | 0.000 |
+| arm | expected loss | normalized | recall | precision | misses |
+|---|---|---|---|---|---|
+| assay | **120.0** | 0.480 | 0.977 | 1.000 | 1 |
+| flag_everything | 250.0 | 1.000 | 1.000 | 0.150 | 0 |
+| **check_env** (incumbent) | **2704.0** | 10.816 | **0.000** | 0.000 | 44 |
+| flag_nothing | 2704.0 | 10.816 | 0.000 | 0.000 | 44 |
 
 The structural linter scores **identically to flagging nothing**. It is not a
 weak detector of these defects; it is not a detector of them at all.
 
-**Read the top row with suspicion.** A corpus where one arm scores 1.000 and
-another 0.000 cannot rank two serious auditors against each other — it is
-saturated, which is the difficulty-band defect, in Assay's own benchmark,
-caught by Assay's own rule. Harder environments are the next priority, and no
-claim about discriminating power is made until they exist.
+Assay's one miss is `harbor/self-graded`, where the verifier reads its
+expectation from a file the agent can overwrite. The exploit is real — it is
+exhibited directly in `tests/test_harbor_ground_truth.py` — and the scripted
+Challenger does not find it. That miss is the reason the corpus discriminates
+at all, and closing it is what the prompted and trained Challengers are for.
 
 ## The probes
 
