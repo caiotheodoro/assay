@@ -281,6 +281,21 @@ class HarborAdapter(BaseAdapter):
             ],
         )
 
+    def describe(self) -> str:
+        parts = [super().describe(), ""]
+        for task_id, task in self._tasks.items():
+            parts.append(f"--- task {task_id} ---")
+            for name, path in (
+                ("task.toml", task.path / "task.toml"),
+                ("instruction.md", task.path / "instruction.md"),
+                ("tests/test.sh", task.tests / "test.sh"),
+                ("solution/solve.sh", task.solution),
+            ):
+                if path and Path(path).exists():
+                    parts.append(f"# {name}\n{Path(path).read_text().strip()}")
+            parts.append("")
+        return "\n".join(parts)
+
     # -- episode -----------------------------------------------------------
 
     def reset(self, task_id: str, seed: int = 0) -> Observation:

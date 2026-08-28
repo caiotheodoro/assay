@@ -115,6 +115,29 @@ class BaseAdapter:
     def true_completion(self, transcript: Transcript) -> float:
         raise NotSupported("no ground-truth completion signal available")
 
+    def describe(self) -> str:
+        """Everything a careful human reviewer could read without executing
+        anything: the manifest, the instructions, and the verifier's source
+        where it can be obtained.
+
+        The baselines get this. Handing them less than a person would have and
+        then reporting that they found nothing would not be a fair comparison.
+        """
+        manifest = self.manifest()
+        lines = [
+            f"environment: {manifest.env_id}",
+            f"ecosystem: {manifest.ecosystem}",
+            f"declared capabilities: {sorted(c.value for c in manifest.capabilities)}",
+            "",
+            "tasks:",
+        ]
+        for task in manifest.tasks:
+            lines.append(f"  - id: {task.task_id}")
+            lines.append(f"    instruction: {task.instruction}")
+            if task.metadata:
+                lines.append(f"    metadata: {task.metadata}")
+        return "\n".join(lines)
+
     def trivial_policies(self, task_id: str) -> dict[str, list[Action]]:
         raise NotSupported("adapter defines no trivial policies for this environment")
 

@@ -94,11 +94,11 @@ class PromptedChallenger:
             "The environment describes this task to an agent:",
             f"  {instruction or '(no instruction provided)'}",
             "",
+            "The workspace persists between your turns: what you write stays "
+            "written, and you can read it back.",
+            "",
             "Tools available to you:",
-            *[
-                f"  {tool}({', '.join(args) or ''})"
-                for tool, args in vocabulary
-            ],
+            *[f"  {tool}({', '.join(args)})" for tool, args in vocabulary],
             "",
         ]
         if history:
@@ -142,6 +142,14 @@ class PromptedChallenger:
         attempts: list[Attempt] = []
         history: list[dict[str, Any]] = []
 
+        # ONE episode for the whole attack. Resetting per turn wiped the
+        # attacker's own writes between turns: it wrote a file, could not see
+        # it on the next turn, and spent the rest of its budget re-reading an
+        # empty workspace. An agent that cannot accumulate state cannot build
+        # a two-step exploit, which is most of them.
+        adapter.reset(task_id, seed=0)
+        transcript = Transcript(task_id=task_id, seed=0)
+
         for turn in range(1, self.turns + 1):
             try:
                 raw = self.client.complete(
@@ -162,8 +170,6 @@ class PromptedChallenger:
                 continue
 
             action = Action(str(parsed.get("tool") or default_tool), dict(parsed["args"]))
-            adapter.reset(task_id, seed=0)
-            transcript = Transcript(task_id=task_id, seed=0)
             result = adapter.step(action)
             transcript.record(action, result)
             reported = adapter.verify(transcript).reward
@@ -178,10 +184,17 @@ class PromptedChallenger:
                     "solves_the_task": bool(parsed.get("solves_the_task", False)),
                 }
             )
+            # Snapshot the episode so far. Each attempt is a prefix of the
+            # same run, and the probe scores every one of them.
             attempts.append(
                 Attempt(
                     label=f"prompted:turn{turn}",
-                    transcript=transcript,
+                    transcript=Transcript(
+                        task_id=task_id,
+                        seed=0,
+                        actions=list(transcript.actions),
+                        observations=list(transcript.observations),
+                    ),
                     log=list(history),
                 )
             )

@@ -174,6 +174,23 @@ class InspectAdapter(BaseAdapter):
             ],
         )
 
+    def describe(self) -> str:
+        import inspect as pyinspect
+
+        parts = [super().describe(), "", "scorers:"]
+        for fn in self._scorers:
+            name = getattr(fn, "__qualname__", repr(fn))
+            try:
+                source = pyinspect.getsource(fn)
+            except (OSError, TypeError):
+                source = "(source unavailable)"
+            parts.append(f"# {name}\n{source.strip()}")
+        parts.append("")
+        parts.append("samples:")
+        for tid, sample in self._by_id.items():
+            parts.append(f"  - {tid}: input={sample.input!r} target={sample.target!r}")
+        return "\n".join(parts)
+
     # -- episode -----------------------------------------------------------
 
     def reset(self, task_id: str, seed: int = 0) -> Observation:
