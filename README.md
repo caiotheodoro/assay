@@ -7,9 +7,9 @@ Point Assay at an environment. It runs a battery of probes and emits a signed
 result, plus machine-readable JSON and a nonzero exit code that blocks a
 training run.
 
-> Status: early. Slice 1 (core, probes, fixtures) is implemented and tested.
-> Adapters for real ecosystems are in progress. No published results yet — the
-> numbers in this README will appear only when a run produces them.
+> Status: early. Core, all nine probe families, and the inspect_ai adapter are
+> implemented and tested. Harbor and OpenEnv adapters, the learned Challenger,
+> and the wild sweep are not built yet.
 
 ## The problem
 
@@ -31,6 +31,27 @@ The only automated tooling that exists is `gymnasium.utils.env_checker` and
 for *"will this crash my trainer"* — never *"is this measuring what it
 claims."* They do not even verify that seeding makes behaviour reproducible
 ([Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084)).
+
+## First measured result
+
+17 environments, 35 planted defects, `research-run` cost profile. No GPU, no
+API key, no network — `uv run --extra adapters python scripts/full_run.py`.
+
+| arm | expected loss | normalized | recall | precision |
+|---|---|---|---|---|
+| assay | **0.0** | 0.000 | 1.000 | 1.000 |
+| flag_everything | 203.0 | 1.000 | 1.000 | 0.147 |
+| **check_env** (incumbent) | **2248.0** | 11.074 | **0.000** | 0.000 |
+| flag_nothing | 2248.0 | 11.074 | 0.000 | 0.000 |
+
+The structural linter scores **identically to flagging nothing**. It is not a
+weak detector of these defects; it is not a detector of them at all.
+
+**Read the top row with suspicion.** A corpus where one arm scores 1.000 and
+another 0.000 cannot rank two serious auditors against each other — it is
+saturated, which is the difficulty-band defect, in Assay's own benchmark,
+caught by Assay's own rule. Harder environments are the next priority, and no
+claim about discriminating power is made until they exist.
 
 ## The probes
 

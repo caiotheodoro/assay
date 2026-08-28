@@ -1,0 +1,12 @@
+name: research-run
+description: >
+  A researcher about to spend a single training run on this environment.
+  Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the
+  run produces a policy that hacks a broken environment and the whole cycle is
+  wasted; a false alarm costs someone an hour of reading the card.
+miss:
+  CRITICAL: 120
+  HIGH: 40
+  MEDIUM: 8
+  LOW: 2
+false_alarm: 1

@@ -11,6 +11,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+adapters = [
+    "inspect-ai>=0.3.260",
+]
 
 [project.scripts]
 assay = "assay.cli:main"

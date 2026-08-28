@@ -1,0 +1,12 @@
+name: benchmark-publication
+description: >
+  Publishing an environment others will score against. A missed defect
+  propagates into every paper that cites the benchmark and is corrected, if
+  ever, by a hand-built "Verified" fork years later. False alarms are more
+  expensive here than elsewhere because each one must be adjudicated publicly.
+miss:
+  CRITICAL: 2000
+  HIGH: 600
+  MEDIUM: 100
+  LOW: 20
+false_alarm: 8

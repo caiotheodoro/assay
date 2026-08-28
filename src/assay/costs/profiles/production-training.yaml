@@ -1,0 +1,12 @@
+name: production-training
+description: >
+  A team committing a production post-training cycle. The asymmetry widens:
+  a policy trained on a broken environment is not just wasted spend, it ships,
+  and the failure surfaces after deployment. False alarms stay cheap because
+  a human already reviews the card before the run.
+miss:
+  CRITICAL: 960
+  HIGH: 240
+  MEDIUM: 40
+  LOW: 8
+false_alarm: 2

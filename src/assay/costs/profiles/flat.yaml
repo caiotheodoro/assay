@@ -1,0 +1,12 @@
+name: flat
+description: >
+  Not a business scenario -- a theorem test. Under flat costs, ranking systems
+  by expected loss MUST equal ranking them by raw error count. If it does not,
+  the harness is wrong and every other number it produces is void. Wired as a
+  test, not reported as a result.
+miss:
+  CRITICAL: 1
+  HIGH: 1
+  MEDIUM: 1
+  LOW: 1
+false_alarm: 1
