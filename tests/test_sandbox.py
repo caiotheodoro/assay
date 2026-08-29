@@ -107,3 +107,17 @@ def test_a_mounted_directory_is_read_only_by_default(tmp_path):
     assert "from the host" in result.stdout
     assert "NOWRITE" in result.stdout
     assert not (tmp_path / "new").exists()
+
+
+def test_reap_says_it_could_not_look_rather_than_finding_nothing(monkeypatch, capsys):
+    """`assay reap` with no daemon used to print "no assay sandbox containers
+    running" and exit 0 -- absence of evidence dressed up as evidence of
+    absence, which is exactly what the probes flag in environments."""
+    from assay import cli
+
+    monkeypatch.setattr("assay.sandbox.docker_available", lambda: False)
+    code = cli.main(["reap", "--dry-run"])
+    out = capsys.readouterr().out
+    assert code != 0
+    assert "cannot check" in out
+    assert "daemon is not running" in out

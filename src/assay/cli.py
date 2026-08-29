@@ -84,7 +84,20 @@ def _list(args) -> int:
 def _reap(args) -> int:
     import subprocess
 
-    from .sandbox import orphaned_sessions, session_containers, unlabelled_sessions
+    from .sandbox import (
+        docker_available,
+        orphaned_sessions,
+        session_containers,
+        unlabelled_sessions,
+    )
+
+    # "none found" and "could not look" are different answers, and printing the
+    # first for the second is the failure this tool exists to flag in
+    # environments. Without a daemon `session_containers()` returns an empty
+    # list, which read as a clean bill of health.
+    if not docker_available():
+        print("cannot check: docker is not installed or the daemon is not running")
+        return 1
 
     rows = session_containers()
     if not rows:
