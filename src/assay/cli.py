@@ -7,6 +7,7 @@ import json
 import sys
 
 from . import audit
+from .adapter import close_adapter
 from .corpus import entries
 from .fixtures import CATALOG, build
 from .probes import all_probes
@@ -48,9 +49,7 @@ def _audit(args) -> int:
     try:
         report = audit(adapter)
     finally:
-        close = getattr(adapter, "close", None)
-        if close:
-            close()
+        close_adapter(adapter)
 
     if args.card:
         from .card import to_html, to_markdown

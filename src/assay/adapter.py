@@ -6,6 +6,18 @@ shape. The load-bearing design decision is that `verify` is separable from
 without driving a live episode. Environments that entangle the two are
 auditable only by expensive black-box probing, and their adapters say so by
 withholding Capability.SEPARABLE_VERIFIER.
+
+Two methods are used by callers but are NOT part of the protocol, because only
+some adapters can implement them meaningfully:
+
+  * `close()`   -- release a live resource. Call it via `close_adapter`.
+  * `clear_cache()` -- discard memoised verification. The determinism probe
+    calls it when present, so an adapter that caches `verify` MUST define it or
+    the probe fingerprints a memory instead of a run. Harbor is the only
+    adapter that caches, and the only one that defines it.
+
+Both are duck-typed rather than declared. That is a known seam, not an
+oversight; `docs/ARCHITECTURE.md` records why it was left that way.
 """
 
 from __future__ import annotations
@@ -143,6 +155,23 @@ class BaseAdapter:
 
     def graded_policies(self, task_id: str) -> dict[str, list[Action]]:
         raise NotSupported("adapter defines no quality-graded policies")
+
+
+def close_adapter(adapter: object) -> None:
+    """Release whatever an adapter is holding, if it holds anything.
+
+    `close` is optional and deliberately not on `EnvAdapter`: only the three
+    adapters that own a live resource (Harbor's sandbox session, OpenEnv's
+    server, tau2's environment) define it, and requiring it of the rest would
+    put a no-op on every pure-data adapter to satisfy a type checker.
+
+    It is called through here rather than through `getattr` at each site so
+    that the contract is written down in one place. `Probe`-visible behaviour
+    is unchanged: an adapter with no `close` is not an error.
+    """
+    close = getattr(adapter, "close", None)
+    if callable(close):
+        close()
 
 
 def run_policy(

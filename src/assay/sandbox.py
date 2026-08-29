@@ -64,21 +64,6 @@ class AutoApprove:
         return True
 
 
-@dataclass(frozen=True)
-class PromptApprover:
-    """Ask a human on the terminal, once per distinct request."""
-
-    def __call__(self, request: "ExecRequest") -> bool:
-        print("\n--- Assay wants to execute untrusted environment code ---")
-        print(f"  image   : {request.policy.image}")
-        print(f"  command : {' '.join(request.command)}")
-        print(f"  mounts  : {[str(m.source) for m in request.mounts]}")
-        print(f"  network : {'ON' if request.policy.network else 'off'}")
-        print(f"  limits  : {request.policy.cpus} cpu, {request.policy.memory}, "
-              f"{request.policy.pids} pids, {request.policy.wall_seconds}s")
-        return input("approve? [y/N] ").strip().lower() in {"y", "yes"}
-
-
 # --------------------------------------------------------------------------
 # Policy and requests
 # --------------------------------------------------------------------------
@@ -371,10 +356,3 @@ def unlabelled_sessions() -> list[tuple[str, str]]:
         if pid is None
     ]
 
-
-def reap_sessions() -> int:
-    """Remove every orphaned session container. Returns how many."""
-    orphans = orphaned_sessions()
-    for container_id, _ in orphans:
-        subprocess.run(["docker", "rm", "-f", container_id], capture_output=True, timeout=60)
-    return len(orphans)

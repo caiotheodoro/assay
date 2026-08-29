@@ -978,10 +978,6 @@ def gold_anchor(adapter: WildInspectAdapter) -> Anchor:
 # --------------------------------------------------------------------------
 
 
-class Timeout(Exception):
-    pass
-
-
 def sweep_task_isolated(
     ref: TaskRef,
     *,

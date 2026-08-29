@@ -30,6 +30,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .adapter import close_adapter
 from .corpus import entries
 from .runner import audit
 from .types import canonical_json, digest
@@ -96,9 +97,7 @@ def build(include_third_party_verdicts: bool = True) -> Payload:
             # From the manifest, not the id prefix.
             eco = report.ecosystem or _ecosystem(env_id)
         finally:
-            close = getattr(adapter, "close", None)
-            if close:
-                close()
+            close_adapter(adapter)
 
         row = {
             "env_id": env_id,

@@ -7,13 +7,23 @@ Point Assay at an environment. It runs a battery of probes and emits a signed
 result, plus machine-readable JSON and a nonzero exit code that blocks a
 training run.
 
-> Status: early. Core, all nine probe families, and the inspect_ai and Harbor
-> adapters are implemented and tested. The prompted and GRPO-trained
-> Challengers are built; the trained one **does not beat the scripted floor**,
-> and the two runs behind that statement are written up with their numbers in
+> **Status: early.** All nine probe families and six adapters — inspect_ai,
+> Harbor, OpenEnv, submitted specs, τ²-bench and ScienceAgentBench — are
+> implemented and tested. The corpus spans four ecosystems; the wild sweep
+> covers 246 registered `inspect_evals` tasks. The GRPO-trained Challenger
+> **does not beat the scripted floor**, and the two runs behind that statement
+> are written up with their numbers in
 > [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
-> The OpenEnv adapter and the wild sweep are built: the corpus spans four
-> ecosystems and the sweep covers 246 registered `inspect_evals` tasks.
+
+```bash
+uv sync --extra dev && uv run pytest -q               # the demo: every planted defect, caught
+uv run --extra adapters python scripts/full_run.py    # the headline measurement, 22s
+```
+
+Twenty scripts live in `scripts/`; [`scripts/README.md`](scripts/README.md) names
+the five that are entry points and what each of the other fifteen supports.
+Reproduction, end to end: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
+Architecture and its known seams: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## The problem
 
@@ -405,21 +415,13 @@ section overclaimed. Corrected below.
   claiming it beats BenchGuard on both SAB and BixBench.
 
 Assay has been scored head-to-head against BenchGuard's 12 defects **using
-BenchGuard's own `eval/match.py` + `eval/metrics.py`**, not a scorer written here:
-
-> **Recall@ALIGNED 0/12 = 0.0%.** Precision is 0/0 — no findings, so nothing to be
-> right or wrong about. ABA's audit scores 10/12 on the same gold with the same
-> scorer. All 12 of Assay's probes returned NOT_APPLICABLE with a reason and the
-> verdict was `UNVERIFIED`: SAB's verifier lives in a password-protected archive,
-> so **Assay could not run on this benchmark at all** — a different claim from
-> running and finding nothing, and the reason the two are kept apart.
-
-Two things that run against the grain of the comparison, both measured: **nine of
-the twelve gold defects are already fixed** in the split SAB's README tells you to
-use, so any SAB recall number is uninterpretable without naming the split; and
-BenchGuard's precision denominator counts only findings on the 12 revised tasks,
-so a detector firing on 61 of 102 tasks scores well on it. Assay's own
-trivial-floor rule rejected exactly that detector.
+BenchGuard's own `eval/match.py` + `eval/metrics.py`**, not a scorer written here.
+**ABA's audit scores 10/12 on that gold; Assay scores 0/12** — because SAB's
+verifier lives in a password-protected archive and all 12 probes returned
+NOT_APPLICABLE, so Assay could not run on this benchmark at all. The numbers, the
+two ways that comparison is unfair to BenchGuard's own metric, and why "could not
+run" is kept apart from "ran and found nothing" are
+[above](#scienceagentbench--0-of-12-by-benchguards-own-scorer).
 
 ```bash
 uv run --extra sab --extra adapters python scripts/sab_benchguard_recall.py \
@@ -496,14 +498,12 @@ It is listed here as an attempt, not a contribution.
 
 ## Try it
 
-```bash
-uv sync --extra dev
-uv run pytest -q
-```
+`uv sync --extra dev && uv run pytest -q`, as at the top. The test suite is the
+honest demo: twelve fixture environments, each with a deliberately planted
+defect, and a test asserting every planted defect is detected and a healthy
+environment produces none.
 
-The test suite is the honest demo: twelve fixture environments, each with a
-deliberately planted defect, and a test asserting every planted defect is
-detected and a healthy environment produces none.
+Which script produces which number: [`scripts/README.md`](scripts/README.md).
 
 ## Lineage
 

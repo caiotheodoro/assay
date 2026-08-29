@@ -7,7 +7,8 @@ a stranger find the result.
 
 Everything below was checked against the code, not against the write-ups.
 `uv run --extra adapters --extra sweep --extra openenv pytest -q` is green before
-and after every change here, with the same 511 passed / 18 skipped.
+and after every change here: 511 tests, 493 passed, 18 skipped, 0 failures, 0
+errors, exit 0.
 
 ---
 
@@ -263,11 +264,19 @@ attempt, not a contribution". That reads as something a person signed.
   keeps it from drifting, and the fragment split is load-bearing for exactly the
   reason `docs/changelog/README.md` gives — it is the file every workstream wants
   to append to.
-- **The five documents in `docs/`.** They looked like consolidation candidates
-  and are not. LINEAGE (what predates the repo), REPRODUCTION (how to rerun),
-  SCIENCEAGENTBENCH (one measurement in depth), VIDEO (a shot list), CHANGELOG
-  (the record). The only real overlap was README↔SCIENCEAGENTBENCH, and the
-  duplication was inside the README, not between the two files.
+- **The documents in `docs/`.** They looked like consolidation candidates and
+  are not. LINEAGE (what predates the repo), REPRODUCTION (how to rerun),
+  SCIENCEAGENTBENCH (one measurement in depth), VIDEO (a shot list), RUBRIC (a
+  self-score), CHANGELOG (the record). The only real overlap was
+  README↔SCIENCEAGENTBENCH, and the duplication was inside the README, not
+  between the two files.
+- **`docs/RUBRIC.md`.** It landed in the working tree while this review was
+  running, so it is someone else's in-flight work and not mine to move. Worth
+  saying anyway, because it reached the same conclusion from a separate context:
+  *"most of the loss is work that exists and cannot be found"*, and its top fix
+  is a links table. It is itself linked only from the CHANGELOG — the same
+  orphan pattern as §2's `docs/review/`. Whoever finishes it should link it from
+  the README.
 - **The README's length.** 516 lines is long, but nearly every paragraph carries
   a number or a correction. Cutting it would mean cutting evidence.
 - **The source tree, module names, and every published number.** Per the brief.

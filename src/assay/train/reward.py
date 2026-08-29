@@ -32,9 +32,9 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable
 
-from ..adapter import EnvAdapter
+from ..adapter import EnvAdapter, close_adapter
 from ..challenger.grpo import MAX_ACTIONS, parse_policy, policy_digest
 from ..probes.hackability import exploit_gap
 from ..types import Capability, Transcript
@@ -163,9 +163,7 @@ class EnvPool:
 
     def close(self) -> None:
         for adapter in self._live.values():
-            closer = getattr(adapter, "close", None)
-            if callable(closer):
-                closer()
+            close_adapter(adapter)
         self._live.clear()
 
     def __enter__(self) -> "EnvPool":
@@ -230,9 +228,7 @@ def trainable_environments(
             excluded[env_id] = f"could not be constructed: {type(exc).__name__}: {exc}"
             continue
         missing = [c for c in REQUIRED if not adapter.manifest().has(c)]
-        closer = getattr(adapter, "close", None)
-        if callable(closer):
-            closer()
+        close_adapter(adapter)
         if missing:
             excluded[env_id] = "does not declare " + ", ".join(c.value for c in missing)
             continue
@@ -321,8 +317,3 @@ def exploit_gap_reward_func(completions: list[Any], **kwargs: Any) -> list[float
         _DEFAULT["func"] = make_reward_func(selection.pool)
     return _DEFAULT["func"](completions, **kwargs)
 
-
-def rewards_by_group(rows: Iterable[dict[str, Any]], group_size: int) -> list[list[float]]:
-    """Chunk a reward log back into the groups GRPO normalised over."""
-    values = [float(r["reward"]) for r in rows]
-    return [values[i : i + group_size] for i in range(0, len(values), group_size)]

@@ -559,10 +559,6 @@ AIRLINE_RULES = (
 RULES: dict[str, tuple[Rule, ...]] = {"retail": RETAIL_RULES, "airline": AIRLINE_RULES}
 
 
-def rule_names(domain: str) -> list[str]:
-    return [rule.name for rule in RULES.get(domain, ())]
-
-
 def violations(domain: str, task: dict, actions: list[dict], db: dict) -> list[Violation]:
     ctx = Context(task=task, actions=actions, db=db)
     out: list[Violation] = []
