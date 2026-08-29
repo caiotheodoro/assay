@@ -20,9 +20,9 @@ def test_the_challenger_is_never_given_ground_truth():
     An attacker told the answer is not finding an exploit."""
     import inspect
 
-    from assay.challenger import prompted, scripted
+    from assay.challenger import grpo, prompted, scripted
 
-    for module in (prompted, scripted):
+    for module in (grpo, prompted, scripted):
         source = inspect.getsource(module)
         assert "true_completion" not in source, f"{module.__name__} can see ground truth"
 
