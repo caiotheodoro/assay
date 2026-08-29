@@ -1,6 +1,6 @@
 # Review finding — ReDoS in the submitted-spec adapter
 
-**Status:** open, to fix at merge. Found by review, not by a test.
+**Status:** OPEN — and now a MERGE BLOCKER. Found by review, not by a test.
 **File:** `src/assay/adapters/spec.py` (branch `worker/hf`), `_matches`, `kind == "regex"`.
 
 ## What
@@ -52,3 +52,30 @@ this project audits.
 Preference is (1): it reuses a boundary the project already trusts, and it needs
 no new dependency. Whatever is chosen, a test must exhibit the hang and assert
 it is bounded — a fix asserted rather than demonstrated is how this got here.
+
+
+## Update — the exposed path is now complete
+
+`worker/hf` has since shipped `space/app.py`, so the route from a stranger's
+input to `re.search` exists end to end:
+
+```
+$ grep -n 're\.search\|safe_regex\|timeout' src/assay/adapters/spec.py
+74:            return re.search(target, answer) is not None      # unguarded
+
+$ grep -nE 'timeout|re\.search|safe_regex|MAX|limit' space/app.py
+(no matches)
+```
+
+A submitted spec with `verifier.kind: regex` and `target: "(a+)+$"` hangs the
+Space. The worker did not know — this was found by review after it had started,
+and a dispatched tmux worker has no inbound channel.
+
+**Do not merge `worker/hf` without this fix.** `src/assay/safe_regex.py` is on
+`main`, tested, and needs two things at merge:
+
+1. `spec.py` calls `safe_regex.search(target, answer)` instead of `re.search`.
+2. `PatternTooSlow` becomes a reported outcome, not a crash. A verifier that
+   cannot decide inside its budget is itself worth surfacing on the card —
+   `NOT_APPLICABLE` with the pattern and the budget in the reason. Letting it
+   raise into the Space would trade a hang for a stack trace.
