@@ -1,6 +1,6 @@
 # Review finding — ReDoS in the submitted-spec adapter
 
-**Status:** OPEN — and now a MERGE BLOCKER. Found by review, not by a test.
+**Status:** FIXED at merge (`safe_regex`). Found by review, not by a test.
 **File:** `src/assay/adapters/spec.py` (branch `worker/hf`), `_matches`, `kind == "regex"`.
 
 ## What
@@ -79,3 +79,26 @@ and a dispatched tmux worker has no inbound channel.
    cannot decide inside its budget is itself worth surfacing on the card —
    `NOT_APPLICABLE` with the pattern and the budget in the reason. Letting it
    raise into the Space would trade a hang for a stack trace.
+
+
+## Resolution
+
+`spec.py` now calls `safe_regex.search`, which runs the pattern in a subprocess
+under a wall clock. `PatternInvalid` stays a `SpecError` — the submitter's typo.
+`PatternTooSlow` propagates, and the probe harness turns it into an `ERROR` with
+the pattern and the budget in the reason, so the verdict becomes `INCONCLUSIVE`.
+That is the honest outcome: an environment whose verifier will not return is not
+an environment that can be audited.
+
+One correction to the original write-up. The pattern is the **task's** target,
+not the `verifier` block's, so the exposed path is narrower than first described
+— a hostile spec needs its task target to be the catastrophic pattern *and* an
+answer long enough to trigger backtracking. The vulnerability is real and the
+guard is right; the reachability claim in the first draft was looser than the
+code justified, and is corrected here rather than left to read as originally
+written.
+
+Tests exercise `_matches` directly, which is the unit under threat:
+`tests/test_spec_adapter.py::test_a_catastrophic_submitted_regex_is_bounded_not_endured`,
+plus one asserting `pattern(r"(Yes|No).?\Z")` still works — the guard must not
+have cost the capability the boolq finding depends on.

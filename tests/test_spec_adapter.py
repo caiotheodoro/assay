@@ -262,3 +262,44 @@ def test_no_bundled_example_errors():
     for example in EXAMPLES:
         report = audit(build(example["spec"]))
         assert report.by_status(ProbeStatus.ERROR) == [], example["name"]
+
+
+# -- submitted patterns cannot hang the host --------------------------------
+
+
+def test_a_catastrophic_submitted_regex_is_bounded_not_endured():
+    """A spec arrives from a stranger, and for `kind: regex` the task's own
+    target becomes the pattern. Python's engine backtracks: `(a+)+$` against 31
+    characters takes about 100 seconds in-process, which on a public Space is a
+    denial of service with a dozen-byte payload.
+
+    The guard is what makes the `regex` matcher shippable at all. It cannot be
+    dropped instead -- boolq scores with `pattern(r"(Yes|No).?\\Z")`, and a spec
+    format that cannot express that cannot describe the evals this tool audits.
+    """
+    import time
+
+    from assay.adapters.spec import _matches
+    from assay.safe_regex import PatternTooSlow
+
+    started = time.time()
+    with pytest.raises(PatternTooSlow):
+        _matches("regex", "a" * 30 + "!", "(a+)+$")
+    elapsed = time.time() - started
+    assert elapsed < 30, f"took {elapsed:.0f}s; the budget was not enforced"
+
+
+def test_an_ordinary_regex_target_still_works():
+    """The narrow-leak finding on boolq depends on this exact pattern being
+    expressible, so the guard must not have cost the capability."""
+    from assay.adapters.spec import _matches
+
+    assert _matches("regex", "No.", r"(Yes|No).?\Z") is True
+    assert _matches("regex", "I cannot determine the answer.", r"(Yes|No).?\Z") is False
+
+
+def test_an_uncompilable_target_is_a_spec_error_not_a_hang():
+    from assay.adapters.spec import SpecError, _matches
+
+    with pytest.raises(SpecError, match="not a regex"):
+        _matches("regex", "text", "(unclosed")

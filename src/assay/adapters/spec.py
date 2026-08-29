@@ -28,6 +28,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from .. import safe_regex
 from ..adapter import BaseAdapter, NotSupported
 from ..types import (
     Action,
@@ -70,9 +71,15 @@ def _matches(kind: str, answer: str, target: str) -> bool:
     if kind == "includes":
         return target.casefold() in answer.casefold()
     if kind == "regex":
+        # Never `re.search` here. The pattern arrives from whoever submitted the
+        # spec, Python's engine backtracks, and `(a+)+$` against 31 characters
+        # takes about 100 seconds -- a denial of service on a public Space with
+        # a payload of a dozen bytes. Catching re.error does not help: that
+        # fires when a pattern fails to COMPILE, and one that compiles cleanly
+        # and runs forever is not an error.
         try:
-            return re.search(target, answer) is not None
-        except re.error as exc:
+            return safe_regex.search(target, answer)
+        except safe_regex.PatternInvalid as exc:
             raise SpecError(
                 f"verifier.kind=regex but target {target!r} is not a regex: {exc}"
             ) from exc
