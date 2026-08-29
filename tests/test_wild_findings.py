@@ -27,12 +27,20 @@ pytest.importorskip("inspect_ai")
 pytest.importorskip("inspect_evals", reason="the sweep dependency group is not installed")
 
 from inspect_ai.model import ModelOutput  # noqa: E402
-from inspect_ai.scorer import CORRECT, INCORRECT, Target, includes  # noqa: E402
+from inspect_ai.scorer import (  # noqa: E402
+    CORRECT,
+    INCORRECT,
+    NOANSWER,
+    Target,
+    includes,
+    pattern,
+)
 from inspect_ai.solver import TaskState  # noqa: E402
 
-# `inspect_evals.paws.__init__` re-exports the task function under the name
-# `paws`, which shadows the submodule of the same name on attribute access.
+# An `inspect_evals` package `__init__` re-exports its task function under the
+# package's own name, which shadows the submodule on attribute access.
 paws_module = importlib.import_module("inspect_evals.paws.paws")  # noqa: E402
+boolq_module = importlib.import_module("inspect_evals.boolq.boolq")  # noqa: E402
 
 
 def score(scorer_fn, completion: str, target: str):
@@ -182,3 +190,63 @@ class TestWhatAssayItselfFound:
             "no scripted policy names both labels at once, which is why the 100% "
             "exploit had to come from hand triage"
         )
+
+
+class TestBoolqAnchoredPattern:
+    r"""The same two-label hazard, mitigated better, still leaking.
+
+    `boolq` scores with `pattern(r"(Yes|No).?\Z")` rather than `includes()`.
+    Anchoring at the end of the completion is a real mitigation: it returns
+    NOANSWER for most refusals instead of crediting them, and there is no
+    constant string that satisfies both targets. It is recorded here as the
+    contrast that makes the `paws` finding legible -- and then as a narrower
+    leak of its own, because `.?` admits exactly one trailing character and
+    "know" is "no" plus one.
+    """
+
+    def test_the_eval_really_wires_this_pattern(self):
+        source = pyinspect.getsource(boolq_module)
+        assert 'pattern(r"(Yes|No).?\\Z")' in source
+
+    def test_the_target_vocabulary_is_the_same_two_short_words(self):
+        assert {
+            str(boolq_module.record_to_sample(
+                {"answer": answer, "passage": "p", "question": "q"}
+            ).target)
+            for answer in (True, False)
+        } == {"Yes", "No"}
+
+    def test_anchoring_defuses_the_constant_string_exploit(self):
+        """What `paws` would have needed. No single completion is correct for
+        both targets, so the 100% exploit does not carry over."""
+        for constant in ("yesno", "Yes or No", "Yes. No."):
+            values = {
+                score(pattern(r"(Yes|No).?\Z"), constant, target)
+                for target in ("Yes", "No")
+            }
+            assert CORRECT in values and INCORRECT in values
+
+    @pytest.mark.parametrize(
+        "completion", ["I cannot determine the answer.", "Unknown", "I cannot say"]
+    )
+    def test_most_refusals_are_correctly_left_unscored(self, completion):
+        assert score(pattern(r"(Yes|No).?\Z"), completion, "No") == NOANSWER
+
+    @pytest.mark.parametrize("completion", ["I don't know", "I do not know"])
+    def test_but_a_bare_i_dont_know_is_credited_as_no(self, completion):
+        """`.?` admits one trailing character, and "know" is "no" plus "w".
+        A model that answers with the most common bare non-answer there is gets
+        marked correct on every No-targeted item."""
+        assert score(pattern(r"(Yes|No).?\Z"), completion, "No") == CORRECT
+
+    def test_the_leak_closes_with_any_trailing_punctuation(self):
+        """The scope of the leak, stated exactly rather than overclaimed: two
+        trailing characters do not match, so "I don't know." is unscored."""
+        assert score(pattern(r"(Yes|No).?\Z"), "I don't know.", "No") == NOANSWER
+
+    def test_the_scripted_challenger_would_not_have_proposed_it(self):
+        """Assay reported `boolq` clean, and this is why: the trivial policy
+        vocabulary is a fixed set of strings, and whether a substring leak is
+        found depends on which string it happens to hold. The repertoire's
+        refusal is "I cannot determine the answer.", which ends in "answer."."""
+        assert score(pattern(r"(Yes|No).?\Z"), "I cannot determine the answer.", "No") == NOANSWER
