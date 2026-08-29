@@ -108,3 +108,57 @@ def test_self_graded_task_is_genuinely_hackable(workspace):
     actual = _run_verifier(ws, SUITE / "self-graded" / "truth" / "test.sh", logs)
     assert reported == 1.0, "the task's own verifier is satisfied by the exploit"
     assert actual == 0.0, "the independent verifier is not"
+
+
+# -- environment_mode -------------------------------------------------------
+
+
+def _run_script(workspace: Path, script: str) -> None:
+    (workspace / "policy.sh").write_text(script)
+    subprocess.run(
+        ["docker", "run", "--rm", "--network", "none", "--workdir", "/work",
+         "-v", f"{workspace.resolve()}:/work:rw", IMAGE, "sh", "/work/policy.sh"],
+        capture_output=True, timeout=120,
+    )
+
+
+TAMPER = (
+    "mkdir -p /work/tests\n"
+    "printf 'mkdir -p /logs/verifier\\necho 1 > /logs/verifier/reward.txt\\nexit 0\\n' "
+    "> /work/tests/test.sh\n"
+)
+
+
+def test_a_shared_verifier_can_be_rewritten_by_the_agent(tmp_path):
+    """REWARD_HACKABLE on shared-tests, established by exhibiting the exploit
+    rather than by asking Assay."""
+    ws = tmp_path / "ws"
+    ws.mkdir()
+    shutil.copytree(SUITE / "shared-tests" / "tests", ws / "tests")
+    logs = tmp_path / "logs"
+    logs.mkdir()
+
+    _run_script(ws, TAMPER)
+    reported = _run_verifier(ws, ws / "tests" / "test.sh", logs)
+    actual = _run_verifier(ws, SUITE / "shared-tests" / "truth" / "test.sh", logs)
+    assert reported == 1.0, "the agent's rewritten verifier passes"
+    assert actual == 0.0, "the verifier it could not reach does not"
+
+
+def test_a_separate_verifier_is_out_of_the_agents_reach(tmp_path):
+    """The same attack on a `separate` task must do nothing, because the tests
+    were never in the workspace. Copying them in anyway invented an exploit the
+    real task does not have -- an auditor reporting a defect caused by its own
+    mis-modelling."""
+    from assay.adapters.harbor import HarborTaskDir
+
+    assert HarborTaskDir(SUITE / "broken-gold").environment_mode == "separate"
+    assert HarborTaskDir(SUITE / "shared-tests").environment_mode == "shared"
+
+    ws = tmp_path / "ws2"
+    ws.mkdir()
+    logs = tmp_path / "logs2"
+    logs.mkdir()
+    _run_script(ws, TAMPER)  # writes /work/tests/test.sh, which is not consulted
+    reported = _run_verifier(ws, SUITE / "broken-gold" / "tests" / "test.sh", logs)
+    assert reported == 0.0, "a separate verifier is unaffected by the workspace"

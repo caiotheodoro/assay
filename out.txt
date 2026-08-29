@@ -1,1 +1,1 @@
-xyzzy_wrong_answer
+WRONG_ANSWER_XYZZY

@@ -89,6 +89,20 @@ class HarborTaskDir:
         return str(self.toml.get("verifier", {}).get("network_mode") or "no-network")
 
     @property
+    def environment_mode(self) -> str:
+        """`separate` runs the verifier in its own grading container, so the
+        agent never sees the tests. `shared` runs it in the agent's workspace,
+        where the agent can edit its own grader.
+
+        Honouring this is not a detail. Copying tests into the workspace on a
+        task that declares `separate` invents an exploit -- rewrite test.sh to
+        exit 0 -- that cannot exist on the real task. An auditor that
+        mis-models an environment and then reports a defect caused by its own
+        mis-modelling is the exact failure this tool exists to catch.
+        """
+        return str(self.toml.get("verifier", {}).get("environment_mode") or "separate")
+
+    @property
     def solution(self) -> Path | None:
         p = self.path / "solution" / "solve.sh"
         return p if p.exists() else None
@@ -306,10 +320,10 @@ class HarborAdapter(BaseAdapter):
             shutil.rmtree(child, ignore_errors=True) if child.is_dir() else child.unlink()
         if task.environment.exists():
             shutil.copytree(task.environment, self._work_host, dirs_exist_ok=True)
-        # Tests are copied into the workspace, exactly as Harbor runs them --
-        # which is what makes them editable, and what makes the independent
-        # verifier worth having.
-        if task.tests.exists():
+        # Only `shared` puts the tests where the agent can reach them. Under
+        # `separate` they stay outside the workspace and are read from the
+        # read-only /suite mount at verification time.
+        if task.environment_mode == "shared" and task.tests.exists():
             shutil.copytree(task.tests, self._work_host / "tests", dirs_exist_ok=True)
         self._current = task_id
         return Observation(ok=True, data={"instruction": task.instruction})
@@ -352,7 +366,12 @@ class HarborAdapter(BaseAdapter):
         if self._caching and key in self._cache:
             reward, detail = self._cache[key]
         else:
-            reward, detail = self._run_verifier(task, "/work/tests/test.sh")
+            script = (
+                "/work/tests/test.sh"
+                if task.environment_mode == "shared"
+                else f"/suite/{task.path.name}/tests/test.sh"
+            )
+            reward, detail = self._run_verifier(task, script)
             self._cache[key] = (reward, detail)
         return Score(passed=reward >= 1.0, reward=reward, profile=detail)
 

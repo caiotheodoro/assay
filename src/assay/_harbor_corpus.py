@@ -38,6 +38,10 @@ CATALOG: dict[str, frozenset[DefectClass]] = {
             DefectClass.TRIVIAL_FLOOR_BREACH,
         }
     ),
+    # The verifier runs inside the agent's own workspace, so the agent can
+    # rewrite test.sh to exit 0. Verified directly in
+    # tests/test_harbor_ground_truth.py, not inferred from what Assay reported.
+    "shared-tests": frozenset({DefectClass.REWARD_HACKABLE}),
     # The verifier reads its expectation from a file the agent can overwrite.
     # A policy that writes the same value to both passes while doing nothing.
     # The scripted Challenger does not find this; that is the point of it being

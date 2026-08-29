@@ -1,0 +1,126 @@
+{
+  "arm_logs": {
+    "check_env": {
+      "harbor/broken-gold": [],
+      "harbor/healthy": [],
+      "harbor/self-graded": [],
+      "harbor/shared-tests": [],
+      "harbor/vacuous-tests": []
+    }
+  },
+  "arms": {
+    "assay": {
+      "error_count": 2,
+      "expected_loss": 240.0,
+      "n_missed": 2,
+      "n_spurious": 0,
+      "normalized_loss": 4.0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "severity_weighted_recall": 0.7826
+    },
+    "check_env": {
+      "error_count": 10,
+      "expected_loss": 576.0,
+      "n_missed": 10,
+      "n_spurious": 0,
+      "normalized_loss": 9.6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "severity_weighted_recall": 0.0
+    },
+    "flag_everything": {
+      "error_count": 60,
+      "expected_loss": 60.0,
+      "n_missed": 0,
+      "n_spurious": 60,
+      "normalized_loss": 1.0,
+      "precision": 0.1429,
+      "recall": 1.0,
+      "severity_weighted_recall": 1.0
+    },
+    "flag_nothing": {
+      "error_count": 10,
+      "expected_loss": 576.0,
+      "n_missed": 10,
+      "n_spurious": 0,
+      "normalized_loss": 9.6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "severity_weighted_recall": 0.0
+    }
+  },
+  "corpus_size": 5,
+  "cost_profile": {
+    "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card.",
+    "name": "research-run"
+  },
+  "per_env": {
+    "harbor/broken-gold": {
+      "assay_detected": [
+        "GOLD_FAILS",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "missed": [],
+      "planted": [
+        "GOLD_FAILS",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "spurious": []
+    },
+    "harbor/healthy": {
+      "assay_detected": [],
+      "missed": [],
+      "planted": [],
+      "spurious": []
+    },
+    "harbor/self-graded": {
+      "assay_detected": [],
+      "missed": [
+        "REWARD_HACKABLE"
+      ],
+      "planted": [
+        "REWARD_HACKABLE"
+      ],
+      "spurious": []
+    },
+    "harbor/shared-tests": {
+      "assay_detected": [],
+      "missed": [
+        "REWARD_HACKABLE"
+      ],
+      "planted": [
+        "REWARD_HACKABLE"
+      ],
+      "spurious": []
+    },
+    "harbor/vacuous-tests": {
+      "assay_detected": [
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "missed": [],
+      "planted": [
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "spurious": []
+    }
+  },
+  "runtime_availability": {
+    "fixture": "ok",
+    "harbor": "ok",
+    "inspect_ai": "ok",
+    "openenv": "ok"
+  },
+  "total_planted_defects": 10,
+  "unavailable": {}
+}
