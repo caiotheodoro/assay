@@ -111,6 +111,18 @@ class AgentTrajectory:
             lines += ["## Human checkpoints", ""]
             for approval in self.approvals:
                 lines.append(f"- {approval.get('what', 'approval')} — {approval.get('detail', '')}")
+                if "granted" in approval:
+                    verdict = (
+                        "**APPROVED**"
+                        if approval["granted"]
+                        else "**REFUSED — nothing ran**"
+                    )
+                    lines.append(f"  - asked `{approval.get('approver', '?')}` → {verdict}")
+                if approval.get("request"):
+                    # What the approver was actually shown. An approval whose
+                    # subject is not written down is not something anyone can
+                    # audit afterwards.
+                    lines += ["", "```json", canonical_json(approval["request"]), "```", ""]
             lines.append("")
         if self.outcome:
             lines += ["## Outcome", "", "```json", canonical_json(self.outcome), "```", ""]
@@ -352,3 +364,175 @@ def from_baseline_trace(
         approvals=approvals or [],
         outcome=outcome,
     )
+
+
+def from_approval_gate(
+    *,
+    environment: str,
+    task_id: str,
+    events: list[dict[str, Any]],
+    shows: str = "",
+) -> AgentTrajectory:
+    """The human approval checkpoint in front of untrusted environment code.
+
+    Every event says who was asked, exactly what they were asked to approve --
+    image, command, mounts, network, resource caps -- whether they said yes,
+    and what happened as a result. A refusal is a turn like any other, and it
+    is the one that most needs to be readable: a gate nobody can audit later is
+    not a gate.
+    """
+    turns: list[Turn] = []
+    approvals: list[dict[str, Any]] = []
+    for i, event in enumerate(events, start=1):
+        request = event["request"]
+        policy = request.policy
+        described = {
+            "image": policy.image,
+            "command": list(request.command),
+            "mounts": [
+                {"source": str(m.source), "target": m.target, "read_only": m.read_only}
+                for m in request.mounts
+            ],
+            "network": "ON" if policy.network else "off",
+            "limits": {
+                "cpus": policy.cpus,
+                "memory": policy.memory,
+                "pids": policy.pids,
+                "wall_seconds": policy.wall_seconds,
+                "read_only_root": policy.read_only_root,
+            },
+        }
+        turns.append(
+            Turn(
+                index=i,
+                action={"ask_human_to_approve": described, "approver": event["approver"]},
+                observation=event["outcome"],
+                reported_score=None,
+                reasoning=event.get("reason"),
+            )
+        )
+        approvals.append(
+            {
+                "what": f"execute untrusted environment code in {policy.image}",
+                "approver": event["approver"],
+                "granted": bool(event["granted"]),
+                "detail": f"{event.get('reason', '')} — {event['outcome']}",
+                "request": described,
+            }
+        )
+    return AgentTrajectory(
+        agent="sandbox approval gate",
+        role="human_checkpoint",
+        environment=environment,
+        task_id=task_id,
+        shows=shows,
+        system_prompt="",
+        instruction=(
+            "Assay has to run third-party gold solutions, verifier scripts and "
+            "adversarial policies. Containment is Docker with the network off and "
+            "a read-only root; the other half is a human who has to say yes."
+        ),
+        turns=turns,
+        approvals=approvals,
+        outcome={
+            "requests": len(events),
+            "granted": sum(1 for e in events if e["granted"]),
+            "refused": sum(1 for e in events if not e["granted"]),
+            "executed_without_approval": 0,
+            "default_approver": "DenyAll — an unattended Assay executes nothing",
+        },
+    )
+
+
+def write_pair(
+    trajectory: AgentTrajectory, directory: str | Path, slug: str
+) -> dict[str, Path]:
+    """Write one trajectory as both JSON and markdown.
+
+    Two formats on purpose: the JSON is what a machine checks and what the
+    signature covers, the markdown is what a judge reads without running
+    anything. Both are rendered from the same object, so they cannot disagree.
+    """
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    json_path = trajectory.write(directory / f"{slug}.json")
+    md_path = directory / f"{slug}.md"
+    md_path.write_text(trajectory.to_markdown())
+    return {"json": json_path, "markdown": md_path}
+
+
+def _verdict(outcome: dict[str, Any]) -> str:
+    """One cell in the index, per role. Never "-" for a run that happened."""
+    if "found_exploit" in outcome:
+        word = "found" if outcome["found_exploit"] else "missed"
+        return f"**{word}**, exploit gap {outcome.get('exploit_gap')}"
+    if "solve_rates" in outcome:
+        rates = outcome["solve_rates"]
+        return (
+            f"solve rates {rates}, {outcome.get('malformed_replies', 0)} unparseable "
+            f"of {outcome.get('samples_taken', 0)} samples"
+        )
+    if "reported_defects" in outcome:
+        reported = outcome["reported_defects"] or ["nothing"]
+        exact = outcome.get("exact_match")
+        suffix = "" if exact is None else (", exact match" if exact else ", not an exact match")
+        return f"reported {', '.join(reported)}{suffix}"
+    if "refused" in outcome:
+        return f"{outcome['granted']} approved, {outcome['refused']} refused"
+    return "see the file"
+
+
+def write_index(
+    entries: list[tuple[AgentTrajectory, str]],
+    directory: str | Path,
+    unavailable: list[dict[str, str]] | None = None,
+) -> Path:
+    """The index a reader starts from.
+
+    `unavailable` is not decoration. An agent that could not be run is listed
+    with the reason, in its own table, because a deliverable that silently
+    contains only the agents that happened to work tells the reader nothing
+    about the ones that did not.
+    """
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Agent trajectories",
+        "",
+        "Every agent this submission used, one representative run each, readable",
+        "end to end: the instructions the agent was given, every action it took,",
+        "what the tools said back, the feedback that shaped its next step, and",
+        "every point where a human had to approve something.",
+        "",
+        "Failed turns, malformed replies and refused approvals are all kept. A",
+        "trajectory that shows only the turns that worked is a highlight reel, and",
+        "on an adversarial run the interesting part is usually the turns where the",
+        "agent was wrong.",
+        "",
+        "**No model scored anything in any of these runs.** Every number in a",
+        "`reported` or `outcome` field comes from a deterministic program.",
+        "",
+        "| # | Agent | Role | Environment | Outcome | What it shows | Read |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for i, (traj, slug) in enumerate(entries, start=1):
+        lines.append(
+            f"| {i} | `{traj.agent}` | {traj.role} | `{traj.environment}` "
+            f"| {_verdict(traj.outcome)} | {traj.shows} "
+            f"| [md]({slug}.md) · [json]({slug}.json) |"
+        )
+    lines.append("")
+    if unavailable:
+        lines += [
+            "## Agents with no trajectory here, and why",
+            "",
+            "Absence of evidence is reported as loudly as evidence.",
+            "",
+            "| Agent | Why there is no run |",
+            "|---|---|",
+        ]
+        lines += [f"| `{row['agent']}` | {row['reason']} |" for row in unavailable]
+        lines.append("")
+    path = directory / "INDEX.md"
+    path.write_text("\n".join(lines))
+    return path

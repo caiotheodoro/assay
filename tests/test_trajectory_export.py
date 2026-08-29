@@ -282,3 +282,157 @@ def test_a_baseline_is_scored_on_exact_match_not_recall():
     assert traj.outcome["exact_match"] is False
     assert traj.outcome["missed"] == ["INVERT_PASSES", "KNOWN_WRONG_PASSES"]
     assert traj.outcome["spurious"] == ["NONDETERMINISM"]
+
+
+# -- the human approval checkpoint ------------------------------------------
+
+import pytest  # noqa: E402
+
+from assay.sandbox import (  # noqa: E402
+    ApprovalDenied,
+    DockerSandbox,
+    ExecRequest,
+    SandboxPolicy,
+    SandboxUnavailable,
+)
+from assay.trajectory import from_approval_gate  # noqa: E402
+
+POLICY = SandboxPolicy(image="alpine:3.20", network=False)
+REQUEST = ExecRequest(policy=POLICY, command=["sh", "-c", "cat expected.txt"])
+
+
+def test_the_default_approver_refuses_and_nothing_runs():
+    sandbox = DockerSandbox()  # DenyAll by default
+    with pytest.raises((ApprovalDenied, SandboxUnavailable)) as exc:
+        sandbox.run(REQUEST)
+    if isinstance(exc.value, ApprovalDenied):
+        assert "nothing ran" in str(exc.value)
+    assert sandbox.approvals == [], "a refused request must not be recorded as approved"
+
+
+def test_an_approval_gate_trajectory_records_the_refusal():
+    traj = from_approval_gate(
+        environment="harbor/self-graded",
+        task_id="self-graded",
+        events=[
+            {
+                "approver": "DenyAll",
+                "request": REQUEST,
+                "granted": False,
+                "reason": "the default. An unattended Assay executes nothing.",
+                "outcome": "ApprovalDenied raised; nothing ran",
+            },
+            {
+                "approver": "AutoApprove",
+                "request": REQUEST,
+                "granted": True,
+                "reason": "standing approval recorded for the test suite",
+                "outcome": "container started, command executed",
+            },
+        ],
+        shows="nothing executes untrusted environment code without a human",
+    )
+    assert traj.role == "human_checkpoint"
+    assert len(traj.approvals) == 2
+    assert traj.approvals[0]["granted"] is False
+    markdown = traj.to_markdown()
+    assert "Human checkpoints" in markdown
+    assert "REFUSED" in markdown and "nothing ran" in markdown
+    assert "network" in markdown, "a reader must see what containment was applied"
+    assert traj.outcome["executed_without_approval"] == 0
+    assert traj.outcome["refused"] == 1
+
+
+def test_the_approval_trajectory_is_signed_like_any_other(tmp_path):
+    traj = from_approval_gate(
+        environment="harbor/self-graded",
+        task_id="self-graded",
+        events=[
+            {"approver": "DenyAll", "request": REQUEST, "granted": False,
+             "reason": "r", "outcome": "nothing ran"}
+        ],
+        shows="",
+    )
+    payload = json.loads(traj.write(tmp_path / "gate.json").read_text())
+    assert payload["human_checkpoints"][0]["approver"] == "DenyAll"
+    assert payload["human_checkpoints"][0]["request"]["network"] == "off"
+
+
+# -- writing the artefact ---------------------------------------------------
+
+from assay.trajectory import write_index, write_pair  # noqa: E402
+
+
+def _sample(agent: str, shows: str, outcome: dict | None = None) -> AgentTrajectory:
+    return AgentTrajectory(
+        agent=agent,
+        role="challenger",
+        environment="harbor/self-graded",
+        task_id="self-graded",
+        shows=shows,
+        turns=[Turn(index=1, action={"tool": "run"}, observation="ok", reported_score=0.0)],
+        outcome=outcome if outcome is not None else {"found_exploit": False, "exploit_gap": 0.0},
+    )
+
+
+def test_write_pair_emits_json_and_markdown_that_agree(tmp_path):
+    traj = _sample("scripted", "the floor arm misses")
+    paths = write_pair(traj, tmp_path, "01-scripted")
+    assert paths["json"].name == "01-scripted.json"
+    assert paths["markdown"].name == "01-scripted.md"
+    payload = json.loads(paths["json"].read_text())
+    assert payload["agent"] == "scripted"
+    assert payload["shows"] == traj.shows
+    assert traj.shows in paths["markdown"].read_text()
+
+
+def test_the_index_lists_every_trajectory_and_what_it_shows(tmp_path):
+    entries = [
+        (_sample("scripted", "the floor arm misses"), "01-scripted"),
+        (
+            _sample("prompted", "the model finds it", {"found_exploit": True, "exploit_gap": 1.0}),
+            "02-prompted",
+        ),
+    ]
+    for traj, slug in entries:
+        write_pair(traj, tmp_path, slug)
+    path = write_index(
+        entries,
+        tmp_path,
+        unavailable=[
+            {"agent": "grpo-trained", "reason": "needs a GPU; the adapter is optional"}
+        ],
+    )
+    text = path.read_text()
+    for _traj, slug in entries:
+        assert f"{slug}.md" in text
+        assert f"{slug}.json" in text
+    assert "the floor arm misses" in text
+    assert "the model finds it" in text
+    assert "**missed**" in text and "**found**" in text
+    assert "grpo-trained" in text, "an agent with no trajectory is named, not omitted"
+    assert "needs a GPU" in text
+
+
+def test_the_index_names_agents_that_could_not_be_run_at_all(tmp_path):
+    path = write_index(
+        [],
+        tmp_path,
+        unavailable=[
+            {"agent": "prompted[ollama:qwen3:8b]", "reason": "ollama daemon unreachable"}
+        ],
+    )
+    assert "ollama daemon unreachable" in path.read_text()
+
+
+def test_no_run_that_happened_is_rendered_as_a_dash(tmp_path):
+    """Every role has to produce a readable verdict in the index."""
+    for outcome in (
+        {"found_exploit": False, "exploit_gap": 0.0},
+        {"solve_rates": {"t1": 0.5}, "malformed_replies": 1, "samples_taken": 2},
+        {"reported_defects": [], "exact_match": False},
+        {"granted": 1, "refused": 1},
+    ):
+        traj = _sample("a", "s", outcome)
+        text = write_index([(traj, "x")], tmp_path).read_text()
+        assert "| see the file |" not in text
