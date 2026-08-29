@@ -42,6 +42,19 @@ train = [
 adapters = [
     "inspect-ai>=0.3.260",
 ]
+# tau2-bench is not on PyPI and its own pyproject requires Python 3.13, while
+# this repo supports 3.11+. So the package itself is fetched as source by
+# scripts/tau2_fetch.py into a gitignored cache, and only the handful of runtime
+# dependencies its retail and airline environments actually import are declared
+# here. litellm, matplotlib and the rest of tau2's dependency list are for its
+# agent runner, which this audit never starts -- no probe here calls a model.
+tau2 = [
+    "pydantic>=2.7",
+    "loguru>=0.7",
+    "addict>=2.4",
+    "deepdiff>=8.0",
+    "python-dotenv>=1.0",
+]
 gym = [
     "gymnasium>=1.3.0",
     "stable-baselines3>=2.9.0",

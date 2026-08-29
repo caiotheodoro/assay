@@ -1,0 +1,935 @@
+{
+  "measurement": "assay recall against third-party-confirmed tau-bench defects",
+  "pre_fix": {
+    "repo": "sierra-research/tau2-bench",
+    "rev": "37199f36924c8896f5e048360691f8476cd89ba1"
+  },
+  "post_fix": {
+    "repo": "amazon-agi/tau2-bench-verified",
+    "rev": "a470e45f2e799286cb87d26b8b30d8ab558a3375"
+  },
+  "label_rule": "A task is a positive iff its record differs between the two pinned revisions, excluding the reward_basis field that the fork dropped from every task. Categories come from FIXES.md, attached to a task only when a quoted before/after excerpt is found verbatim in both revisions of it.",
+  "not_measured": [
+    "nl_assertions -- tau2 scores them with an LLM judge and Assay scores nothing with a judge, so every task's NL conjunct is absent, not passed",
+    "difficulty band -- needs a solve-rate estimate, which needs a model",
+    "reward hackability -- needs a completion signal independent of tau2's own scorer, which tau2 does not expose",
+    "contamination and shortcut leakage -- tau2 ships one split and no item parts"
+  ],
+  "combined": {
+    "confusion": {
+      "tp": 21,
+      "fp": 33,
+      "fn": 41,
+      "tn": 69
+    },
+    "rates": {
+      "recall": 0.3387,
+      "precision": 0.3889
+    }
+  },
+  "combined_excluding_advisory_probe": {
+    "confusion": {
+      "tp": 13,
+      "fp": 10,
+      "fn": 49,
+      "tn": 92
+    },
+    "rates": {
+      "recall": 0.2097,
+      "precision": 0.5652
+    },
+    "note": "assert_traceability removed. Its own docstring calls its findings advisory -- a content-word overlap heuristic tuned to surface candidates for a human, not to be believed."
+  },
+  "combined_recall_by_category": {
+    "policy_compliance": {
+      "n_positives": 14,
+      "n_detected": 6,
+      "missed": [
+        "retail/100",
+        "airline/5",
+        "airline/15",
+        "airline/16",
+        "airline/27",
+        "airline/30",
+        "airline/39",
+        "airline/44"
+      ],
+      "recall": 0.4286
+    },
+    "database_accuracy": {
+      "n_positives": 5,
+      "n_detected": 1,
+      "missed": [
+        "retail/49",
+        "retail/98",
+        "retail/99",
+        "airline/21"
+      ],
+      "recall": 0.2
+    },
+    "logical_consistency": {
+      "n_positives": 7,
+      "n_detected": 5,
+      "missed": [
+        "airline/36",
+        "airline/42"
+      ],
+      "recall": 0.7143
+    },
+    "evaluation_ambiguity": {
+      "n_positives": 21,
+      "n_detected": 5,
+      "missed": [
+        "retail/2",
+        "retail/3",
+        "retail/4",
+        "retail/10",
+        "retail/15",
+        "retail/25",
+        "retail/35",
+        "retail/42",
+        "retail/55",
+        "retail/71",
+        "retail/74",
+        "retail/93",
+        "retail/109",
+        "airline/12",
+        "airline/13",
+        "airline/19"
+      ],
+      "recall": 0.2381
+    },
+    "unattributed": {
+      "n_positives": 15,
+      "n_detected": 4,
+      "missed": [
+        "retail/0",
+        "retail/1",
+        "retail/8",
+        "retail/20",
+        "retail/22",
+        "retail/72",
+        "airline/25",
+        "airline/29",
+        "airline/35",
+        "airline/43",
+        "airline/45"
+      ],
+      "recall": 0.2667
+    }
+  },
+  "domains": [
+    {
+      "domain": "retail",
+      "n_tasks": 114,
+      "n_positives": 35,
+      "audit_seconds": 51.3,
+      "verdict": "DEFECTIVE",
+      "coverage": {
+        "PASS": 1,
+        "DEFECT": 4,
+        "NOT_APPLICABLE": 7,
+        "ERROR": 0
+      },
+      "probes": [
+        {
+          "family": "verifier_integrity",
+          "probe": "gold_passes",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 4
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "noop_fails",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 2
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "inverted_fails",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: INVERTIBLE_SPEC",
+          "n_findings": 0
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "known_wrong_fails",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 6
+        },
+        {
+          "family": "trivial_floor",
+          "probe": "trivial_floor",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: TRIVIAL_POLICIES, GRADED_POLICIES",
+          "n_findings": 0
+        },
+        {
+          "family": "separability",
+          "probe": "separability",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: GRADED_POLICIES",
+          "n_findings": 0
+        },
+        {
+          "family": "difficulty_band",
+          "probe": "difficulty_band",
+          "status": "NOT_APPLICABLE",
+          "reason": "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler",
+          "n_findings": 0
+        },
+        {
+          "family": "contamination",
+          "probe": "train_eval_leak",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: SPLITS",
+          "n_findings": 0
+        },
+        {
+          "family": "shortcut_leakage",
+          "probe": "partial_input_baseline",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: SPLITS, ITEM_PARTS",
+          "n_findings": 0
+        },
+        {
+          "family": "spec_verifier_match",
+          "probe": "assert_traceability",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 28
+        },
+        {
+          "family": "determinism",
+          "probe": "seed_determinism",
+          "status": "PASS",
+          "reason": null,
+          "n_findings": 0
+        },
+        {
+          "family": "reward_hackability",
+          "probe": "challenger",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: TRUE_COMPLETION",
+          "n_findings": 0
+        }
+      ],
+      "confusion": {
+        "tp": 12,
+        "fp": 25,
+        "fn": 23,
+        "tn": 54
+      },
+      "rates": {
+        "recall": 0.3429,
+        "precision": 0.3243
+      },
+      "confusion_excluding_advisory_probe": {
+        "tp": 6,
+        "fp": 4,
+        "fn": 29,
+        "tn": 75
+      },
+      "rates_excluding_advisory_probe": {
+        "recall": 0.1714,
+        "precision": 0.6
+      },
+      "recall_by_category": {
+        "policy_compliance": {
+          "n_positives": 3,
+          "n_detected": 2,
+          "recall": 0.6667,
+          "missed": [
+            "100"
+          ]
+        },
+        "database_accuracy": {
+          "n_positives": 3,
+          "n_detected": 0,
+          "recall": 0.0,
+          "missed": [
+            "49",
+            "98",
+            "99"
+          ]
+        },
+        "logical_consistency": {
+          "n_positives": 3,
+          "n_detected": 3,
+          "recall": 1.0,
+          "missed": []
+        },
+        "evaluation_ambiguity": {
+          "n_positives": 17,
+          "n_detected": 4,
+          "recall": 0.2353,
+          "missed": [
+            "2",
+            "3",
+            "4",
+            "10",
+            "15",
+            "25",
+            "35",
+            "42",
+            "55",
+            "71",
+            "74",
+            "93",
+            "109"
+          ]
+        },
+        "unattributed": {
+          "n_positives": 9,
+          "n_detected": 3,
+          "recall": 0.3333,
+          "missed": [
+            "0",
+            "1",
+            "8",
+            "20",
+            "22",
+            "72"
+          ]
+        }
+      },
+      "recall_by_category_excluding_advisory_probe": {
+        "policy_compliance": {
+          "n_positives": 3,
+          "n_detected": 1,
+          "recall": 0.3333,
+          "missed": [
+            "76",
+            "100"
+          ]
+        },
+        "database_accuracy": {
+          "n_positives": 3,
+          "n_detected": 0,
+          "recall": 0.0,
+          "missed": [
+            "49",
+            "98",
+            "99"
+          ]
+        },
+        "logical_consistency": {
+          "n_positives": 3,
+          "n_detected": 3,
+          "recall": 1.0,
+          "missed": []
+        },
+        "evaluation_ambiguity": {
+          "n_positives": 17,
+          "n_detected": 0,
+          "recall": 0.0,
+          "missed": [
+            "2",
+            "3",
+            "4",
+            "10",
+            "15",
+            "25",
+            "28",
+            "29",
+            "35",
+            "42",
+            "54",
+            "55",
+            "62",
+            "71",
+            "74",
+            "93",
+            "109"
+          ]
+        },
+        "unattributed": {
+          "n_positives": 9,
+          "n_detected": 2,
+          "recall": 0.2222,
+          "missed": [
+            "0",
+            "1",
+            "8",
+            "20",
+            "22",
+            "59",
+            "72"
+          ]
+        }
+      },
+      "recall_by_mechanical_category": {
+        "ground_truth_annotation": {
+          "n_positives": 8,
+          "n_detected": 7,
+          "recall": 0.875,
+          "missed": [
+            "49"
+          ]
+        },
+        "instruction_underspecification": {
+          "n_positives": 27,
+          "n_detected": 5,
+          "recall": 0.1852,
+          "missed": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "8",
+            "10",
+            "15",
+            "20",
+            "22",
+            "25",
+            "35",
+            "42",
+            "55",
+            "71",
+            "72",
+            "74",
+            "93",
+            "98",
+            "99",
+            "100",
+            "109"
+          ]
+        }
+      },
+      "by_probe": {
+        "assert_traceability": {
+          "tp": 6,
+          "fp": 22
+        },
+        "gold_passes": {
+          "tp": 2,
+          "fp": 2
+        },
+        "known_wrong_fails": {
+          "tp": 4,
+          "fp": 2
+        },
+        "noop_fails": {
+          "tp": 0,
+          "fp": 2
+        }
+      },
+      "each_probe_alone": {
+        "assert_traceability": {
+          "recall": 0.1714,
+          "precision": 0.2143,
+          "tp": 6,
+          "fp": 22,
+          "fn": 29,
+          "tn": 57
+        },
+        "gold_passes": {
+          "recall": 0.0571,
+          "precision": 0.5,
+          "tp": 2,
+          "fp": 2,
+          "fn": 33,
+          "tn": 77
+        },
+        "known_wrong_fails": {
+          "recall": 0.1143,
+          "precision": 0.6667,
+          "tp": 4,
+          "fp": 2,
+          "fn": 31,
+          "tn": 77
+        },
+        "noop_fails": {
+          "recall": 0.0,
+          "precision": 0.0,
+          "tp": 0,
+          "fp": 2,
+          "fn": 35,
+          "tn": 77
+        }
+      },
+      "policy_rule_fires": {
+        "retail.exchange_same_option": {
+          "n_violations": 3,
+          "tasks": [
+            "18",
+            "91",
+            "107"
+          ]
+        },
+        "retail.one_change_per_order": {
+          "n_violations": 1,
+          "tasks": [
+            "64"
+          ]
+        },
+        "retail.product_item_confusion": {
+          "n_violations": 3,
+          "tasks": [
+            "21"
+          ]
+        },
+        "retail.refund_destination": {
+          "n_violations": 2,
+          "tasks": [
+            "12",
+            "13"
+          ]
+        }
+      },
+      "false_positives": [
+        "16",
+        "24",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "36",
+        "37",
+        "38",
+        "43",
+        "46",
+        "47",
+        "57",
+        "60",
+        "63",
+        "64",
+        "67",
+        "68",
+        "89",
+        "95",
+        "103",
+        "104",
+        "105",
+        "108"
+      ],
+      "false_negatives": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "8",
+        "10",
+        "15",
+        "20",
+        "22",
+        "25",
+        "35",
+        "42",
+        "49",
+        "55",
+        "71",
+        "72",
+        "74",
+        "93",
+        "98",
+        "99",
+        "100",
+        "109"
+      ],
+      "control_post_fix": {
+        "n_flagged_post_fix": 33,
+        "true_positives_that_survive_the_fix": [
+          "18",
+          "28",
+          "29",
+          "54",
+          "59",
+          "62",
+          "76",
+          "91"
+        ],
+        "n_true_positives_cleared_by_the_fix": 4,
+        "post_fix_gold_answers_the_tools_refuse": [
+          "18",
+          "64",
+          "91",
+          "105"
+        ],
+        "note": "A finding on a task that is still flagged after the fix was not resolved by that fix. Reported, not subtracted -- both readings are defensible and hiding the count is not."
+      }
+    },
+    {
+      "domain": "airline",
+      "n_tasks": 50,
+      "n_positives": 27,
+      "audit_seconds": 58.6,
+      "verdict": "DEFECTIVE",
+      "coverage": {
+        "PASS": 2,
+        "DEFECT": 3,
+        "NOT_APPLICABLE": 7,
+        "ERROR": 0
+      },
+      "probes": [
+        {
+          "family": "verifier_integrity",
+          "probe": "gold_passes",
+          "status": "PASS",
+          "reason": null,
+          "n_findings": 0
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "noop_fails",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 7
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "inverted_fails",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: INVERTIBLE_SPEC",
+          "n_findings": 0
+        },
+        {
+          "family": "verifier_integrity",
+          "probe": "known_wrong_fails",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 13
+        },
+        {
+          "family": "trivial_floor",
+          "probe": "trivial_floor",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: TRIVIAL_POLICIES, GRADED_POLICIES",
+          "n_findings": 0
+        },
+        {
+          "family": "separability",
+          "probe": "separability",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: GRADED_POLICIES",
+          "n_findings": 0
+        },
+        {
+          "family": "difficulty_band",
+          "probe": "difficulty_band",
+          "status": "NOT_APPLICABLE",
+          "reason": "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler",
+          "n_findings": 0
+        },
+        {
+          "family": "contamination",
+          "probe": "train_eval_leak",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: SPLITS",
+          "n_findings": 0
+        },
+        {
+          "family": "shortcut_leakage",
+          "probe": "partial_input_baseline",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: SPLITS, ITEM_PARTS",
+          "n_findings": 0
+        },
+        {
+          "family": "spec_verifier_match",
+          "probe": "assert_traceability",
+          "status": "DEFECT",
+          "reason": null,
+          "n_findings": 5
+        },
+        {
+          "family": "determinism",
+          "probe": "seed_determinism",
+          "status": "PASS",
+          "reason": null,
+          "n_findings": 0
+        },
+        {
+          "family": "reward_hackability",
+          "probe": "challenger",
+          "status": "NOT_APPLICABLE",
+          "reason": "environment does not expose: TRUE_COMPLETION",
+          "n_findings": 0
+        }
+      ],
+      "confusion": {
+        "tp": 9,
+        "fp": 8,
+        "fn": 18,
+        "tn": 15
+      },
+      "rates": {
+        "recall": 0.3333,
+        "precision": 0.5294
+      },
+      "confusion_excluding_advisory_probe": {
+        "tp": 7,
+        "fp": 6,
+        "fn": 20,
+        "tn": 17
+      },
+      "rates_excluding_advisory_probe": {
+        "recall": 0.2593,
+        "precision": 0.5385
+      },
+      "recall_by_category": {
+        "policy_compliance": {
+          "n_positives": 11,
+          "n_detected": 4,
+          "recall": 0.3636,
+          "missed": [
+            "5",
+            "15",
+            "16",
+            "27",
+            "30",
+            "39",
+            "44"
+          ]
+        },
+        "database_accuracy": {
+          "n_positives": 2,
+          "n_detected": 1,
+          "recall": 0.5,
+          "missed": [
+            "21"
+          ]
+        },
+        "logical_consistency": {
+          "n_positives": 4,
+          "n_detected": 2,
+          "recall": 0.5,
+          "missed": [
+            "36",
+            "42"
+          ]
+        },
+        "evaluation_ambiguity": {
+          "n_positives": 4,
+          "n_detected": 1,
+          "recall": 0.25,
+          "missed": [
+            "12",
+            "13",
+            "19"
+          ]
+        },
+        "unattributed": {
+          "n_positives": 6,
+          "n_detected": 1,
+          "recall": 0.1667,
+          "missed": [
+            "25",
+            "29",
+            "35",
+            "43",
+            "45"
+          ]
+        }
+      },
+      "recall_by_category_excluding_advisory_probe": {
+        "policy_compliance": {
+          "n_positives": 11,
+          "n_detected": 3,
+          "recall": 0.2727,
+          "missed": [
+            "5",
+            "15",
+            "16",
+            "23",
+            "27",
+            "30",
+            "39",
+            "44"
+          ]
+        },
+        "database_accuracy": {
+          "n_positives": 2,
+          "n_detected": 1,
+          "recall": 0.5,
+          "missed": [
+            "21"
+          ]
+        },
+        "logical_consistency": {
+          "n_positives": 4,
+          "n_detected": 2,
+          "recall": 0.5,
+          "missed": [
+            "36",
+            "42"
+          ]
+        },
+        "evaluation_ambiguity": {
+          "n_positives": 4,
+          "n_detected": 0,
+          "recall": 0.0,
+          "missed": [
+            "12",
+            "13",
+            "18",
+            "19"
+          ]
+        },
+        "unattributed": {
+          "n_positives": 6,
+          "n_detected": 1,
+          "recall": 0.1667,
+          "missed": [
+            "25",
+            "29",
+            "35",
+            "43",
+            "45"
+          ]
+        }
+      },
+      "recall_by_mechanical_category": {
+        "ground_truth_annotation": {
+          "n_positives": 12,
+          "n_detected": 6,
+          "recall": 0.5,
+          "missed": [
+            "5",
+            "21",
+            "27",
+            "29",
+            "35",
+            "44"
+          ]
+        },
+        "instruction_underspecification": {
+          "n_positives": 15,
+          "n_detected": 3,
+          "recall": 0.2,
+          "missed": [
+            "12",
+            "13",
+            "15",
+            "16",
+            "19",
+            "25",
+            "30",
+            "36",
+            "39",
+            "42",
+            "43",
+            "45"
+          ]
+        }
+      },
+      "by_probe": {
+        "assert_traceability": {
+          "tp": 3,
+          "fp": 2
+        },
+        "known_wrong_fails": {
+          "tp": 7,
+          "fp": 6
+        },
+        "noop_fails": {
+          "tp": 1,
+          "fp": 6
+        }
+      },
+      "each_probe_alone": {
+        "assert_traceability": {
+          "recall": 0.1111,
+          "precision": 0.6,
+          "tp": 3,
+          "fp": 2,
+          "fn": 24,
+          "tn": 21
+        },
+        "known_wrong_fails": {
+          "recall": 0.2593,
+          "precision": 0.5385,
+          "tp": 7,
+          "fp": 6,
+          "fn": 20,
+          "tn": 17
+        },
+        "noop_fails": {
+          "recall": 0.037,
+          "precision": 0.1429,
+          "tp": 1,
+          "fp": 6,
+          "fn": 26,
+          "tn": 17
+        }
+      },
+      "policy_rule_fires": {
+        "airline.basic_economy_modify": {
+          "n_violations": 1,
+          "tasks": [
+            "32"
+          ]
+        },
+        "airline.cancel_flown": {
+          "n_violations": 2,
+          "tasks": [
+            "9",
+            "37"
+          ]
+        },
+        "airline.cancel_ineligible": {
+          "n_violations": 1,
+          "tasks": [
+            "7"
+          ]
+        },
+        "airline.certificate_without_change": {
+          "n_violations": 2,
+          "tasks": [
+            "2",
+            "38"
+          ]
+        }
+      },
+      "false_positives": [
+        "0",
+        "10",
+        "11",
+        "14",
+        "26",
+        "28",
+        "31",
+        "46"
+      ],
+      "false_negatives": [
+        "5",
+        "12",
+        "13",
+        "15",
+        "16",
+        "19",
+        "21",
+        "25",
+        "27",
+        "29",
+        "30",
+        "35",
+        "36",
+        "39",
+        "42",
+        "43",
+        "44",
+        "45"
+      ],
+      "control_post_fix": {
+        "n_flagged_post_fix": 13,
+        "true_positives_that_survive_the_fix": [
+          "7",
+          "18",
+          "23",
+          "32",
+          "34"
+        ],
+        "n_true_positives_cleared_by_the_fix": 4,
+        "post_fix_gold_answers_the_tools_refuse": [],
+        "note": "A finding on a task that is still flagged after the fix was not resolved by that fix. Reported, not subtracted -- both readings are defensible and hiding the count is not."
+      }
+    }
+  ]
+}

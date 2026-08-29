@@ -10,6 +10,13 @@ What does not, and why the check is code rather than a note:
     not be redistributed.
   - inspect_evals and OpenEnv content. Those are other people's benchmarks and
     environments; auditing them does not make them ours to republish.
+  - tau2-bench and tau2-bench-verified. MIT and Apache-2.0 respectively, so
+    redistribution would in fact be permitted -- and it still does not happen,
+    because the line here is ownership rather than licence, and carving out the
+    one benchmark that happens to be permissive would make the rule a
+    negotiation. `scripts/tau2_fetch.py` downloads both into a gitignored
+    cache; `results/tau2_recall.json` carries task ids and verdicts and not a
+    line of task text.
 
 Findings ABOUT third-party software are a different matter and do ship: a
 verdict says `paws` scores a constant string at 100%, and carries no benchmark
@@ -32,7 +39,7 @@ OURS = {"fixture", "harbor"}
 
 #: Ecosystems whose environments belong to someone else. Verdicts about them
 #: may ship; their content may not.
-THEIRS = {"inspect_ai", "openenv", "scienceagentbench"}
+THEIRS = {"inspect_ai", "openenv", "scienceagentbench", "tau2"}
 
 
 class RedistributionRefused(RuntimeError):

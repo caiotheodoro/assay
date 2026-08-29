@@ -22,3 +22,7 @@ results/**/checkpoints/
 # construction -- the published copy lives on the Hub, the reproducible copy is
 # the script.
 build/
+
+# Two pinned third-party benchmark snapshots, fetched by
+# scripts/tau2_fetch.py. Verdicts about tau2-bench ship; tau2-bench does not.
+.tau2_cache/
