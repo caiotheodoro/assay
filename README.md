@@ -126,21 +126,28 @@ By this project's own rule — a policy that ignores the input must not win —
 that advantage is not established on this corpus, and saying otherwise would
 be the exact failure the tool exists to catch.
 
-### The profile where Assay loses
+### The profiles where Assay loses
 
-Running only the flattering cost model would be its own kind of dishonesty.
-Under `production-training`, where a missed defect costs 480× a false alarm:
+Running only the flattering cost model would be its own kind of dishonesty, so
+here is every profile shipped, not the one that reads best.
 
-| arm | expected loss |
-|---|---|
-| flag_everything | **580.0** |
-| assay | 1920.0 |
+| profile | assay | flag_everything | |
+|---|---|---|---|
+| `flat` | **2.0** | 290.0 | separated, [269, 305] |
+| `research-run` | **240.0** | 290.0 | overlaps zero, [−309, 295] |
+| `production-training` | 1920.0 | **580.0** | flag_everything wins |
+| `benchmark-publication` | 4000.0 | **2320.0** | flag_everything wins |
 
-**Flagging everything wins.** That is the correct answer to the question that
-profile asks: when a miss is catastrophic and review is nearly free, review
-everything. Assay's two CRITICAL misses cost 960 each; 290 false alarms cost 2
-each. Assay earns its place only where false alarms have real cost — where
-nobody can triage 290 spurious findings.
+**Assay wins outright on one of four, and loses outright on two.** That is the
+correct answer to the question those profiles ask: when a miss is catastrophic
+and review is nearly free, review everything. Assay's two CRITICAL misses cost
+960 each under `production-training`; 290 false alarms cost 2 each.
+
+The pattern is the whole argument for the metric. Assay earns its place exactly
+where false alarms have real cost — where nobody can triage 290 spurious
+findings — and it is the wrong tool where a miss is unaffordable and a human
+will read everything anyway. A single accuracy number would have hidden that,
+and a single cost profile would have let us pick which way it hid.
 
 Both misses are `REWARD_HACKABLE`, on `harbor/self-graded` and
 `harbor/shared-tests` — the two the scripted Challenger cannot find.
