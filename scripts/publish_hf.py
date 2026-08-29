@@ -270,18 +270,24 @@ configs:
 # Assay corpus — audited RL environments with planted-defect ground truth
 
 {len(rows)} environments across {len(ecosystems)} ecosystems, each audited by
-[Assay](https://github.com/caiotheodoro/assay), an agentic auditor for RL
-environments and eval suites. For the {len(ours)} environments this repo wrote,
-the corpus ships the planted-defect ground truth and the full Environment Card.
-For the {len(theirs)} it does not own, it ships the verdict and **which probes
-could not run and why** — and nothing else. See
+**Assay**, an agentic auditor for RL environments and eval suites.
+
+For the {len(ours)} environments whose ecosystem this repo owns, the corpus
+ships the planted-defect ground truth and the full Environment Card. For the
+{len(theirs)} it classifies as someone else's, it ships the verdict and
+**which probes could not run and why** — and nothing else. See
 [What is not here](#what-is-not-here-and-why).
 
-Everything in this dataset is **synthetic**: the environments are constructed
-fixtures with defects planted on purpose, not observations of production
-systems. Nothing here is **production-validated**. It measures a detector
-against defects the same authors planted, which is a lower bar than measuring
-it against defects found in the wild.
+The source repository is not public at the time of writing, so this card links
+to no repository rather than to one that 404s. Every command below is quoted in
+full so it can be run from a checkout.
+
+> **Synthetic data.** Every environment here is a constructed fixture with
+> defects planted on purpose, not an observation of a production system.
+>
+> **This is not production-validated.** It measures a detector against defects
+> the same authors planted, which is a lower bar than measuring it against
+> defects found in the wild. Do not treat a `VALID` verdict as sign-off.
 
 ## Read this first: two results that do not flatter the tool
 
@@ -319,8 +325,8 @@ can triage 250 spurious findings.
 | Ecosystems | {', '.join(f'`{e}`' for e in ecosystems)} |
 | Full content + ground truth | {len(ours)} |
 | Verdict + skip reasons only | {len(theirs)} |
-| Planted defects (labelled) | {n_planted} |
-| Defect classes represented | {len(planted)} |
+| Planted defects labelled, on those {len(ours)} | {n_planted} |
+| Distinct defect classes represented | {len(planted)} |
 | Payload signature | `{payload.signature()}` |
 
 `corpus.jsonl` — one row per environment: the verdict, what Assay detected,
@@ -330,8 +336,8 @@ probe-status coverage, and for our own environments the planted ground truth.
 anything that did not run, **the reason**. This is the file to read if you
 want to know what an audit actually covered.
 
-`cards/` — the full Environment Card for each of the {len(ours)} environments
-this repo authored. Every claim carries the evidence that produced it.
+`cards/` — the full Environment Card for each of those {len(ours)}
+environments. Every claim carries the evidence that produced it.
 
 `results/` — the measurement outputs the numbers on this card are read from.
 Nothing on this card is typed by hand; `scripts/publish_hf.py` renders each
@@ -450,7 +456,7 @@ quarter; without it the run completes on a reduced corpus and says so, per
 ecosystem, with the reason.
 
 ```bash
-git clone <the repo> && cd assay
+# from a checkout of the Assay repository
 uv sync --extra dev --extra adapters --extra sweep --extra openenv
 uv run --extra adapters --extra sweep --extra openenv python scripts/full_run.py
 uv run --extra adapters python scripts/intervals.py --resamples {ev.intervals['research-run']['resamples']} --seed {ev.intervals['research-run']['seed']}
@@ -528,6 +534,20 @@ submitted environment. [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}) is
 a **negative result** — a GRPO-trained adversarial Challenger that did not
 learn — published so the ablation row is checkable.
 """
+
+
+def git_sha() -> str:
+    """Which source the Space is running. It vendors the package rather than
+    installing it, because this checkout has no public remote, so the commit is
+    the only way for a reader to tell what code produced their card."""
+    try:
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                             capture_output=True, text=True, check=True)
+        dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
+                               capture_output=True, text=True, check=True).stdout.strip()
+        return out.stdout.strip() + ("-dirty" if dirty else "")
+    except Exception:  # noqa: BLE001
+        return "unknown"
 
 
 def space_card() -> str:
@@ -617,6 +637,10 @@ The trained adversarial Challenger is a **negative result** and is published as
 one: [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}).
 
 Apache-2.0. Version `{TAG}`.
+
+The `assay` package is **vendored** into this Space at commit
+`{git_sha()}`, not installed from a remote — this checkout has none. That
+commit is the only way to tell which code produced the card you are looking at.
 """
 
 
@@ -971,7 +995,8 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
             p.name for p in (ds / "cards").glob("*.md")
             if p.name.split("__")[0] not in ("fixture", "harbor")
         ]
-        out.append(gate("no third-party cards on disk", not stray, str(stray) or "none"))
+        out.append(gate("no third-party cards on disk", not stray,
+                        ", ".join(stray) or f"{len(list((ds / 'cards').glob('*.md')))} cards, all ours"))
 
     # Card metadata parses as YAML front matter with the expected keys.
     for kind, path in staged.items():
@@ -992,13 +1017,51 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
     for kind, path in staged.items():
         text = (path / "README.md").read_text() if (path / "README.md").exists() else ""
         missing = [d for d in MANDATORY_DISCLAIMERS if d.lower() not in text.lower()]
-        out.append(gate(f"{kind}: disclaimers", not missing, str(missing) or "all present"))
+        out.append(gate(f"{kind}: disclaimers", not missing,
+                        ", ".join(missing) or f"all {len(MANDATORY_DISCLAIMERS)} present"))
 
     # Section 12.1: no card cites `main`.
     for kind, path in staged.items():
         text = (path / "README.md").read_text() if (path / "README.md").exists() else ""
         cites = re.findall(r'revision\s*=\s*["\']main["\']|/blob/main/|/tree/main/', text)
-        out.append(gate(f"{kind}: no card cites main", not cites, str(cites) or f"cites {TAG}"))
+        out.append(gate(f"{kind}: no card cites main", not cites,
+                        ", ".join(cites) or f"0 hits; cites {TAG}"))
+
+    # Every claim needs something a reader can actually follow. A card citing a
+    # repository that 404s is the same failure as a probe reporting a result it
+    # did not measure -- caught one by hand on the first dry run, so it is a
+    # gate now rather than a thing to remember.
+    import urllib.error
+    import urllib.request
+
+    for kind, path in staged.items():
+        text = (path / "README.md").read_text() if (path / "README.md").exists() else ""
+        urls = sorted(set(re.findall(r"https?://[^\s)\]\"'>]+", text)))
+        dead, fetched, skipped = [], 0, 0
+        for url in urls:
+            if url.startswith(("https://huggingface.co/datasets/" + DATASET_REPO,
+                               "https://huggingface.co/spaces/" + SPACE_REPO,
+                               "https://huggingface.co/" + MODEL_REPO)):
+                skipped += 1  # published by this very run; not live until --push
+                continue
+            fetched += 1
+            try:
+                req = urllib.request.Request(url, method="HEAD",
+                                             headers={"User-Agent": "assay-publish"})
+                urllib.request.urlopen(req, timeout=10)
+            except urllib.error.HTTPError as exc:
+                if exc.code not in (403, 405):  # bot-blocked, not missing
+                    dead.append(f"{url} -> {exc.code}")
+            except Exception as exc:  # noqa: BLE001
+                dead.append(f"{url} -> {type(exc).__name__}")
+        # Reported as fetched-vs-skipped rather than as one number, because a
+        # card whose only links are the three this run creates fetches nothing,
+        # and a gate that printed "3 checked" for zero requests would be the
+        # vacuous check this tool flags in other people's environments.
+        out.append(gate(f"{kind}: every cited URL resolves", not dead,
+                        ", ".join(dead)
+                        or f"{fetched} fetched, {skipped} self-link(s) skipped "
+                           f"(not live until --push)"))
 
     # Section 11.1: no published metric lacks an interval. Checked structurally
     # against the interval files rather than by eye over the card.
@@ -1009,8 +1072,9 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         for metric in ("expected_loss", "recall", "precision")
         if "ci95" not in v.get(metric, {})
     ]
-    out.append(gate("every metric has a 95% CI", not missing_ci, str(missing_ci[:3]) or
-                    f"{len(ev.intervals)} profiles x 4 arms x 3 metrics"))
+    n_metrics = sum(len(d["arms"]) * 3 for d in ev.intervals.values())
+    out.append(gate("every metric has a 95% CI", not missing_ci,
+                    ", ".join(missing_ci[:3]) or f"{n_metrics} metrics checked, all have ci95"))
 
     # Section 11.3 and 11.4: the derived artifacts actually shipped.
     if ds:
