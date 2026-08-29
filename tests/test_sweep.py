@@ -303,6 +303,43 @@ class TestDynamicFilter:
             assert exclusion.rule
 
 
+class TestSolverGate:
+    """A solver step this sweep does not replay changes what the completion the
+    scorer reads actually *is*. `air_bench` injects an annotator that replaces
+    the prompt with a judge template and regenerates, so its scorer -- which
+    passes the AST gate cleanly, reading only state.output.completion -- is in
+    fact grading an LLM judge's verdict."""
+
+    def test_an_unrecognised_solver_step_is_refused(self):
+        from inspect_ai.solver import Generate, Solver, solver
+
+        @solver
+        def annotate() -> Solver:
+            async def solve(state: TaskState, generate: Generate) -> TaskState:
+                return await generate(state)
+
+            return solve
+
+        task = Task(dataset=qa_dataset(), scorer=match(), solver=[generate(), annotate()])
+        protocol, exclusion = dynamic_filter(ref(), task)
+        assert protocol is None
+        assert exclusion.rule == "unreplayable_solver"
+        assert "annotate" in exclusion.reason
+
+    def test_prompt_shaping_steps_are_still_admitted(self):
+        """A step that only changes the prompt does not change what the scorer
+        grades, so refusing it would cost coverage for nothing."""
+        from inspect_ai.solver import prompt_template, system_message
+
+        task = Task(
+            dataset=qa_dataset(),
+            scorer=match(),
+            solver=[system_message("be terse"), prompt_template("{prompt}"), generate()],
+        )
+        _, exclusion = dynamic_filter(ref(), task)
+        assert exclusion is None, exclusion
+
+
 class TestProtocolDetection:
     def test_multiple_correct_is_read_off_the_solver_not_assumed(self):
         task = Task(

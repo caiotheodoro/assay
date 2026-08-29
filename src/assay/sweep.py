@@ -535,6 +535,26 @@ def scorer_name(fn: Any) -> str:
     return getattr(fn, "__qualname__", None) or repr(fn)
 
 
+#: Solver steps whose whole effect is on the prompt, or whose post-generation
+#: step this sweep replays. Anything else changes what `state.output.completion`
+#: *is* -- `air_bench` injects an `annotate()` solver that replaces the prompt
+#: with a judge template and regenerates, so the completion its scorer reads is
+#: an LLM annotator's verdict, not the model's answer. The scorer passes the AST
+#: gate cleanly and auditing it would be auditing a judge, which this project
+#: does not do. Found by running the sweep: the gold anchor caught it and
+#: reported INCONCLUSIVE, but a reason at the filter beats a refusal downstream.
+REPLAYABLE_SOLVERS = frozenset(
+    {
+        "inspect_ai/generate",
+        "inspect_ai/multiple_choice",
+        "inspect_ai/system_message",
+        "inspect_ai/user_message",
+        "inspect_ai/prompt_template",
+        "inspect_ai/chain_of_thought",
+    }
+)
+
+
 def solver_registry_names(task: Any) -> list[str]:
     """Registry names of the task's solver steps, for protocol detection."""
     from inspect_ai._util.registry import is_registry_object, registry_info
@@ -685,6 +705,22 @@ def dynamic_filter(ref: TaskRef, task: Any) -> tuple[AnswerProtocol | None, Excl
             "the adapter scores against target[0] and would silently discard the "
             "rest, so a gold answer could be marked wrong for a reason that is not "
             "the eval's",
+        )
+
+    steps = solver_registry_names(task)
+    unreplayable = sorted(set(steps) - REPLAYABLE_SOLVERS)
+    if unreplayable or not steps:
+        return None, Exclusion(
+            ref.name,
+            ref.package,
+            "dynamic",
+            "unreplayable_solver",
+            f"solver chain is {steps or '[unregistered]'}; this sweep replays only "
+            f"{sorted(REPLAYABLE_SOLVERS)}. A step outside that set changes what "
+            "state.output.completion holds by the time the scorer sees it -- an "
+            "annotator solver makes it an LLM judge's verdict rather than the "
+            "model's answer -- so the completion this adapter submits is not the "
+            "thing the scorer grades",
         )
 
     try:
@@ -1119,23 +1155,26 @@ def _sweep_task(
     started = time.monotonic()
     try:
         task = ref.factory(**(task_args or {}))
-    except ImportError as exc:
-        # An optional dependency the eval needs and this environment does not
-        # install. Distinguished from a Hub failure because the fix is different
-        # and a reader chasing coverage needs to know which it was.
-        out.status = "EXCLUDED"
-        out.reason = (
-            f"missing_dependency: {type(exc).__name__}: {exc}; the eval needs a "
-            "package the sweep environment does not install"
-        )[:600]
-        out.seconds = round(time.monotonic() - started, 2)
-        return out
     except BaseException as exc:  # noqa: BLE001 - the cause is the result
+        # A missing optional dependency and an unreachable dataset are different
+        # coverage losses with different fixes, and a reader chasing either needs
+        # to know which it was. `ifeval` raises AssertionError("please install
+        # the optional dependency ..."), not ImportError, so the message is
+        # consulted as well as the type.
+        text = str(exc)
+        missing = isinstance(exc, ImportError) or "install" in text.lower()
         out.status = "EXCLUDED"
         out.reason = (
-            f"dataset_unavailable: {type(exc).__name__}: {exc}"[:600]
-            + " (a gated dataset, a missing key, or a moved Hub repo presents this way)"
-        )
+            (
+                f"missing_dependency: {type(exc).__name__}: {text}; the eval needs "
+                "a package the sweep environment does not install"
+            )
+            if missing
+            else (
+                f"dataset_unavailable: {type(exc).__name__}: {text}"
+                " (a gated dataset, a missing key, or a moved Hub repo presents this way)"
+            )
+        )[:600]
         out.seconds = round(time.monotonic() - started, 2)
         return out
 
