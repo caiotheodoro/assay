@@ -180,6 +180,23 @@ Nothing about the trained Challenger is required to run Assay: it ships as an
 optional artifact, the scripted Challenger is the floor, and the reproduction
 guide never asks for a GPU.
 
+## What every agent actually did
+
+[`results/trajectories/`](results/trajectories/INDEX.md) — one representative run
+per agent this submission used, readable end to end without running anything:
+the instructions the agent was given, every action it took, what the tools said
+back, the feedback that shaped its next step, and every human approval.
+
+Failed turns and malformed replies are kept. Three of the eight are Challenger
+**misses**, one of those is the same `claude-cli` arm failing on the task it
+cracks in another run, and one is the sandbox approval gate **refusing** —
+`DenyAll` is the default, and nothing executes untrusted environment code
+without an approver who leaves a reason.
+
+```bash
+uv run --extra adapters python scripts/export_trajectories.py
+```
+
 ## The probes
 
 | Family | Question | A "no" means |
