@@ -103,7 +103,10 @@ class AgentTrajectory:
                 lines += ["", "```json", canonical_json(turn.action), "```"]
             if turn.observation is not None:
                 text = str(turn.observation)
-                lines += ["", f"Tool responded: `{text[:300]}`"]
+                # Say so when this is not the whole reply. Silent truncation in
+                # a record whose point is fidelity is the wrong kind of tidy.
+                suffix = "" if len(text) <= 300 else " … *(truncated; full text in the JSON)*"
+                lines += ["", f"Tool responded: `{text[:300]}`{suffix}"]
             if turn.reported_score is not None:
                 lines.append(f"\nEnvironment scored it: **{turn.reported_score}**")
             lines.append("")
@@ -372,6 +375,7 @@ def from_approval_gate(
     task_id: str,
     events: list[dict[str, Any]],
     shows: str = "",
+    root: str | Path | None = None,
 ) -> AgentTrajectory:
     """The human approval checkpoint in front of untrusted environment code.
 
@@ -381,6 +385,16 @@ def from_approval_gate(
     is the one that most needs to be readable: a gate nobody can audit later is
     not a gate.
     """
+    root = Path(root) if root is not None else None
+
+    def source_of(mount: Any) -> str:
+        if root is None:
+            return str(mount.source)
+        try:
+            return str(Path(mount.source).resolve().relative_to(root.resolve()))
+        except ValueError:
+            return str(mount.source)
+
     turns: list[Turn] = []
     approvals: list[dict[str, Any]] = []
     for i, event in enumerate(events, start=1):
@@ -390,7 +404,7 @@ def from_approval_gate(
             "image": policy.image,
             "command": list(request.command),
             "mounts": [
-                {"source": str(m.source), "target": m.target, "read_only": m.read_only}
+                {"source": source_of(m), "target": m.target, "read_only": m.read_only}
                 for m in request.mounts
             ],
             "network": "ON" if policy.network else "off",

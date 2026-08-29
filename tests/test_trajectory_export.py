@@ -436,3 +436,36 @@ def test_no_run_that_happened_is_rendered_as_a_dash(tmp_path):
         traj = _sample("a", "s", outcome)
         text = write_index([(traj, "x")], tmp_path).read_text()
         assert "| see the file |" not in text
+
+
+def test_mount_paths_are_rendered_relative_to_the_repo(tmp_path):
+    """An absolute path baked into a committed artefact is one machine's
+    filesystem, not evidence anyone else can read."""
+    from assay.sandbox import Mount
+
+    request = ExecRequest(
+        policy=POLICY,
+        command=["sh", "-c", "true"],
+        mounts=[Mount(source=tmp_path / "suite" / "env", target="/work")],
+    )
+    (tmp_path / "suite" / "env").mkdir(parents=True)
+    traj = from_approval_gate(
+        environment="e", task_id="t",
+        events=[{"approver": "DenyAll", "request": request, "granted": False,
+                 "reason": "r", "outcome": "nothing ran"}],
+        root=tmp_path,
+    )
+    assert traj.approvals[0]["request"]["mounts"][0]["source"] == "suite/env"
+
+
+def test_a_truncated_tool_response_says_that_it_was_truncated():
+    traj = AgentTrajectory(
+        agent="a", role="challenger", environment="e", task_id="t",
+        turns=[Turn(index=1, action={"tool": "run"}, observation="x" * 900)],
+    )
+    assert "truncated; full text in the JSON" in traj.to_markdown()
+    short = AgentTrajectory(
+        agent="a", role="challenger", environment="e", task_id="t",
+        turns=[Turn(index=1, action={"tool": "run"}, observation="ok")],
+    )
+    assert "truncated" not in short.to_markdown()
