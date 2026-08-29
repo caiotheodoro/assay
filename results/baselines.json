@@ -1,0 +1,429 @@
+{
+  "base_rates": {
+    "CONTAMINATION_EXACT": 0.0833,
+    "CONTAMINATION_NEARDUP": 0.0417,
+    "GOLD_FAILS": 0.125,
+    "INVERT_PASSES": 0.2083,
+    "KNOWN_WRONG_PASSES": 0.2083,
+    "NONDETERMINISM": 0.0833,
+    "NOOP_PASSES": 0.125,
+    "REWARD_HACKABLE": 0.375,
+    "SEPARABILITY_LOSS": 0.2917,
+    "SHORTCUT_LEAK": 0.0417,
+    "SPEC_VERIFIER_MISMATCH": 0.0417,
+    "TRIVIAL_FLOOR_BREACH": 0.2917
+  },
+  "base_rates_zero": [
+    "DIFFICULTY_IMPOSSIBLE",
+    "DIFFICULTY_SATURATED"
+  ],
+  "modal_defect": "REWARD_HACKABLE",
+  "monte_carlo_draws": 10000,
+  "n_defect_classes": 14,
+  "n_environments": 24,
+  "n_planted_defects": 46,
+  "policy_mapping": {
+    "always_escalate": "flag_everything -- every defect class of every environment goes to a human; zero misses, unbounded review cost",
+    "always_exception": "always_modal_defect -- predict the single most frequently planted defect class for every environment",
+    "always_match": "flag_nothing -- predict the modal label ('healthy') everywhere",
+    "oracle": "the planted set exactly; loss 0 by construction",
+    "stratified_random": "flag each defect class independently at its base rate across the corpus"
+  },
+  "prior_is_the_corpus_itself": "Assay has no train/eval split of its corpus, so stratified_random is handed the exact distribution it is scored against. That makes the floor harder than one fit on a held-out split would be -- the conservative direction for any claim that Assay beats it.",
+  "profiles": {
+    "benchmark-publication": {
+      "L_oracle": 0.0,
+      "L_trivial": 2320.0,
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 52,
+          "expected_loss": 27620.0,
+          "n_missed": 37,
+          "n_spurious": 15,
+          "normalized_loss": 11.9052,
+          "precision": 0.375,
+          "recall": 0.1957,
+          "severity_weighted_recall": 0.2123
+        },
+        "assay": {
+          "error_count": 2,
+          "expected_loss": 4000.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "normalized_loss": 1.7241,
+          "precision": 1.0,
+          "recall": 0.9565,
+          "severity_weighted_recall": 0.9528
+        },
+        "flag_everything": {
+          "error_count": 290,
+          "expected_loss": 2320.0,
+          "n_missed": 0,
+          "n_spurious": 290,
+          "normalized_loss": 1.0,
+          "precision": 0.1369,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 46,
+          "expected_loss": 45500.0,
+          "n_missed": 46,
+          "n_spurious": 0,
+          "normalized_loss": 19.6121,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "oracle": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "normalized_loss": 0.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "stratified_random": {
+          "closed_form_expected_loss": 34019.5,
+          "error_count": 56,
+          "expected_loss": 24916.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 45188.0,
+            "mean": 34056.1324,
+            "min": 19636.0,
+            "p2.5": 26464.0,
+            "p97.5": 40988.2,
+            "seeded_draw_percentile": 0.0099
+          },
+          "n_missed": 29,
+          "n_spurious": 27,
+          "normalized_loss": 10.7397,
+          "precision": 0.3864,
+          "recall": 0.3696,
+          "severity_weighted_recall": 0.3632
+        },
+        "stratified_random_setwise": {
+          "error_count": 74,
+          "expected_loss": 25836.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 45828.0,
+            "mean": 34067.98,
+            "min": 12864.0,
+            "p2.5": 23903.8,
+            "p97.5": 42976.1,
+            "seeded_draw_percentile": 0.0546
+          },
+          "n_missed": 32,
+          "n_spurious": 42,
+          "normalized_loss": 11.1362,
+          "note": "not an arm in trivial_arms; the robustness check on reading 'sample the label prior' set-wise instead of per-class",
+          "precision": 0.25,
+          "recall": 0.3043,
+          "severity_weighted_recall": 0.3113
+        }
+      },
+      "best_trivial_policy": "flag_everything",
+      "description": "Publishing an environment others will score against. A missed defect propagates into every paper that cites the benchmark and is corrected, if ever, by a hand-built \"Verified\" fork years later. False alarms are more expensive here than elsewhere because each one must be adjudicated publicly."
+    },
+    "flat": {
+      "L_oracle": 0.0,
+      "L_trivial": 46.0,
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 52,
+          "expected_loss": 52.0,
+          "n_missed": 37,
+          "n_spurious": 15,
+          "normalized_loss": 1.1304,
+          "precision": 0.375,
+          "recall": 0.1957,
+          "severity_weighted_recall": 0.2123
+        },
+        "assay": {
+          "error_count": 2,
+          "expected_loss": 2.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "normalized_loss": 0.0435,
+          "precision": 1.0,
+          "recall": 0.9565,
+          "severity_weighted_recall": 0.9528
+        },
+        "flag_everything": {
+          "error_count": 290,
+          "expected_loss": 290.0,
+          "n_missed": 0,
+          "n_spurious": 290,
+          "normalized_loss": 6.3043,
+          "precision": 0.1369,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 46,
+          "expected_loss": 46.0,
+          "n_missed": 46,
+          "n_spurious": 0,
+          "normalized_loss": 1.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "oracle": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "normalized_loss": 0.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "stratified_random": {
+          "closed_form_expected_loss": 70.5,
+          "error_count": 56,
+          "expected_loss": 56.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 95.0,
+            "mean": 70.615,
+            "min": 50.0,
+            "p2.5": 59.0,
+            "p97.5": 82.0,
+            "seeded_draw_percentile": 0.0084
+          },
+          "n_missed": 29,
+          "n_spurious": 27,
+          "normalized_loss": 1.2174,
+          "precision": 0.3864,
+          "recall": 0.3696,
+          "severity_weighted_recall": 0.3632
+        },
+        "stratified_random_setwise": {
+          "error_count": 74,
+          "expected_loss": 74.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 105.0,
+            "mean": 70.5948,
+            "min": 38.0,
+            "p2.5": 54.0,
+            "p97.5": 88.0,
+            "seeded_draw_percentile": 0.6781
+          },
+          "n_missed": 32,
+          "n_spurious": 42,
+          "normalized_loss": 1.6087,
+          "note": "not an arm in trivial_arms; the robustness check on reading 'sample the label prior' set-wise instead of per-class",
+          "precision": 0.25,
+          "recall": 0.3043,
+          "severity_weighted_recall": 0.3113
+        }
+      },
+      "best_trivial_policy": "flag_nothing",
+      "description": "Not a business scenario -- a theorem test. Under flat costs, ranking systems by expected loss MUST equal ranking them by raw error count. If it does not, the harness is wrong and every other number it produces is void. Wired as a test, not reported as a result."
+    },
+    "production-training": {
+      "L_oracle": 0.0,
+      "L_trivial": 580.0,
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 52,
+          "expected_loss": 12150.0,
+          "n_missed": 37,
+          "n_spurious": 15,
+          "normalized_loss": 20.9483,
+          "precision": 0.375,
+          "recall": 0.1957,
+          "severity_weighted_recall": 0.2123
+        },
+        "assay": {
+          "error_count": 2,
+          "expected_loss": 1920.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "normalized_loss": 3.3103,
+          "precision": 1.0,
+          "recall": 0.9565,
+          "severity_weighted_recall": 0.9528
+        },
+        "flag_everything": {
+          "error_count": 290,
+          "expected_loss": 580.0,
+          "n_missed": 0,
+          "n_spurious": 290,
+          "normalized_loss": 1.0,
+          "precision": 0.1369,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 46,
+          "expected_loss": 20760.0,
+          "n_missed": 46,
+          "n_spurious": 0,
+          "normalized_loss": 35.7931,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "oracle": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "normalized_loss": 0.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "stratified_random": {
+          "closed_form_expected_loss": 15392.1667,
+          "error_count": 56,
+          "expected_loss": 11054.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 20592.0,
+            "mean": 15408.9406,
+            "min": 8764.0,
+            "p2.5": 11825.95,
+            "p97.5": 18638.0,
+            "seeded_draw_percentile": 0.0094
+          },
+          "n_missed": 29,
+          "n_spurious": 27,
+          "normalized_loss": 19.0586,
+          "precision": 0.3864,
+          "recall": 0.3696,
+          "severity_weighted_recall": 0.3632
+        },
+        "stratified_random_setwise": {
+          "error_count": 74,
+          "expected_loss": 11404.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 20842.0,
+            "mean": 15415.086,
+            "min": 5746.0,
+            "p2.5": 10667.95,
+            "p97.5": 19552.1,
+            "seeded_draw_percentile": 0.0495
+          },
+          "n_missed": 32,
+          "n_spurious": 42,
+          "normalized_loss": 19.6621,
+          "note": "not an arm in trivial_arms; the robustness check on reading 'sample the label prior' set-wise instead of per-class",
+          "precision": 0.25,
+          "recall": 0.3043,
+          "severity_weighted_recall": 0.3113
+        }
+      },
+      "best_trivial_policy": "flag_everything",
+      "description": "A team committing a production post-training cycle. The asymmetry widens: a policy trained on a broken environment is not just wasted spend, it ships, and the failure surfaces after deployment. False alarms stay cheap because a human already reviews the card before the run."
+    },
+    "research-run": {
+      "L_oracle": 0.0,
+      "L_trivial": 290.0,
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 52,
+          "expected_loss": 1767.0,
+          "n_missed": 37,
+          "n_spurious": 15,
+          "normalized_loss": 6.0931,
+          "precision": 0.375,
+          "recall": 0.1957,
+          "severity_weighted_recall": 0.2123
+        },
+        "assay": {
+          "error_count": 2,
+          "expected_loss": 240.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "normalized_loss": 0.8276,
+          "precision": 1.0,
+          "recall": 0.9565,
+          "severity_weighted_recall": 0.9528
+        },
+        "flag_everything": {
+          "error_count": 290,
+          "expected_loss": 290.0,
+          "n_missed": 0,
+          "n_spurious": 290,
+          "normalized_loss": 1.0,
+          "precision": 0.1369,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 46,
+          "expected_loss": 2832.0,
+          "n_missed": 46,
+          "n_spurious": 0,
+          "normalized_loss": 9.7655,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "oracle": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "normalized_loss": 0.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "stratified_random": {
+          "closed_form_expected_loss": 2141.25,
+          "error_count": 56,
+          "expected_loss": 1587.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 2828.0,
+            "mean": 2143.5443,
+            "min": 1258.0,
+            "p2.5": 1682.0,
+            "p97.5": 2560.0,
+            "seeded_draw_percentile": 0.01
+          },
+          "n_missed": 29,
+          "n_spurious": 27,
+          "normalized_loss": 5.4724,
+          "precision": 0.3864,
+          "recall": 0.3696,
+          "severity_weighted_recall": 0.3632
+        },
+        "stratified_random_setwise": {
+          "error_count": 74,
+          "expected_loss": 1658.0,
+          "monte_carlo": {
+            "draws": 10000,
+            "max": 2875.0,
+            "mean": 2144.2158,
+            "min": 825.0,
+            "p2.5": 1516.975,
+            "p97.5": 2689.025,
+            "seeded_draw_percentile": 0.0647
+          },
+          "n_missed": 32,
+          "n_spurious": 42,
+          "normalized_loss": 5.7172,
+          "note": "not an arm in trivial_arms; the robustness check on reading 'sample the label prior' set-wise instead of per-class",
+          "precision": 0.25,
+          "recall": 0.3043,
+          "severity_weighted_recall": 0.3113
+        }
+      },
+      "best_trivial_policy": "flag_everything",
+      "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card."
+    }
+  },
+  "seed": 11,
+  "source": "results/full_run.json"
+}

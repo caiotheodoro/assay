@@ -32,5 +32,12 @@
     }
   ],
   "note": "A probe backed by a sampled model is not a deterministic check. Reporting a single successful run as a capability claim would overstate what the evidence supports, which is why this is hits/k rather than 'it works'.",
-  "stopped_early": "A fifth run was started and stopped. Four Claude-CLI consumers were running concurrently -- three dispatched workers and this measurement -- and per-run time had gone 101s -> 309s -> 386s -> 729s on identical work. The fifth was starving the workers for a refinement of a number already established at k=4. Recorded rather than quietly reported as k=5."
+  "stopped_early": "A fifth run was started and stopped. Four Claude-CLI consumers were running concurrently -- three dispatched workers and this measurement -- and per-run time had gone 101s -> 309s -> 386s -> 729s on identical work. The fifth was starving the workers for a refinement of a number already established at k=4. Recorded rather than quietly reported as k=5.",
+  "run_config": {
+    "spec": "hf-publication-specs.md 11.2",
+    "captured": false,
+    "why": "This run predates run-config capture. Temperature, top_p, max_tokens, thinking mode, model revision and eval date were not recorded, and none of them can be recovered after the fact: the Ollama tag has been repushed since, and `claude -p` never reported a model snapshot at all. The numbers in this file stand; what cannot be stated is the configuration they were produced under.",
+    "recaptured_equivalent": "results/challenger_ablation_runconfig.json",
+    "do_not_backfill": "Filling these in from today's defaults would assert a fact about a run nobody measured. The fields stay absent."
+  }
 }

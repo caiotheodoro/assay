@@ -1,5 +1,79 @@
 {
   "arm_detections": {
+    "always_modal_defect": {
+      "fixture/artifact_splits": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/drifted_asserts": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/escalate_overrewarded": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/flaky": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/gold_broken": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/healthy": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/leaky_splits": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/paraphrased_splits": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/rationale_ignored": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/solved_at_reset": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/unfalsifiable": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/weak_oracle": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/broken-gold": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/healthy": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/self-graded": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/shared-tests": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/vacuous-tests": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect/always-correct": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect/constant-score": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect/effort-scorer": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect/healthy": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect/leaky-split": [
+        "REWARD_HACKABLE"
+      ],
+      "openenv/echo": [
+        "REWARD_HACKABLE"
+      ],
+      "openenv/textarena-wordle": [
+        "REWARD_HACKABLE"
+      ]
+    },
     "assay": {
       "fixture/artifact_splits": [
         "SHORTCUT_LEAK"
@@ -529,6 +603,95 @@
       "inspect/leaky-split": [],
       "openenv/echo": [],
       "openenv/textarena-wordle": []
+    },
+    "stratified_random": {
+      "fixture/artifact_splits": [],
+      "fixture/drifted_asserts": [
+        "CONTAMINATION_NEARDUP",
+        "NOOP_PASSES"
+      ],
+      "fixture/escalate_overrewarded": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/flaky": [
+        "NOOP_PASSES",
+        "SHORTCUT_LEAK"
+      ],
+      "fixture/gold_broken": [
+        "GOLD_FAILS",
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "fixture/healthy": [
+        "INVERT_PASSES",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "fixture/leaky_splits": [
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "fixture/paraphrased_splits": [
+        "REWARD_HACKABLE"
+      ],
+      "fixture/rationale_ignored": [
+        "INVERT_PASSES",
+        "SHORTCUT_LEAK"
+      ],
+      "fixture/solved_at_reset": [
+        "INVERT_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "fixture/unfalsifiable": [
+        "INVERT_PASSES",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS"
+      ],
+      "fixture/weak_oracle": [
+        "GOLD_FAILS",
+        "NONDETERMINISM",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "harbor/broken-gold": [],
+      "harbor/healthy": [
+        "INVERT_PASSES"
+      ],
+      "harbor/self-graded": [
+        "GOLD_FAILS",
+        "REWARD_HACKABLE",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "harbor/shared-tests": [
+        "REWARD_HACKABLE"
+      ],
+      "harbor/vacuous-tests": [],
+      "inspect/always-correct": [
+        "CONTAMINATION_NEARDUP",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "inspect/constant-score": [
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "inspect/effort-scorer": [
+        "INVERT_PASSES",
+        "SEPARABILITY_LOSS"
+      ],
+      "inspect/healthy": [
+        "NOOP_PASSES",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "inspect/leaky-split": [],
+      "openenv/echo": [
+        "CONTAMINATION_NEARDUP",
+        "INVERT_PASSES"
+      ],
+      "openenv/textarena-wordle": []
     }
   },
   "arm_logs": {
@@ -566,6 +729,16 @@
     }
   },
   "arms": {
+    "always_modal_defect": {
+      "error_count": 52,
+      "expected_loss": 1767.0,
+      "n_missed": 37,
+      "n_spurious": 15,
+      "normalized_loss": 6.0931,
+      "precision": 0.375,
+      "recall": 0.1957,
+      "severity_weighted_recall": 0.2123
+    },
     "assay": {
       "error_count": 2,
       "expected_loss": 240.0,
@@ -605,6 +778,16 @@
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
+    },
+    "stratified_random": {
+      "error_count": 56,
+      "expected_loss": 1587.0,
+      "n_missed": 29,
+      "n_spurious": 27,
+      "normalized_loss": 5.4724,
+      "precision": 0.3864,
+      "recall": 0.3696,
+      "severity_weighted_recall": 0.3632
     }
   },
   "corpus_size": 24,
