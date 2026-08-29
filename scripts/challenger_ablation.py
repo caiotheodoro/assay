@@ -117,13 +117,16 @@ def main() -> int:
             skipped.append({"model": "grpo-trained", "reason": reason})
             print(f"SKIPPING grpo-trained: {reason}")
     else:
-        skipped.append(
-            {
-                "model": "grpo-trained",
-                "reason": "no --grpo-adapter given; the trained Challenger is an "
-                "optional artifact and the comparison runs without it",
-            }
+        reason = (
+            "no --grpo-adapter given; the trained Challenger is an optional "
+            "artifact and the comparison runs without it"
         )
+        skipped.append({"model": "grpo-trained", "reason": reason})
+        # Every other skip prints. This one recorded the reason in the JSON and
+        # said nothing on the console, so the banner below appeared over an
+        # empty list and the reader had to open the file to learn which arm was
+        # missing. A check that cannot run says so where the run is being read.
+        print(f"SKIPPING grpo-trained: {reason}")
 
     if skipped:
         print("an arm missing from a comparison is a result about the run, not the method\n")
