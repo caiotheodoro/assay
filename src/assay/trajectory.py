@@ -38,6 +38,10 @@ class AgentTrajectory:
     role: str
     environment: str
     task_id: str
+    #: One line saying what a reader is supposed to learn from this run. It
+    #: lives on the trajectory rather than in the index generator because a
+    #: trajectory whose point is kept in another file drifts away from it.
+    shows: str = ""
     system_prompt: str = ""
     instruction: str = ""
     turns: list[Turn] = field(default_factory=list)
@@ -50,6 +54,7 @@ class AgentTrajectory:
             "role": self.role,
             "environment": self.environment,
             "task_id": self.task_id,
+            "shows": self.shows,
             "exported": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "system_prompt": self.system_prompt,
             "instruction": self.instruction,
@@ -75,6 +80,8 @@ class AgentTrajectory:
             f"**Task:** `{self.task_id}`",
             "",
         ]
+        if self.shows:
+            lines += [f"**What this shows:** {self.shows}", ""]
         if self.instruction:
             lines += ["## What the agent was told", "", f"> {self.instruction}", ""]
         lines += ["## Turns", ""]
