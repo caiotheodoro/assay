@@ -30,6 +30,8 @@ MODEL=${MODEL:-Qwen/Qwen3-1.7B}
 STEPS=${STEPS:-300}
 GROUP_SIZE=${GROUP_SIZE:-8}
 LR=${LR:-1e-5}
+TEMPERATURE=${TEMPERATURE:-1.0}
+TOP_P=${TOP_P:-0.95}
 ONLY=${ONLY:-"fixture harbor"}
 HOLDOUT=${HOLDOUT:-harbor/self-graded}
 # Source ships as a tarball through the run's own S3 bucket. Cloning from a
@@ -53,6 +55,7 @@ spot_price=${spot_price:-unknown}
 echo "instance:   $ITYPE (spot, current ${spot_price}/hr in ${REGION})"
 echo "model:      $MODEL"
 echo "steps:      $STEPS x group ${GROUP_SIZE}"
+echo "sampling:   temperature ${TEMPERATURE}, top_p ${TOP_P}"
 echo "corpus:     only='${ONLY}'  holdout='${HOLDOUT}'"
 echo "artifacts:  s3://${BUCKET}/${NAME}/"
 if [ -n "$REPO_URL" ]; then
@@ -143,7 +146,7 @@ render() {
   printf '%s' "$text"
 }
 USERDATA=$(render "$ROOT/cloud/bootstrap.sh" \
-  REPO_URL BRANCH BUCKET NAME MODEL STEPS GROUP_SIZE LR ONLY HOLDOUT | base64)
+  REPO_URL BRANCH BUCKET NAME MODEL STEPS GROUP_SIZE LR TEMPERATURE TOP_P ONLY HOLDOUT | base64)
 
 MARKET='{"MarketType":"spot","SpotOptions":{"SpotInstanceType":"one-time","InstanceInterruptionBehavior":"terminate"}}'
 if [ -n "$MAX_PRICE" ]; then
@@ -161,6 +164,7 @@ run_instances() {
     --image-id "$AMI" --instance-type "$ITYPE" \
     --iam-instance-profile "Name=$ROLE_NAME" \
     --security-group-ids "$SG_ID" \
+    --subnet-id "$1" \
     --instance-market-options "$MARKET" \
     --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":${DISK_GB},\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
     --tag-specifications "[{\"ResourceType\":\"instance\",\"Tags\":[
@@ -171,20 +175,44 @@ run_instances() {
     --query 'Instances[0].InstanceId' --output text
 }
 
+# Spot capacity is per availability zone, and "insufficient capacity" in the
+# one AWS happens to pick is not a statement about the account or the region.
+# Observed on the second real launch. Letting run-instances choose the subnet
+# means one unlucky AZ ends the run before it starts, so walk them.
+SUBNETS=$(aws ec2 describe-subnets --filters Name=default-for-az,Values=true \
+  --query 'Subnets[].SubnetId' --output text)
+[ -n "$SUBNETS" ] || SUBNETS=$(aws ec2 describe-subnets --query 'Subnets[].SubnetId' --output text)
+[ -n "$SUBNETS" ] || { echo "no subnets found in $REGION" >&2; exit 2; }
+
 INSTANCE_ID=""
-for attempt in $(seq 1 12); do
-  if INSTANCE_ID=$(run_instances 2>/tmp/assay-run-instances.err); then
-    break
-  fi
-  if grep -q 'iamInstanceProfile' /tmp/assay-run-instances.err; then
-    echo "IAM instance profile not visible yet (attempt $attempt); retrying in 10s"
-    sleep 10
-    continue
-  fi
-  cat /tmp/assay-run-instances.err >&2
-  exit 1
+for attempt in $(seq 1 3); do
+  for SUBNET in $SUBNETS; do
+    AZ=$(aws ec2 describe-subnets --subnet-ids "$SUBNET" \
+      --query 'Subnets[0].AvailabilityZone' --output text)
+    if INSTANCE_ID=$(run_instances "$SUBNET" 2>/tmp/assay-run-instances.err); then
+      echo "capacity found in $AZ ($SUBNET)"
+      break 2
+    fi
+    if grep -q 'iamInstanceProfile' /tmp/assay-run-instances.err; then
+      echo "IAM instance profile not visible yet; retrying in 10s"
+      sleep 10
+      continue
+    fi
+    if grep -q 'InsufficientInstanceCapacity\|Unsupported' /tmp/assay-run-instances.err; then
+      echo "no ${ITYPE} spot capacity in ${AZ}; trying the next zone"
+      continue
+    fi
+    cat /tmp/assay-run-instances.err >&2
+    exit 1
+  done
+  echo "no capacity in any zone (pass $attempt of 3); waiting 60s"
+  sleep 60
 done
-[ -n "$INSTANCE_ID" ] || { echo "run-instances never succeeded" >&2; exit 1; }
+if [ -z "$INSTANCE_ID" ]; then
+  echo "no ${ITYPE} spot capacity in any zone of ${REGION}." >&2
+  echo "Try: AWS_REGION=us-west-2, AWS_INSTANCE=g6.xlarge, or MAX_PRICE to bid higher." >&2
+  exit 3
+fi
 
 echo "launched $INSTANCE_ID"
 echo "waiting for SSM..."

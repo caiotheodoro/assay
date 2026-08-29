@@ -22,6 +22,8 @@ MODEL="@@MODEL@@"
 STEPS="@@STEPS@@"
 GROUP_SIZE="@@GROUP_SIZE@@"
 LR="@@LR@@"
+TEMPERATURE="@@TEMPERATURE@@"
+TOP_P="@@TOP_P@@"
 ONLY="@@ONLY@@"
 HOLDOUT="@@HOLDOUT@@"
 ENV
@@ -102,6 +104,8 @@ uv run --extra adapters --extra train python -m assay.train.run \
   --steps "$STEPS" \
   --group-size "$GROUP_SIZE" \
   --learning-rate "$LR" \
+  --temperature "$TEMPERATURE" \
+  --top-p "$TOP_P" \
   --only $ONLY \
   --holdout "$HOLDOUT" \
   --out /opt/assay/checkpoints/grpo
