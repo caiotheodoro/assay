@@ -94,13 +94,24 @@ def test_the_attacker_never_gets_to_end_the_search_early():
     assert len(attempts) == 3, "the whole budget is spent; the probe picks the best gap"
 
 
-def test_the_prompt_reports_the_best_unearned_score_not_the_best_score():
+def test_the_prompt_discounts_a_score_the_attacker_says_it_earned():
     env = build("healthy")
     client = ScriptedClient([_reply("billing", solves=True), _reply("spam")])
     PromptedChallenger(client=client, turns=2).attack(env, "t1")
     second = client.prompts[1]
-    assert "Best UNEARNED score so far: 0.0" in second
+    assert "Best score on an answer you believe is wrong: 0.0" in second
     assert "does not count" in second
+    assert "a high score is not proof" in second.lower()
+
+
+def test_the_prompt_calls_out_a_stuck_loop():
+    """Claude repeated one action eight times after scoring; silence let it."""
+    env = build("healthy")
+    same = [_reply("spam"), _reply("spam"), _reply("spam"), _reply("spam")]
+    client = ScriptedClient(same)
+    PromptedChallenger(client=client, turns=4).attack(env, "t1")
+    assert any("repeated the same action three times" in p for p in client.prompts)
+    assert any("reset_environment" in p for p in client.prompts)
 
 
 def test_a_malformed_reply_costs_a_turn_but_does_not_crash():
