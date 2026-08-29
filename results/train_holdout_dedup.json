@@ -1,0 +1,189 @@
+{
+  "audits": {
+    "full_prompt": {
+      "exact_overlap_count": 1,
+      "exact_overlaps": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "train": [
+            "harbor/broken-gold/broken-gold",
+            "harbor/healthy/healthy",
+            "harbor/vacuous-tests/vacuous-tests"
+          ]
+        }
+      ],
+      "field": "full_prompt",
+      "max_similarity": 1.0,
+      "mean_similarity": 0.7836,
+      "n_pairs": 39,
+      "near_duplicate_count": 3,
+      "near_duplicates": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/broken-gold/broken-gold",
+          "true_jaccard": 1.0
+        },
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/healthy/healthy",
+          "true_jaccard": 1.0
+        },
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/vacuous-tests/vacuous-tests",
+          "true_jaccard": 1.0
+        }
+      ],
+      "nearest_neighbour_per_holdout_task": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/broken-gold/broken-gold",
+          "true_jaccard": 1.0
+        }
+      ],
+      "note": "control, not the result: the system preamble is byte-identical on every row, so this similarity is inflated by construction",
+      "similarity_histogram": {
+        "[0.0,0.1)": 0,
+        "[0.1,0.2)": 0,
+        "[0.2,0.3)": 0,
+        "[0.3,0.4)": 0,
+        "[0.4,0.5)": 0,
+        "[0.5,0.6)": 0,
+        "[0.6,0.7)": 0,
+        "[0.7,0.8)": 36,
+        "[0.8,0.9)": 0,
+        "[0.9,1.0]": 3
+      }
+    },
+    "user_turn": {
+      "exact_overlap_count": 1,
+      "exact_overlaps": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "train": [
+            "harbor/broken-gold/broken-gold",
+            "harbor/healthy/healthy",
+            "harbor/vacuous-tests/vacuous-tests"
+          ]
+        }
+      ],
+      "field": "user_turn",
+      "max_similarity": 1.0,
+      "mean_similarity": 0.3654,
+      "n_pairs": 39,
+      "near_duplicate_count": 3,
+      "near_duplicates": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/broken-gold/broken-gold",
+          "true_jaccard": 1.0
+        },
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/healthy/healthy",
+          "true_jaccard": 1.0
+        },
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/vacuous-tests/vacuous-tests",
+          "true_jaccard": 1.0
+        }
+      ],
+      "nearest_neighbour_per_holdout_task": [
+        {
+          "holdout": "harbor/self-graded/self-graded",
+          "minhash_jaccard": 1.0,
+          "train": "harbor/broken-gold/broken-gold",
+          "true_jaccard": 1.0
+        }
+      ],
+      "similarity_histogram": {
+        "[0.0,0.1)": 0,
+        "[0.1,0.2)": 0,
+        "[0.2,0.3)": 0,
+        "[0.3,0.4)": 36,
+        "[0.4,0.5)": 0,
+        "[0.5,0.6)": 0,
+        "[0.6,0.7)": 0,
+        "[0.7,0.8)": 0,
+        "[0.8,0.9)": 0,
+        "[0.9,1.0]": 3
+      }
+    }
+  },
+  "excluded_holdout": {},
+  "excluded_train": {},
+  "holdout_environments": [
+    "harbor/self-graded"
+  ],
+  "holdout_prompt_exposure": {
+    "colliding_train_environments": [
+      "harbor/broken-gold",
+      "harbor/healthy",
+      "harbor/vacuous-tests"
+    ],
+    "colliding_train_rows": 60,
+    "fraction_of_training_rows": 0.2,
+    "total_train_rows": 300,
+    "what_this_means": "The holdout held out the ENVIRONMENT -- its verifier, and therefore the reward -- but not the PROMPT. The prompt the trained Challenger is given on harbor/self-graded is byte-identical to one it was optimised against for this fraction of training. Conditioning is not held out; only the thing being scored is."
+  },
+  "limit": "This bounds prompt-level overlap between this training set and this holdout. It says nothing about whether Qwen3-1.7B saw similar text in pretraining, and there is no way to check that from here.",
+  "n_holdout_prompts": 1,
+  "n_train_environments": 15,
+  "n_train_prompts": 39,
+  "parameters": {
+    "implementation": "src/assay/minhash.py",
+    "max_actions": 3,
+    "num_perm": 128,
+    "shingle_size": 5,
+    "threshold": 0.8
+  },
+  "prompt_counts_in_the_run": {
+    "fixture/artifact_splits": 20,
+    "fixture/drifted_asserts": 20,
+    "fixture/escalate_overrewarded": 20,
+    "fixture/flaky": 20,
+    "fixture/gold_broken": 20,
+    "fixture/healthy": 20,
+    "fixture/leaky_splits": 20,
+    "fixture/paraphrased_splits": 20,
+    "fixture/rationale_ignored": 20,
+    "fixture/solved_at_reset": 20,
+    "fixture/unfalsifiable": 20,
+    "fixture/weak_oracle": 20,
+    "harbor/broken-gold": 20,
+    "harbor/healthy": 20,
+    "harbor/vacuous-tests": 20
+  },
+  "runs_this_covers": [
+    "results/assay-challenger-r1",
+    "results/assay-challenger-r2"
+  ],
+  "train_environments": [
+    "fixture/artifact_splits",
+    "fixture/drifted_asserts",
+    "fixture/escalate_overrewarded",
+    "fixture/flaky",
+    "fixture/gold_broken",
+    "fixture/healthy",
+    "fixture/leaky_splits",
+    "fixture/paraphrased_splits",
+    "fixture/rationale_ignored",
+    "fixture/solved_at_reset",
+    "fixture/unfalsifiable",
+    "fixture/weak_oracle",
+    "harbor/broken-gold",
+    "harbor/healthy",
+    "harbor/vacuous-tests"
+  ],
+  "training_set_taken_from": "results/assay-challenger-r1/run.json",
+  "unavailable_ecosystems": {},
+  "what": "near-duplicate audit of the GRPO holdout against the GRPO training set, per hf-publication-specs.md 11.4"
+}

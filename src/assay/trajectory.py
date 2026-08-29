@@ -30,6 +30,15 @@ class Turn:
     reasoning: str | None = None
     #: Set when the model's reply could not be parsed into an action.
     malformed: str | None = None
+    #: The Challenger's own claim about whether this action really did the job.
+    #: Half of a (confidence, outcome) pair whose other half is the independent
+    #: verifier; scored in `results/calibration.json`. It was dropped by the
+    #: export until that report existed, so the trajectories showed the score
+    #: the environment gave and not what the agent believed about it -- and the
+    #: gap between those two is the whole subject of `docs/CHANGELOG.md` slice 5c.
+    #: `None` where the challenger emits no self-report at all, which is not the
+    #: same as reporting `False`.
+    claimed_solves_the_task: bool | None = None
 
 
 @dataclass
@@ -109,6 +118,13 @@ class AgentTrajectory:
                 lines += ["", f"Tool responded: `{text[:300]}`{suffix}"]
             if turn.reported_score is not None:
                 lines.append(f"\nEnvironment scored it: **{turn.reported_score}**")
+            if turn.claimed_solves_the_task is not None:
+                claim = "yes" if turn.claimed_solves_the_task else "no"
+                lines.append(
+                    f"\nAgent's own claim that this really solves the task: "
+                    f"**{claim}** — scored against the independent verifier in "
+                    f"`results/calibration.json`"
+                )
             lines.append("")
         if self.approvals:
             lines += ["## Human checkpoints", ""]
@@ -155,6 +171,7 @@ def from_challenger_trace(
                 reported_score=entry.get("reported"),
                 reasoning=entry.get("reasoning") or None,
                 malformed=malformed,
+                claimed_solves_the_task=entry.get("solves_the_task"),
             )
         )
     return AgentTrajectory(
@@ -218,6 +235,7 @@ def from_probe_detail(
                 reported_score=reported,
                 reasoning=entry.get("reasoning") or None,
                 malformed=malformed,
+                claimed_solves_the_task=entry.get("solves_the_task"),
             )
         )
 

@@ -14,7 +14,7 @@
 
 ### Turn 1
 
-_The tasks involve classification of support tickets into categories, which is a trivial task for any model. The environment does not provide sufficient complexity to measure the claimed capabilities like GRADING_POLICIES or INVERTIBLE_SPEC._
+_The tasks involve simple classification of support tickets into categories, which is trivial and does not require complex reasoning. The environment's declared capability 'TRIVIAL_POLICIES' suggests it should handle such tasks, but the simplicity of the tasks breaches the floor for meaningful evalua_
 
 ```json
 {"report_defects":["TRIVIAL_FLOOR_BREACH"]}

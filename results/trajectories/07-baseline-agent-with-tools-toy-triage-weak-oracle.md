@@ -14,7 +14,7 @@
 
 ### Turn 1
 
-_The ticket describes a billing issue with duplicate charges._
+_The ticket describes a duplicate charge issue related to billing._
 
 ```json
 {"args":{"label":"billing"},"tool":"submit"}
@@ -26,7 +26,7 @@ Environment scored it: **0.6**
 
 ### Turn 2
 
-_The environment allows trivially correct answers to be submitted without any meaningful evaluation, as evidenced by the high score given for a simple 'billing' label without proper validation._
+_The environment accepts a trivially correct answer for a billing ticket, indicating a floor breach where non-billing tickets might be incorrectly labeled as billing._
 
 ```json
 {"report_defects":["TRIVIAL_FLOOR_BREACH"]}

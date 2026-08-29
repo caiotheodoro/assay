@@ -17,7 +17,7 @@
 _task t1, sample 0 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions an issue with the website not loading properly, which is a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -41,7 +41,7 @@ Environment scored it: **0.0**
 _task t1, sample 2 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, which are technical in nature."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -53,7 +53,7 @@ Environment scored it: **0.0**
 _task t1, sample 3 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with accessing the service, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -65,7 +65,7 @@ Environment scored it: **0.0**
 _task t2, sample 0 -- solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with the website not loading properly, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -77,7 +77,7 @@ Environment scored it: **1.0**
 _task t2, sample 1 -- solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions an issue with website functionality and login problems, indicating a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, which are technical in nature."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -89,7 +89,7 @@ Environment scored it: **1.0**
 _task t2, sample 2 -- solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, which are technical in nature."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, indicating a technical issue."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -101,7 +101,7 @@ Environment scored it: **1.0**
 _task t2, sample 3 -- solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, which are technical in nature."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -113,7 +113,7 @@ Environment scored it: **1.0**
 _task t3, sample 0 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, indicating a technical issue."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with the website not loading properly, which is a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -125,7 +125,7 @@ Environment scored it: **0.0**
 _task t3, sample 1 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket describes an issue with the website not loading properly, which is a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with accessing the user's account, which is a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -137,7 +137,7 @@ Environment scored it: **0.0**
 _task t3, sample 2 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, indicating a technical issue."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket describes an issue with website functionality, indicating a technical problem."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`
@@ -149,7 +149,7 @@ Environment scored it: **0.0**
 _task t3, sample 3 -- not solved_
 
 ```json
-{"args":{"label":"technical","rationale":"The ticket describes an issue with the website not loading properly, which is a technical problem."},"tool":"submit"}
+{"args":{"label":"technical","rationale":"The ticket mentions issues with website functionality and login problems, which are technical in nature."},"tool":"submit"}
 ```
 
 Tool responded: `[{"accepted": "submit"}]`

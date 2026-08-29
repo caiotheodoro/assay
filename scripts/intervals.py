@@ -135,9 +135,21 @@ def main() -> int:
     )
     everything = frozenset(DefectClass)
     recorded = payload.get("arm_detections", {})
-    for name, fallback in (("check_env", frozenset()), ("flag_nothing", frozenset()),
-                           ("flag_everything", everything)):
+    # Every arm the run recorded, not a list written here. A hardcoded list
+    # silently drops any baseline added later -- which is how the
+    # stratified-random floor stayed out of the paired comparison for as long
+    # as it did. The fallbacks are only for a results file predating this.
+    fallbacks = {
+        "check_env": frozenset(),
+        "flag_nothing": frozenset(),
+        "flag_everything": everything,
+    }
+    for name in sorted(set(recorded) | set(fallbacks)):
+        if name in arms or name.startswith("assay"):
+            continue
         per_env = recorded.get(name)
+        if per_env is None and name not in fallbacks:
+            continue
         arms[name] = ArmResult(
             name,
             [
@@ -146,7 +158,7 @@ def main() -> int:
                     t,
                     frozenset(DefectClass(d) for d in per_env[env])
                     if per_env and env in per_env
-                    else fallback,
+                    else fallbacks.get(name, frozenset()),
                 )
                 for env, t in truth.items()
             ],

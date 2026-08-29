@@ -118,13 +118,30 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 |---|---|---|---|---|
 | assay | **240.0** | [0.0, 600.0] | 0.957 | 1.000 |
 | flag_everything | 290.0 | [271, 307] | 1.000 | 0.137 |
-| **check_env** (incumbent) | **2832.0** | [1752, 4032] | **0.000** | 0.000 |
+| stratified_random | 1587.0 | [852, 2446] | 0.370 | 0.386 |
+| always_modal_defect | 1767.0 | [1066, 2550] | 0.196 | 0.375 |
+| **check_env** (incumbent) | **2816.0** | [1728, 4024] | **0.043** | 1.000 |
 | flag_nothing | 2832.0 | [1752, 4032] | 0.000 | 0.000 |
+
+An earlier version of this table gave `check_env` flag_nothing's row —
+**2832.0, [1752, 4032], recall 0.000** — which contradicted both
+`results/intervals.json` and the sentence directly beneath it. Corrected above
+from the measured file; the paired differences below were always right.
 
 The incumbent detects **2 of 46 defects — 4.3% recall**, both determinism, at
 perfect precision. It is silent on the other eight probe families: verifier
 integrity, trivial floor, separability, contamination, shortcut leakage,
 spec/verifier mismatch, difficulty band and reward hackability.
+
+`stratified_random` and `always_modal_defect` are the two trivial policies
+`criteria.md` requires that this repo did not implement until
+[`docs/changelog/62-rigour.md`](docs/changelog/62-rigour.md). Neither becomes
+the floor: on an imbalanced 14-class multilabel problem, flagging at base rates
+buys recall 0.370 at the cost of 27 false alarms and 29 misses, which is worse
+than flagging everything under every cost-asymmetric profile and worse than
+flagging nothing under `flat`. Adding a harder-sounding baseline did not make
+the floor harder, and that is published as the result rather than as a reason
+not to have run it. Full table, per profile, in `results/baselines.json`.
 
 Against `flag_nothing` it saves **16.0 expected loss, 95% CI [0.0, 40.0]** — an
 interval that includes zero. **The incumbent is not statistically
@@ -144,6 +161,8 @@ are paired differences drawn on a shared resample:
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
 | assay vs `check_env` | 2576.0 | [1472, 3840] | **separated** |
+| assay vs `stratified_random` | 1347.0 | [455, 2316] | **separated** |
+| assay vs `always_modal_defect` | 1527.0 | [638, 2435] | **separated** |
 | assay vs `flag_everything` | 50.0 | [−309, 295] | **overlaps zero** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | **overlaps zero** |
 

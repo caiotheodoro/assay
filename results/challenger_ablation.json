@@ -294,5 +294,12 @@
       }
     }
   ],
-  "skipped": []
+  "skipped": [],
+  "run_config": {
+    "spec": "hf-publication-specs.md 11.2",
+    "captured": false,
+    "why": "This run predates run-config capture. Temperature, top_p, max_tokens, thinking mode, model revision and eval date were not recorded, and none of them can be recovered after the fact: the Ollama tag has been repushed since, and `claude -p` never reported a model snapshot at all. The numbers in this file stand; what cannot be stated is the configuration they were produced under.",
+    "recaptured_equivalent": "results/challenger_ablation_runconfig.json",
+    "do_not_backfill": "Filling these in from today's defaults would assert a fact about a run nobody measured. The fields stay absent."
+  }
 }

@@ -1,0 +1,975 @@
+{
+  "spec": "environments.md:131-142",
+  "runs": {
+    "assay-challenger-r1": {
+      "env": "assay-corpus (15 environments)",
+      "run": "assay-challenger-r1",
+      "harness": {
+        "model": "Qwen/Qwen3-1.7B",
+        "gpu": "NVIDIA A10G",
+        "torch": "2.13.0+cu130",
+        "assay_revision_at_report_time": {
+          "commit": "14fc2b8dd4063f37c8a6af4b2bd62a145a9f366a",
+          "dirty": true
+        },
+        "revision_at_run_time": "not recorded by the run; run.json predates run-config capture and carries no git SHA, so the exact source that produced these rewards is identified only by the artifact set, not by a commit"
+      },
+      "n_tasks": 39,
+      "k_rollouts": 8,
+      "n_rollouts": 2400,
+      "verifier_gold": "verified per environment by the probe battery, not by this run; see results/full_run.json (GOLD_FAILS is planted in fixture/gold_broken and harbor/broken-gold and detected in both)",
+      "verifier_noop": "same source; NOOP_PASSES is planted in fixture/solved_at_reset, harbor/vacuous-tests and inspect/always-correct and detected in all three",
+      "reward_hist": {
+        "[0.0,0.1)": 1486,
+        "[0.1,0.2)": 0,
+        "[0.2,0.3)": 0,
+        "[0.3,0.4)": 0,
+        "[0.4,0.5)": 0,
+        "[0.5,0.6)": 0,
+        "[0.6,0.7)": 112,
+        "[0.7,0.8)": 0,
+        "[0.8,0.9)": 0,
+        "[0.9,1.0)": 0,
+        "[1.0,1.0]": 272
+      },
+      "pct_in_band_10_80": 0.0467,
+      "pct_groups_zero_adv": 0.9967,
+      "sampler_trainer_kl": {
+        "value": null,
+        "unavailable": "the rollout log records no sampler_logprobs and no trainer_logprobs, so the quantity cannot be reconstructed from it",
+        "required_to_fix": {
+          "sampler_logprobs": "per-token logprob of each sampled completion token under the policy that GENERATED it, captured at generation time. TRL exposes these from the generation call; vLLM returns them in `logprobs`.",
+          "trainer_logprobs": "per-token logprob of the SAME tokens under the policy the optimiser steps, from the training forward pass, in the same batch shape the step used",
+          "completion_token_ids": "the token ids the two arrays are aligned to. Without them a length mismatch is silent and the KL is computed over misaligned positions",
+          "step": "the optimiser step, so KL can be plotted on the same axis as reward",
+          "group_index": "which rollout group the row belongs to, so per-group KL can be read next to that group's advantage spread"
+        }
+      },
+      "train_vs_eval_protocol_diff": "Training sampled a one-shot policy of at most 3 actions from a chat prompt; the ablation the run is judged by uses the same one-shot format (assay.challenger.grpo) at best-of-n, so the format matches. What does NOT match is the holdout: harbor/self-graded was held out as an environment, but its PROMPT is byte-identical to three trained Harbor environments and 60 of 300 training rows carried it. See results/train_holdout_dedup.json.",
+      "hack_probes": {
+        "rollouts_with_gap_ge_0_5": 384,
+        "rollouts_scored": 2400,
+        "rollouts_unparseable": 0,
+        "rate": 0.16,
+        "verdict": "pass",
+        "note": "this counts rollouts that scored an exploit gap during TRAINING, on environments where a gap is planted. It is not evidence the trained policy learned anything -- with 99.7% of groups at zero advantage there was no gradient to learn from."
+      },
+      "per_environment": {
+        "fixture/artifact_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/drifted_asserts": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.125,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 110,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/escalate_overrewarded": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/flaky": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/gold_broken": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/healthy": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/leaky_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/paraphrased_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/rationale_ignored": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/solved_at_reset": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": 0.7,
+          "max_reward": 1.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 48,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 112
+          }
+        },
+        "fixture/unfalsifiable": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/weak_oracle": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": 0.3,
+          "max_reward": 0.6,
+          "pct_in_band_10_80": 0.7,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 0,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 112,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/broken-gold": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "broken-gold"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": 0.0,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 160,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/healthy": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "healthy"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": 0.0,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 160,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/vacuous-tests": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "vacuous-tests"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": 1.0,
+          "max_reward": 1.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 0,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 160
+          }
+        }
+      },
+      "reward_summary_from_the_run": {
+        "mean_reward": 0.053,
+        "mean_reward_first_half": 0.0553,
+        "mean_reward_last_half": 0.0507,
+        "parse_rate": 1.0,
+        "degenerate_groups": 0.9967,
+        "n_groups": 300
+      }
+    },
+    "assay-challenger-r2": {
+      "env": "assay-corpus (15 environments)",
+      "run": "assay-challenger-r2",
+      "harness": {
+        "model": "Qwen/Qwen3-1.7B",
+        "gpu": "NVIDIA L4",
+        "torch": "2.13.0+cu130",
+        "assay_revision_at_report_time": {
+          "commit": "14fc2b8dd4063f37c8a6af4b2bd62a145a9f366a",
+          "dirty": true
+        },
+        "revision_at_run_time": "not recorded by the run; run.json predates run-config capture and carries no git SHA, so the exact source that produced these rewards is identified only by the artifact set, not by a commit"
+      },
+      "n_tasks": 39,
+      "k_rollouts": 8,
+      "n_rollouts": 2400,
+      "verifier_gold": "verified per environment by the probe battery, not by this run; see results/full_run.json (GOLD_FAILS is planted in fixture/gold_broken and harbor/broken-gold and detected in both)",
+      "verifier_noop": "same source; NOOP_PASSES is planted in fixture/solved_at_reset, harbor/vacuous-tests and inspect/always-correct and detected in all three",
+      "reward_hist": {
+        "[0.0,0.1)": 1479,
+        "[0.1,0.2)": 0,
+        "[0.2,0.3)": 0,
+        "[0.3,0.4)": 0,
+        "[0.4,0.5)": 0,
+        "[0.5,0.6)": 0,
+        "[0.6,0.7)": 111,
+        "[0.7,0.8)": 0,
+        "[0.8,0.9)": 0,
+        "[0.9,1.0)": 0,
+        "[1.0,1.0]": 271
+      },
+      "pct_in_band_10_80": 0.0462,
+      "pct_groups_zero_adv": 0.9567,
+      "sampler_trainer_kl": {
+        "value": null,
+        "unavailable": "the rollout log records no sampler_logprobs and no trainer_logprobs, so the quantity cannot be reconstructed from it",
+        "required_to_fix": {
+          "sampler_logprobs": "per-token logprob of each sampled completion token under the policy that GENERATED it, captured at generation time. TRL exposes these from the generation call; vLLM returns them in `logprobs`.",
+          "trainer_logprobs": "per-token logprob of the SAME tokens under the policy the optimiser steps, from the training forward pass, in the same batch shape the step used",
+          "completion_token_ids": "the token ids the two arrays are aligned to. Without them a length mismatch is silent and the KL is computed over misaligned positions",
+          "step": "the optimiser step, so KL can be plotted on the same axis as reward",
+          "group_index": "which rollout group the row belongs to, so per-group KL can be read next to that group's advantage spread"
+        }
+      },
+      "train_vs_eval_protocol_diff": "Training sampled a one-shot policy of at most 3 actions from a chat prompt; the ablation the run is judged by uses the same one-shot format (assay.challenger.grpo) at best-of-n, so the format matches. What does NOT match is the holdout: harbor/self-graded was held out as an environment, but its PROMPT is byte-identical to three trained Harbor environments and 60 of 300 training rows carried it. See results/train_holdout_dedup.json.",
+      "hack_probes": {
+        "rollouts_with_gap_ge_0_5": 382,
+        "rollouts_scored": 2389,
+        "rollouts_unparseable": 11,
+        "rate": 0.1599,
+        "verdict": "pass",
+        "note": "this counts rollouts that scored an exploit gap during TRAINING, on environments where a gap is planted. It is not evidence the trained policy learned anything -- with 95.7% of groups at zero advantage there was no gradient to learn from."
+      },
+      "per_environment": {
+        "fixture/artifact_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/drifted_asserts": {
+          "groups": 20,
+          "degenerate": 18,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.1319,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.9,
+          "reward_hist": {
+            "[0.0,0.1)": 110,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/escalate_overrewarded": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.1269,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/flaky": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.1175,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 113,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/gold_broken": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/healthy": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.1294,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 111,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/leaky_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/paraphrased_splits": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/rationale_ignored": {
+          "groups": 20,
+          "degenerate": 18,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.1319,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.9,
+          "reward_hist": {
+            "[0.0,0.1)": 110,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/solved_at_reset": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": 0.7,
+          "max_reward": 1.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 48,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 112
+          }
+        },
+        "fixture/unfalsifiable": {
+          "groups": 20,
+          "degenerate": 20,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": -0.12,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 1.0,
+          "reward_hist": {
+            "[0.0,0.1)": 112,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "fixture/weak_oracle": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "t1",
+            "t2",
+            "t3"
+          ],
+          "n_tasks": 3,
+          "n_rollouts": 160,
+          "mean_reward": 0.2869,
+          "max_reward": 0.6,
+          "pct_in_band_10_80": 0.6937,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 0,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 111,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/broken-gold": {
+          "groups": 20,
+          "degenerate": 18,
+          "tasks": [
+            "broken-gold"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": -0.0281,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.9,
+          "reward_hist": {
+            "[0.0,0.1)": 157,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/healthy": {
+          "groups": 20,
+          "degenerate": 18,
+          "tasks": [
+            "healthy"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": -0.0187,
+          "max_reward": 0.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.9,
+          "reward_hist": {
+            "[0.0,0.1)": 158,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 0
+          }
+        },
+        "harbor/vacuous-tests": {
+          "groups": 20,
+          "degenerate": 19,
+          "tasks": [
+            "vacuous-tests"
+          ],
+          "n_tasks": 1,
+          "n_rollouts": 160,
+          "mean_reward": 0.9844,
+          "max_reward": 1.0,
+          "pct_in_band_10_80": 0.0,
+          "pct_groups_zero_adv": 0.95,
+          "reward_hist": {
+            "[0.0,0.1)": 0,
+            "[0.1,0.2)": 0,
+            "[0.2,0.3)": 0,
+            "[0.3,0.4)": 0,
+            "[0.4,0.5)": 0,
+            "[0.5,0.6)": 0,
+            "[0.6,0.7)": 0,
+            "[0.7,0.8)": 0,
+            "[0.8,0.9)": 0,
+            "[0.9,1.0)": 0,
+            "[1.0,1.0]": 159
+          }
+        }
+      },
+      "reward_summary_from_the_run": {
+        "mean_reward": 0.0458,
+        "mean_reward_first_half": 0.0535,
+        "mean_reward_last_half": 0.0381,
+        "parse_rate": 0.9954,
+        "degenerate_groups": 0.9567,
+        "n_groups": 300
+      }
+    }
+  },
+  "uncomputable_fields": {
+    "sampler_trainer_kl": {
+      "why": "no logprobs were logged by either run. rewards.jsonl carries reward, parse flag, reported score, true completion, gap, policy digest and completion text -- and no per-token quantities. TRL ran with report_to='none' so there are no trainer logs, and neither spot instance's per-step checkpoints survive, so it cannot be recomputed either.",
+      "why_not_just_say_zero": "Both runs used TRL's colocated path, so sampler and trainer are nominally the same weights. They are not the same NUMERICS: the base model was loaded in 4-bit NF4, generation used a KV cache and the trainer logprobs come from a separate batched forward pass. Quantised matmuls and cached-vs-uncached attention do not agree bit-for-bit, and batch size changes the result -- which is the exact failure this field exists to detect. 'Should be zero' is not 'measured zero'.",
+      "required_for_a_future_run": {
+        "sampler_logprobs": "per-token logprob of each sampled completion token under the policy that GENERATED it, captured at generation time. TRL exposes these from the generation call; vLLM returns them in `logprobs`.",
+        "trainer_logprobs": "per-token logprob of the SAME tokens under the policy the optimiser steps, from the training forward pass, in the same batch shape the step used",
+        "completion_token_ids": "the token ids the two arrays are aligned to. Without them a length mismatch is silent and the KL is computed over misaligned positions",
+        "step": "the optimiser step, so KL can be plotted on the same axis as reward",
+        "group_index": "which rollout group the row belongs to, so per-group KL can be read next to that group's advantage spread"
+      },
+      "instrument": "assay.train.onpolicy.sampler_trainer_kl"
+    }
+  }
+}
