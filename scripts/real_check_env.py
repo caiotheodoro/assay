@@ -109,6 +109,27 @@ CASES = {
 }
 
 
+def _judge(defect: str | None, gym_verdict: str, messages: list[str]) -> tuple[bool, str]:
+    """Did a checker actually speak to this defect? Read, do not keyword-match."""
+    if defect is None:
+        return False, "no defect planted"
+    if defect == "NONDETERMINISM":
+        hit = any(
+            "deterministic" in m.lower() and "seed" in m.lower() for m in messages
+        )
+        return hit, (
+            "gymnasium raises on non-equivalent observations for the same seed and "
+            "action" if hit else "neither checker mentions seeding or determinism"
+        )
+    # NOOP_PASSES, TRIVIAL_FLOOR_BREACH, REWARD_HACKABLE are all statements about
+    # what a reward MEANS. Both checkers only assert that reward is a finite
+    # number of the right type; neither has any concept of whether it was earned.
+    return False, (
+        "neither checker inspects reward semantics -- only that it is a finite "
+        "real number of the correct type"
+    )
+
+
 def _run(checker, env) -> tuple[str, list[str]]:
     """Return (verdict, messages). A checker that says nothing has passed."""
     buf_out, buf_err = io.StringIO(), io.StringIO()
@@ -138,14 +159,21 @@ def main() -> int:
             "stable_baselines3": {"verdict": sb3_verdict, "messages": sb3_msgs[:3]},
             "defect_detected": False,  # filled below
         }
-        # A checker "detects" a defect only if it says something about THAT
-        # defect. Neither tool has a vocabulary for any of these, so this is
-        # decided by hand and stays False unless a message mentions the issue.
-        combined = " ".join(gym_msgs + sb3_msgs).lower()
-        if defect == "NONDETERMINISM":
-            rows[name]["defect_detected"] = "seed" in combined and "determin" in combined
-        elif defect:
-            rows[name]["defect_detected"] = defect.lower().split("_")[0] in combined
+        # Whether a checker "detected" the defect is decided by reading its
+        # output, not by keyword-matching it. An earlier version of this script
+        # substring-matched the defect name against the messages -- which is
+        # the same shortcut-scoring mistake this project published a finding
+        # about in `paws`, where `includes()` credited "I don't know" because
+        # it contains "no". With five cases, reading them is cheap and honest.
+        #
+        # The checkers have no vocabulary for these defect classes. The only
+        # one either tool speaks to is determinism, and gymnasium says so
+        # explicitly. Every judgement below is recorded with the message that
+        # justifies it so a reader can disagree.
+        combined = gym_msgs + sb3_msgs
+        verdict, why = _judge(defect, gym_verdict, combined)
+        rows[name]["defect_detected"] = verdict
+        rows[name]["detection_basis"] = why
 
     detected = sum(1 for r in rows.values() if r["defect_detected"])
     planted = sum(1 for r in rows.values() if r["defect_present"])

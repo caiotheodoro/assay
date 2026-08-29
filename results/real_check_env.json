@@ -15,7 +15,8 @@
         "verdict": "PASSED",
         "messages": []
       },
-      "defect_detected": false
+      "defect_detected": false,
+      "detection_basis": "no defect planted"
     },
     "seed_ignored": {
       "defect_present": "NONDETERMINISM",
@@ -29,7 +30,8 @@
         "verdict": "PASSED",
         "messages": []
       },
-      "defect_detected": true
+      "defect_detected": true,
+      "detection_basis": "gymnasium raises on non-equivalent observations for the same seed and action"
     },
     "solved_at_reset": {
       "defect_present": "NOOP_PASSES",
@@ -43,7 +45,8 @@
         "verdict": "PASSED",
         "messages": []
       },
-      "defect_detected": false
+      "defect_detected": false,
+      "detection_basis": "neither checker inspects reward semantics -- only that it is a finite real number of the correct type"
     },
     "trivial_policy_wins": {
       "defect_present": "TRIVIAL_FLOOR_BREACH",
@@ -57,7 +60,8 @@
         "verdict": "PASSED",
         "messages": []
       },
-      "defect_detected": false
+      "defect_detected": false,
+      "detection_basis": "neither checker inspects reward semantics -- only that it is a finite real number of the correct type"
     },
     "reward_hackable": {
       "defect_present": "REWARD_HACKABLE",
@@ -71,7 +75,8 @@
         "verdict": "PASSED",
         "messages": []
       },
-      "defect_detected": false
+      "defect_detected": false,
+      "detection_basis": "neither checker inspects reward semantics -- only that it is a finite real number of the correct type"
     }
   },
   "note": "Every environment here is API-correct: right spaces, right return shapes, no NaN rewards. The real checkers were run, not a model of them."
