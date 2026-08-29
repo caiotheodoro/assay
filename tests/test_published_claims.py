@@ -152,3 +152,27 @@ def test_the_video_script_carries_no_retracted_claim():
     ]
     found = [phrase for phrase in retracted if phrase in video]
     assert not found, f"VIDEO.md still speaks retracted claims: {found}"
+
+
+def test_the_llm_baseline_arm_survives_an_adapter_that_refuses_verify():
+    """One refusing adapter must not take the whole corpus run down.
+
+    `ToolAgentArm` called `adapter.verify()` unguarded, so `OpenEnvAdapter` --
+    which computes reward inside `step()` and raises `NotSupported` -- crashed
+    `full_run.py --llm-arms` outright. That is why the brief's own simple
+    baseline was implemented and never scored: the command did not complete.
+    """
+    import inspect as pyinspect
+
+    from assay.baselines import llm
+
+    src = pyinspect.getsource(llm)
+    assert "except NotSupported" in src, (
+        "the LLM arm calls adapter.verify() with no refusal path; an adapter "
+        "that withholds SEPARABLE_VERIFIER will crash the whole run"
+    )
+    assert "reward_basis" in src, (
+        "when the verifier is unavailable the arm must record which source the "
+        "number came from -- a silently unscored baseline is the defect this "
+        "repository audits environments for"
+    )

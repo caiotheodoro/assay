@@ -17,7 +17,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..adapter import EnvAdapter
+from ..adapter import EnvAdapter, NotSupported
 from ..challenger.base import action_vocabulary
 from ..challenger.prompted import _extract_json
 from ..llm import LLMClient, LLMUnavailable
@@ -187,11 +187,28 @@ class ToolAgentArm:
             transcript = Transcript(task_id=task_id, seed=0)
             result = adapter.step(action)
             transcript.record(action, result)
-            score = adapter.verify(transcript)
+            # Not every environment has a verifier to call. OpenEnv computes
+            # reward inside step() and raises here; an unguarded call took the
+            # whole corpus run down with it, which is why this arm existed and
+            # had never been scored. Fall back to what the step itself
+            # reported, and say in the transcript which of the two the number
+            # came from -- a baseline that quietly scores nothing would be the
+            # same defect this repo audits environments for.
+            try:
+                reward = adapter.verify(transcript).reward
+                basis = "the environment's verifier"
+            except NotSupported as exc:
+                reward = result.reward
+                basis = (
+                    "the step result, because this environment exposes no "
+                    f"separable verifier ({exc})"
+                    if reward is not None
+                    else f"nothing -- this turn is unscored ({exc})"
+                )
             history.append(
                 f"turn {turn}: {json.dumps({'tool': action.tool, 'args': action.args})[:200]}"
                 f"\n  output: {json.dumps(result.observation.data)[:250]}"
-                f"\n  environment scored it: {score.reward}"
+                f"\n  scored {reward} by {basis}"
             )
             self.trace.append(
                 {
@@ -199,7 +216,8 @@ class ToolAgentArm:
                     "reasoning": str(parsed.get("reasoning", ""))[:300],
                     "action": {"tool": action.tool, "args": action.args},
                     "observation": json.dumps(result.observation.data, default=str)[:300],
-                    "reported": score.reward,
+                    "reported": reward,
+                    "reward_basis": basis,
                 }
             )
 
