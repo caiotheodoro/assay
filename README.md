@@ -281,33 +281,81 @@ uv run --extra adapters python scripts/reward_landscape.py       # what it can p
 
 ## Prior art
 
-The category is not new, and Assay does not claim it is.
+The category is not new, Assay does not claim it is, and one earlier version of this
+section overclaimed. Corrected below.
 
-- **BenchGuard** ([arXiv 2604.24955](https://arxiv.org/abs/2604.24955)) — agentic
-  benchmark auditor; found 12 author-confirmed defects on ScienceAgentBench.
-- **ABA** ([arXiv 2605.26079](https://arxiv.org/abs/2605.26079)) — agentic audit
-  across 168 benchmarks.
-- **Adversarial Reward Auditing**, Beigi et al.
-  ([arXiv 2602.01750](https://arxiv.org/abs/2602.01750)) — the same probe
-  vocabulary, for classical RL reward functions.
+**Static auditors — reason over a benchmark's files:**
+
+- **BenchGuard** ([arXiv 2604.24955](https://arxiv.org/abs/2604.24955)) — 12
+  author-confirmed defects on ScienceAgentBench across 102 tasks, 83–100% recall
+  depending on model and whether agent traces are supplied, ~$0.12–0.30 per task.
+- **ABA** ([arXiv 2605.26079](https://arxiv.org/abs/2605.26079)) — 168 benchmarks,
+  34,285 tasks, **14,024 major issues affecting 25.7% of tasks**. Publishes a table
+  claiming it beats BenchGuard on both SAB and BixBench.
+
+**Dynamic auditors — execute the environment. These are Assay's actual cousins:**
+
+- **BenchJack** ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)) — drives coding
+  agents to audit benchmarks. **219 flaws across 10 agent benchmarks**, near-perfect
+  scores obtained "without solving a single task", and an adversarial patch-and-repeat
+  loop that drove the hackable-task ratio from ~100% to under 10%.
+- **Auditing Reward Hackability in Code RL Training Environments**
+  ([arXiv 2606.16062](https://arxiv.org/abs/2606.16062)) — a Docker gold-sanity gate,
+  essentially Assay's "does gold pass" probe, already run on a flagship benchmark:
+  **28.5% of 49 SWE-bench Verified tasks are hackable**.
+
+**Methods Assay ports rather than invents:**
+
 - Partial-input baselines — Gururangan et al.
   ([N18-2017](https://aclanthology.org/N18-2017)); the caveat on reading them
   backwards, [P19-1554](https://aclanthology.org/P19-1554).
-- Dedup tooling — datatrove, text-dedup, SemHash, LLM-Decontaminator.
+- Reward-model overoptimization — Gao, Schulman, Hilton
+  ([arXiv 2210.10760](https://arxiv.org/abs/2210.10760)), the standard citation for
+  reward hacking and the ancestor of the whole reward-hackability family.
+- Dedup tooling — datatrove, text-dedup, SemHash, LLM-Decontaminator. Contamination
+  exemplars: GSM1k ([arXiv 2405.00332](https://arxiv.org/abs/2405.00332)), LiveBench,
+  LiveCodeBench.
 - Separability as a benchmark meta-metric — Arena-Hard
   ([arXiv 2406.11939](https://arxiv.org/abs/2406.11939)).
 
-**What Assay adds** is a systems contribution, not a conceptual one:
+### A correction
 
-1. The probes run **dynamically against the live harness**. BenchGuard and ABA
-   reason over files; neither actually runs a no-op agent, an inverted grader,
-   and a known-wrong trajectory and watches what happens.
-2. Contamination, shortcut leakage, and difficulty land in **one** validity
-   report instead of three separate literatures.
-3. A **learned adversarial Challenger** — no prior work trains an agent to
-   reward-hack the environment under audit and reports what it found.
-4. One tool across **RL environment, agent benchmark, and eval suite**;
-   everything else is domain-locked.
+An earlier version of this README listed **Adversarial Reward Auditing**, Beigi et al.
+([arXiv 2602.01750](https://arxiv.org/abs/2602.01750)) as having "the same probe
+vocabulary, for classical RL reward functions". That was wrong, and it was wrong about
+someone else's paper.
+
+Beigi et al. is an RLHF alignment paper: a Hacker policy against an Auditor, plus
+Auditor-Guided RLHF, evaluated on sycophancy, length bias and code gaming with
+Llama-2-7B. It contains no classical RL environments, no gold / no-op / inverted-spec /
+known-wrong probes, and no benchmark-defect counts. The probe vocabulary is Assay's own.
+The paper is adjacent in spirit — adversarial detection of reward exploitation — and
+shares no metric Assay could be measured against. Left in the record rather than quietly
+deleted.
+
+### What Assay adds
+
+Narrowed to what the literature actually supports, after the above.
+
+1. **The bundle, not dynamism.** Running probes against a live harness is *not*
+   novel — BenchJack does it, and arXiv 2606.16062 runs a gold-sanity gate on
+   SWE-bench Verified. What no other tool does is carry verifier integrity,
+   contamination, shortcut leakage, separability, difficulty and reward-hackability in
+   one report under one severity-weighted expected-loss metric. ABA's own static-vs-
+   trajectory ablation, which agrees with itself only 29–63% of the time, is the best
+   published evidence that these modes are not interchangeable.
+2. **Expected loss rather than a defect count.** Every system above reports how many
+   defects it found. None reports what missing one costs against what a false alarm
+   costs, or publishes the cost profiles under which it loses to flagging everything.
+   Assay does, [above](#the-profiles-where-assay-loses).
+3. **Absence of evidence reported as loudly as evidence.** Every card names the probes
+   that could not run and why. On `openenv/textarena-wordle` that is 11 of 12.
+4. **One tool across RL environment, agent benchmark and eval suite** — inspect_ai,
+   Harbor, OpenEnv and submitted specs behind one adapter protocol.
+
+A learned adversarial Challenger was trained and **did not work**; the honest write-up
+is in [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
+It is listed here as an attempt, not a contribution.
 
 ## Try it
 
