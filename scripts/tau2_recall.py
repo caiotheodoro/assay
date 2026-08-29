@@ -27,6 +27,7 @@ wrong, and either way the reader should see it.
 from __future__ import annotations
 
 import json
+from math import comb
 import sys
 import time
 from collections import Counter, defaultdict
@@ -81,6 +82,46 @@ def rates(cm: dict[str, int]) -> dict[str, float | None]:
         "recall": round(tp / (tp + fn), 4) if tp + fn else None,
         "precision": round(tp / (tp + fp), 4) if tp + fp else None,
     }
+
+
+def significance(cm: dict[str, int]) -> dict:
+    """Hold the auditor to the trivial-floor rule it applies to environments.
+
+    `metrics.py`: "if it cannot beat the best policy that ignores its input, it
+    has not earned its existence." On the planted corpus that floor is
+    `flag_everything`. Here it is a flagger that picks the same number of tasks
+    uniformly at random, which is what a recall number has to beat before it is
+    evidence of anything. The p-value is exact -- hypergeometric, no normal
+    approximation, no sampling.
+    """
+    tp, fp, fn, tn = cm["tp"], cm["fp"], cm["fn"], cm["tn"]
+    n_tasks, n_pos, n_flagged = tp + fp + fn + tn, tp + fn, tp + fp
+    p = sum(
+        comb(n_pos, i) * comb(n_tasks - n_pos, n_flagged - i)
+        for i in range(tp, min(n_pos, n_flagged) + 1)
+    ) / comb(n_tasks, n_flagged)
+    return {
+        "n_tasks": n_tasks,
+        "n_positives": n_pos,
+        "n_flagged": n_flagged,
+        "base_rate": round(n_pos / n_tasks, 4),
+        "expected_tp_if_flagged_at_random": round(n_flagged * n_pos / n_tasks, 2),
+        "observed_tp": tp,
+        "random_recall_at_same_flag_rate": round(n_flagged / n_tasks, 4),
+        "p_one_sided": round(p, 4),
+        "beats_random_at_0.05": bool(p < 0.05),
+    }
+
+
+def trivial_floor(cm: dict[str, int]) -> dict:
+    """flag_everything, the same floor the planted corpus reports.
+
+    Derived from any confusion matrix over the same task set: flagging every
+    task moves the whole negative column into false positives.
+    """
+    n_pos, n_neg = cm["tp"] + cm["fn"], cm["fp"] + cm["tn"]
+    every = {"tp": n_pos, "fp": n_neg, "fn": 0, "tn": 0}
+    return {"arm": "flag_everything", "confusion": every, "rates": rates(every)}
 
 
 def per_category(labels: dict, predicted: set[str], key: str, names) -> dict:
@@ -262,8 +303,10 @@ def main() -> int:
         "post_fix": {"repo": VERIFIED_REPO, "rev": VERIFIED_REV},
         "label_rule": (
             "A task is a positive iff its record differs between the two pinned "
-            "revisions, excluding the reward_basis field that the fork dropped from "
-            "every task. Categories come from FIXES.md, attached to a task only when a "
+            "revisions. SCHEMA_ONLY_FIELDS is applied but excludes nothing: the "
+            "field it names is absent from both revisions, and recomputing the diff "
+            "with no exclusion at all gives the same 62. Categories come from "
+            "FIXES.md, attached to a task only when a "
             "quoted before/after excerpt is found verbatim in both revisions of it."
         ),
         "not_measured": [
@@ -275,10 +318,16 @@ def main() -> int:
             "contamination and shortcut leakage -- tau2 ships one split and no item "
             "parts",
         ],
-        "combined": {"confusion": combined, "rates": rates(combined)},
+        "trivial_floor": trivial_floor(combined),
+        "combined": {
+            "confusion": combined,
+            "rates": rates(combined),
+            "significance": significance(combined),
+        },
         "combined_excluding_advisory_probe": {
             "confusion": combined_strict,
             "rates": rates(combined_strict),
+            "significance": significance(combined_strict),
             "note": (
                 "assert_traceability removed. Its own docstring calls its findings "
                 "advisory -- a content-word overlap heuristic tuned to surface "

@@ -101,12 +101,22 @@ Expect exactly this, under `research-run`:
 |---|---|---|---|
 | assay | 240.0 | 0.957 | 1.000 |
 | flag_everything | 290.0 | 1.000 | 0.137 |
-| check_env | 2832.0 | 0.000 | 0.000 |
+| check_env | 2816.0 | 0.043 | 1.000 |
 | flag_nothing | 2832.0 | 0.000 | 0.000 |
 
-`check_env` — the incumbent linter, reimplementing what
-`gymnasium.utils.env_checker` and `stable_baselines3.common.env_checker`
-actually assert — scores identically to `flag_nothing`. Expect also that Assay
+`check_env` — a model of what `gymnasium.utils.env_checker` and
+`stable_baselines3.common.env_checker` actually assert — detects 2 of 46, both
+`NONDETERMINISM`, which is the only class it can return. It does not score
+identically to `flag_nothing`; an earlier revision of this guide said so and
+was wrong, because the model omitted the determinism check that gymnasium
+1.3.0 does perform. One of its two hits is `fixture/flaky`, planted here.
+
+The gap to `flag_nothing` is 16.0 of 2832.0. Whether that counts as
+"distinguishable" is not settled by the interval the README quotes: `check_env`
+emits no false positives and detects a subset of what is planted, so the paired
+difference is >= 0 by construction and the CI can never exclude zero from
+above. On a one-sided reading it is p ~ 0.12 -- the chance neither
+`NONDETERMINISM` environment is drawn, (22/24)^24. Expect also that Assay
 does **not** separate from `flag_everything` (paired difference 50.0,
 95% CI [−309, 295]), and that under `--profile production-training` it loses to
 it outright, 1920.0 to 580.0. Both are in the README.
@@ -176,10 +186,21 @@ on `paws`.
 uv run --extra adapters --extra sweep --extra openenv pytest -q
 ```
 
-**Measured: 275 collected, 0 skipped, 0 failed, exit 0, 49–60 s** with Docker
-and Ollama both up on an idle machine; 232–275 s with five other processes on the
-box. Nothing skips when everything is installed and running, which is the point
-of the table below — you should be able to tell a skip from a pass.
+**Measured: 493 passed, 18 skipped, 0 failed, exit 0, 161–227 s** with Docker
+and Ollama both up. An earlier revision of this guide claimed 275 collected and
+0 skipped; the suite has roughly doubled since and that number was never
+re-measured.
+
+The 18 skips are all `tests/test_tau2_adapter.py`, which wants the pinned tau2
+snapshots. Fetch them first and they run:
+
+```bash
+uv run --extra tau2 python scripts/tau2_fetch.py
+```
+
+So "nothing skips when everything is installed" is false as written — it is
+true only once that fetch, which this guide did not previously list as a
+prerequisite, has been done.
 
 Three suites carry more weight than the rest:
 
@@ -195,7 +216,10 @@ Three suites carry more weight than the rest:
 
 ## Degradation, checked by turning things off
 
-Not asserted. Each row below was produced by actually stopping the thing.
+Not asserted. Each row below was produced by actually stopping the thing —
+but the pytest counts in it were measured before the suite doubled, and carry
+the same stale 275 as above. The failure *modes* are what this table is for and
+those were observed; treat the collected/skipped counts as needing a re-run.
 
 | What was stopped | How | Result |
 |---|---|---|

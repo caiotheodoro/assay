@@ -17,7 +17,7 @@ training run.
 
 ```bash
 uv sync --extra dev && uv run pytest -q               # the demo: every planted defect, caught
-uv run --extra adapters python scripts/full_run.py    # the headline measurement, 22s
+uv run --extra adapters --extra openenv python scripts/full_run.py   # headline, 22s
 ```
 
 Twenty scripts live in `scripts/`; [`scripts/README.md`](scripts/README.md) names
@@ -117,8 +117,10 @@ exactly the shape it flags in environments.
 ## Measured result
 
 24 environments, 46 planted defects. Needs Docker for the Harbor tasks. No GPU
-and no API key — `uv run --extra adapters python scripts/full_run.py`, 22s on a
-warm Docker image. Without the daemon the run still completes, on 19
+and no API key — `uv run --extra adapters --extra openenv python scripts/full_run.py`,
+22s on a warm Docker image. **Both extras are load-bearing:** `--extra adapters`
+alone omits `openenv` and gives 22 environments and 45 defects, not 24 and 46.
+The run says so when it happens; read the degradation line before the table. Without the daemon the run still completes, on 19
 environments, and says which ecosystem it dropped and why.
 
 Expected loss under the `research-run` cost profile, with 95% bootstrap
@@ -281,7 +283,10 @@ second attempt would have broken. That is a known gap, not a solved problem.
 **It is still open.** A Challenger was trained with GRPO against a dense
 exploit-gap reward (`reported score` minus `independent true completion`, held
 by the harness and never shown to the attacker) on a spot A10G, with
-`harbor/self-graded` held out so the test would mean something. It did not
+`harbor/self-graded` held out. That holdout does not hold: `results/train_holdout_dedup.json`
+records 60 of 300 training rows carrying its byte-identical prompt, true Jaccard
+1.0, so 20% of training saw the held-out environment. The result below is
+reported against a contaminated split and is weaker than it reads. It did not
 close the miss, and neither did the prompted Challenger on local 1.7B/8B
 models. The reward itself is verified -- 38 tests, four against real
 containers, no GPU -- and the run logs say precisely what failed: 99.7% of GRPO
@@ -322,14 +327,31 @@ airline tasks, judged some wrong, and shipped corrected files. Labels here are b
 from the **diff between two pinned revisions**, not from the prose — anyone can
 recompute them with `json.load` and `==`.
 
-| | recall | precision |
-|---|---|---|
-| all 12 probes | **0.339** (21/62) | 0.389 |
-| excluding `assert_traceability` | 0.210 (13/62) | 0.565 |
+**Apply this repo's own trivial-floor rule first.** `metrics.py`: *"if it cannot beat
+the best policy that ignores its input, it has not earned its existence."* Every
+environment Assay audits is held to that. This measurement was not, until a red-team
+pass caught it. The floor here is a flagger that picks the same number of tasks at
+random; `flag_everything` scores recall 1.000 at precision 0.378.
 
-Both are published because that probe's own docstring calls its findings advisory: it
-supplies 8 of 21 true positives **and** 23 of 33 false positives, and a reader deciding
-whether to act on a finding needs to see both halves.
+| | recall | precision | vs. flagging at random | one-sided p |
+|---|---|---|---|---|
+| excluding `assert_traceability` | 0.210 (13/62) | 0.565 | 13 hits vs. 8.70 expected | **0.040** |
+| all 12 probes | 0.339 (21/62) | 0.389 | 21 hits vs. 20.41 expected | **0.486** |
+
+**The 0.339 row is chance.** Flagging 54 of 164 tasks uniformly at random lands 20.41
+positives in expectation; Assay lands 21. Its precision of 0.389 beats the 0.378 base
+rate — the precision of *any* random flagger — by 0.011. That row is a real number,
+honestly computed, and it is not evidence that Assay detects τ-bench defects.
+
+Only the narrower row clears the floor, at p = 0.040. So the advisory probe is not a
+bonus with a caveat: `assert_traceability` supplies 8 of 21 true positives and 23 of 33
+false positives, and including it **destroys the measurement**. An earlier revision of
+this README led with 0.339 and relegated the row that carries the signal. That framing
+was backwards, and the base rate 62/164 appeared nowhere in the repository.
+
+Read the p-values, not the recall. Both rows and the floor are in
+[`results/tau2_recall.json`](results/tau2_recall.json); the test is exact
+(hypergeometric), so it needs no sampling and no normal approximation.
 
 **The split is the result, not the headline:**
 
@@ -342,6 +364,14 @@ Assay reads verifiers. **Two thirds of what τ-bench needed fixed was not a veri
 it was an instruction too vague to grade consistently. By category: logical consistency
 0.71, policy compliance 0.43, unattributed 0.27, evaluation ambiguity 0.24 — and
 evaluation ambiguity is **0/21** once the advisory heuristic is removed.
+
+Two caveats on the label rule, both self-penalising. `airline/36` and `airline/39` differ
+only in `description.purpose`, a human-readable annotation that reaches neither the agent
+nor the evaluator — 2 of the 62 "defects" are documentation edits, and both are counted
+against Assay. And `SCHEMA_ONLY_FIELDS` excludes nothing: the field it names is absent
+from both revisions, so the exclusion is a no-op. Recomputing the diff with no exclusion
+at all still gives 62. The count is right; the reason previously given for it was never
+checked.
 
 ### ScienceAgentBench — 0 of 12, by BenchGuard's own scorer
 

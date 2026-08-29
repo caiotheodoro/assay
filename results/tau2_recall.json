@@ -8,13 +8,26 @@
     "repo": "amazon-agi/tau2-bench-verified",
     "rev": "a470e45f2e799286cb87d26b8b30d8ab558a3375"
   },
-  "label_rule": "A task is a positive iff its record differs between the two pinned revisions, excluding the reward_basis field that the fork dropped from every task. Categories come from FIXES.md, attached to a task only when a quoted before/after excerpt is found verbatim in both revisions of it.",
+  "label_rule": "A task is a positive iff its record differs between the two pinned revisions. SCHEMA_ONLY_FIELDS is applied but excludes nothing: the field it names is absent from both revisions, and recomputing the diff with no exclusion at all gives the same 62. Categories come from FIXES.md, attached to a task only when a quoted before/after excerpt is found verbatim in both revisions of it.",
   "not_measured": [
     "nl_assertions -- tau2 scores them with an LLM judge and Assay scores nothing with a judge, so every task's NL conjunct is absent, not passed",
     "difficulty band -- needs a solve-rate estimate, which needs a model",
     "reward hackability -- needs a completion signal independent of tau2's own scorer, which tau2 does not expose",
     "contamination and shortcut leakage -- tau2 ships one split and no item parts"
   ],
+  "trivial_floor": {
+    "arm": "flag_everything",
+    "confusion": {
+      "tp": 62,
+      "fp": 102,
+      "fn": 0,
+      "tn": 0
+    },
+    "rates": {
+      "recall": 1.0,
+      "precision": 0.378
+    }
+  },
   "combined": {
     "confusion": {
       "tp": 21,
@@ -25,6 +38,17 @@
     "rates": {
       "recall": 0.3387,
       "precision": 0.3889
+    },
+    "significance": {
+      "n_tasks": 164,
+      "n_positives": 62,
+      "n_flagged": 54,
+      "base_rate": 0.378,
+      "expected_tp_if_flagged_at_random": 20.41,
+      "observed_tp": 21,
+      "random_recall_at_same_flag_rate": 0.3293,
+      "p_one_sided": 0.4864,
+      "beats_random_at_0.05": false
     }
   },
   "combined_excluding_advisory_probe": {
@@ -37,6 +61,17 @@
     "rates": {
       "recall": 0.2097,
       "precision": 0.5652
+    },
+    "significance": {
+      "n_tasks": 164,
+      "n_positives": 62,
+      "n_flagged": 23,
+      "base_rate": 0.378,
+      "expected_tp_if_flagged_at_random": 8.7,
+      "observed_tp": 13,
+      "random_recall_at_same_flag_rate": 0.1402,
+      "p_one_sided": 0.0403,
+      "beats_random_at_0.05": true
     },
     "note": "assert_traceability removed. Its own docstring calls its findings advisory -- a content-word overlap heuristic tuned to surface candidates for a human, not to be believed."
   },
@@ -123,7 +158,7 @@
       "domain": "retail",
       "n_tasks": 114,
       "n_positives": 35,
-      "audit_seconds": 51.3,
+      "audit_seconds": 51.4,
       "verdict": "DEFECTIVE",
       "coverage": {
         "PASS": 1,
@@ -559,7 +594,7 @@
       "domain": "airline",
       "n_tasks": 50,
       "n_positives": 27,
-      "audit_seconds": 58.6,
+      "audit_seconds": 66.2,
       "verdict": "DEFECTIVE",
       "coverage": {
         "PASS": 2,
