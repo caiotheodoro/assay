@@ -46,6 +46,15 @@ gym = [
     "gymnasium>=1.3.0",
     "stable-baselines3>=2.9.0",
 ]
+# Scoring Assay against BenchGuard's ScienceAgentBench gold set. Only needed to
+# read SAB's published metadata off the Hub -- BenchGuard's own matcher and
+# metrics run from a checkout of their repo, not from here, which is the point:
+# their number is computed by their code.
+sab = [
+    "pandas>=2.0",
+    "pyarrow>=15.0",
+    "huggingface_hub>=0.23",
+]
 
 [project.scripts]
 assay = "assay.cli:main"

@@ -319,6 +319,32 @@ section overclaimed. Corrected below.
   34,285 tasks, **14,024 major issues affecting 25.7% of tasks**. Publishes a table
   claiming it beats BenchGuard on both SAB and BixBench.
 
+Assay has been scored head-to-head against BenchGuard's 12 defects **using
+BenchGuard's own `eval/match.py` + `eval/metrics.py`**, not a scorer written here:
+
+> **Recall@ALIGNED 0/12 = 0.0%.** Precision is 0/0 — no findings, so nothing to be
+> right or wrong about. ABA's audit scores 10/12 on the same gold with the same
+> scorer. All 12 of Assay's probes returned NOT_APPLICABLE with a reason and the
+> verdict was `UNVERIFIED`: SAB's verifier lives in a password-protected archive,
+> so **Assay could not run on this benchmark at all** — a different claim from
+> running and finding nothing, and the reason the two are kept apart.
+
+Two things that run against the grain of the comparison, both measured: **nine of
+the twelve gold defects are already fixed** in the split SAB's README tells you to
+use, so any SAB recall number is uninterpretable without naming the split; and
+BenchGuard's precision denominator counts only findings on the 12 revised tasks,
+so a detector firing on 61 of 102 tasks scores well on it. Assay's own
+trivial-floor rule rejected exactly that detector.
+
+```bash
+uv run --extra sab --extra adapters python scripts/sab_benchguard_recall.py \
+    --arm assay --split original \
+    --benchguard-root third_party/BenchGuard \
+    --converter third_party/auto-bench-audit/benchmarks/benchguard/audits_to_benchguard_findings.py
+```
+
+Full write-up: [docs/SCIENCEAGENTBENCH.md](docs/SCIENCEAGENTBENCH.md).
+
 **Dynamic auditors — execute the environment. These are Assay's actual cousins:**
 
 - **BenchJack** ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)) — drives coding
