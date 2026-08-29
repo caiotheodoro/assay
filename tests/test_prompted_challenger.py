@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from assay.challenger.prompted import PromptedChallenger
 from assay.fixtures import build
 
@@ -120,3 +122,58 @@ def test_a_malformed_reply_costs_a_turn_but_does_not_crash():
     attempts = PromptedChallenger(client=client, turns=2).attack(env, "t1")
     assert len(attempts) == 1
     assert any("not a single JSON object" in p for p in client.prompts[1:])
+
+
+# -- composition ------------------------------------------------------------
+
+
+def test_a_composite_never_loses_what_a_member_would_find():
+    """The regression this exists for: pointing the prompted Challenger at a
+    verifier that always passes LOST the defect the scripted repertoire catches
+    for free, because the model never tried submitting nothing."""
+    from assay import audit
+    from assay.challenger import CompositeChallenger, ScriptedChallenger
+    from assay.types import DefectClass
+
+    env = build("escalate_overrewarded")
+
+    class Useless:
+        """A Challenger that tries one harmless thing and finds nothing."""
+
+        name = "useless"
+
+        def attack(self, adapter, task_id):
+            from assay.adapter import run_policy
+            from assay.challenger.base import Attempt
+            from assay.types import Action as Act
+
+            actions = [Act("submit", {"label": adapter._target(task_id)})]
+            return [Attempt("useless:1", run_policy(adapter, task_id, actions))]
+
+    alone = audit(env, {"challenger": Useless()})
+    assert DefectClass.REWARD_HACKABLE not in alone.detected
+
+    composed = audit(
+        env, {"challenger": CompositeChallenger([ScriptedChallenger(), Useless()])}
+    )
+    assert DefectClass.REWARD_HACKABLE in composed.detected
+
+
+def test_a_composite_finding_names_the_attacker_that_produced_it():
+    from assay import audit
+    from assay.challenger import CompositeChallenger, ScriptedChallenger
+    from assay.types import DefectClass
+
+    report = audit(
+        build("escalate_overrewarded"),
+        {"challenger": CompositeChallenger([ScriptedChallenger()])},
+    )
+    finding = [f for f in report.findings if f.defect is DefectClass.REWARD_HACKABLE][0]
+    assert finding.evidence["exploit_policy"].startswith("scripted/")
+
+
+def test_a_composite_needs_a_member():
+    from assay.challenger import CompositeChallenger
+
+    with pytest.raises(ValueError):
+        CompositeChallenger([])

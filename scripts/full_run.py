@@ -126,7 +126,16 @@ def main() -> int:
             print(f"SKIPPING prompted challenger: {reason}")
             print("an arm missing from a comparison is a result about the run, not the method")
         else:
-            ctx["challenger"] = PromptedChallenger(client=client, turns=args.challenger_turns)
+            from assay.challenger import CompositeChallenger, ScriptedChallenger
+
+            # Composed, never substituted: the prompted Challenger alone lost a
+            # defect the fixed repertoire catches for free.
+            ctx["challenger"] = CompositeChallenger(
+                [
+                    ScriptedChallenger(),
+                    PromptedChallenger(client=client, turns=args.challenger_turns),
+                ]
+            )
             label = f"assay+{ctx['challenger'].name}"
             print(f"assay arm uses {label}\n", flush=True)
 
