@@ -32,25 +32,57 @@ for *"will this crash my trainer"* — never *"is this measuring what it
 claims."* They do not even verify that seeding makes behaviour reproducible
 ([Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084)).
 
-## First measured result
+## Measured result
 
-21 environments, 44 planted defects, `research-run` cost profile. Needs Docker
-for the Harbor tasks. No GPU, no API key, no network —
-`uv run --extra adapters python scripts/full_run.py`.
+21 environments, 44 planted defects. Needs Docker for the Harbor tasks. No GPU,
+no API key, no network — `uv run --extra adapters python scripts/full_run.py`.
 
-| arm | expected loss | normalized | recall | precision | misses |
-|---|---|---|---|---|---|
-| assay | **120.0** | 0.480 | 0.977 | 1.000 | 1 |
-| flag_everything | 250.0 | 1.000 | 1.000 | 0.150 | 0 |
-| **check_env** (incumbent) | **2704.0** | 10.816 | **0.000** | 0.000 | 44 |
-| flag_nothing | 2704.0 | 10.816 | 0.000 | 0.000 | 44 |
+Expected loss under the `research-run` cost profile, with 95% bootstrap
+intervals (10,000 resamples, seed 11, resampling over environments):
+
+| arm | expected loss | 95% CI | recall | precision |
+|---|---|---|---|---|
+| assay | **120.0** | [0.0, 360.0] | 0.977 | 1.000 |
+| flag_everything | 250.0 | [232, 266] | 1.000 | 0.150 |
+| **check_env** (incumbent) | **2704.0** | [1688, 3840] | **0.000** | 0.000 |
+| flag_nothing | 2704.0 | [1688, 3840] | 0.000 | 0.000 |
 
 The structural linter scores **identically to flagging nothing**. It is not a
 weak detector of these defects; it is not a detector of them at all.
 
-Assay's one miss with the default scripted Challenger is
-`harbor/self-graded`, where the verifier reads its expectation from a file the
-agent can overwrite.
+### What holds, and what does not
+
+Two overlapping one-sample intervals do not settle "A beats B", so the claims
+are paired differences drawn on a shared resample:
+
+| Comparison | Loss saved | 95% CI | |
+|---|---|---|---|
+| assay vs `check_env` | 2584.0 | [1536, 3760] | **separated** |
+| assay vs `flag_everything` | 130.0 | [−117, 261] | **overlaps zero** |
+
+Assay beats the incumbent. **Assay does not beat the trivial floor at n=21.**
+By this project's own rule — a policy that ignores the input must not win —
+that advantage is not established on this corpus, and saying otherwise would
+be the exact failure the tool exists to catch.
+
+### The profile where Assay loses
+
+Running only the flattering cost model would be its own kind of dishonesty.
+Under `production-training`, where a missed defect costs 480× a false alarm:
+
+| arm | expected loss |
+|---|---|
+| flag_everything | **500.0** |
+| assay | 960.0 |
+
+**Flagging everything wins.** That is the correct answer to the question that
+profile asks: when a miss is catastrophic and review is nearly free, review
+everything. Assay's single CRITICAL miss costs 960; 250 false alarms cost 2
+each. Assay earns its place only where false alarms have real cost — where
+nobody can triage 250 spurious findings.
+
+That miss is `harbor/self-graded`, and it is exactly the one the scripted
+Challenger cannot find.
 
 ## Does an agent find what a script cannot?
 
