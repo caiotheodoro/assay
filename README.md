@@ -32,6 +32,61 @@ for *"will this crash my trainer"* — never *"is this measuring what it
 claims."* They do not even verify that seeding makes behaviour reproducible
 ([Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084)).
 
+## Two real defects, in software shipping today
+
+The corpus above measures Assay against defects this repo planted. These two
+were not planted. Both were verified from the upstream project's own code,
+with Assay out of the loop, before being written down.
+
+### `inspect_evals` 0.18.0 — `paws` scores a constant string at 100%
+
+`paws` asks a model to answer `Yes` or `No`, and scores with `includes()` — a
+case-insensitive **substring** test — against those literal targets.
+
+| Completion | vs target `Yes` | vs target `No` |
+|---|---|---|
+| `"yesno"` | **correct** | **correct** |
+| `"I don't know"` | incorrect | **correct** |
+| `"Not sure"` | incorrect | **correct** |
+| `"None of the above"` | incorrect | **correct** |
+| `"I cannot determine the answer."` | incorrect | **correct** |
+
+The constant string `"yesno"` contains both labels, so it scores **8000/8000 =
+100%**. The looseness is one-sided, which is worse than symmetric: 4464 of 8000
+items have the target `No`, so every hedging model is credited on 56% of the
+benchmark for free.
+
+This is the WebArena substring-match failure from the table at the top of this
+README, live in a package people train and publish against. `boolq` carries a
+narrower version — `pattern(r"(Yes|No).?\Z")` anchors, which genuinely helps,
+but *know* is *no* plus one character, so `"I don't know"` still passes on every
+`No` item.
+
+### `openenv` — `textarena_env` accepts a seed and ignores it
+
+Six calls to `reset(seed=1234)` return six different secret Wordle words:
+`earth, north, south, bread, tight, stage`. The method signature takes `seed`
+and then calls `self._ta_env.reset(num_players=...)` without it.
+
+This is exactly the gap named at the top of this README:
+[Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084) —
+`env_checker` verifies that `reset()` *accepts* a seed, never that seeding does
+anything — reproduced in a different ecosystem, on an environment people train
+against.
+
+### What the tool found, and what a human found
+
+Assay flagged 14 of 25 sampled `paws` items as `REWARD_HACKABLE`. It did **not**
+find the `"yesno"` case; hand triage did. The scripted Challenger's repertoire
+is the adapter's trivial policies, and none of them names both labels at once.
+That split is pinned as a test so it cannot quietly close in the write-up.
+
+The `textarena_env` defect went the other way: the probe battery found it, and
+only after two bugs in Assay's own determinism probe were fixed — it had been
+requiring a verifier that OpenEnv does not have, and replaying an empty action
+list whenever no gold trajectory existed. A vacuous check in the auditor, of
+exactly the shape it flags in environments.
+
 ## Measured result
 
 21 environments, 44 planted defects. Needs Docker for the Harbor tasks. No GPU,
