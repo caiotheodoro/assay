@@ -132,3 +132,23 @@ def test_the_cost_crossover_matches_what_the_readme_claims():
     assert f"survives a {margin_pct}% error" in README, (
         f"computed margin is {margin_pct}% and the README does not say so"
     )
+
+
+def test_the_video_script_carries_no_retracted_claim():
+    """The script is spoken aloud once and cannot be corrected afterwards.
+
+    Its own header promises numbers stay `<>` until a final run freezes them.
+    An earlier revision hardcoded every figure and went stale when twelve
+    claims were corrected -- including the hot take, which `docs/RUBRIC.md`
+    still instructs a reader to lift verbatim into the README.
+    """
+    video = (ROOT / "docs" / "VIDEO.md").read_text()
+    retracted = [
+        "not distinguishable from checking nothing",
+        "not statistically distinguishable",
+        "Recall a third.",
+        "41 findings",
+        "would score respectably",
+    ]
+    found = [phrase for phrase in retracted if phrase in video]
+    assert not found, f"VIDEO.md still speaks retracted claims: {found}"

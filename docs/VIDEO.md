@@ -7,6 +7,13 @@ the change that contributed most, and one experiment that was removed.
 Numbers are left as `<>` until the final run freezes them. Nothing is recorded
 against numbers that can still move.
 
+**Status: not ready to record.** Everything above the agentic section is final.
+Two figures are still in flight and appear below as `<>`: the full-corpus
+expected loss with the agentic Challenger enabled, and its per-environment
+reliability over k Harbor runs. An earlier revision of this script hardcoded
+every number and then went stale when twelve claims were corrected, which is
+what the two sentences above exist to prevent and did not.
+
 ---
 
 ## 0:00–0:40 — The problem, with receipts
@@ -34,9 +41,10 @@ Terminal: `uv run --extra adapters python scripts/full_run.py`
 Let it run. Cut to the table.
 
 > The incumbent detects 2 of 46 — four percent. Against flagging nothing it
-> saves 16 expected loss, with a confidence interval from zero to forty. It is
-> not identical to checking nothing. It is not statistically distinguishable
-> from it.
+> saves 16 expected loss on a corpus where it can only ever return one defect
+> class. And that 16 is not a measurement of the real linter — it is a
+> measurement of our model of it. We ran the real checkers separately, on
+> purpose-built shims: they catch one defect in four.
 >
 > And an earlier version of this README said "identical", measured against a
 > reimplementation that omitted a check the real tool has. Running the real
@@ -120,9 +128,17 @@ Show the ablation table.
 > expected loss saved, interval from minus three hundred and nine to two
 > ninety-five. It crosses zero.
 >
-> And under the production-training cost profile, where a missed defect costs
-> 480 times a false alarm, flagging everything **beats** Assay. That is the
-> right answer to the question that profile asks.
+> Half this corpus is our own test fixtures, and a test asserts perfect
+> detection on every one of them. So that half is a passing build, not a
+> measurement. Split it honestly — by who wrote the environment — and only two
+> of twenty-four are genuinely somebody else's. On the ten we wrote in someone
+> else's format, flagging everything **beats** Assay: two forty to one
+> fourteen.
+>
+> And the whole result rests on one number nobody derived. We price a missed
+> critical defect at a hundred and twenty engineer-hours. The crossover, where
+> flagging everything wins, is a hundred and forty-five. A twenty-one percent
+> error in a guess flips the headline.
 >
 > The GRPO-trained Challenger did not learn either. Two runs on real GPUs.
 > 99.7% of rollout groups had zero reward spread, so there was no gradient. We
@@ -135,11 +151,15 @@ Show the ablation table.
 
 Show the recall table.
 
-> Recall a third. And the split underneath it is the real result — two thirds
-> of what tau-bench needed fixed was not a verifier at all, it was an
-> instruction too vague to grade. Assay reads verifiers. It finds sixty-five
-> percent of the annotation errors and nineteen percent of the vague
-> instructions.
+> Recall of a third — and that number is chance. Flagging the same fifty-four
+> tasks at random lands twenty point four; we land twenty-one. p equals point
+> four nine. We apply a trivial-floor rule to every environment we audit and we
+> had never applied it to our own external measurement.
+>
+> The narrower row does clear the floor: recall point two one, p equals point
+> zero four. And the split underneath it is the real result — two thirds of what
+> tau-bench needed fixed was not a verifier at all, it was an instruction too
+> vague to grade. Assay reads verifiers.
 >
 > And on ScienceAgentBench, scored by BenchGuard's own code: zero out of twelve.
 > Not because the defects are hard — because Assay could not run there at all,
@@ -147,8 +167,17 @@ Show the recall table.
 
 ## 4:50–5:00 — Hot take
 
-> The environments people are buying cannot survive a no-op policy, and the one
-> tool that checks them is not distinguishable from checking nothing.
+> Nobody QAs the benchmark — including the people building the tool that QAs
+> benchmarks.
+>
+> The environments people are buying cannot survive a no-op policy. We showed
+> that. Then we pointed the same hostility at our own repository and twelve of
+> our published claims broke. The external number was chance. Half the corpus
+> proving the headline was our own test fixtures. We published an exploit as
+> the winning policy that appears in no run that succeeded.
+>
+> An auditing tool is not exempt from the thing it audits. The only defence is
+> to run the audit on yourself and publish what it finds.
 >
 > Every probe here is a deterministic program. The only model in the system is
 > the attacker.
