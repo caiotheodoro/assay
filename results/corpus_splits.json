@@ -1,0 +1,3207 @@
+{
+  "measurement": "expected loss by corpus provenance",
+  "resamples": 10000,
+  "seed": 11,
+  "resampling_unit": "environment",
+  "read_this_one": "no-fixture",
+  "caveat": "fixture-only is not a measurement. tests/test_probes_fire.py asserts detected == planted on exactly those twelve environments, so a loss above zero there is a failing build, not a result.",
+  "splits": {
+    "all": {
+      "why": "the published corpus",
+      "n_environments": 24,
+      "n_planted": 46,
+      "environments": [
+        "fixture/artifact_splits",
+        "fixture/drifted_asserts",
+        "fixture/escalate_overrewarded",
+        "fixture/flaky",
+        "fixture/gold_broken",
+        "fixture/healthy",
+        "fixture/leaky_splits",
+        "fixture/paraphrased_splits",
+        "fixture/rationale_ignored",
+        "fixture/solved_at_reset",
+        "fixture/unfalsifiable",
+        "fixture/weak_oracle",
+        "harbor/broken-gold",
+        "harbor/healthy",
+        "harbor/self-graded",
+        "harbor/shared-tests",
+        "harbor/vacuous-tests",
+        "inspect/always-correct",
+        "inspect/constant-score",
+        "inspect/effort-scorer",
+        "inspect/healthy",
+        "inspect/leaky-split",
+        "openenv/echo",
+        "openenv/textarena-wordle"
+      ],
+      "profiles": {
+        "research-run": {
+          "always_modal_defect": {
+            "expected_loss": 1767.0,
+            "recall": 0.1957,
+            "precision": 0.375,
+            "severity_weighted_recall": 0.2123,
+            "n_missed": 37,
+            "n_spurious": 15,
+            "error_count": 52
+          },
+          "assay": {
+            "expected_loss": 240.0,
+            "recall": 0.9565,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9528,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 2816.0,
+            "recall": 0.0435,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0283,
+            "n_missed": 44,
+            "n_spurious": 0,
+            "error_count": 44
+          },
+          "flag_everything": {
+            "expected_loss": 290.0,
+            "recall": 1.0,
+            "precision": 0.1369,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 290,
+            "error_count": 290
+          },
+          "flag_nothing": {
+            "expected_loss": 2832.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 46,
+            "n_spurious": 0,
+            "error_count": 46
+          },
+          "stratified_random": {
+            "expected_loss": 1587.0,
+            "recall": 0.3696,
+            "precision": 0.3864,
+            "severity_weighted_recall": 0.3632,
+            "n_missed": 29,
+            "n_spurious": 27,
+            "error_count": 56
+          }
+        },
+        "production-training": {
+          "always_modal_defect": {
+            "expected_loss": 12150.0,
+            "recall": 0.1957,
+            "precision": 0.375,
+            "severity_weighted_recall": 0.2123,
+            "n_missed": 37,
+            "n_spurious": 15,
+            "error_count": 52
+          },
+          "assay": {
+            "expected_loss": 1920.0,
+            "recall": 0.9565,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9528,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 20680.0,
+            "recall": 0.0435,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0283,
+            "n_missed": 44,
+            "n_spurious": 0,
+            "error_count": 44
+          },
+          "flag_everything": {
+            "expected_loss": 580.0,
+            "recall": 1.0,
+            "precision": 0.1369,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 290,
+            "error_count": 290
+          },
+          "flag_nothing": {
+            "expected_loss": 20760.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 46,
+            "n_spurious": 0,
+            "error_count": 46
+          },
+          "stratified_random": {
+            "expected_loss": 11054.0,
+            "recall": 0.3696,
+            "precision": 0.3864,
+            "severity_weighted_recall": 0.3632,
+            "n_missed": 29,
+            "n_spurious": 27,
+            "error_count": 56
+          }
+        },
+        "benchmark-publication": {
+          "always_modal_defect": {
+            "expected_loss": 27620.0,
+            "recall": 0.1957,
+            "precision": 0.375,
+            "severity_weighted_recall": 0.2123,
+            "n_missed": 37,
+            "n_spurious": 15,
+            "error_count": 52
+          },
+          "assay": {
+            "expected_loss": 4000.0,
+            "recall": 0.9565,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9528,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 45300.0,
+            "recall": 0.0435,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0283,
+            "n_missed": 44,
+            "n_spurious": 0,
+            "error_count": 44
+          },
+          "flag_everything": {
+            "expected_loss": 2320.0,
+            "recall": 1.0,
+            "precision": 0.1369,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 290,
+            "error_count": 290
+          },
+          "flag_nothing": {
+            "expected_loss": 45500.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 46,
+            "n_spurious": 0,
+            "error_count": 46
+          },
+          "stratified_random": {
+            "expected_loss": 24916.0,
+            "recall": 0.3696,
+            "precision": 0.3864,
+            "severity_weighted_recall": 0.3632,
+            "n_missed": 29,
+            "n_spurious": 27,
+            "error_count": 56
+          }
+        },
+        "flat": {
+          "always_modal_defect": {
+            "expected_loss": 52.0,
+            "recall": 0.1957,
+            "precision": 0.375,
+            "severity_weighted_recall": 0.2123,
+            "n_missed": 37,
+            "n_spurious": 15,
+            "error_count": 52
+          },
+          "assay": {
+            "expected_loss": 2.0,
+            "recall": 0.9565,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9528,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 44.0,
+            "recall": 0.0435,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0283,
+            "n_missed": 44,
+            "n_spurious": 0,
+            "error_count": 44
+          },
+          "flag_everything": {
+            "expected_loss": 290.0,
+            "recall": 1.0,
+            "precision": 0.1369,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 290,
+            "error_count": 290
+          },
+          "flag_nothing": {
+            "expected_loss": 46.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 46,
+            "n_spurious": 0,
+            "error_count": 46
+          },
+          "stratified_random": {
+            "expected_loss": 56.0,
+            "recall": 0.3696,
+            "precision": 0.3864,
+            "severity_weighted_recall": 0.3632,
+            "n_missed": 29,
+            "n_spurious": 27,
+            "error_count": 56
+          }
+        }
+      },
+      "paired_vs_flag_everything": {
+        "assay": {
+          "expected_loss": {
+            "point": 240.0,
+            "ci95": [
+              0.0,
+              600.0
+            ]
+          },
+          "recall": {
+            "point": 0.9565,
+            "ci95": [
+              0.8684,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "always_modal_defect": {
+              "point": 1527.0,
+              "ci95": [
+                638.0,
+                2435.025
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 2576.0,
+              "ci95": [
+                1472.0,
+                3840.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": 50.0,
+              "ci95": [
+                -309.0,
+                295.0
+              ],
+              "separated": false
+            },
+            "flag_nothing": {
+              "point": 2592.0,
+              "ci95": [
+                1496.0,
+                3848.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 1347.0,
+              "ci95": [
+                455.0,
+                2316.05
+              ],
+              "separated": true
+            }
+          }
+        },
+        "always_modal_defect": {
+          "expected_loss": {
+            "point": 1767.0,
+            "ci95": [
+              1066.0,
+              2550.0
+            ]
+          },
+          "recall": {
+            "point": 0.1957,
+            "ci95": [
+              0.125,
+              0.2759
+            ]
+          },
+          "precision": {
+            "point": 0.375,
+            "ci95": [
+              0.1667,
+              0.5833
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1527.0,
+              "ci95": [
+                -2435.025,
+                -638.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 1049.0,
+              "ci95": [
+                460.0,
+                1654.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -1477.0,
+              "ci95": [
+                -2277.0,
+                -760.95
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1065.0,
+              "ci95": [
+                460.0,
+                1670.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -180.0,
+              "ci95": [
+                -745.0,
+                352.025
+              ],
+              "separated": false
+            }
+          }
+        },
+        "check_env": {
+          "expected_loss": {
+            "point": 2816.0,
+            "ci95": [
+              1728.0,
+              4024.0
+            ]
+          },
+          "recall": {
+            "point": 0.0435,
+            "ci95": [
+              0.0,
+              0.1282
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -2576.0,
+              "ci95": [
+                -3840.0,
+                -1472.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -1049.0,
+              "ci95": [
+                -1654.0,
+                -460.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -2526.0,
+              "ci95": [
+                -3748.0,
+                -1426.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 16.0,
+              "ci95": [
+                0.0,
+                40.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -1229.0,
+              "ci95": [
+                -2049.05,
+                -525.975
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_everything": {
+          "expected_loss": {
+            "point": 290.0,
+            "ci95": [
+              271.0,
+              307.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.1369,
+            "ci95": [
+              0.0863,
+              0.1935
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -50.0,
+              "ci95": [
+                -295.0,
+                309.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": 1477.0,
+              "ci95": [
+                760.95,
+                2277.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 2526.0,
+              "ci95": [
+                1426.0,
+                3748.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 2542.0,
+              "ci95": [
+                1450.0,
+                3756.05
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 1297.0,
+              "ci95": [
+                550.0,
+                2170.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_nothing": {
+          "expected_loss": {
+            "point": 2832.0,
+            "ci95": [
+              1752.0,
+              4032.0
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -2592.0,
+              "ci95": [
+                -3848.0,
+                -1496.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -1065.0,
+              "ci95": [
+                -1670.0,
+                -460.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": -16.0,
+              "ci95": [
+                -40.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -2542.0,
+              "ci95": [
+                -3756.05,
+                -1450.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -1245.0,
+              "ci95": [
+                -2060.0,
+                -545.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "stratified_random": {
+          "expected_loss": {
+            "point": 1587.0,
+            "ci95": [
+              851.975,
+              2446.05
+            ]
+          },
+          "recall": {
+            "point": 0.3696,
+            "ci95": [
+              0.1951,
+              0.5273
+            ]
+          },
+          "precision": {
+            "point": 0.3864,
+            "ci95": [
+              0.1875,
+              0.5745
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1347.0,
+              "ci95": [
+                -2316.05,
+                -455.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": 180.0,
+              "ci95": [
+                -352.025,
+                745.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 1229.0,
+              "ci95": [
+                525.975,
+                2049.05
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -1297.0,
+              "ci95": [
+                -2170.0,
+                -550.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1245.0,
+              "ci95": [
+                545.0,
+                2060.0
+              ],
+              "separated": true
+            }
+          }
+        }
+      }
+    },
+    "no-fixture": {
+      "why": "third-party environments only -- the honest number",
+      "n_environments": 12,
+      "n_planted": 27,
+      "environments": [
+        "harbor/broken-gold",
+        "harbor/healthy",
+        "harbor/self-graded",
+        "harbor/shared-tests",
+        "harbor/vacuous-tests",
+        "inspect/always-correct",
+        "inspect/constant-score",
+        "inspect/effort-scorer",
+        "inspect/healthy",
+        "inspect/leaky-split",
+        "openenv/echo",
+        "openenv/textarena-wordle"
+      ],
+      "profiles": {
+        "research-run": {
+          "always_modal_defect": {
+            "expected_loss": 894.0,
+            "recall": 0.2222,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.2439,
+            "n_missed": 21,
+            "n_spurious": 6,
+            "error_count": 27
+          },
+          "assay": {
+            "expected_loss": 240.0,
+            "recall": 0.9259,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9187,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 1600.0,
+            "recall": 0.037,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0244,
+            "n_missed": 26,
+            "n_spurious": 0,
+            "error_count": 26
+          },
+          "flag_everything": {
+            "expected_loss": 141.0,
+            "recall": 1.0,
+            "precision": 0.1607,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 141,
+            "error_count": 141
+          },
+          "flag_nothing": {
+            "expected_loss": 1608.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 27,
+            "n_spurious": 0,
+            "error_count": 27
+          },
+          "stratified_random": {
+            "expected_loss": 913.0,
+            "recall": 0.3704,
+            "precision": 0.5263,
+            "severity_weighted_recall": 0.3577,
+            "n_missed": 17,
+            "n_spurious": 9,
+            "error_count": 26
+          }
+        },
+        "production-training": {
+          "always_modal_defect": {
+            "expected_loss": 6012.0,
+            "recall": 0.2222,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.2439,
+            "n_missed": 21,
+            "n_spurious": 6,
+            "error_count": 27
+          },
+          "assay": {
+            "expected_loss": 1920.0,
+            "recall": 0.9259,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9187,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 11720.0,
+            "recall": 0.037,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0244,
+            "n_missed": 26,
+            "n_spurious": 0,
+            "error_count": 26
+          },
+          "flag_everything": {
+            "expected_loss": 282.0,
+            "recall": 1.0,
+            "precision": 0.1607,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 141,
+            "error_count": 141
+          },
+          "flag_nothing": {
+            "expected_loss": 11760.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 27,
+            "n_spurious": 0,
+            "error_count": 27
+          },
+          "stratified_random": {
+            "expected_loss": 6378.0,
+            "recall": 0.3704,
+            "precision": 0.5263,
+            "severity_weighted_recall": 0.3577,
+            "n_missed": 17,
+            "n_spurious": 9,
+            "error_count": 26
+          }
+        },
+        "benchmark-publication": {
+          "always_modal_defect": {
+            "expected_loss": 13848.0,
+            "recall": 0.2222,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.2439,
+            "n_missed": 21,
+            "n_spurious": 6,
+            "error_count": 27
+          },
+          "assay": {
+            "expected_loss": 4000.0,
+            "recall": 0.9259,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9187,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 25700.0,
+            "recall": 0.037,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0244,
+            "n_missed": 26,
+            "n_spurious": 0,
+            "error_count": 26
+          },
+          "flag_everything": {
+            "expected_loss": 1128.0,
+            "recall": 1.0,
+            "precision": 0.1607,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 141,
+            "error_count": 141
+          },
+          "flag_nothing": {
+            "expected_loss": 25800.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 27,
+            "n_spurious": 0,
+            "error_count": 27
+          },
+          "stratified_random": {
+            "expected_loss": 14372.0,
+            "recall": 0.3704,
+            "precision": 0.5263,
+            "severity_weighted_recall": 0.3577,
+            "n_missed": 17,
+            "n_spurious": 9,
+            "error_count": 26
+          }
+        },
+        "flat": {
+          "always_modal_defect": {
+            "expected_loss": 27.0,
+            "recall": 0.2222,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.2439,
+            "n_missed": 21,
+            "n_spurious": 6,
+            "error_count": 27
+          },
+          "assay": {
+            "expected_loss": 2.0,
+            "recall": 0.9259,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.9187,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 26.0,
+            "recall": 0.037,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0244,
+            "n_missed": 26,
+            "n_spurious": 0,
+            "error_count": 26
+          },
+          "flag_everything": {
+            "expected_loss": 141.0,
+            "recall": 1.0,
+            "precision": 0.1607,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 141,
+            "error_count": 141
+          },
+          "flag_nothing": {
+            "expected_loss": 27.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 27,
+            "n_spurious": 0,
+            "error_count": 27
+          },
+          "stratified_random": {
+            "expected_loss": 26.0,
+            "recall": 0.3704,
+            "precision": 0.5263,
+            "severity_weighted_recall": 0.3577,
+            "n_missed": 17,
+            "n_spurious": 9,
+            "error_count": 26
+          }
+        }
+      },
+      "paired_vs_flag_everything": {
+        "assay": {
+          "expected_loss": {
+            "point": 240.0,
+            "ci95": [
+              0.0,
+              600.0
+            ]
+          },
+          "recall": {
+            "point": 0.9259,
+            "ci95": [
+              0.7333,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "always_modal_defect": {
+              "point": 654.0,
+              "ci95": [
+                -110.05,
+                1412.025
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 1360.0,
+              "ci95": [
+                496.0,
+                2328.2
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -99.0,
+              "ci95": [
+                -454.025,
+                144.0
+              ],
+              "separated": false
+            },
+            "flag_nothing": {
+              "point": 1368.0,
+              "ci95": [
+                504.0,
+                2336.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 673.0,
+              "ci95": [
+                -101.025,
+                1473.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "always_modal_defect": {
+          "expected_loss": {
+            "point": 894.0,
+            "ci95": [
+              351.0,
+              1507.0
+            ]
+          },
+          "recall": {
+            "point": 0.2222,
+            "ci95": [
+              0.1304,
+              0.375
+            ]
+          },
+          "precision": {
+            "point": 0.5,
+            "ci95": [
+              0.25,
+              0.75
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -654.0,
+              "ci95": [
+                -1412.025,
+                110.05
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 706.0,
+              "ci95": [
+                327.0,
+                1077.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -753.0,
+              "ci95": [
+                -1378.05,
+                -197.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 714.0,
+              "ci95": [
+                351.0,
+                1077.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 19.0,
+              "ci95": [
+                -201.0,
+                318.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "check_env": {
+          "expected_loss": {
+            "point": 1600.0,
+            "ci95": [
+              784.0,
+              2480.0
+            ]
+          },
+          "recall": {
+            "point": 0.037,
+            "ci95": [
+              0.0,
+              0.1579
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1360.0,
+              "ci95": [
+                -2328.2,
+                -496.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -706.0,
+              "ci95": [
+                -1077.0,
+                -327.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -1459.0,
+              "ci95": [
+                -2357.0,
+                -632.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 8.0,
+              "ci95": [
+                0.0,
+                24.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -687.0,
+              "ci95": [
+                -1190.0,
+                -229.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_everything": {
+          "expected_loss": {
+            "point": 141.0,
+            "ci95": [
+              126.0,
+              155.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.1607,
+            "ci95": [
+              0.0774,
+              0.25
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": 99.0,
+              "ci95": [
+                -144.0,
+                454.025
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": 753.0,
+              "ci95": [
+                197.0,
+                1378.05
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 1459.0,
+              "ci95": [
+                632.0,
+                2357.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1467.0,
+              "ci95": [
+                649.0,
+                2357.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 772.0,
+              "ci95": [
+                177.0,
+                1430.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_nothing": {
+          "expected_loss": {
+            "point": 1608.0,
+            "ci95": [
+              808.0,
+              2480.0
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1368.0,
+              "ci95": [
+                -2336.0,
+                -504.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -714.0,
+              "ci95": [
+                -1077.0,
+                -351.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": -8.0,
+              "ci95": [
+                -24.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -1467.0,
+              "ci95": [
+                -2357.0,
+                -649.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -695.0,
+              "ci95": [
+                -1196.0,
+                -240.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "stratified_random": {
+          "expected_loss": {
+            "point": 913.0,
+            "ci95": [
+              334.95,
+              1559.0
+            ]
+          },
+          "recall": {
+            "point": 0.3704,
+            "ci95": [
+              0.1429,
+              0.6
+            ]
+          },
+          "precision": {
+            "point": 0.5263,
+            "ci95": [
+              0.2308,
+              0.75
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -673.0,
+              "ci95": [
+                -1473.0,
+                101.025
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -19.0,
+              "ci95": [
+                -318.0,
+                201.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 687.0,
+              "ci95": [
+                229.0,
+                1190.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -772.0,
+              "ci95": [
+                -1430.0,
+                -177.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 695.0,
+              "ci95": [
+                240.0,
+                1196.0
+              ],
+              "separated": true
+            }
+          }
+        }
+      }
+    },
+    "fixture-only": {
+      "why": "this repo's own pytest fixtures, asserted exactly by the test suite",
+      "n_environments": 12,
+      "n_planted": 19,
+      "environments": [
+        "fixture/artifact_splits",
+        "fixture/drifted_asserts",
+        "fixture/escalate_overrewarded",
+        "fixture/flaky",
+        "fixture/gold_broken",
+        "fixture/healthy",
+        "fixture/leaky_splits",
+        "fixture/paraphrased_splits",
+        "fixture/rationale_ignored",
+        "fixture/solved_at_reset",
+        "fixture/unfalsifiable",
+        "fixture/weak_oracle"
+      ],
+      "profiles": {
+        "research-run": {
+          "always_modal_defect": {
+            "expected_loss": 873.0,
+            "recall": 0.1579,
+            "precision": 0.25,
+            "severity_weighted_recall": 0.1685,
+            "n_missed": 16,
+            "n_spurious": 9,
+            "error_count": 25
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 1216.0,
+            "recall": 0.0526,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0337,
+            "n_missed": 18,
+            "n_spurious": 0,
+            "error_count": 18
+          },
+          "flag_everything": {
+            "expected_loss": 149.0,
+            "recall": 1.0,
+            "precision": 0.1131,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 149,
+            "error_count": 149
+          },
+          "flag_nothing": {
+            "expected_loss": 1224.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 0,
+            "error_count": 19
+          },
+          "stratified_random": {
+            "expected_loss": 674.0,
+            "recall": 0.3684,
+            "precision": 0.28,
+            "severity_weighted_recall": 0.3708,
+            "n_missed": 12,
+            "n_spurious": 18,
+            "error_count": 30
+          }
+        },
+        "production-training": {
+          "always_modal_defect": {
+            "expected_loss": 6138.0,
+            "recall": 0.1579,
+            "precision": 0.25,
+            "severity_weighted_recall": 0.1685,
+            "n_missed": 16,
+            "n_spurious": 9,
+            "error_count": 25
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 8960.0,
+            "recall": 0.0526,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0337,
+            "n_missed": 18,
+            "n_spurious": 0,
+            "error_count": 18
+          },
+          "flag_everything": {
+            "expected_loss": 298.0,
+            "recall": 1.0,
+            "precision": 0.1131,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 149,
+            "error_count": 149
+          },
+          "flag_nothing": {
+            "expected_loss": 9000.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 0,
+            "error_count": 19
+          },
+          "stratified_random": {
+            "expected_loss": 4676.0,
+            "recall": 0.3684,
+            "precision": 0.28,
+            "severity_weighted_recall": 0.3708,
+            "n_missed": 12,
+            "n_spurious": 18,
+            "error_count": 30
+          }
+        },
+        "benchmark-publication": {
+          "always_modal_defect": {
+            "expected_loss": 13772.0,
+            "recall": 0.1579,
+            "precision": 0.25,
+            "severity_weighted_recall": 0.1685,
+            "n_missed": 16,
+            "n_spurious": 9,
+            "error_count": 25
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 19600.0,
+            "recall": 0.0526,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0337,
+            "n_missed": 18,
+            "n_spurious": 0,
+            "error_count": 18
+          },
+          "flag_everything": {
+            "expected_loss": 1192.0,
+            "recall": 1.0,
+            "precision": 0.1131,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 149,
+            "error_count": 149
+          },
+          "flag_nothing": {
+            "expected_loss": 19700.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 0,
+            "error_count": 19
+          },
+          "stratified_random": {
+            "expected_loss": 10544.0,
+            "recall": 0.3684,
+            "precision": 0.28,
+            "severity_weighted_recall": 0.3708,
+            "n_missed": 12,
+            "n_spurious": 18,
+            "error_count": 30
+          }
+        },
+        "flat": {
+          "always_modal_defect": {
+            "expected_loss": 25.0,
+            "recall": 0.1579,
+            "precision": 0.25,
+            "severity_weighted_recall": 0.1685,
+            "n_missed": 16,
+            "n_spurious": 9,
+            "error_count": 25
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 18.0,
+            "recall": 0.0526,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0337,
+            "n_missed": 18,
+            "n_spurious": 0,
+            "error_count": 18
+          },
+          "flag_everything": {
+            "expected_loss": 149.0,
+            "recall": 1.0,
+            "precision": 0.1131,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 149,
+            "error_count": 149
+          },
+          "flag_nothing": {
+            "expected_loss": 19.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 0,
+            "error_count": 19
+          },
+          "stratified_random": {
+            "expected_loss": 30.0,
+            "recall": 0.3684,
+            "precision": 0.28,
+            "severity_weighted_recall": 0.3708,
+            "n_missed": 12,
+            "n_spurious": 18,
+            "error_count": 30
+          }
+        }
+      },
+      "paired_vs_flag_everything": {
+        "assay": {
+          "expected_loss": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "always_modal_defect": {
+              "point": 873.0,
+              "ci95": [
+                434.0,
+                1392.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 1216.0,
+              "ci95": [
+                536.0,
+                2032.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": 149.0,
+              "ci95": [
+                138.0,
+                157.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1224.0,
+              "ci95": [
+                552.0,
+                2040.2
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 674.0,
+              "ci95": [
+                251.0,
+                1266.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "always_modal_defect": {
+          "expected_loss": {
+            "point": 873.0,
+            "ci95": [
+              434.0,
+              1392.0
+            ]
+          },
+          "recall": {
+            "point": 0.1579,
+            "ci95": [
+              0.0,
+              0.2609
+            ]
+          },
+          "precision": {
+            "point": 0.25,
+            "ci95": [
+              0.0,
+              0.5
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -873.0,
+              "ci95": [
+                -1392.0,
+                -434.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 343.0,
+              "ci95": [
+                -12.0,
+                714.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -724.0,
+              "ci95": [
+                -1251.0,
+                -279.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 351.0,
+              "ci95": [
+                -12.0,
+                714.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -199.0,
+              "ci95": [
+                -671.05,
+                249.025
+              ],
+              "separated": false
+            }
+          }
+        },
+        "check_env": {
+          "expected_loss": {
+            "point": 1216.0,
+            "ci95": [
+              536.0,
+              2032.0
+            ]
+          },
+          "recall": {
+            "point": 0.0526,
+            "ci95": [
+              0.0,
+              0.2143
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1216.0,
+              "ci95": [
+                -2032.0,
+                -536.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -343.0,
+              "ci95": [
+                -714.0,
+                12.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -1067.0,
+              "ci95": [
+                -1897.0,
+                -379.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 8.0,
+              "ci95": [
+                0.0,
+                24.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -542.0,
+              "ci95": [
+                -1197.0,
+                -70.975
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_everything": {
+          "expected_loss": {
+            "point": 149.0,
+            "ci95": [
+              138.0,
+              157.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.1131,
+            "ci95": [
+              0.0655,
+              0.1786
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -149.0,
+              "ci95": [
+                -157.0,
+                -138.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": 724.0,
+              "ci95": [
+                279.0,
+                1251.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 1067.0,
+              "ci95": [
+                379.0,
+                1897.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1075.0,
+              "ci95": [
+                395.0,
+                1905.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 525.0,
+              "ci95": [
+                98.0,
+                1122.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_nothing": {
+          "expected_loss": {
+            "point": 1224.0,
+            "ci95": [
+              552.0,
+              2040.2
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1224.0,
+              "ci95": [
+                -2040.2,
+                -552.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -351.0,
+              "ci95": [
+                -714.0,
+                12.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": -8.0,
+              "ci95": [
+                -24.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -1075.0,
+              "ci95": [
+                -1905.0,
+                -395.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -550.0,
+              "ci95": [
+                -1205.025,
+                -93.975
+              ],
+              "separated": true
+            }
+          }
+        },
+        "stratified_random": {
+          "expected_loss": {
+            "point": 674.0,
+            "ci95": [
+              251.0,
+              1266.0
+            ]
+          },
+          "recall": {
+            "point": 0.3684,
+            "ci95": [
+              0.0769,
+              0.5714
+            ]
+          },
+          "precision": {
+            "point": 0.28,
+            "ci95": [
+              0.0476,
+              0.5429
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -674.0,
+              "ci95": [
+                -1266.0,
+                -251.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": 199.0,
+              "ci95": [
+                -249.025,
+                671.05
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 542.0,
+              "ci95": [
+                70.975,
+                1197.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -525.0,
+              "ci95": [
+                -1122.0,
+                -98.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 550.0,
+              "ci95": [
+                93.975,
+                1205.025
+              ],
+              "separated": true
+            }
+          }
+        }
+      }
+    },
+    "no-harbor": {
+      "why": "what a machine without Docker actually runs",
+      "n_environments": 19,
+      "n_planted": 36,
+      "environments": [
+        "fixture/artifact_splits",
+        "fixture/drifted_asserts",
+        "fixture/escalate_overrewarded",
+        "fixture/flaky",
+        "fixture/gold_broken",
+        "fixture/healthy",
+        "fixture/leaky_splits",
+        "fixture/paraphrased_splits",
+        "fixture/rationale_ignored",
+        "fixture/solved_at_reset",
+        "fixture/unfalsifiable",
+        "fixture/weak_oracle",
+        "inspect/always-correct",
+        "inspect/constant-score",
+        "inspect/effort-scorer",
+        "inspect/healthy",
+        "inspect/leaky-split",
+        "openenv/echo",
+        "openenv/textarena-wordle"
+      ],
+      "profiles": {
+        "research-run": {
+          "always_modal_defect": {
+            "expected_loss": 1549.0,
+            "recall": 0.1667,
+            "precision": 0.3158,
+            "severity_weighted_recall": 0.1807,
+            "n_missed": 30,
+            "n_spurious": 13,
+            "error_count": 43
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 2240.0,
+            "recall": 0.0556,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0361,
+            "n_missed": 34,
+            "n_spurious": 0,
+            "error_count": 34
+          },
+          "flag_everything": {
+            "expected_loss": 230.0,
+            "recall": 1.0,
+            "precision": 0.1353,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 230,
+            "error_count": 230
+          },
+          "flag_nothing": {
+            "expected_loss": 2256.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 36,
+            "n_spurious": 0,
+            "error_count": 36
+          },
+          "stratified_random": {
+            "expected_loss": 1248.0,
+            "recall": 0.4167,
+            "precision": 0.3846,
+            "severity_weighted_recall": 0.4036,
+            "n_missed": 21,
+            "n_spurious": 24,
+            "error_count": 45
+          }
+        },
+        "production-training": {
+          "always_modal_defect": {
+            "expected_loss": 10866.0,
+            "recall": 0.1667,
+            "precision": 0.3158,
+            "severity_weighted_recall": 0.1807,
+            "n_missed": 30,
+            "n_spurious": 13,
+            "error_count": 43
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 16520.0,
+            "recall": 0.0556,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0361,
+            "n_missed": 34,
+            "n_spurious": 0,
+            "error_count": 34
+          },
+          "flag_everything": {
+            "expected_loss": 460.0,
+            "recall": 1.0,
+            "precision": 0.1353,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 230,
+            "error_count": 230
+          },
+          "flag_nothing": {
+            "expected_loss": 16600.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 36,
+            "n_spurious": 0,
+            "error_count": 36
+          },
+          "stratified_random": {
+            "expected_loss": 8808.0,
+            "recall": 0.4167,
+            "precision": 0.3846,
+            "severity_weighted_recall": 0.4036,
+            "n_missed": 21,
+            "n_spurious": 24,
+            "error_count": 45
+          }
+        },
+        "benchmark-publication": {
+          "always_modal_defect": {
+            "expected_loss": 24404.0,
+            "recall": 0.1667,
+            "precision": 0.3158,
+            "severity_weighted_recall": 0.1807,
+            "n_missed": 30,
+            "n_spurious": 13,
+            "error_count": 43
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 36100.0,
+            "recall": 0.0556,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0361,
+            "n_missed": 34,
+            "n_spurious": 0,
+            "error_count": 34
+          },
+          "flag_everything": {
+            "expected_loss": 1840.0,
+            "recall": 1.0,
+            "precision": 0.1353,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 230,
+            "error_count": 230
+          },
+          "flag_nothing": {
+            "expected_loss": 36300.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 36,
+            "n_spurious": 0,
+            "error_count": 36
+          },
+          "stratified_random": {
+            "expected_loss": 19692.0,
+            "recall": 0.4167,
+            "precision": 0.3846,
+            "severity_weighted_recall": 0.4036,
+            "n_missed": 21,
+            "n_spurious": 24,
+            "error_count": 45
+          }
+        },
+        "flat": {
+          "always_modal_defect": {
+            "expected_loss": 43.0,
+            "recall": 0.1667,
+            "precision": 0.3158,
+            "severity_weighted_recall": 0.1807,
+            "n_missed": 30,
+            "n_spurious": 13,
+            "error_count": 43
+          },
+          "assay": {
+            "expected_loss": 0.0,
+            "recall": 1.0,
+            "precision": 1.0,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 0,
+            "error_count": 0
+          },
+          "check_env": {
+            "expected_loss": 34.0,
+            "recall": 0.0556,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.0361,
+            "n_missed": 34,
+            "n_spurious": 0,
+            "error_count": 34
+          },
+          "flag_everything": {
+            "expected_loss": 230.0,
+            "recall": 1.0,
+            "precision": 0.1353,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 230,
+            "error_count": 230
+          },
+          "flag_nothing": {
+            "expected_loss": 36.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 36,
+            "n_spurious": 0,
+            "error_count": 36
+          },
+          "stratified_random": {
+            "expected_loss": 45.0,
+            "recall": 0.4167,
+            "precision": 0.3846,
+            "severity_weighted_recall": 0.4036,
+            "n_missed": 21,
+            "n_spurious": 24,
+            "error_count": 45
+          }
+        }
+      },
+      "paired_vs_flag_everything": {
+        "assay": {
+          "expected_loss": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "always_modal_defect": {
+              "point": 1549.0,
+              "ci95": [
+                903.0,
+                2269.075
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 2240.0,
+              "ci95": [
+                1208.0,
+                3376.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": 230.0,
+              "ci95": [
+                213.0,
+                245.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 2256.0,
+              "ci95": [
+                1232.0,
+                3392.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 1248.0,
+              "ci95": [
+                616.0,
+                1975.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "always_modal_defect": {
+          "expected_loss": {
+            "point": 1549.0,
+            "ci95": [
+              903.0,
+              2269.075
+            ]
+          },
+          "recall": {
+            "point": 0.1667,
+            "ci95": [
+              0.0938,
+              0.2245
+            ]
+          },
+          "precision": {
+            "point": 0.3158,
+            "ci95": [
+              0.1053,
+              0.5263
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1549.0,
+              "ci95": [
+                -2269.075,
+                -903.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 691.0,
+              "ci95": [
+                207.0,
+                1183.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -1319.0,
+              "ci95": [
+                -2055.025,
+                -660.975
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 707.0,
+              "ci95": [
+                223.0,
+                1191.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -301.0,
+              "ci95": [
+                -791.0,
+                154.025
+              ],
+              "separated": false
+            }
+          }
+        },
+        "check_env": {
+          "expected_loss": {
+            "point": 2240.0,
+            "ci95": [
+              1208.0,
+              3376.0
+            ]
+          },
+          "recall": {
+            "point": 0.0556,
+            "ci95": [
+              0.0,
+              0.1724
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -2240.0,
+              "ci95": [
+                -3376.0,
+                -1208.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -691.0,
+              "ci95": [
+                -1183.0,
+                -207.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -2010.0,
+              "ci95": [
+                -3161.025,
+                -967.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 16.0,
+              "ci95": [
+                0.0,
+                40.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -992.0,
+              "ci95": [
+                -1765.0,
+                -344.975
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_everything": {
+          "expected_loss": {
+            "point": 230.0,
+            "ci95": [
+              213.0,
+              245.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.1353,
+            "ci95": [
+              0.0789,
+              0.1992
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -230.0,
+              "ci95": [
+                -245.0,
+                -213.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": 1319.0,
+              "ci95": [
+                660.975,
+                2055.025
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 2010.0,
+              "ci95": [
+                967.0,
+                3161.025
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 2026.0,
+              "ci95": [
+                988.0,
+                3176.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 1018.0,
+              "ci95": [
+                378.975,
+                1755.025
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flag_nothing": {
+          "expected_loss": {
+            "point": 2256.0,
+            "ci95": [
+              1232.0,
+              3392.0
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -2256.0,
+              "ci95": [
+                -3392.0,
+                -1232.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": -707.0,
+              "ci95": [
+                -1191.0,
+                -223.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": -16.0,
+              "ci95": [
+                -40.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -2026.0,
+              "ci95": [
+                -3176.0,
+                -988.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -1008.0,
+              "ci95": [
+                -1773.025,
+                -369.975
+              ],
+              "separated": true
+            }
+          }
+        },
+        "stratified_random": {
+          "expected_loss": {
+            "point": 1248.0,
+            "ci95": [
+              616.0,
+              1975.0
+            ]
+          },
+          "recall": {
+            "point": 0.4167,
+            "ci95": [
+              0.2273,
+              0.55
+            ]
+          },
+          "precision": {
+            "point": 0.3846,
+            "ci95": [
+              0.1667,
+              0.5918
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -1248.0,
+              "ci95": [
+                -1975.0,
+                -616.0
+              ],
+              "separated": true
+            },
+            "always_modal_defect": {
+              "point": 301.0,
+              "ci95": [
+                -154.025,
+                791.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 992.0,
+              "ci95": [
+                344.975,
+                1765.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -1018.0,
+              "ci95": [
+                -1755.025,
+                -378.975
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 1008.0,
+              "ci95": [
+                369.975,
+                1773.025
+              ],
+              "separated": true
+            }
+          }
+        }
+      }
+    },
+    "harbor-only": {
+      "why": "the only environments Assay gets wrong",
+      "n_environments": 5,
+      "n_planted": 10,
+      "environments": [
+        "harbor/broken-gold",
+        "harbor/healthy",
+        "harbor/self-graded",
+        "harbor/shared-tests",
+        "harbor/vacuous-tests"
+      ],
+      "profiles": {
+        "research-run": {
+          "always_modal_defect": {
+            "expected_loss": 218.0,
+            "recall": 0.3,
+            "precision": 0.6,
+            "severity_weighted_recall": 0.3261,
+            "n_missed": 7,
+            "n_spurious": 2,
+            "error_count": 9
+          },
+          "assay": {
+            "expected_loss": 240.0,
+            "recall": 0.8,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.7826,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 576.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "flag_everything": {
+            "expected_loss": 60.0,
+            "recall": 1.0,
+            "precision": 0.1429,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 60,
+            "error_count": 60
+          },
+          "flag_nothing": {
+            "expected_loss": 576.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "stratified_random": {
+            "expected_loss": 339.0,
+            "recall": 0.2,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.2174,
+            "n_missed": 8,
+            "n_spurious": 3,
+            "error_count": 11
+          }
+        },
+        "production-training": {
+          "always_modal_defect": {
+            "expected_loss": 1284.0,
+            "recall": 0.3,
+            "precision": 0.6,
+            "severity_weighted_recall": 0.3261,
+            "n_missed": 7,
+            "n_spurious": 2,
+            "error_count": 9
+          },
+          "assay": {
+            "expected_loss": 1920.0,
+            "recall": 0.8,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.7826,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 4160.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "flag_everything": {
+            "expected_loss": 120.0,
+            "recall": 1.0,
+            "precision": 0.1429,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 60,
+            "error_count": 60
+          },
+          "flag_nothing": {
+            "expected_loss": 4160.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "stratified_random": {
+            "expected_loss": 2246.0,
+            "recall": 0.2,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.2174,
+            "n_missed": 8,
+            "n_spurious": 3,
+            "error_count": 11
+          }
+        },
+        "benchmark-publication": {
+          "always_modal_defect": {
+            "expected_loss": 3216.0,
+            "recall": 0.3,
+            "precision": 0.6,
+            "severity_weighted_recall": 0.3261,
+            "n_missed": 7,
+            "n_spurious": 2,
+            "error_count": 9
+          },
+          "assay": {
+            "expected_loss": 4000.0,
+            "recall": 0.8,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.7826,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 9200.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "flag_everything": {
+            "expected_loss": 480.0,
+            "recall": 1.0,
+            "precision": 0.1429,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 60,
+            "error_count": 60
+          },
+          "flag_nothing": {
+            "expected_loss": 9200.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "stratified_random": {
+            "expected_loss": 5224.0,
+            "recall": 0.2,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.2174,
+            "n_missed": 8,
+            "n_spurious": 3,
+            "error_count": 11
+          }
+        },
+        "flat": {
+          "always_modal_defect": {
+            "expected_loss": 9.0,
+            "recall": 0.3,
+            "precision": 0.6,
+            "severity_weighted_recall": 0.3261,
+            "n_missed": 7,
+            "n_spurious": 2,
+            "error_count": 9
+          },
+          "assay": {
+            "expected_loss": 2.0,
+            "recall": 0.8,
+            "precision": 1.0,
+            "severity_weighted_recall": 0.7826,
+            "n_missed": 2,
+            "n_spurious": 0,
+            "error_count": 2
+          },
+          "check_env": {
+            "expected_loss": 10.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "flag_everything": {
+            "expected_loss": 60.0,
+            "recall": 1.0,
+            "precision": 0.1429,
+            "severity_weighted_recall": 1.0,
+            "n_missed": 0,
+            "n_spurious": 60,
+            "error_count": 60
+          },
+          "flag_nothing": {
+            "expected_loss": 10.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 10,
+            "n_spurious": 0,
+            "error_count": 10
+          },
+          "stratified_random": {
+            "expected_loss": 11.0,
+            "recall": 0.2,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.2174,
+            "n_missed": 8,
+            "n_spurious": 3,
+            "error_count": 11
+          }
+        }
+      },
+      "paired_vs_flag_everything": {
+        "assay": {
+          "expected_loss": {
+            "point": 240.0,
+            "ci95": [
+              0.0,
+              480.0
+            ]
+          },
+          "recall": {
+            "point": 0.8,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 1.0,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "always_modal_defect": {
+              "point": -22.0,
+              "ci95": [
+                -479.0,
+                435.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 336.0,
+              "ci95": [
+                0.0,
+                832.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -180.0,
+              "ci95": [
+                -419.0,
+                59.0
+              ],
+              "separated": false
+            },
+            "flag_nothing": {
+              "point": 336.0,
+              "ci95": [
+                0.0,
+                832.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": 99.0,
+              "ci95": [
+                -475.0,
+                714.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "always_modal_defect": {
+          "expected_loss": {
+            "point": 218.0,
+            "ci95": [
+              1.0,
+              473.0
+            ]
+          },
+          "recall": {
+            "point": 0.3,
+            "ci95": [
+              0.0909,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.6,
+            "ci95": [
+              0.2,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": 22.0,
+              "ci95": [
+                -435.0,
+                479.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 358.0,
+              "ci95": [
+                116.0,
+                600.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -158.0,
+              "ci95": [
+                -422.0,
+                65.0
+              ],
+              "separated": false
+            },
+            "flag_nothing": {
+              "point": 358.0,
+              "ci95": [
+                116.0,
+                600.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 121.0,
+              "ci95": [
+                -2.0,
+                361.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "check_env": {
+          "expected_loss": {
+            "point": 576.0,
+            "ci95": [
+              240.0,
+              952.0
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -336.0,
+              "ci95": [
+                -832.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -358.0,
+              "ci95": [
+                -600.0,
+                -116.0
+              ],
+              "separated": true
+            },
+            "flag_everything": {
+              "point": -516.0,
+              "ci95": [
+                -901.0,
+                -172.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "stratified_random": {
+              "point": -237.0,
+              "ci95": [
+                -478.0,
+                2.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "flag_everything": {
+          "expected_loss": {
+            "point": 60.0,
+            "ci95": [
+              51.0,
+              67.0
+            ]
+          },
+          "recall": {
+            "point": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.1429,
+            "ci95": [
+              0.0429,
+              0.2714
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": 180.0,
+              "ci95": [
+                -59.0,
+                419.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": 158.0,
+              "ci95": [
+                -65.0,
+                422.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 516.0,
+              "ci95": [
+                172.0,
+                901.0
+              ],
+              "separated": true
+            },
+            "flag_nothing": {
+              "point": 516.0,
+              "ci95": [
+                172.0,
+                901.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": 279.0,
+              "ci95": [
+                -63.0,
+                781.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "flag_nothing": {
+          "expected_loss": {
+            "point": 576.0,
+            "ci95": [
+              240.0,
+              952.0
+            ]
+          },
+          "recall": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "precision": {
+            "point": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -336.0,
+              "ci95": [
+                -832.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -358.0,
+              "ci95": [
+                -600.0,
+                -116.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 0.0,
+              "ci95": [
+                0.0,
+                0.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -516.0,
+              "ci95": [
+                -901.0,
+                -172.0
+              ],
+              "separated": true
+            },
+            "stratified_random": {
+              "point": -237.0,
+              "ci95": [
+                -478.0,
+                2.0
+              ],
+              "separated": false
+            }
+          }
+        },
+        "stratified_random": {
+          "expected_loss": {
+            "point": 339.0,
+            "ci95": [
+              4.0,
+              832.0
+            ]
+          },
+          "recall": {
+            "point": 0.2,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "precision": {
+            "point": 0.4,
+            "ci95": [
+              0.0,
+              1.0
+            ]
+          },
+          "loss_saved_vs": {
+            "assay": {
+              "point": -99.0,
+              "ci95": [
+                -714.0,
+                475.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -121.0,
+              "ci95": [
+                -361.0,
+                2.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 237.0,
+              "ci95": [
+                -2.0,
+                478.0
+              ],
+              "separated": false
+            },
+            "flag_everything": {
+              "point": -279.0,
+              "ci95": [
+                -781.0,
+                63.0
+              ],
+              "separated": false
+            },
+            "flag_nothing": {
+              "point": 237.0,
+              "ci95": [
+                -2.0,
+                478.0
+              ],
+              "separated": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

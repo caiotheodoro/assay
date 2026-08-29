@@ -47,12 +47,12 @@ def test_a_signed_card_names_the_reviewer():
     assert "_Unsigned._" not in card
 
 
-def test_the_signature_in_the_card_matches_the_report():
+def test_the_content_digest_in_the_card_matches_the_report():
     report = audit(build("healthy"), IN_BAND)
     body = report.to_dict()
-    signature = body.pop("signature")
-    assert signature == digest(body)
-    assert signature in to_markdown(report)
+    content_digest = body.pop("content_digest")
+    assert content_digest == digest(body)
+    assert content_digest in to_markdown(report)
 
 
 def test_html_is_self_contained_and_theme_aware():

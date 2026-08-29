@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Bootstrap confidence intervals over the audited corpus.
 
-Every number this project publishes is computed over 21 environments. A point
-estimate from 21 samples, reported bare, invites the reader to believe a
+Every number this project publishes is computed over 24 environments. A point
+estimate from 24 samples, reported bare, invites the reader to believe a
 precision it does not have -- and a benchmark repo is held to a stricter bar
 than a model card, because publishing an eval invites people to score against
 it and everything they cannot bound they will discount.
@@ -111,19 +111,19 @@ def bootstrap(
     return out
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--results", default="results/full_run.json")
-    ap.add_argument("--resamples", type=int, default=10000)
-    ap.add_argument("--seed", type=int, default=11)
-    ap.add_argument("--profile", default="research-run")
-    ap.add_argument("--out", default="results/intervals.json")
-    args = ap.parse_args()
+def load_arms(
+    payload: dict, keep=None
+) -> tuple[dict[str, "ArmResult"], dict[str, frozenset]]:
+    """Rebuild every arm from a full_run payload, optionally on a subset.
 
-    payload = json.loads(Path(args.results).read_text())
+    `keep` is a predicate on env_id. Splitting the corpus has to reuse this
+    loader rather than reimplement it -- a subset scored by a second
+    implementation is the failure this repository documents elsewhere.
+    """
     truth = {
         env: frozenset(DefectClass(d) for d in row["planted"])
         for env, row in payload["per_env"].items()
+        if keep is None or keep(env)
     }
     arms: dict[str, ArmResult] = {}
     arms["assay"] = ArmResult(
@@ -131,6 +131,7 @@ def main() -> int:
         [
             Outcome(env, truth[env], frozenset(DefectClass(d) for d in row["assay_detected"]))
             for env, row in payload["per_env"].items()
+            if env in truth
         ],
     )
     everything = frozenset(DefectClass)
@@ -163,6 +164,20 @@ def main() -> int:
                 for env, t in truth.items()
             ],
         )
+    return arms, truth
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--results", default="results/full_run.json")
+    ap.add_argument("--resamples", type=int, default=10000)
+    ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--profile", default="research-run")
+    ap.add_argument("--out", default="results/intervals.json")
+    args = ap.parse_args()
+
+    payload = json.loads(Path(args.results).read_text())
+    arms, truth = load_arms(payload)
 
     profile = load(args.profile)
     result = bootstrap(arms, profile, args.resamples, args.seed)

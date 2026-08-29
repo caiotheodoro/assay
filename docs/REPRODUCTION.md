@@ -186,21 +186,21 @@ on `paws`.
 uv run --extra adapters --extra sweep --extra openenv pytest -q
 ```
 
-**Measured: 493 passed, 18 skipped, 0 failed, exit 0, 161–227 s** with Docker
-and Ollama both up. An earlier revision of this guide claimed 275 collected and
-0 skipped; the suite has roughly doubled since and that number was never
-re-measured.
+**Measured: 513 passed, 0 skipped, 0 failed, exit 0, 71 s** with Docker and
+Ollama up *and the tau2 snapshots fetched*. An earlier revision of this guide
+claimed 275 collected; the suite has roughly doubled since and that number was
+never re-measured.
 
-The 18 skips are all `tests/test_tau2_adapter.py`, which wants the pinned tau2
-snapshots. Fetch them first and they run:
+That fetch is a real prerequisite and this guide did not list it. Without it,
+`tests/test_tau2_adapter.py` skips — 18 skips measured earlier in the same
+session, before these corrections were written. Run it first:
 
 ```bash
 uv run --extra tau2 python scripts/tau2_fetch.py
 ```
 
-So "nothing skips when everything is installed" is false as written — it is
-true only once that fetch, which this guide did not previously list as a
-prerequisite, has been done.
+So "nothing skips when everything is installed and running" is true only once
+the snapshots are on disk, which is not something `uv sync` does for you.
 
 Three suites carry more weight than the rest:
 
@@ -268,9 +268,20 @@ live pids are left alone.
 uv run --extra adapters python scripts/challenger_ablation.py --models qwen3:8b --claude
 ```
 
-**Measured: 840 s end to end.** Scripted misses (4 attempts, 6 s), `qwen3:8b`
-misses, `claude-cli` **finds the exploit at attempt 8 with gap 1.00** (405 s).
-The misses are as much the result as the hit.
+**Measured, from `results/challenger_ablation.json`:** scripted misses
+(4 attempts, 2.2 s), `qwen3:8b` misses (10 attempts, 97.0 s), `claude-cli`
+**finds the exploit with gap 1.00** (10 attempts, 261.7 s). The misses are as
+much the result as the hit.
+
+An earlier revision of this guide gave 840 s end to end, 6 s and 405 s, and
+"attempt 8" — none of which appear in any committed run. These numbers are read
+back out of the artifact; run the command and compare against the file, not
+against this paragraph.
+
+This arm is model-gated and non-deterministic. A rerun will not reproduce
+261.7 s and need not reproduce `found` at all; what should reproduce is the
+shape — the scripted arm loses, and a prompted agent that finds the exploit
+does it by overwriting `expected.txt` rather than by answering correctly.
 
 Arms that cannot run are printed as skipped with a reason and recorded in the
 results JSON. An arm missing from a comparison is a result about the run, not

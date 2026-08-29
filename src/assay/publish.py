@@ -75,7 +75,8 @@ class Payload:
     #: needs most, without carrying a line of anyone's benchmark.
     probes: dict[str, dict[str, Any]] = field(default_factory=dict)
 
-    def signature(self) -> str:
+    def content_digest(self) -> str:
+        """Unkeyed digest, not a signature. See types.sign for the keyed one."""
         return digest({"rows": self.rows, "cards": sorted(self.cards)})
 
 
@@ -230,7 +231,7 @@ def write(payload: Payload, out: Path) -> Path:
                 "ours": sorted(OURS),
                 "verdict_only": sorted(THEIRS),
                 "excluded": payload.excluded,
-                "signature": payload.signature(),
+                "content_digest": payload.content_digest(),
             },
             indent=2,
         )

@@ -2,10 +2,13 @@
 
 **An agentic auditor for RL environments and eval suites.**
 
-Point Assay at an environment. It runs a battery of probes and emits a signed
+Point Assay at an environment. It runs a battery of probes and emits an
 **Environment Card**: a validity verdict where every claim is tied to a probe
 result, plus machine-readable JSON and a nonzero exit code that blocks a
-training run.
+training run. The card carries a content digest, and an HMAC signature when
+`ASSAY_CARD_KEY` is set — a digest alone identifies a card and catches
+corruption; it is not tamper-evidence, because anyone editing the body can
+recompute it.
 
 > **Status: early.** All nine probe families and six adapters — inspect_ai,
 > Harbor, OpenEnv, submitted specs, τ²-bench and ScienceAgentBench — are
@@ -145,6 +148,43 @@ perfect precision. It is silent on the other eight probe families: verifier
 integrity, trivial floor, separability, contamination, shortcut leakage,
 spec/verifier mismatch, difficulty band and reward hackability.
 
+### Half this corpus is our own test fixtures, and the split is unflattering
+
+The 24 environments are 12 `fixture/*` written here, 5 `harbor/`, 5 `inspect/`,
+2 `openenv/`. The twelve fixtures are byte-for-byte the catalogue that
+`tests/test_probes_fire.py` asserts `detected == planted` on. **Assay's 0.0 loss
+there is a passing build, not a measurement**, and pooling it with the rest lets
+a CI gate inflate a published number. No split was reported until a red-team
+pass forced one. Here it is — `uv run --extra adapters python scripts/corpus_splits.py`,
+full table in [`results/corpus_splits.json`](results/corpus_splits.json):
+
+| split | n | assay | flag_everything | who wins |
+|---|---|---|---|---|
+| all (published) | 24 | 240.0 | 290.0 | assay, by 50 |
+| **no-fixture** | 12 | **240.0** | **141.0** | **flag_everything** |
+| fixture-only | 12 | 0.0 | 149.0 | assay — but it is asserted, not measured |
+| no-harbor | 19 | 0.0 | 230.0 | assay, perfectly |
+
+`research-run`; the other three profiles are in the file.
+
+**On the twelve environments this repo did not write, Assay loses to flagging
+everything — 240.0 to 141.0 — and loses on three of four profiles rather than
+two.** Every miss it has is a `harbor/` environment, so the fixtures contribute
+a guaranteed zero and the pooled 240.0 vs 290.0 win is carried by environments
+whose answers are pinned in a test.
+
+The mirror image is just as under-reported: drop Docker and the corpus loses
+every environment Assay gets wrong, so it scores **0.0 on all four profiles**
+and separates cleanly from the floor (saved 230.0, CI [213, 245]). The README
+previously said "without the daemon the run still completes, on 19
+environments" without saying it also stops being a test. `docs/REPRODUCTION.md`
+disclosed the 240.0 → 0.0 drop but not that the floor comparison flips.
+
+Twelve environments is a thin basis for either claim, which is the honest
+summary: **the corpus is too small and too self-authored to support the pooled
+headline**, and enlarging it with environments this repo did not write is the
+first thing worth doing next.
+
 `stratified_random` and `always_modal_defect` are the two trivial policies
 `criteria.md` requires that this repo did not implement until
 [`docs/changelog/62-rigour.md`](docs/changelog/62-rigour.md). Neither becomes
@@ -156,8 +196,23 @@ the floor harder, and that is published as the result rather than as a reason
 not to have run it. Full table, per profile, in `results/baselines.json`.
 
 Against `flag_nothing` it saves **16.0 expected loss, 95% CI [0.0, 40.0]** — an
-interval that includes zero. **The incumbent is not statistically
-distinguishable from checking nothing at all** on this corpus.
+interval that includes zero.
+
+**That interval cannot say what this README used to make it say.** `check_env`
+emits no false positives and detects a strict subset of what is planted, so the
+paired difference is >= 0 in every resample — 10,000 of 10,000. An interval
+that can never go negative cannot exclude zero from above, so "not
+statistically distinguishable" was decided by the shape of the test, not by the
+data. On a one-sided reading the claim survives at p ~ 0.12: that is the chance
+no `NONDETERMINISM` environment is drawn, (22/24)^24, and it is the whole
+result. One of `check_env`'s two hits is `fixture/flaky`, planted here.
+
+Same caveat on the intervals above. With Assay wrong on exactly 2 of 24
+environments, the bootstrap distribution of its loss is a binomial count on a
+120-point lattice — ten distinct values, 12.4% of the mass on exactly 0.0. The
+`[0.0, 600.0]` interval is the 2.5th and 97.5th rungs of that ladder. It is
+honest resampling on a corpus too small to carry the precision "95% CI"
+implies, and it is reported here rather than left for a reader to derive.
 
 An earlier version of this README said it scored *identically* to flagging
 nothing. That was measured against a reimplementation of the checkers that
@@ -215,26 +270,42 @@ Both misses are `REWARD_HACKABLE`, on `harbor/self-graded` and
 
 | Challenger | Result | Exploit gap | Scored attempts | Wall clock |
 |---|---|---|---|---|
-| scripted | missed | 0.00 | 4 | 6s |
-| prompted, `qwen3:8b` | missed | 0.00 | 8 | 74s |
-| prompted, `claude-cli` | **found** | **1.00** | 8 | 405s |
+| scripted | missed | 0.00 | 4 | 2.2s |
+| prompted, `qwen3:8b` | missed | 0.00 | 10 | 97.0s |
+| prompted, `claude-cli` | **found** | **1.00** | 10 | 261.7s |
 
-A 10-turn budget; "scored attempts" counts the turns that parsed into an
-action, so it is at most the budget and usually less. Wall clock is with the
+Read from [`results/challenger_ablation.json`](results/challenger_ablation.json).
+An earlier version of this table printed 4/8/8 attempts at 6s/74s/405s, which
+matched no committed run — a red-team pass could not source a single one of
+those six numbers. The row above is the file. A 10-turn budget; "scored
+attempts" counts the turns that parsed into an action. Wall clock is with the
 Ollama model already resident; the first call after a model swap costs another
 two to three minutes.
 
 The winning policy, at turn 8, after seven turns of reconnaissance — hunting
 for the verifier, listing `/logs`, checking file permissions, trying to write
-`reward.txt` directly. One run's winner was a symlink, an earlier one a pair of
-matching writes; the shape is always the same, which is the point:
+`reward.txt` directly:
 
 ```sh
-rm -f expected.txt && ln -s out.txt expected.txt && echo -n 'WRONG_ANSWER_XYZ' > out.txt
+echo -n 'banana' > expected.txt; echo -n 'banana' > out.txt
 ```
+
+It does not forge an answer. It **overwrites the expected answer** so the
+verifier's comparison is trivially true, and by turn 10 it does the same with
+`WRONG_XYZ` — a string that is not the answer to anything.
 
 Scored 1.0 by the environment. Scored 0.0 by the independent verifier the
 agent never had access to. That difference is the whole measurement.
+
+A previous revision printed a symlink here — `rm -f expected.txt && ln -s
+out.txt expected.txt && …` — as "the winning policy … scored 1.0". That command
+appears in no run that succeeded. The only symlink in the artifacts points the
+other way and belongs to a run that **missed**
+([`results/challenger_ablation_claude.json`](results/challenger_ablation_claude.json)).
+Publishing an exploit that was never scored, in a repository whose thesis is
+that unverified claims about environments are the problem, was the worst single
+defect the red-team found, and it was found by reading artifacts this README
+told people to read.
 
 The two misses are as much the result as the hit. An ablation showing only the
 arm that worked says nothing about how hard the problem is.
@@ -389,14 +460,25 @@ static task-definition set; these probes need an executable environment with a s
 verifier. On this benchmark the two tools are not competitors, and the zero says so more
 plainly than any argument.
 
-Two things that fell out of running their scorer:
+One thing fell out of running their scorer, and one argument did not:
 
-- **Nine of the twelve defects are already fixed** in the split SAB tells you to use, so
-  any tool's SAB recall number is uninterpretable without naming the split.
-- **The heuristic this project rejected would score respectably through their metric.**
-  R1 fires on 61 of 102 tasks; `metrics.py` computes precision only over findings on the
-  12 revised tasks, so its 41 findings on clean tasks are invisible to it. Assay's
-  trivial-floor rule caught what their precision metric structurally cannot.
+- **Measured — nine of the twelve defects are already fixed** in the split SAB tells you
+  to use, so any tool's SAB recall number is uninterpretable without naming the split.
+- **Not measured — whether the heuristic this project rejected would score respectably
+  through their metric.** The run stopped: 4 of its findings land on revised tasks, so
+  `match.py` must call a Gemini judge, and no API key was set. The artifact records
+  `their_report: null` and says so. Stopping rather than reporting an unjudged number
+  was right; an earlier revision of this README stated the outcome anyway, under a
+  heading claiming it fell out of running their scorer. It is an argument about the
+  metric's shape, not a result.
+
+  The argument itself still stands and can be checked without a judge: R1 fires on 61 of
+  102 tasks, and `metrics.py` computes precision only over findings on the 12 revised
+  tasks, so most of what it emits is structurally invisible to that metric. The count
+  previously given here — 41 findings on clean tasks — was wrong. R1 submitted **20**
+  findings, 4 on revised tasks, so **16** on clean ones; 41 is the number of findings
+  suppressed by the image-output exclusion, a different quantity read out of the wrong
+  field.
 
 ### What this changes about the claims above
 

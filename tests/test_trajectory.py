@@ -53,10 +53,9 @@ def test_human_checkpoints_appear():
     assert "sandbox execution" in _traj().to_markdown()
 
 
-def test_the_export_is_signed():
+def test_the_export_carries_a_content_digest():
     body = _traj().to_dict()
-    signature = body.pop("signature")
-    assert signature == digest(body)
+    assert body.pop("content_digest") == digest(body)
 
 
 def test_it_writes_valid_json(tmp_path):
