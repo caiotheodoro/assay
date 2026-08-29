@@ -4,4 +4,8 @@ __pycache__/
 .pytest_cache/
 results/*.json
 !results/.gitkeep
+# The sweep's run artefact stays generated, like results/full_run.json. Its
+# triage is hand-written input to that run, not output from it, and the finding
+# it verifies is unreadable without it.
+!results/wild_sweep_triage.json
 uv.lock
