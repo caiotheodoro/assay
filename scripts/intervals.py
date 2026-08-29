@@ -134,9 +134,23 @@ def main() -> int:
         ],
     )
     everything = frozenset(DefectClass)
-    for name, detected in (("check_env", frozenset()), ("flag_nothing", frozenset()),
+    recorded = payload.get("arm_detections", {})
+    for name, fallback in (("check_env", frozenset()), ("flag_nothing", frozenset()),
                            ("flag_everything", everything)):
-        arms[name] = ArmResult(name, [Outcome(e, t, detected) for e, t in truth.items()])
+        per_env = recorded.get(name)
+        arms[name] = ArmResult(
+            name,
+            [
+                Outcome(
+                    env,
+                    t,
+                    frozenset(DefectClass(d) for d in per_env[env])
+                    if per_env and env in per_env
+                    else fallback,
+                )
+                for env, t in truth.items()
+            ],
+        )
 
     profile = load(args.profile)
     result = bootstrap(arms, profile, args.resamples, args.seed)

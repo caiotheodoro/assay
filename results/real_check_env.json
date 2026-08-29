@@ -1,0 +1,78 @@
+{
+  "gymnasium": "1.3.0",
+  "planted_defects": 4,
+  "detected_by_real_checkers": 1,
+  "cases": {
+    "healthy": {
+      "defect_present": null,
+      "gymnasium": {
+        "verdict": "WARNED",
+        "messages": [
+          "\u001b[33mWARN: Not able to test alternative render modes due to the environment not having a spec. Try instantiating the environment through `gymnasium.make`\u001b[0m"
+        ]
+      },
+      "stable_baselines3": {
+        "verdict": "PASSED",
+        "messages": []
+      },
+      "defect_detected": false
+    },
+    "seed_ignored": {
+      "defect_present": "NONDETERMINISM",
+      "gymnasium": {
+        "verdict": "RAISED",
+        "messages": [
+          "AssertionError: Deterministic step observations are not equivalent for the same seed and action"
+        ]
+      },
+      "stable_baselines3": {
+        "verdict": "PASSED",
+        "messages": []
+      },
+      "defect_detected": true
+    },
+    "solved_at_reset": {
+      "defect_present": "NOOP_PASSES",
+      "gymnasium": {
+        "verdict": "WARNED",
+        "messages": [
+          "\u001b[33mWARN: Not able to test alternative render modes due to the environment not having a spec. Try instantiating the environment through `gymnasium.make`\u001b[0m"
+        ]
+      },
+      "stable_baselines3": {
+        "verdict": "PASSED",
+        "messages": []
+      },
+      "defect_detected": false
+    },
+    "trivial_policy_wins": {
+      "defect_present": "TRIVIAL_FLOOR_BREACH",
+      "gymnasium": {
+        "verdict": "WARNED",
+        "messages": [
+          "\u001b[33mWARN: Not able to test alternative render modes due to the environment not having a spec. Try instantiating the environment through `gymnasium.make`\u001b[0m"
+        ]
+      },
+      "stable_baselines3": {
+        "verdict": "PASSED",
+        "messages": []
+      },
+      "defect_detected": false
+    },
+    "reward_hackable": {
+      "defect_present": "REWARD_HACKABLE",
+      "gymnasium": {
+        "verdict": "WARNED",
+        "messages": [
+          "\u001b[33mWARN: Not able to test alternative render modes due to the environment not having a spec. Try instantiating the environment through `gymnasium.make`\u001b[0m"
+        ]
+      },
+      "stable_baselines3": {
+        "verdict": "PASSED",
+        "messages": []
+      },
+      "defect_detected": false
+    }
+  },
+  "note": "Every environment here is API-correct: right spaces, right return shapes, no NaN rewards. The real checkers were run, not a model of them."
+}

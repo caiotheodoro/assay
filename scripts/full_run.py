@@ -192,6 +192,16 @@ def main() -> int:
             for o in arms[label].outcomes
         },
         "arm_logs": arm_logs,
+        # Every arm's per-environment detections, so downstream analysis reads
+        # what an arm actually did instead of assuming. intervals.py used to
+        # reconstruct check_env as detecting nothing, which silently discarded
+        # the determinism check the real gymnasium checker performs.
+        "arm_detections": {
+            name: {
+                o.env_id: sorted(d.value for d in o.detected) for o in arm.outcomes
+            }
+            for name, arm in arms.items()
+        },
     }
     target.write_text(json.dumps(payload, indent=2, sort_keys=True))
 

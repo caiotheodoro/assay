@@ -31,10 +31,23 @@ doing it by hand:
 
 The only automated tooling that exists is `gymnasium.utils.env_checker` and
 `stable_baselines3.common.env_checker`. They assert space shapes, that
-`reset()` returns `(obs, info)`, and that reward is not NaN. They are linters
-for *"will this crash my trainer"* — never *"is this measuring what it
-claims."* They do not even verify that seeding makes behaviour reproducible
-([Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084)).
+`reset()` returns `(obs, info)`, that reward is not NaN — and, in gymnasium
+1.3.0, that the same seed and action give the same observation.
+
+That last one matters, and an earlier version of this README got it wrong. It
+said the checkers never verify seeding, citing
+[Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084).
+Running the real checker instead of a model of it
+(`scripts/real_check_env.py`) shows gymnasium 1.3.0 raising `Deterministic step
+observations are not equivalent for the same seed and action`.
+Stable-baselines3 2.9.0 passes the same environment silently, so the two
+incumbents differ; the baseline in this repo models the stronger one.
+
+What survives is the ceiling. On five API-correct environments carrying four
+planted defects, the real checkers catch **one** — determinism — and say
+nothing about a verifier that pays full reward at reset, a constant action that
+beats every other, or a score that comes apart from the task. They are linters
+for *"will this crash my trainer"*, with exactly one check that is not.
 
 ## Two real defects, in software shipping today
 
@@ -72,11 +85,11 @@ Six calls to `reset(seed=1234)` return six different secret Wordle words:
 `earth, north, south, bread, tight, stage`. The method signature takes `seed`
 and then calls `self._ta_env.reset(num_players=...)` without it.
 
-This is exactly the gap named at the top of this README:
-[Gymnasium #1084](https://github.com/Farama-Foundation/Gymnasium/issues/1084) —
-`env_checker` verifies that `reset()` *accepts* a seed, never that seeding does
-anything — reproduced in a different ecosystem, on an environment people train
-against.
+gymnasium 1.3.0 would catch this — its checker raises on exactly this shape,
+confirmed in `scripts/real_check_env.py`. OpenEnv has no equivalent check, and
+the environment ships with the defect. That is the point: the fix exists in one
+ecosystem, and the ecosystem people are adopting for RL environments does not
+have it.
 
 ### What the tool found, and what a human found
 
@@ -108,8 +121,20 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 | **check_env** (incumbent) | **2832.0** | [1752, 4032] | **0.000** | 0.000 |
 | flag_nothing | 2832.0 | [1752, 4032] | 0.000 | 0.000 |
 
-The structural linter scores **identically to flagging nothing**. It is not a
-weak detector of these defects; it is not a detector of them at all.
+The incumbent detects **2 of 46 defects — 4.3% recall**, both determinism, at
+perfect precision. It is silent on the other eight probe families: verifier
+integrity, trivial floor, separability, contamination, shortcut leakage,
+spec/verifier mismatch, difficulty band and reward hackability.
+
+Against `flag_nothing` it saves **16.0 expected loss, 95% CI [0.0, 40.0]** — an
+interval that includes zero. **The incumbent is not statistically
+distinguishable from checking nothing at all** on this corpus.
+
+An earlier version of this README said it scored *identically* to flagging
+nothing. That was measured against a reimplementation of the checkers that
+omitted their determinism check — a strawman weaker than the real tool. The
+corrected claim is narrower, survives a paired bootstrap, and is the one worth
+making.
 
 ### What holds, and what does not
 
@@ -118,8 +143,9 @@ are paired differences drawn on a shared resample:
 
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
-| assay vs `check_env` | 2592.0 | [1496, 3848] | **separated** |
+| assay vs `check_env` | 2576.0 | [1472, 3840] | **separated** |
 | assay vs `flag_everything` | 50.0 | [−309, 295] | **overlaps zero** |
+| `check_env` vs `flag_nothing` | 16.0 | [0, 40] | **overlaps zero** |
 
 Assay beats the incumbent. **Assay does not beat the trivial floor at n=24.**
 By this project's own rule — a policy that ignores the input must not win —

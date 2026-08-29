@@ -30,10 +30,10 @@
       },
       "loss_saved_vs": {
         "check_env": {
-          "point": 2592.0,
+          "point": 2576.0,
           "ci95": [
-            1496.0,
-            3848.0
+            1472.0,
+            3840.0
           ],
           "separated": true
         },
@@ -57,48 +57,48 @@
     },
     "check_env": {
       "expected_loss": {
-        "point": 2832.0,
+        "point": 2816.0,
         "ci95": [
-          1752.0,
-          4032.0
+          1728.0,
+          4024.0
         ]
       },
       "recall": {
-        "point": 0.0,
+        "point": 0.0435,
         "ci95": [
           0.0,
-          0.0
+          0.1282
         ]
       },
       "precision": {
-        "point": 0.0,
+        "point": 1.0,
         "ci95": [
           0.0,
-          0.0
+          1.0
         ]
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -2592.0,
+          "point": -2576.0,
           "ci95": [
-            -3848.0,
-            -1496.0
+            -3840.0,
+            -1472.0
           ],
           "separated": true
         },
         "flag_nothing": {
-          "point": 0.0,
+          "point": 16.0,
           "ci95": [
             0.0,
-            0.0
+            40.0
           ],
           "separated": false
         },
         "flag_everything": {
-          "point": -2542.0,
+          "point": -2526.0,
           "ci95": [
-            -3756.05,
-            -1450.0
+            -3748.0,
+            -1426.0
           ],
           "separated": true
         }
@@ -136,9 +136,9 @@
           "separated": true
         },
         "check_env": {
-          "point": 0.0,
+          "point": -16.0,
           "ci95": [
-            0.0,
+            -40.0,
             0.0
           ],
           "separated": false
@@ -185,10 +185,10 @@
           "separated": false
         },
         "check_env": {
-          "point": 2542.0,
+          "point": 2526.0,
           "ci95": [
-            1450.0,
-            3756.05
+            1426.0,
+            3748.0
           ],
           "separated": true
         },

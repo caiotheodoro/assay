@@ -42,6 +42,10 @@ train = [
 adapters = [
     "inspect-ai>=0.3.260",
 ]
+gym = [
+    "gymnasium>=1.3.0",
+    "stable-baselines3>=2.9.0",
+]
 
 [project.scripts]
 assay = "assay.cli:main"
