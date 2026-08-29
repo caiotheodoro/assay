@@ -241,6 +241,45 @@ corpus is too small and too self-authored to support the pooled headline, and
 growing it with environments nobody here wrote is the first thing worth doing
 next — carefully.
 
+### The headline survives a 21% error in one made-up number, and no more
+
+Every expected-loss figure here is denominated in "engineer-hours-equivalent",
+and `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect
+at **120** of them. Nothing derives that 120. It is a considered guess, and
+every number above scales linearly with it.
+
+So: sweep it. `uv run --extra adapters python scripts/cost_sensitivity.py`,
+holding the severity shape fixed and moving only the miss/false-alarm exchange
+rate ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
+
+| CRITICAL miss cost | assay | flag_everything | winner |
+|---|---|---|---|
+| 40 | 80.0 | 290.0 | assay |
+| 120 *(shipped)* | 240.0 | 290.0 | assay |
+| **145** | **290.0** | **290.0** | **tie** |
+| 200 | 400.0 | 290.0 | flag_everything |
+| 800 | 1600.0 | 290.0 | flag_everything |
+
+The crossover is exact rather than bisected. Assay never false-alarms, so its
+loss is `2 × C`; `flag_everything` never misses, so its loss is pure false
+alarms and does not move with `C` at all. They cross at `290 / 2 = 145`.
+
+**The shipped value is 120. The crossover is 145.** So the headline result —
+Assay beats the trivial floor — holds only while a missed critical defect is
+worth less than about 1.2× what this repo guessed. Price a wasted training run
+any higher, as anyone renting an H100 cluster for a week plausibly would, and
+**flagging everything is the better policy** and Assay is not worth running.
+
+That is not a reason to distrust the ranking so much as a statement of what the
+ranking is: a claim about a specific cost regime, not about detectors in
+general. The one anchor available is that SWE-bench Verified needed **93
+developers** reading tasks by hand — which is the observed price of finding
+these defects the other way, and why a miss is priced far above a false alarm
+rather than near it. It does not pin 120 versus 145.
+
+Reported here rather than left for a reader to derive, because a paragraph
+saying "costs are illustrative" would have hidden that the margin is 21%.
+
 `stratified_random` and `always_modal_defect` are the two trivial policies
 `criteria.md` requires that this repo did not implement until
 [`docs/changelog/62-rigour.md`](docs/changelog/62-rigour.md). Neither becomes

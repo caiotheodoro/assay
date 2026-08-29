@@ -109,3 +109,26 @@ def test_the_published_example_card_matches_the_current_renderer():
             "--card results/example-card.md`."
         )
     assert "| Signature |" not in published
+
+
+def test_the_cost_crossover_matches_what_the_readme_claims():
+    """The headline win depends on an underived constant. Lock the margin.
+
+    `research-run.yaml` prices a missed CRITICAL at 120 and nothing derives it.
+    Assay beats `flag_everything` only below the crossover, so if either the
+    corpus or the profile moves, the README's "21%" stops being true and this
+    is where that gets caught.
+    """
+    d = _load("cost_sensitivity.json")
+    crossover = d["exact_crossover_critical_cost"]
+    shipped = d["shipped_value"]
+    assert crossover is not None, "no crossover computed; the arithmetic changed"
+    assert shipped < crossover, (
+        f"the shipped CRITICAL cost {shipped} is at or above the crossover "
+        f"{crossover}: flag_everything now wins at the shipped profile and the "
+        "README's headline is false"
+    )
+    margin_pct = round((crossover / shipped - 1) * 100)
+    assert f"survives a {margin_pct}% error" in README, (
+        f"computed margin is {margin_pct}% and the README does not say so"
+    )
