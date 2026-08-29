@@ -327,7 +327,7 @@ can triage 250 spurious findings.
 | Verdict + skip reasons only | {len(theirs)} |
 | Planted defects labelled, on those {len(ours)} | {n_planted} |
 | Distinct defect classes represented | {len(planted)} |
-| Payload signature | `{payload.signature()}` |
+| Payload content digest | `{payload.content_digest()}` |
 
 `corpus.jsonl` — one row per environment: the verdict, what Assay detected,
 probe-status coverage, and for our own environments the planted ground truth.
@@ -1091,7 +1091,7 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         n_disk = len(list((ds / "cards").glob("*.md")))
         jl = (ds / "corpus.jsonl").read_text().strip().splitlines()
         ok = n_cards == n_disk == sum(1 for r in payload.rows if r["content_included"]) \
-            and len(jl) == n_rows and payload.signature() in card
+            and len(jl) == n_rows and payload.content_digest() in card
         out.append(gate("counts consistent", ok,
                         f"rows={n_rows} jsonl={len(jl)} cards={n_cards} on-disk={n_disk}"))
 

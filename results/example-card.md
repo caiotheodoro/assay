@@ -7,9 +7,9 @@ A critical defect was found. Scores from this environment do not mean what they 
 |---|---|
 | Ecosystem | `inspect_ai` |
 | Environment version | `0` |
-| Audited | 2026-08-28 23:21 UTC |
+| Audited | 2026-08-29 16:33 UTC |
 | Exit code | `1` |
-| Signature | `0eae50d725cc087155a628216ec1e6d8…` |
+| Content digest | `c93da7976a9381d6b5de0f4726dcd17a…` |
 
 ## Coverage
 
@@ -132,4 +132,4 @@ _Unsigned._ This card blocks nothing until a human reviews it. The exit code is 
 
 ---
 
-Produced by Assay. Signature covers the full probe output: `0eae50d725cc087155a628216ec1e6d84825df39546dc6fa511d2208bed37c87`
+Produced by Assay. Unkeyed content digest over the full probe output: `c93da7976a9381d6b5de0f4726dcd17a47a5989f0e730696856b5842a581d9e6` — identifies this card and catches corruption, but anyone who edits the body can recompute it.

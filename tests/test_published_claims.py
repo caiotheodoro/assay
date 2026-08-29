@@ -69,3 +69,29 @@ def test_the_quickstart_command_produces_the_advertised_corpus():
     for line in README.splitlines():
         if "scripts/full_run.py" in line and "uv run" in line:
             assert "--extra openenv" in line, line
+
+
+def test_the_published_example_card_matches_the_current_renderer():
+    """`results/example-card.md` is the sample deliverable a judge reads.
+
+    It is a committed artifact of a live renderer, so a field rename leaves it
+    stale and nothing notices -- which is exactly what happened when
+    `signature` became `content_digest`. This renders a card now and asserts
+    the published one uses the same vocabulary.
+    """
+    from assay import audit
+    from assay.card import to_markdown
+    from assay.fixtures import build
+
+    published = (ROOT / "results" / "example-card.md").read_text()
+    fresh = to_markdown(audit(build("gold_broken"), {"solve_rates": {}}))
+
+    for label in ("| Content digest |", "Produced by Assay. Unkeyed content digest"):
+        assert label in fresh, f"renderer no longer emits {label!r}; update this test"
+        assert label in published, (
+            f"results/example-card.md is stale: the renderer emits {label!r} and the "
+            "published card does not. Regenerate it with "
+            "`uv run --extra adapters assay audit inspect/effort-scorer "
+            "--card results/example-card.md`."
+        )
+    assert "| Signature |" not in published

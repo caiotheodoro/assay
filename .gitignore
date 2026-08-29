@@ -47,3 +47,4 @@ results/sab_benchguard/*/reports/
 out.txt
 expected.txt
 results/wild_sweep.json
+results/agentic_runs/
