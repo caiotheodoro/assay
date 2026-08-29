@@ -77,7 +77,9 @@ import pathlib
 import random
 import re
 import signal
+import sys
 import textwrap
+import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator
 
@@ -932,33 +934,90 @@ class Timeout(Exception):
     pass
 
 
-class _Alarm:
-    """Wall-clock bound on materialising one dataset.
+def sweep_task_isolated(
+    ref: TaskRef,
+    *,
+    n_samples: int = 25,
+    seed: int = 0,
+    timeout: int = 300,
+    python: str | None = None,
+) -> TaskSweep:
+    """Run one task's sweep in a child process with a timeout that actually holds.
 
-    A gated or very large dataset presents as a download that does not finish
-    (or a 401 from the Hub). Both are exclusions with a reason, not crashes.
-    SIGALRM cannot interrupt every C-level call, so this is a bound in the
-    common case rather than a guarantee -- the sweep records the wall time it
-    actually took either way.
+    The first version bounded materialisation with `signal.alarm`. It does not
+    work: a task whose factory pulls a multi-gigabyte multimodal dataset sits
+    inside `datasets`' C-level download and never reaches a Python bytecode
+    boundary where the handler could run. `docvqa` took the cache past 18 GB
+    with the 240 s budget nominally in force.
+
+    A child process can be killed regardless of what it is blocked in, so the
+    budget is enforced by `subprocess` and the whole process *group* is torn
+    down -- `datasets` spawns workers, and killing only the parent leaves them
+    downloading. `TaskSweep` is plain data, so the result crosses the boundary
+    as JSON. Isolation also means a task that segfaults or calls `sys.exit`
+    costs one row, not the sweep.
     """
+    import os
+    import subprocess
 
-    def __init__(self, seconds: int) -> None:
-        self.seconds = seconds
+    code = (
+        "import json,sys;"
+        "from assay.sweep import enumerate_tasks, sweep_task;"
+        "ref=[r for r in enumerate_tasks() if r.name==sys.argv[1]][0];"
+        "print('<<<ASSAY>>>'+json.dumps(sweep_task("
+        "ref, n_samples=int(sys.argv[2]), seed=int(sys.argv[3]), timeout=0"
+        ").to_dict(), default=str))"
+    )
+    argv = [python or sys.executable, "-c", code, ref.name, str(n_samples), str(seed)]
+    started = time.monotonic()
+    proc = subprocess.Popen(
+        argv,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+        env={**os.environ, "HF_HUB_DISABLE_PROGRESS_BARS": "1"},
+    )
+    try:
+        out, err = proc.communicate(timeout=timeout if timeout > 0 else None)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            proc.kill()
+        proc.communicate()
+        return TaskSweep(
+            task=ref.name,
+            package=ref.package,
+            source_file=ref.source_file,
+            status="EXCLUDED",
+            reason=(
+                f"materialisation_timeout: the task did not materialise within "
+                f"{timeout}s and its process group was killed. A gated dataset "
+                "waiting on credentials, and a dataset too large to pull for an "
+                "audit, both present exactly this way"
+            ),
+            seconds=round(time.monotonic() - started, 2),
+        )
 
-    def __enter__(self):
-        if self.seconds > 0 and hasattr(signal, "SIGALRM"):
-            signal.signal(signal.SIGALRM, self._fire)
-            signal.alarm(self.seconds)
-        return self
+    marker = "<<<ASSAY>>>"
+    if marker in out:
+        payload = json.loads(out.split(marker, 1)[1].splitlines()[0])
+        result = TaskSweep(**payload)
+        result.seconds = round(time.monotonic() - started, 2)
+        return result
 
-    def __exit__(self, *exc):
-        if self.seconds > 0 and hasattr(signal, "SIGALRM"):
-            signal.alarm(0)
-        return False
-
-    @staticmethod
-    def _fire(signum, frame):
-        raise Timeout("materialising the dataset exceeded the time budget")
+    return TaskSweep(
+        task=ref.name,
+        package=ref.package,
+        source_file=ref.source_file,
+        status="ERROR",
+        reason=(
+            f"child process exited {proc.returncode} without a result; "
+            f"last stderr: {(err or '').strip().splitlines()[-1] if err.strip() else '(empty)'}"
+        )[:600],
+        seconds=round(time.monotonic() - started, 2),
+    )
 
 
 def sample_indices(n_total: int, n_want: int, seed: int) -> list[int]:
@@ -1003,6 +1062,10 @@ class TaskSweep:
     state_reads: list[str] = field(default_factory=list)
     verdict: str | None = None
     coverage: dict[str, int] = field(default_factory=dict)
+    #: Probes that ran to completion and found nothing. Without this list a
+    #: zero-finding result is unreadable: it looks identical whether five
+    #: probes ran and passed or all of them reported NOT_APPLICABLE.
+    probes_passed: list[str] = field(default_factory=list)
     findings: list[dict[str, Any]] = field(default_factory=list)
     not_applicable: list[dict[str, str]] = field(default_factory=list)
     errors: list[dict[str, str]] = field(default_factory=list)
@@ -1049,22 +1112,22 @@ def _sweep_task(
     timeout: int,
     task_args: dict[str, Any] | None,
 ) -> TaskSweep:
-    import time
-
     from . import audit
     from .types import ProbeStatus
 
     out = TaskSweep(task=ref.name, package=ref.package, source_file=ref.source_file, status="")
     started = time.monotonic()
     try:
-        with _Alarm(timeout):
-            task = ref.factory(**(task_args or {}))
-    except Timeout as exc:
+        task = ref.factory(**(task_args or {}))
+    except ImportError as exc:
+        # An optional dependency the eval needs and this environment does not
+        # install. Distinguished from a Hub failure because the fix is different
+        # and a reader chasing coverage needs to know which it was.
         out.status = "EXCLUDED"
         out.reason = (
-            f"materialisation_timeout: {exc} (budget {timeout}s); a gated dataset "
-            "waiting on credentials, or a very large one, presents exactly this way"
-        )
+            f"missing_dependency: {type(exc).__name__}: {exc}; the eval needs a "
+            "package the sweep environment does not install"
+        )[:600]
         out.seconds = round(time.monotonic() - started, 2)
         return out
     except BaseException as exc:  # noqa: BLE001 - the cause is the result
@@ -1136,6 +1199,7 @@ def _sweep_task(
         for r in report.results
         for f in r.findings
     ]
+    out.probes_passed = [r.probe for r in report.by_status(ProbeStatus.PASS)]
     out.not_applicable = [
         {"probe": r.probe, "reason": r.reason or ""}
         for r in report.by_status(ProbeStatus.NOT_APPLICABLE)
@@ -1182,7 +1246,7 @@ def sweep(
 
     results: list[TaskSweep] = []
     for ref in kept:
-        result = sweep_task(ref, n_samples=n_samples, seed=seed, timeout=timeout)
+        result = sweep_task_isolated(ref, n_samples=n_samples, seed=seed, timeout=timeout)
         results.append(result)
         if on_task is not None:
             on_task(result)
