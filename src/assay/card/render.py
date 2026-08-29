@@ -61,7 +61,7 @@ def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
         f"| Environment version | `{report.env_version}` |",
         f"| Audited | {stamp} |",
         f"| Exit code | `{report.exit_code}` |",
-        f"| Signature | `{body['signature'][:32]}…` |",
+        f"| Content digest | `{body['content_digest'][:32]}…` |",
         "",
     ]
 
@@ -132,7 +132,10 @@ def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
         "",
         "---",
         "",
-        f"Produced by Assay. Signature covers the full probe output: `{body['signature']}`",
+        f"Produced by Assay. Unkeyed content digest over the full probe output: "
+        f"`{body['content_digest']}` — identifies this card and catches corruption, "
+        f"but anyone who edits the body can recompute it."
+        + (f" HMAC-SHA256: `{body['hmac_sha256']}`" if "hmac_sha256" in body else ""),
         "",
     ]
     return "\n".join(lines)

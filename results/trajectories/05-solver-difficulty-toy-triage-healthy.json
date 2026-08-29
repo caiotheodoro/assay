@@ -202,5 +202,5 @@
     "scored_by": "the environment's own verifier, once per sample",
     "note": "a solve rate is a property of an (environment, policy) pair, never of the environment alone"
   },
-  "signature": "310b38823a01f95c777e1edb9e32fd0adc36f2ac138c65b0be819aba4f807854"
+  "content_digest": "310b38823a01f95c777e1edb9e32fd0adc36f2ac138c65b0be819aba4f807854"
 }

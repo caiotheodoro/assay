@@ -7,7 +7,9 @@ into these types; probes only ever see these types.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+import os
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -237,7 +239,12 @@ class ProbeResult:
 
 
 # --------------------------------------------------------------------------
-# Canonical hashing -- used for signatures, determinism, and card signing
+# Canonical hashing -- used for content digests and determinism comparison
+#
+# A digest is not a signature. `digest` is unkeyed SHA-256: it detects
+# accidental edits and identifies content, and it stops nobody who wants to
+# change a card, because they can recompute it. `sign` below is the keyed
+# version, and it is the only thing here that survives a motivated forger.
 # --------------------------------------------------------------------------
 
 
@@ -247,4 +254,32 @@ def canonical_json(value: Any) -> str:
 
 
 def digest(value: Any) -> str:
+    """Unkeyed content digest. Detects corruption, not forgery."""
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
+CARD_KEY_ENV = "ASSAY_CARD_KEY"
+
+
+def sign(value: Any, key: bytes | None = None) -> str | None:
+    """Keyed HMAC-SHA256 over the canonical body, or None if no key is set.
+
+    Returns None rather than falling back to an unkeyed hash. A caller that
+    cannot tell a signed card from an unsigned one is the failure this
+    function exists to prevent, so the absence of a key is reported as an
+    absent signature and never as a weaker one.
+    """
+    if key is None:
+        env = os.environ.get(CARD_KEY_ENV)
+        if not env:
+            return None
+        key = env.encode("utf-8")
+    return hmac.new(key, canonical_json(value).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify(value: Any, signature: str | None, key: bytes | None = None) -> bool:
+    """Constant-time check of a keyed signature over `value`."""
+    expected = sign(value, key)
+    if expected is None or signature is None:
+        return False
+    return hmac.compare_digest(expected, signature)

@@ -21,6 +21,7 @@ from .types import (
     Severity,
     canonical_json,
     digest,
+    sign,
 )
 
 
@@ -101,8 +102,14 @@ class AuditReport:
                 for r in self.results
             ],
         }
-        # Sign the body so a card cannot be edited without the hash changing.
-        body["signature"] = digest(body)
+        # A content digest identifies this card and catches corruption. It is
+        # not tamper-evidence: anyone editing the body can recompute it. When
+        # ASSAY_CARD_KEY is set the card also carries a keyed HMAC, which is.
+        # Both attest the same bare body, so either can be checked alone.
+        sig = sign(body)
+        body["content_digest"] = digest(body)
+        if sig is not None:
+            body["hmac_sha256"] = sig
         return body
 
     def to_json(self) -> str:

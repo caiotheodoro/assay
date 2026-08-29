@@ -6,7 +6,7 @@ import json
 
 from assay import audit
 from assay.fixtures import build
-from assay.types import ProbeStatus, digest
+from assay.types import CARD_KEY_ENV, ProbeStatus, digest, verify
 
 
 #: In-band solve rates, so the difficulty probe can actually run.
@@ -39,10 +39,32 @@ def test_medium_only_defect_is_defective_not_invalid():
     assert report.exit_code == 1
 
 
-def test_signature_covers_the_body():
+def test_content_digest_covers_the_body():
     body = audit(build("healthy"), IN_BAND).to_dict()
-    signature = body.pop("signature")
-    assert signature == digest(body)
+    assert body.pop("content_digest") == digest(body)
+
+
+def test_unkeyed_card_carries_no_hmac(monkeypatch):
+    """An unsigned card must not look signed."""
+    monkeypatch.delenv(CARD_KEY_ENV, raising=False)
+    assert "hmac_sha256" not in audit(build("healthy"), IN_BAND).to_dict()
+
+
+def test_hmac_detects_the_forgery_a_digest_cannot(monkeypatch):
+    """The red-team forged a card by re-digesting it. A key stops that."""
+    monkeypatch.setenv(CARD_KEY_ENV, "test-key")
+    body = audit(build("gold_broken"), IN_BAND).to_dict()
+    sig = body.pop("hmac_sha256")
+    body.pop("content_digest")
+    assert verify(body, sig)
+
+    body["verdict"] = "VALID"
+    body["probe_results"] = []
+    assert not verify(body, sig), "forged body verified against the original signature"
+    # ...while the unkeyed digest certifies the forgery: recompute and it is
+    # self-consistent, which is exactly the three-line forgery the red-team ran.
+    forged = dict(body, content_digest=digest(body))
+    assert forged.pop("content_digest") == digest(body)
 
 
 def test_report_is_json_serialisable():

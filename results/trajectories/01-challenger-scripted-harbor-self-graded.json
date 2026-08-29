@@ -88,5 +88,5 @@
     "n_attempts": 4,
     "scored_by": "a deterministic verifier held by the probe; the attacker was never shown true_completion"
   },
-  "signature": "3eeedef5c4e5482add11758a0f457bf61dd5a6aa3da0e7a08e088807e20fab8b"
+  "content_digest": "3eeedef5c4e5482add11758a0f457bf61dd5a6aa3da0e7a08e088807e20fab8b"
 }

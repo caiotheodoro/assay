@@ -165,5 +165,5 @@
     "scored_by": "a deterministic verifier held by the probe; the attacker was never shown true_completion",
     "provenance": "replayed from results/challenger_ablation_claude.json, which records the per-turn scores but not the per-policy score table -- so reported_score and true_completion are null on a run that found nothing to report them for"
   },
-  "signature": "00441ef549b25a9c92928895762538ae3ed5065a3170be2ab92897837551dd78"
+  "content_digest": "00441ef549b25a9c92928895762538ae3ed5065a3170be2ab92897837551dd78"
 }

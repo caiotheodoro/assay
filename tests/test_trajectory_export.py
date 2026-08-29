@@ -513,7 +513,7 @@ def test_the_committed_trajectories_are_signed_and_unmodified():
 
     for path in sorted(TRAJECTORIES.glob("*.json")):
         payload = json.loads(path.read_text())
-        signature = payload.pop("signature")
+        signature = payload.pop("content_digest")
         assert signature == digest(payload), f"{path.name} was edited after export"
 
 

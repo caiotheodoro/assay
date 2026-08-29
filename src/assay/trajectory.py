@@ -71,7 +71,7 @@ class AgentTrajectory:
             "human_checkpoints": self.approvals,
             "outcome": self.outcome,
         }
-        body["signature"] = digest(body)
+        body["content_digest"] = digest(body)
         return body
 
     def write(self, path: str | Path) -> Path:
@@ -492,7 +492,7 @@ def write_pair(
     """Write one trajectory as both JSON and markdown.
 
     Two formats on purpose: the JSON is what a machine checks and what the
-    signature covers, the markdown is what a judge reads without running
+    content digest covers, the markdown is what a judge reads without running
     anything. Both are rendered from the same object, so they cannot disagree.
     """
     directory = Path(directory)

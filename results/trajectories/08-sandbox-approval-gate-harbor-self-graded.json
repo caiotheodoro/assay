@@ -144,5 +144,5 @@
     "executed_without_approval": 0,
     "default_approver": "DenyAll \u2014 an unattended Assay executes nothing"
   },
-  "signature": "2577c93be86b5a8933a5be40fc1ec086a57c18a80a529eb8930e607d677c3eed"
+  "content_digest": "2577c93be86b5a8933a5be40fc1ec086a57c18a80a529eb8930e607d677c3eed"
 }
