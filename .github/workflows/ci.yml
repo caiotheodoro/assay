@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync
+        run: uv sync --extra dev --extra adapters --extra openenv
+      - name: Tests
+        # Docker and Ollama are absent here, and that is the point: the suite
+        # must skip with a reason rather than fail. Anything that errors is a
+        # test that assumed a runtime it never declared.
+        run: uv run pytest -q
+
+  results-are-reproducible:
+    # The headline table is a committed artifact. If the code no longer produces
+    # it, that is a result someone has to look at -- not a number that quietly
+    # drifts. Docker is unavailable here, so this checks the 19-environment
+    # no-Harbor corpus, which is exactly what a reader without Docker gets.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync
+        run: uv sync --extra dev --extra adapters --extra openenv
+      - name: Re-run the corpus
+        run: uv run python scripts/full_run.py --out /tmp/ci_run.json
+      - name: Compare against the committed arms
+        run: |
+          uv run python - <<'PY'
+          import json, sys
+          fresh = json.load(open("/tmp/ci_run.json"))
+          committed = json.load(open("results/full_run.json"))
+          # Harbor is unavailable on this runner, so compare only the
+          # environments both runs actually contain.
+          shared = set(fresh["per_env"]) & set(committed["per_env"])
+          drift = [
+              e for e in sorted(shared)
+              if fresh["per_env"][e]["assay_detected"]
+              != committed["per_env"][e]["assay_detected"]
+          ]
+          print(f"{len(shared)} shared environments, {len(drift)} drifted")
+          if drift:
+              for e in drift:
+                  print(f"  {e}")
+                  print(f"    committed: {sorted(committed['per_env'][e]['assay_detected'])}")
+                  print(f"    fresh:     {sorted(fresh['per_env'][e]['assay_detected'])}")
+              sys.exit(1)
+          PY

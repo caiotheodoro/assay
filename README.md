@@ -23,10 +23,35 @@ uv sync --extra dev && uv run pytest -q               # the demo: every planted 
 uv run --extra adapters --extra openenv python scripts/full_run.py   # headline, 22s
 ```
 
-Twenty scripts live in `scripts/`; [`scripts/README.md`](scripts/README.md) names
-the five that are entry points and what each of the other fifteen supports.
-Reproduction, end to end: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
-Architecture and its known seams: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+### Start here
+
+| | |
+|---|---|
+| Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
+| What changed, slice by slice, with evidence | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |
+| Read an agent run without executing anything | [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md) |
+| A sample Environment Card | [`results/example-card.md`](results/example-card.md) |
+| Architecture and its known seams | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| **This repo's own claims, attacked** | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) |
+| Scored against the hackathon rubric, by us | [`docs/RUBRIC.md`](docs/RUBRIC.md) |
+| The 20 scripts, and which 5 are entry points | [`scripts/README.md`](scripts/README.md) |
+
+### Who this is for
+
+An engineer about to spend GPU budget on an RL environment somebody else wrote —
+or a benchmark maintainer about to publish one.
+
+Today that person reads the task README, runs the gold solution once to see it
+pass, and starts training. If the environment is broken they find out from the
+reward curve weeks later, or they never find out and ship a model tuned against
+a scorer that does not measure the task. When they *do* suspect something, the
+fix is a person reading tasks by hand — 93 developers for SWE-bench Verified.
+
+Assay runs before the training job: `assay audit <env>` exits nonzero and emits
+a card naming which probe failed and what it saw. The four cost profiles in
+`src/assay/costs/profiles/` are that person's decision made explicit — a
+`research-run` prices a missed defect at wasted compute, a
+`benchmark-publication` prices it at a retracted paper.
 
 ## The problem
 
@@ -148,42 +173,73 @@ perfect precision. It is silent on the other eight probe families: verifier
 integrity, trivial floor, separability, contamination, shortcut leakage,
 spec/verifier mismatch, difficulty band and reward hackability.
 
-### Half this corpus is our own test fixtures, and the split is unflattering
+**Read that row as a property of a model, not of the tool.**
+`src/assay/baselines/structural.py` is Assay's *reimplementation* of what
+`gymnasium.utils.env_checker` and `stable_baselines3.common.env_checker` assert,
+because the real checkers cannot be pointed at a `ToyEnv`, an `inspect_ai` task
+or a Harbor container at all. `NONDETERMINISM` is the only class it can ever
+return, so "2 of 46" is bounded by construction rather than measured. The real
+checkers *were* run, on five purpose-built `gymnasium.Env` shims — 1 of 4
+detected, `results/real_check_env.json` — and that is the honest incumbent
+number. One of the model's two hits is `fixture/flaky`, planted here.
 
-The 24 environments are 12 `fixture/*` written here, 5 `harbor/`, 5 `inspect/`,
-2 `openenv/`. The twelve fixtures are byte-for-byte the catalogue that
-`tests/test_probes_fire.py` asserts `detected == planted` on. **Assay's 0.0 loss
-there is a passing build, not a measurement**, and pooling it with the rest lets
-a CI gate inflate a published number. No split was reported until a red-team
-pass forced one. Here it is — `uv run --extra adapters python scripts/corpus_splits.py`,
-full table in [`results/corpus_splits.json`](results/corpus_splits.json):
+### This corpus is almost entirely our own work, and the split is unflattering
+
+The 24 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`,
+2 `openenv/`. Split on **who wrote the environment**, not on the id prefix:
+
+| provenance | n | what it is |
+|---|---|---|
+| authored here | 12 | our fixtures; `tests/test_probes_fire.py` asserts `detected == planted` on all of them |
+| our content, third-party format | 10 | our datasets and defective scorers on inspect_ai's runtime; our task dirs in Harbor's shape, `authors = ["assay fixtures"]` |
+| **genuinely external** | **2** | `openenv/echo`, `openenv/textarena-wordle`, audited as shipped |
+
+By ground truth it is worse: **22 planted here, 1 hand-triaged, 1 derived from
+a diff between two pinned upstream revisions.** Provenance is now declared in
+the registry (`src/assay/corpus.py`), and an environment that declares none
+fails a test rather than defaulting to clean.
+
+`uv run --extra adapters python scripts/corpus_splits.py`, full table in
+[`results/corpus_splits.json`](results/corpus_splits.json):
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
 | all (published) | 24 | 240.0 | 290.0 | assay, by 50 |
-| **no-fixture** | 12 | **240.0** | **141.0** | **flag_everything** |
-| fixture-only | 12 | 0.0 | 149.0 | assay — but it is asserted, not measured |
+| **our content, third-party format** | 10 | **240.0** | **114.0** | **flag_everything** |
+| genuinely external | 2 | 0.0 | 27.0 | assay — but n=2 |
+| in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
 | no-harbor | 19 | 0.0 | 230.0 | assay, perfectly |
 
 `research-run`; the other three profiles are in the file.
 
-**On the twelve environments this repo did not write, Assay loses to flagging
-everything — 240.0 to 141.0 — and loses on three of four profiles rather than
-two.** Every miss it has is a `harbor/` environment, so the fixtures contribute
-a guaranteed zero and the pooled 240.0 vs 290.0 win is carried by environments
-whose answers are pinned in a test.
+**Where Assay loses is the ten environments we wrote in someone else's format —
+240.0 to 114.0, and on three of four profiles.** Both of its misses are
+`harbor/`, both are ours, so the fixtures contribute a guaranteed zero and the
+pooled 240.0 vs 290.0 win is carried by environments whose answers are pinned in
+a test.
 
-The mirror image is just as under-reported: drop Docker and the corpus loses
+A previous version of this section reported that split as "the twelve
+environments this repo did not write". It wrote ten of the twelve. That
+sentence was added while correcting other overclaims, which is the failure mode
+this project keeps finding in itself: a split computed on a string prefix
+(`fixture/`) and then described in words the prefix does not support. The
+splits are now cut on declared provenance.
+
+The mirror image is equally under-reported: drop Docker and the corpus loses
 every environment Assay gets wrong, so it scores **0.0 on all four profiles**
-and separates cleanly from the floor (saved 230.0, CI [213, 245]). The README
-previously said "without the daemon the run still completes, on 19
-environments" without saying it also stops being a test. `docs/REPRODUCTION.md`
-disclosed the 240.0 → 0.0 drop but not that the floor comparison flips.
+and separates cleanly from the floor (saved 230.0, CI [213, 245]).
 
-Twelve environments is a thin basis for either claim, which is the honest
-summary: **the corpus is too small and too self-authored to support the pooled
-headline**, and enlarging it with environments this repo did not write is the
-first thing worth doing next.
+**And note what the arithmetic does here.** `flag_everything`'s loss is exactly
+`Σ_env (14 − |planted_env|)`, so **every clean environment added moves the floor
+by +14 and Assay by 0**. Roughly eight clean third-party environments would flip
+the headline without the detector changing at all. That is why provenance is
+declared before the corpus grows, and why any expansion has to pre-register the
+expected mechanical shift — otherwise a bigger corpus is a manufactured win.
+
+The honest summary: **n=2 is the real size of the third-party control**, the
+corpus is too small and too self-authored to support the pooled headline, and
+growing it with environments nobody here wrote is the first thing worth doing
+next — carefully.
 
 `stratified_random` and `always_modal_defect` are the two trivial policies
 `criteria.md` requires that this repo did not implement until
@@ -215,10 +271,11 @@ honest resampling on a corpus too small to carry the precision "95% CI"
 implies, and it is reported here rather than left for a reader to derive.
 
 An earlier version of this README said it scored *identically* to flagging
-nothing. That was measured against a reimplementation of the checkers that
-omitted their determinism check — a strawman weaker than the real tool. The
-corrected claim is narrower, survives a paired bootstrap, and is the one worth
-making.
+nothing. That was measured against a model of the checkers that omitted their
+determinism check — a strawman weaker than the real tool. The corrected claim
+is narrower and is the one worth making, but note what it rests on: the same
+author who caught "benchmarking against a reimplementation rather than the
+tool" is still, on this row, benchmarking against a reimplementation.
 
 ### What holds, and what does not
 
@@ -330,9 +387,14 @@ a live gap between what the card says and what the run knew, tracked in
 
 ### How often, though
 
-That table is one run each, and one run is not a capability. The same
-Challenger was pointed at the same environment four independent times
+That table is one run each, and one run is not a capability. A Challenger was
+pointed at the same environment four independent times
 (`scripts/challenger_reliability.py`, `results/challenger_reliability.json`):
+
+Not quite the same arm, and the distinction matters. The ablation row above is
+`prompted, claude-cli` alone; the reliability run records
+`scripted+prompted[claude-cli:sonnet]` — the **composite**. So 3-in-4 is the
+reliability of the arm Assay actually ships, not of the row directly above it.
 
 | run | result | gap |
 |---|---|---|
@@ -503,9 +565,19 @@ measured; it is now a number.
 
 Families 1–8 are deterministic programs. Family 9 is an adversarial
 **Challenger** agent -- scripted, prompted, or GRPO-trained. **No LLM judge
-scores anything, anywhere.** The Challenger only ever proposes actions; every
+scores anything inside Assay.** The Challenger only ever proposes actions; every
 one of them is scored by a program, and the ground truth it is scored against
 is held by the probe and never shown to the attacker.
+
+Stated as an absolute — "no LLM judge scores anything, anywhere" — that was
+false, and worth correcting precisely because the rule is load-bearing.
+Assay's *own* verdicts use no judge. But two things it touches do: τ²-bench's
+`nl_assertions` are judged by an LLM, which is exactly why they are excluded
+from the τ² measurement and reported as absent rather than passed; and
+BenchGuard's `match.py`, whose scorer this project deliberately borrowed rather
+than reimplement, calls a Gemini judge. That run scored nothing only because
+Assay submitted nothing. The rule is about what Assay asserts, not about what
+exists in the room.
 
 ```bash
 uv run --extra adapters pytest tests/test_grpo_reward.py -q      # the reward, no GPU
@@ -622,6 +694,55 @@ Which script produces which number: [`scripts/README.md`](scripts/README.md).
 The methodology predates the code — see [`docs/LINEAGE.md`](docs/LINEAGE.md)
 for what existed before this repo and what was added here. No code was copied
 in; the prior work is cited as lineage, not vendored.
+
+## Main failure mode
+
+**A Challenger that could not speak, reported as a Challenger that found
+nothing.** Family 9 is the only probe backed by an agent, and an agent has more
+ways to produce no output than a program does: the model refuses, every reply
+is unparseable, the budget runs out mid-plan, the CLI is rate-limited. All of
+those arrive at the probe as an empty attempt list, and an empty attempt list is
+indistinguishable from a genuine "I attacked this environment and it held".
+
+The probe reports `NOT_APPLICABLE` for one of those routes and `PASS` for the
+rest, which means **a card can read `VALID` because the auditor was silent**.
+That is the single worst thing this tool can do, because it is the failure the
+tool exists to catch, happening inside the tool. It is open, it is
+[written up](#does-an-agent-find-what-a-script-cannot), and the fix — returning
+an exhaustion reason instead of an empty list — is the next thing to land.
+
+A second, milder version: one Challenger pass per environment, against a
+Challenger measured at 3-in-4 reliability. A `VALID` verdict may be a run that
+happened not to find the exploit.
+
+## Hot take
+
+**Nobody QAs the benchmark — including the people building the tool that QAs
+benchmarks.**
+
+This project's thesis is that the RL environments and eval suites labs buy are
+shipped unchecked, and it is right: `paws` scores the constant string `"yesno"`
+at 100% on the current release of `inspect_evals`, and OpenEnv's
+`textarena_env` accepts a seed and throws it away on `main` today.
+
+Then we pointed the same hostility at this repository and **twelve of its own
+published claims broke**. The external recall number was chance (p = 0.486)
+against a floor the project applies to every environment it audits and had never
+applied to itself. Half the corpus proving the headline was the project's own
+pytest fixtures, on which a test asserts perfect detection — a passing build
+wearing a measurement's clothes. An exploit was published as "the winning
+policy, scored 1.0" that appears in no run that succeeded. The Environment Card
+was described as *signed* and was an unkeyed hash anyone could recompute.
+
+None of that was dishonesty. It was a fast-moving repo where corrections landed
+one document downstream of the one people read — which is exactly how a broken
+benchmark stays broken. The uncomfortable conclusion is that **an auditing tool
+is not exempt from the thing it audits, and the only defence is to run the
+audit on yourself and publish what it finds.**
+[`docs/RED-TEAM.md`](docs/RED-TEAM.md) is that audit, unedited.
+
+Every probe here is a deterministic program. The only model in the system is the
+attacker.
 
 ## License
 

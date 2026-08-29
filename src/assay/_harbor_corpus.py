@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from .corpus import CorpusEntry, register
+from .corpus import CorpusEntry, EnvAuthor, LabelSource, Provenance, register
 from .types import DefectClass
 
 SUITE = Path(__file__).parent / "fixtures" / "harbor_suite"
@@ -82,4 +82,23 @@ def corpus_entries() -> list[CorpusEntry]:
     )
 
 
-register("harbor", corpus_entries, _probe)
+def corpus_provenance() -> dict[str, Provenance]:
+    """Harbor's on-disk format; our tasks.
+
+    `src/assay/fixtures/harbor_suite/*/task.toml` says
+    `authors = ["assay fixtures"]`. These are not Terminal-Bench tasks -- they
+    are tasks we wrote in Terminal-Bench's shape, which is why the two
+    environments Assay misses are both here and both ours.
+    """
+    return {
+        env_id: Provenance(
+            EnvAuthor.THIRD_PARTY_FORMAT,
+            LabelSource.PLANTED_HERE,
+            "our task dirs in Harbor's format; labels re-derived by running "
+            "each task's own scripts in tests/test_harbor_ground_truth.py",
+        )
+        for env_id, _, _ in corpus_entries()
+    }
+
+
+register("harbor", corpus_entries, _probe, provenance=corpus_provenance)

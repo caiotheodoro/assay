@@ -44,10 +44,14 @@ VERIFIED_REPO = "amazon-agi/tau2-bench-verified"
 
 DOMAINS = ("retail", "airline")
 
-#: `reward_basis` was dropped wholesale by the verified fork -- it is absent
-#: from all 164 of its task records. Counting that as a per-task fix would
-#: label every task a positive and make recall meaningless, so it is excluded
-#: from the diff and named here rather than hidden in a helper.
+#: Kept, and it excludes nothing. The original comment here claimed the verified
+#: fork "dropped `reward_basis` wholesale", so counting it would label every task
+#: a positive. That was never checked and is false: the string occurs zero times
+#: in *either* revision of either domain, and recomputing the diff with no
+#: exclusion at all still gives 62 positives. The exclusion is therefore a no-op
+#: and the 62 does not depend on it. Left in place, correctly described, because
+#: the upstream schema could reintroduce the field and a silent reintroduction
+#: would be worse than a dead tuple.
 SCHEMA_ONLY_FIELDS = (("evaluation_criteria", "reward_basis"),)
 
 

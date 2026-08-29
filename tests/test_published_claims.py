@@ -45,18 +45,32 @@ def test_the_headline_tau2_row_is_still_indistinguishable_from_random():
     assert "The 0.339 row is chance" in README
 
 
-def test_the_corpus_split_is_published():
-    """Half the corpus is our own fixtures; pooling hid that Assay loses on the rest."""
+def test_the_corpus_split_is_published_on_provenance():
+    """Split on who wrote the environment, not on the id prefix.
+
+    Splitting on the `fixture/` prefix produced a README sentence claiming
+    Assay loses on "the twelve environments this repo did not write" -- it
+    wrote ten of them.
+    """
     d = _load("corpus_splits.json")
     splits = d["splits"]
-    assert {"no-fixture", "fixture-only", "no-harbor"} <= set(splits)
+    assert {"external-envs", "self-authored", "third-party-format",
+            "in-process-fixtures", "no-harbor"} <= set(splits)
+    assert "provenance" in d, "the split is only trustworthy if provenance ships with it"
 
-    research = splits["no-fixture"]["profiles"]["research-run"]
+    research = splits["third-party-format"]["profiles"]["research-run"]
     assert research["assay"]["expected_loss"] > research["flag_everything"]["expected_loss"], (
-        "Assay now beats the floor on non-fixture environments -- good, but the "
-        "README says it loses there and must be updated with this."
+        "Assay now beats the floor on third-party-format environments -- good, "
+        "but the README says it loses there and must be updated with this."
     )
-    assert splits["fixture-only"]["profiles"]["research-run"]["assay"]["expected_loss"] == 0.0
+    assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 0.0
+
+
+def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
+    """Only 2 of 24 environments are genuinely external."""
+    d = _load("corpus_splits.json")
+    assert d["splits"]["external-envs"]["n_environments"] == 2
+    assert "the twelve environments this repo did not write" not in README
 
 
 def test_the_readme_does_not_advertise_a_signed_card():

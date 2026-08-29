@@ -34,8 +34,10 @@ than buried:
   every headline number is identical — but the old "no network at audit time"
   was too strong. The *sandbox* still runs with networking disabled, which is
   the part that matters.
-- **No test needs Ollama.** With `brew services stop ollama` the suite is 275
-  collected, 0 skipped, 0 failed. The model path is exercised by
+- **No test needs Ollama.** With `brew services stop ollama` the suite still
+  passes with nothing skipped. (The count quoted here was 275 collected, measured
+  before the suite roughly doubled to 513; the *claim* — that nothing is
+  model-gated — was re-checked, the number was not.) The model path is exercised by
   `scripts/challenger_ablation.py`, not by pytest, and that is where you see it
   degrade.
 
@@ -69,7 +71,9 @@ The smaller install in the README works too, and says what it is missing:
 uv sync --extra dev && uv run pytest -q
 ```
 
-**Measured: 200 collected, 33 skipped, 0 failed, exit 0, 38 s** — the skips
+**Measured: 200 collected, 33 skipped, 0 failed, exit 0, 38 s** — measured
+against the pre-doubling suite; treat the count as stale and the skip *reasons*
+as current. The skips
 name the `openenv` extra and the revision it pins, or `inspect_ai`. Two whole
 suites (`test_sweep`, `test_wild_findings`) are not collected at all, because
 their `importorskip` is at module scope.
@@ -223,11 +227,11 @@ those were observed; treat the collected/skipped counts as needing a re-run.
 
 | What was stopped | How | Result |
 |---|---|---|
-| Docker daemon | `docker desktop stop` | pytest: **275 collected, 32 skipped, 0 failed, exit 0, 17 s**; every skip reads `docker daemon not available` |
+| Docker daemon | `docker desktop stop` | pytest: **275 collected, 32 skipped, 0 failed, exit 0, 17 s** — count stale (pre-doubling); every skip reads `docker daemon not available`, which is the row's actual claim |
 | Docker daemon | as above | `full_run.py`: **corpus 19 / 36 defects**, `WARNING: harbor unavailable ... docker daemon not running`, `unavailable: {harbor: ...}` in the JSON, exit 0 |
 | Docker daemon | as above | `assay reap --dry-run`: prints `cannot check: docker is not installed or the daemon is not running` and exits 1, rather than reporting a clean nothing |
 | `docker` binary | removed from `PATH` | identical skips, exit 0 — the other branch of the same check |
-| Ollama | `brew services stop ollama` | pytest: **275 collected, 0 skipped, 0 failed, 53 s** — nothing in the suite is model-gated |
+| Ollama | `brew services stop ollama` | pytest: **275 collected, 0 skipped, 0 failed, 53 s** — count stale (pre-doubling); the claim that nothing in the suite is model-gated holds |
 | Ollama | as above | `challenger_ablation.py --models qwen3:8b`: `SKIPPING qwen3:8b: ollama daemon unreachable at http://localhost:11434: <urlopen error [Errno 61] Connection refused>`, scripted arm still runs, exit 0 |
 
 The Docker row is the one worth reading twice. With the daemon down, Assay's

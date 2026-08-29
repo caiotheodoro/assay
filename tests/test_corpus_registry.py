@@ -46,3 +46,38 @@ def test_ground_truth_covers_every_entry():
 def test_env_ids_are_unique():
     ids = [env_id for env_id, _, _ in entries()]
     assert len(ids) == len(set(ids)), "a duplicate id would silently overwrite a result row"
+
+
+def test_every_environment_declares_provenance():
+    """An undeclared environment must fail, not default to clean.
+
+    `frozenset()` is ambiguous: it is what a verified-clean environment carries
+    and what an environment nobody looked at carries. Under `research-run` a
+    clean environment is worth 14 free points against `flag_everything`, so a
+    corpus can be grown into a better headline without anyone lying. The
+    registry defaults to UNAUDITED and this test refuses it.
+    """
+    from assay.corpus import UNDECLARED, provenance
+
+    declared = provenance()
+    undeclared = sorted(e for e, p in declared.items() if p == UNDECLARED)
+    assert not undeclared, (
+        "these environments register no provenance, so their empty defect set "
+        f"cannot be distinguished from 'not audited': {undeclared}"
+    )
+
+
+def test_an_empty_defect_set_is_never_silently_clean():
+    """Every environment with no planted defects must say why it has none."""
+    from assay.corpus import LabelSource, ground_truth, provenance
+
+    truth, declared = ground_truth(), provenance()
+    for env_id, defects in sorted(truth.items()):
+        if defects:
+            continue
+        p = declared[env_id]
+        assert p.label_source is not LabelSource.UNAUDITED, (
+            f"{env_id} has no planted defects and no label source: it would "
+            "score as a clean environment on the strength of nobody checking"
+        )
+        assert p.note, f"{env_id} claims no defects without saying on what basis"

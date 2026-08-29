@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .corpus import CorpusEntry, register
+from .corpus import CorpusEntry, EnvAuthor, LabelSource, Provenance, register
 from .types import DefectClass
 
 _QA = [
@@ -137,4 +137,28 @@ def corpus_entries() -> list[CorpusEntry]:
     return build_inspect_environments(InspectAdapter)
 
 
-register("inspect_ai", corpus_entries, _probe)
+def corpus_provenance() -> dict[str, Provenance]:
+    """Third-party runtime, first-party environments.
+
+    inspect_ai is somebody else's framework, but the dataset is five QA pairs
+    written in this file and the defective scorers (`always_correct`,
+    `any_nonempty`, `constant_partial`) are written here too. Calling these
+    "third-party environments" because they run on inspect_ai would be the same
+    move as calling a defect in our own fixture a finding about Python.
+
+    The labels are re-derived without Assay in the loop --
+    `tests/test_corpus_ground_truth.py` drives inspect_ai's own scorer -- but
+    they are still ours.
+    """
+    return {
+        env_id: Provenance(
+            EnvAuthor.THIRD_PARTY_FORMAT,
+            LabelSource.PLANTED_HERE,
+            "our dataset and our scorers on inspect_ai's runtime; labels "
+            "re-derived from inspect_ai's own scorer in tests",
+        )
+        for env_id, _, _ in corpus_entries()
+    }
+
+
+register("inspect_ai", corpus_entries, _probe, provenance=corpus_provenance)

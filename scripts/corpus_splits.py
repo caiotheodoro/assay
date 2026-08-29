@@ -29,20 +29,49 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from assay.corpus import EnvAuthor, LabelSource, provenance  # noqa: E402
 from assay.costs import load  # noqa: E402
 from intervals import bootstrap, load_arms  # noqa: E402
 
+PROV = provenance()
+
 PROFILES = ["research-run", "production-training", "benchmark-publication", "flat"]
+
+def _author(env_id: str) -> EnvAuthor:
+    return PROV[env_id].env_author
+
+
+def _labels(env_id: str) -> LabelSource:
+    return PROV[env_id].label_source
+
 
 SPLITS = {
     "all": (None, "the published corpus"),
-    "no-fixture": (
-        lambda e: not e.startswith("fixture/"),
-        "third-party environments only -- the honest number",
+    # The honest axis. An earlier version of this script split on the `fixture/`
+    # id prefix and the README then claimed Assay loses "on the twelve
+    # environments this repo did not write". It wrote ten of those twelve:
+    # inspect/* are our datasets and our defective scorers on inspect_ai's
+    # runtime, and harbor/* task.toml files say authors = ["assay fixtures"].
+    # Splitting on provenance instead of on a string prefix is the whole point.
+    "external-envs": (
+        lambda e: _author(e) is EnvAuthor.EXTERNAL,
+        "environments this repo did not write -- the real third-party control",
     ),
-    "fixture-only": (
-        lambda e: e.startswith("fixture/"),
-        "this repo's own pytest fixtures, asserted exactly by the test suite",
+    "self-authored": (
+        lambda e: _author(e) is not EnvAuthor.EXTERNAL,
+        "environments written here, in our own or someone else's format",
+    ),
+    "externally-labelled": (
+        lambda e: _labels(e) is not LabelSource.PLANTED_HERE,
+        "ground truth this repo did not invent",
+    ),
+    "in-process-fixtures": (
+        lambda e: _author(e) is EnvAuthor.AUTHORED_HERE,
+        "our own pytest fixtures, asserted exactly by the test suite",
+    ),
+    "third-party-format": (
+        lambda e: _author(e) is EnvAuthor.THIRD_PARTY_FORMAT,
+        "our environments on someone else's runtime",
     ),
     "no-harbor": (
         lambda e: not e.startswith("harbor/"),
@@ -93,12 +122,22 @@ def main() -> int:
         "resamples": args.resamples,
         "seed": args.seed,
         "resampling_unit": "environment",
-        "read_this_one": "no-fixture",
+        "read_this_one": "external-envs",
         "caveat": (
-            "fixture-only is not a measurement. tests/test_probes_fire.py asserts "
-            "detected == planted on exactly those twelve environments, so a loss "
-            "above zero there is a failing build, not a result."
+            "in-process-fixtures is not a measurement: tests/test_probes_fire.py "
+            "asserts detected == planted on exactly those twelve environments, so a "
+            "loss above zero there is a failing build. And external-envs is n=2, "
+            "which is not a measurement either -- it is the honest size of the "
+            "third-party control this corpus currently has."
         ),
+        "provenance": {
+            env: {
+                "env_author": pr.env_author.value,
+                "label_source": pr.label_source.value,
+                "note": pr.note,
+            }
+            for env, pr in sorted(PROV.items())
+        },
         "splits": out,
     }
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

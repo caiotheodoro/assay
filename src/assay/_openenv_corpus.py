@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import importlib.util
 
-from .corpus import CorpusEntry, register
+from .corpus import CorpusEntry, EnvAuthor, LabelSource, Provenance, register
 from .types import DefectClass
 
 #: Neither environment is on PyPI; only the `openenv` framework is. Both are
@@ -94,4 +94,32 @@ def corpus_entries() -> list[CorpusEntry]:
     ]
 
 
-register("openenv", corpus_entries, _probe)
+def corpus_provenance() -> dict[str, Provenance]:
+    """The only genuinely external environments in the corpus.
+
+    Pinned to `huggingface/OpenEnv@e059726`. Nothing is planted in either. The
+    one defect on `textarena-wordle` -- `reset(seed=...)` never forwarding the
+    seed -- was found, not planted, and verified against TextArena's own state.
+
+    `openenv/echo` carries `frozenset()`, and here that genuinely means "this
+    battery found nothing" rather than "nobody looked": every probe that could
+    not run reported NOT_APPLICABLE with a reason, and the verdict is
+    UNVERIFIED rather than VALID.
+    """
+    return {
+        "openenv/echo": Provenance(
+            EnvAuthor.EXTERNAL,
+            LabelSource.HAND_TRIAGED,
+            "audited as shipped; no separable verifier, so 11 of 12 probes are "
+            "NOT_APPLICABLE and the verdict is UNVERIFIED, not clean",
+        ),
+        "openenv/textarena-wordle": Provenance(
+            EnvAuthor.EXTERNAL,
+            LabelSource.EXTERNALLY_DERIVED,
+            "defect found in shipping upstream code, still on main; verified "
+            "against TextArena's own state in tests/test_openenv_ground_truth.py",
+        ),
+    }
+
+
+register("openenv", corpus_entries, _probe, provenance=corpus_provenance)

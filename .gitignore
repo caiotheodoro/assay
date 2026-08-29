@@ -48,3 +48,6 @@ out.txt
 expected.txt
 results/wild_sweep.json
 results/agentic_runs/
+
+# Red-team verification scratch: exploit payloads and absolute host paths.
+.redteam_scratch/
