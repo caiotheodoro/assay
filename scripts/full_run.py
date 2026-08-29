@@ -157,8 +157,15 @@ def main() -> int:
         row["normalized_loss"] = round(normalized_loss(arm, truth, profile), 4)
         rows[name] = row
 
+    # --out takes a directory or a .json file. Passing a filename used to
+    # create a directory with that name and write full_run.json inside it.
     out = Path(args.out)
-    out.mkdir(parents=True, exist_ok=True)
+    if out.suffix == ".json":
+        out.parent.mkdir(parents=True, exist_ok=True)
+        target = out
+    else:
+        out.mkdir(parents=True, exist_ok=True)
+        target = out / "full_run.json"
     payload = {
         "runtime_availability": have,
         "unavailable": unavailable(),
@@ -177,7 +184,7 @@ def main() -> int:
         },
         "arm_logs": arm_logs,
     }
-    (out / "full_run.json").write_text(json.dumps(payload, indent=2, sort_keys=True))
+    target.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
     width = max(len(n) for n in rows)
     print(f"corpus: {len(corpus)} environments, {payload['total_planted_defects']} planted defects")
@@ -193,7 +200,7 @@ def main() -> int:
             f"{row['recall']:>7.3f} {row['precision']:>7.3f} "
             f"{row['n_missed']:>5} {row['n_spurious']:>5}"
         )
-    print(f"\nwrote {out / 'full_run.json'}")
+    print(f"\nwrote {target}")
     return 0
 
 
