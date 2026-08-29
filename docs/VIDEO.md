@@ -33,9 +33,14 @@ Terminal: `uv run --extra adapters python scripts/full_run.py`
 
 Let it run. Cut to the table.
 
-> `check_env` scores identically to flagging nothing. Not a weak detector of
-> these defects — not a detector of them at all. Expected loss `<X>` against
-> Assay's `<Y>`.
+> The incumbent detects 2 of 46 — four percent. Against flagging nothing it
+> saves 16 expected loss, with a confidence interval from zero to forty. It is
+> not identical to checking nothing. It is not statistically distinguishable
+> from it.
+>
+> And an earlier version of this README said "identical", measured against a
+> reimplementation that omitted a check the real tool has. Running the real
+> thing made the claim smaller and true.
 
 ## 1:15–2:30 — One realistic execution, end to end
 
@@ -93,7 +98,7 @@ Show the ablation table.
 > into both the output and the file the verifier compares against, and is
 > scored 1.0 while completing nothing.
 >
-> And it does not find it every time. `<H>` runs in `<K>`. A probe backed by a
+> And it does not find it every time. Three runs in four. A probe backed by a
 > sampled model is not a deterministic check, so the number reported is a rate,
 > not the one run that worked.
 
@@ -111,8 +116,9 @@ Show the ablation table.
 
 > Two results this project does not get to leave out.
 >
-> Assay does **not** separate from flag-everything at this corpus size. Loss
-> saved `<D>`, confidence interval crossing zero.
+> Assay does not separate from flag-everything at this corpus size. Fifty
+> expected loss saved, interval from minus three hundred and nine to two
+> ninety-five. It crosses zero.
 >
 > And under the production-training cost profile, where a missed defect costs
 > 480 times a false alarm, flagging everything **beats** Assay. That is the
@@ -122,10 +128,27 @@ Show the ablation table.
 > 99.7% of rollout groups had zero reward spread, so there was no gradient. We
 > measured that before buying the GPU and ran it anyway to find out.
 
+## 4:35–4:50 — Against defects we did not plant
+
+> Everything so far is measured against defects we planted, which is a closed
+> loop. So: sixty-two defects an independent team found in tau-bench.
+
+Show the recall table.
+
+> Recall a third. And the split underneath it is the real result — two thirds
+> of what tau-bench needed fixed was not a verifier at all, it was an
+> instruction too vague to grade. Assay reads verifiers. It finds sixty-five
+> percent of the annotation errors and nineteen percent of the vague
+> instructions.
+>
+> And on ScienceAgentBench, scored by BenchGuard's own code: zero out of twelve.
+> Not because the defects are hard — because Assay could not run there at all,
+> and said so twelve times.
+
 ## 4:50–5:00 — Hot take
 
 > The environments people are buying cannot survive a no-op policy, and the one
-> tool that checks them scores the same as checking nothing.
+> tool that checks them is not distinguishable from checking nothing.
 >
 > Every probe here is a deterministic program. The only model in the system is
 > the attacker.
@@ -148,6 +171,7 @@ Show the ablation table.
 
 ## Recording rules
 
-- Record after the final run freezes. Nothing narrated that can still move.
+- Numbers are frozen as of the field-evaluation phase. Every figure spoken
+  above appears in a file under `results/`.
 - Every number on screen comes from a file in `results/`, not from a slide.
 - No cuts inside a terminal run. If it takes eleven seconds, it takes eleven.
