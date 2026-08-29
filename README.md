@@ -166,6 +166,29 @@ agent never had access to. That difference is the whole measurement.
 The two misses are as much the result as the hit. An ablation showing only the
 arm that worked says nothing about how hard the problem is.
 
+### How often, though
+
+That table is one run each, and one run is not a capability. The same
+Challenger was pointed at the same environment four independent times
+(`scripts/challenger_reliability.py`, `results/challenger_reliability.json`):
+
+| run | result | gap |
+|---|---|---|
+| 1 | found | 1.00 |
+| 2 | found | 1.00 |
+| 3 | **missed** | 0.00 |
+| 4 | found | 1.00 |
+
+**3 of 4.** A probe backed by a sampled model is not a deterministic check, and
+the first version of this README said "the Challenger finds this" on the
+strength of a single run — which is the pass@1-for-pass^k substitution that
+τ-bench exists to warn about, made here in our own write-up.
+
+The number reported is a rate. It also means a real audit should run the
+Challenger more than once, and Assay does not currently do that: the probe
+takes one pass per environment, so a card can say `VALID` on an environment a
+second attempt would have broken. That is a known gap, not a solved problem.
+
 **It is still open.** A Challenger was trained with GRPO against a dense
 exploit-gap reward (`reported score` minus `independent true completion`, held
 by the harness and never shown to the attacker) on a spot A10G, with
