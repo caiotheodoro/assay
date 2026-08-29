@@ -52,10 +52,12 @@ git clone <repo> && cd assay
 uv sync --extra dev --extra adapters --extra sweep --extra openenv
 ```
 
-**Measured, cold cache: 79 s, 793 MB downloaded, 566 MB venv, 353 packages.**
-Re-running against a warm cache is 2 s. `uv.lock` is committed, so this
-resolves to the same versions every time — `inspect-ai` 0.3.260,
-`inspect_evals` 0.18.0, `textarena` 0.7.4, `openenv` 0.3.1.
+**Measured, cold cache: 52 s, 759 MB downloaded, 566 MB venv, 351 packages.**
+Re-running against a warm cache is 2 s. `uv.lock` is committed, so this installs
+from the lockfile rather than re-resolving — the same versions every time,
+`inspect-ai` 0.3.260, `inspect_evals` 0.18.0, `textarena` 0.7.4, `openenv`
+0.3.1. Without the lockfile the same command took 79 s and resolved 353
+packages, which is how the missing pin was found.
 
 Dependency groups are separate on purpose: `adapters` (inspect_ai), `sweep`
 (inspect_evals), `openenv` (also pinned to a git revision, because the two
@@ -79,7 +81,7 @@ uv run --extra adapters --extra openenv python scripts/full_run.py
 uv run --extra adapters python scripts/intervals.py --resamples 10000 --seed 11
 ```
 
-**Measured: 15–22 s and under 1 s** on an idle machine, 33–44 s for
+**Measured: 15–39 s and about 1 s** on an idle machine, 33–44 s for
 `full_run.py` with other work contending for the Docker daemon. Most of it is
 container startup. `--extra sweep` is not needed here — it is for the wild sweep
 below — and leaving it out gives a byte-identical `results/full_run.json`,
@@ -142,7 +144,7 @@ uv run --extra adapters --extra sweep python scripts/wild_sweep.py
 
 | | wall clock | downloaded |
 |---|---|---|
-| `--only paws` | 22 s | 26 MB |
+| `--only paws` | 10–22 s | 26 MB |
 | full sweep | 415 s | 1.1 GB |
 
 The full sweep partitions the registry rather than reporting only what it
@@ -158,8 +160,8 @@ on `paws`.
 uv run --extra adapters --extra sweep --extra openenv pytest -q
 ```
 
-**Measured: 275 collected, 0 skipped, 0 failed, exit 0, 49 s** with Docker and
-Ollama both up on an idle machine; 232–275 s with five other processes on the
+**Measured: 275 collected, 0 skipped, 0 failed, exit 0, 49–60 s** with Docker
+and Ollama both up on an idle machine; 232–275 s with five other processes on the
 box. Nothing skips when everything is installed and running, which is the point
 of the table below — you should be able to tell a skip from a pass.
 
@@ -312,17 +314,20 @@ Everything above is free apart from optional model calls. Measured, in order:
 
 | Step | Wall clock | Network | Disk |
 |---|---|---|---|
-| `uv sync` with all four extras | 79 s | 793 MB | 566 MB venv |
-| `scripts/full_run.py` | 15–22 s | none | — |
+| `uv sync` with all four extras | 52 s | 759 MB | 566 MB venv |
+| `scripts/full_run.py` | 15–39 s | none | — |
 | `scripts/intervals.py` | < 1 s | none | — |
 | the two defect suites | 9 s | none | — |
-| `pytest`, all extras | 49 s | none | — |
-| `wild_sweep.py --only paws` | 22 s | 26 MB | 26 MB |
+| `pytest`, all extras | 49–60 s | none | — |
+| `wild_sweep.py --only paws` | 10–22 s | 26 MB | 26 MB |
 | `wild_sweep.py`, full registry | 415 s | 1.1 GB | 1.1 GB |
 | `challenger_ablation.py --models qwen3:8b --claude` | 840 s | model-dependent | — |
 
-Roughly **4 minutes and 800 MB** to install and reproduce the headline, the two
-defects and the whole test suite. Add 7 minutes and 1.1 GB for the full wild
+Roughly **3 minutes and 760 MB** to install and reproduce the headline, the two
+defects and the whole test suite. Every figure in this table was re-measured
+against a second clean clone of this branch, cold cache, after all the fixes
+below landed; `results/full_run.json` and `results/intervals.json` came back
+byte-identical to the committed ones. Add 7 minutes and 1.1 GB for the full wild
 sweep, and 14 minutes for the Challenger ablation.
 
 Container startup dominates the audit at roughly four seconds each, which is why
