@@ -560,6 +560,21 @@ class TestEnumeration:
 
 
 class TestSampling:
+    def test_the_dataset_order_is_pinned_where_the_factory_allows_it(self):
+        """`sample_indices` being deterministic is not enough if the list it
+        indexes into is not. Two runs of this sweep at the same seed reported 18
+        then 17 findings on `paws` before this existed."""
+        from assay.sweep import deterministic_task_args
+
+        def with_shuffle(shuffle: bool = True):
+            return None
+
+        def without(limit: int = 10):
+            return None
+
+        assert deterministic_task_args(with_shuffle) == {"shuffle": False}
+        assert deterministic_task_args(without) == {}
+
     def test_the_subsample_is_deterministic_so_triage_is_repeatable(self):
         assert sample_indices(1000, 25, seed=7) == sample_indices(1000, 25, seed=7)
         assert sample_indices(1000, 25, seed=7) != sample_indices(1000, 25, seed=8)

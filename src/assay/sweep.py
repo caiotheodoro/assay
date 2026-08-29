@@ -1068,6 +1068,28 @@ def sweep_task_isolated(
     )
 
 
+def deterministic_task_args(factory: Any) -> dict[str, Any]:
+    """Arguments that pin the task's dataset order, where the task allows it.
+
+    Roughly 35 `inspect_evals` task factories take `shuffle: bool = True` and
+    pass it on without a seed, so two identical calls return different sample
+    orders. That is not hypothetical here: two runs of this sweep at the same
+    `--seed 0` reported 18 and then 17 findings on `paws`, because
+    `sample_indices` is deterministic but the list it indexes into was not.
+
+    Passing `shuffle=False` where the factory accepts it makes the sweep
+    reproducible. It is a deviation from the task's default configuration and
+    is recorded per task in `task_args` rather than applied silently -- the
+    audit is about the scorer, and the sample set is a subsample either way,
+    but a reader should not have to infer that.
+    """
+    try:
+        params = pyinspect.signature(_unwrap(factory)).parameters
+    except (TypeError, ValueError):
+        return {}
+    return {"shuffle": False} if "shuffle" in params else {}
+
+
 def sample_indices(n_total: int, n_want: int, seed: int) -> list[int]:
     """Deterministic subsample. Same seed, same items, so triage is repeatable."""
     if n_total <= n_want:
@@ -1101,6 +1123,9 @@ class TaskSweep:
     reason: str | None = None
     protocol: str | None = None
     dataset_name: str | None = None
+    #: Non-default arguments passed to the task factory, and why. Empty for
+    #: tasks whose dataset order is already fixed.
+    task_args: dict[str, Any] = field(default_factory=dict)
     n_dataset: int | None = None
     n_sampled: int | None = None
     n_anchored: int | None = None
@@ -1164,9 +1189,11 @@ def _sweep_task(
     from .types import ProbeStatus
 
     out = TaskSweep(task=ref.name, package=ref.package, source_file=ref.source_file, status="")
+    args = dict(task_args) if task_args is not None else deterministic_task_args(ref.factory)
+    out.task_args = args
     started = time.monotonic()
     try:
-        task = ref.factory(**(task_args or {}))
+        task = ref.factory(**args)
     except BaseException as exc:  # noqa: BLE001 - the cause is the result
         # A missing optional dependency and an unreachable dataset are different
         # coverage losses with different fixes, and a reader chasing either needs

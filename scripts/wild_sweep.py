@@ -47,6 +47,11 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--timeout", type=int, default=300, help="seconds per dataset")
     parser.add_argument("--out", default=str(OUT))
+    parser.add_argument(
+        "--triage",
+        default=str(OUT.parent / "wild_sweep_triage.json"),
+        help="hand-written triage verdicts, embedded verbatim under 'triage'",
+    )
     args = parser.parse_args()
 
     started = time.time()
@@ -96,6 +101,20 @@ def main() -> int:
             file=sys.stderr,
         )
         return 2
+
+    # The triage is hand-written and is embedded, not merged: the machine record
+    # of what the probes reported and the human verdict on whether it is real are
+    # different kinds of claim, and a reader has to be able to tell which is
+    # which. A missing triage file is recorded as missing rather than skipped.
+    triage_path = Path(args.triage)
+    if triage_path.exists():
+        record["triage"] = json.loads(triage_path.read_text())
+        record["triage"]["_source"] = str(triage_path.name)
+    else:
+        record["triage"] = {
+            "_missing": f"{triage_path} not found; no finding in this run has been "
+            "hand-verified, and none should be read as confirmed"
+        }
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
