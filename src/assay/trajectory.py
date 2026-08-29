@@ -330,10 +330,20 @@ def from_baseline_trace(
     no more; handing them the answer and then scoring them would be a rigged
     comparison in the other direction.
     """
+    def action_of(row: dict[str, Any]) -> dict[str, Any] | None:
+        if row.get("action"):
+            return row["action"]
+        if "reported_defects" in row:
+            # Reporting is the arm's action on that turn. Leaving it out puts
+            # the verdict only in the outcome, so the body of the trajectory
+            # stops short of the thing the run was for.
+            return {"report_defects": row["reported_defects"]}
+        return None
+
     turns = [
         Turn(
             index=row.get("turn", i + 1),
-            action=row.get("action"),
+            action=action_of(row),
             observation=row.get("observation"),
             reported_score=row.get("reported"),
             reasoning=row.get("reasoning") or None,

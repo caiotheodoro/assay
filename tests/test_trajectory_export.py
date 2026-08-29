@@ -566,3 +566,16 @@ def test_the_index_says_why_an_agent_has_no_run():
     text = (TRAJECTORIES / "INDEX.md").read_text()
     assert "Agents with no trajectory here, and why" in text
     assert "grpo-trained" in text
+
+
+def test_the_turn_where_a_baseline_reports_shows_what_it_reported():
+    """Leaving the verdict only in the outcome stops the body of the trajectory
+    short of the thing the run was for."""
+    traj = from_baseline_trace(
+        agent="a", arm="direct_prompt", environment="e", task_id="t",
+        trace=[{"turn": 1, "reported_defects": ["REWARD_HACKABLE"],
+                "observation": "reported its verdict and stopped"}],
+        instruction="i", system_prompt="s", reported_defects=["REWARD_HACKABLE"],
+    )
+    assert traj.turns[0].action == {"report_defects": ["REWARD_HACKABLE"]}
+    assert "REWARD_HACKABLE" in traj.to_markdown()

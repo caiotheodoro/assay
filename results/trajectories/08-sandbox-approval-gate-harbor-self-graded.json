@@ -4,7 +4,7 @@
   "environment": "harbor/self-graded",
   "task_id": "self-graded",
   "shows": "**the human checkpoint.** The identical request is put to two approvers: the default refuses and nothing runs, an explicit standing approval carrying a reason lets it through. Nothing in Assay executes untrusted environment code without one of these.",
-  "exported": "2026-08-29T04:40:00+00:00",
+  "exported": "2026-08-29T04:56:32+00:00",
   "system_prompt": "",
   "instruction": "Assay has to run third-party gold solutions, verifier scripts and adversarial policies. Containment is Docker with the network off and a read-only root; the other half is a human who has to say yes.",
   "turns": [
@@ -142,5 +142,5 @@
     "executed_without_approval": 0,
     "default_approver": "DenyAll \u2014 an unattended Assay executes nothing"
   },
-  "signature": "52ffa46cad3d649d50114b097a426d6860561a370c841a34d44e942d9ea58669"
+  "signature": "7fe366d2af533a0f3350778ba7fc38040d2bebff0005fa80995a24937c7f22f2"
 }
