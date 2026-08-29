@@ -82,3 +82,93 @@ def test_a_real_build_classifies_every_environment(tmp_path):
     assert (out / "manifest.json").exists()
     for card in (out / "cards").glob("*.md"):
         assert not card.name.startswith(("inspect_ai", "openenv"))
+
+
+# -- probe bodies: which probes ran, and why the rest did not ---------------
+#
+# The card's "what could not be checked" section is the part that stops an
+# empty card reading as a clean bill of health, so it has to travel for THIRD
+# PARTY environments too. That makes the payload carry probe bodies, and the
+# guard has to cover them as tightly as it covers cards.
+
+
+def _probe_body(env_id, ecosystem, **over):
+    body = {
+        "env_id": env_id,
+        "ecosystem": ecosystem,
+        "verdict": "UNVERIFIED",
+        "coverage": {"PASS": 1, "DEFECT": 0, "NOT_APPLICABLE": 1, "ERROR": 0},
+        "content_included": ecosystem in OURS,
+        "probes": [
+            {
+                "family": "contamination",
+                "probe": "train_eval_leak",
+                "status": "NOT_APPLICABLE",
+                "reason": "environment does not expose: SPLITS",
+                "n_findings": 0,
+                "detail": {},
+            }
+        ],
+    }
+    body.update(over)
+    return body
+
+
+def test_a_third_party_probe_body_may_ship_when_it_carries_no_findings():
+    """"This probe could not run, because the environment exposes no train
+    split" is a fact ABOUT the environment, not a copy of it."""
+    payload = Payload(
+        rows=[_row("inspect_ai/paws", "inspect_ai", False)],
+        probes={"inspect_ai/paws": _probe_body("inspect_ai/paws", "inspect_ai")},
+    )
+    verify_no_redistribution(payload)  # does not raise
+
+
+def test_a_third_party_probe_body_carrying_findings_is_refused():
+    """Findings quote task ids and item text. That is a copy."""
+    body = _probe_body("inspect_ai/paws", "inspect_ai")
+    body["probes"][0]["findings"] = [{"defect": "REWARD_HACKABLE", "task_id": "7531"}]
+    payload = Payload(
+        rows=[_row("inspect_ai/paws", "inspect_ai", False)],
+        probes={"inspect_ai/paws": body},
+    )
+    with pytest.raises(RedistributionRefused, match="carries findings"):
+        verify_no_redistribution(payload)
+
+
+def test_a_third_party_probe_body_marked_for_inclusion_is_refused():
+    payload = Payload(
+        rows=[_row("openenv/echo", "openenv", False)],
+        probes={"openenv/echo": _probe_body("openenv/echo", "openenv", content_included=True)},
+    )
+    with pytest.raises(RedistributionRefused, match="probe body marked for inclusion"):
+        verify_no_redistribution(payload)
+
+
+def test_an_unlisted_detail_key_is_refused_rather_than_published_by_default():
+    """A probe added later must not silently start shipping someone's data
+    because it happened to put it in `detail`."""
+    body = _probe_body("inspect_ai/paws", "inspect_ai")
+    body["probes"][0]["detail"] = {"n_eval": 25, "sample_texts": ["..."]}
+    payload = Payload(
+        rows=[_row("inspect_ai/paws", "inspect_ai", False)],
+        probes={"inspect_ai/paws": body},
+    )
+    with pytest.raises(RedistributionRefused, match="sample_texts"):
+        verify_no_redistribution(payload)
+
+
+def test_a_real_build_publishes_skip_reasons_for_third_party_environments():
+    """The point of carrying them at all: a reader can see what was NOT checked
+    on someone else's environment without receiving any of it."""
+    payload = build()
+    third_party = [r["env_id"] for r in payload.rows if r["ecosystem"] in THEIRS]
+    assert third_party, "the corpus should contain third-party environments"
+    for env_id in third_party:
+        body = payload.probes[env_id]
+        assert body["content_included"] is False
+        assert body["probes"], env_id
+        for probe in body["probes"]:
+            assert "findings" not in probe
+            if probe["status"] in ("NOT_APPLICABLE", "ERROR"):
+                assert probe["reason"], f"{env_id}/{probe['probe']}"
