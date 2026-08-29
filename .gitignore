@@ -2,10 +2,12 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
-results/*.json
-!results/.gitkeep
-# The sweep's run artefact stays generated, like results/full_run.json. Its
-# triage is hand-written input to that run, not output from it, and the finding
-# it verifies is unreadable without it.
-!results/wild_sweep_triage.json
 uv.lock
+
+# Results are evidence, not scratch. The brief asks that every claim about a
+# result be connected to the evidence submitted, and a judge should be able to
+# read the numbers without running anything first. So the headline artefacts are
+# tracked, and only bulk is excluded.
+results/**/rewards.jsonl
+results/**/*.safetensors
+results/**/checkpoints/

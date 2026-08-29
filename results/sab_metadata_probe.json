@@ -1,0 +1,38 @@
+{
+  "n_tasks": 102,
+  "rules": {
+    "R1_output_path_unstated": {
+      "fired_on": 61,
+      "of_total": 102,
+      "fire_rate": 0.598,
+      "hits_all_12": [
+        26,
+        31,
+        34,
+        35,
+        67
+      ],
+      "hits_inst_subset": [
+        26,
+        31,
+        34,
+        35,
+        67
+      ],
+      "recall_vs_inst": "5/7",
+      "precision": 0.082,
+      "verdict": "REJECTED: fires on more than a third of the benchmark; by the trivial-floor rule this has not earned its existence"
+    },
+    "R2_input_not_in_tree": {
+      "fired_on": 0,
+      "of_total": 102,
+      "fire_rate": 0.0,
+      "hits_all_12": [],
+      "hits_inst_subset": [],
+      "recall_vs_inst": "0/7",
+      "precision": 0.0,
+      "verdict": "REJECTED: fires on nothing"
+    }
+  },
+  "conclusion": "Instruction defects are not deterministically detectable from published metadata. Both rules fail: one by flagging a third of the benchmark, one by flagging nothing. This is a real limit, not a tuning problem -- 'the instruction is ambiguous' and 'this requirement is infeasible' are judgements, and Assay scores nothing with a judge. Assay and BenchGuard therefore find disjoint classes of defect: BenchGuard finds instruction quality, which needs judgement; Assay finds verifier defects, which need execution. Neither subsumes the other, and claiming otherwise would be the more comfortable lie."
+}

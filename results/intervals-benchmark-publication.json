@@ -1,0 +1,206 @@
+{
+  "resamples": 10000,
+  "seed": 11,
+  "cost_profile": "benchmark-publication",
+  "n_environments": 21,
+  "resampling_unit": "environment",
+  "why": "Defects within one environment are not independent -- a verifier that always passes fails six probes at once -- so resampling defects would report an interval far tighter than the data supports.",
+  "arms": {
+    "assay": {
+      "expected_loss": {
+        "point": 2000.0,
+        "ci95": [
+          0.0,
+          6000.0
+        ]
+      },
+      "recall": {
+        "point": 0.9773,
+        "ci95": [
+          0.9118,
+          1.0
+        ]
+      },
+      "precision": {
+        "point": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "loss_saved_vs": {
+        "check_env": {
+          "point": 41400.0,
+          "ci95": [
+            24500.0,
+            60302.5
+          ],
+          "separated": true
+        },
+        "flag_nothing": {
+          "point": 41400.0,
+          "ci95": [
+            24500.0,
+            60302.5
+          ],
+          "separated": true
+        },
+        "flag_everything": {
+          "point": 0.0,
+          "ci95": [
+            -4056.0,
+            2088.0
+          ],
+          "separated": false
+        }
+      }
+    },
+    "check_env": {
+      "expected_loss": {
+        "point": 43400.0,
+        "ci95": [
+          27000.0,
+          61800.0
+        ]
+      },
+      "recall": {
+        "point": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "precision": {
+        "point": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "loss_saved_vs": {
+        "assay": {
+          "point": -41400.0,
+          "ci95": [
+            -60302.5,
+            -24500.0
+          ],
+          "separated": true
+        },
+        "flag_nothing": {
+          "point": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "separated": false
+        },
+        "flag_everything": {
+          "point": -41400.0,
+          "ci95": [
+            -59928.0,
+            -24880.0
+          ],
+          "separated": true
+        }
+      }
+    },
+    "flag_nothing": {
+      "expected_loss": {
+        "point": 43400.0,
+        "ci95": [
+          27000.0,
+          61800.0
+        ]
+      },
+      "recall": {
+        "point": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "precision": {
+        "point": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "loss_saved_vs": {
+        "assay": {
+          "point": -41400.0,
+          "ci95": [
+            -60302.5,
+            -24500.0
+          ],
+          "separated": true
+        },
+        "check_env": {
+          "point": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "separated": false
+        },
+        "flag_everything": {
+          "point": -41400.0,
+          "ci95": [
+            -59928.0,
+            -24880.0
+          ],
+          "separated": true
+        }
+      }
+    },
+    "flag_everything": {
+      "expected_loss": {
+        "point": 2000.0,
+        "ci95": [
+          1856.0,
+          2128.0
+        ]
+      },
+      "recall": {
+        "point": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "precision": {
+        "point": 0.1497,
+        "ci95": [
+          0.0952,
+          0.2109
+        ]
+      },
+      "loss_saved_vs": {
+        "assay": {
+          "point": 0.0,
+          "ci95": [
+            -2088.0,
+            4056.0
+          ],
+          "separated": false
+        },
+        "check_env": {
+          "point": 41400.0,
+          "ci95": [
+            24880.0,
+            59928.0
+          ],
+          "separated": true
+        },
+        "flag_nothing": {
+          "point": 41400.0,
+          "ci95": [
+            24880.0,
+            59928.0
+          ],
+          "separated": true
+        }
+      }
+    }
+  }
+}
