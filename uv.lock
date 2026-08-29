@@ -308,6 +308,11 @@ openenv = [
     { name = "openenv-echo-env" },
     { name = "openenv-textarena" },
 ]
+sab = [
+    { name = "huggingface-hub" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+]
 sweep = [
     { name = "inspect-evals" },
 ]
@@ -327,12 +332,15 @@ requires-dist = [
     { name = "bitsandbytes", marker = "sys_platform == 'linux' and extra == 'train'", specifier = ">=0.43" },
     { name = "datasets", marker = "extra == 'train'", specifier = ">=2.20" },
     { name = "gymnasium", marker = "extra == 'gym'", specifier = ">=1.3.0" },
+    { name = "huggingface-hub", marker = "extra == 'sab'", specifier = ">=0.23" },
     { name = "inspect-ai", marker = "extra == 'adapters'", specifier = ">=0.3.260" },
     { name = "inspect-evals", marker = "extra == 'sweep'", specifier = "~=0.18.0" },
     { name = "openenv", marker = "extra == 'openenv'", specifier = ">=0.3.1,<0.4" },
     { name = "openenv-echo-env", marker = "extra == 'openenv'", git = "https://github.com/huggingface/OpenEnv.git?subdirectory=envs%2Fecho_env&rev=e059726da215f615c44dd10f60402970a3cb20ad" },
     { name = "openenv-textarena", marker = "extra == 'openenv'", git = "https://github.com/huggingface/OpenEnv.git?subdirectory=envs%2Ftextarena_env&rev=e059726da215f615c44dd10f60402970a3cb20ad" },
+    { name = "pandas", marker = "extra == 'sab'", specifier = ">=2.0" },
     { name = "peft", marker = "extra == 'train'", specifier = ">=0.13" },
+    { name = "pyarrow", marker = "extra == 'sab'", specifier = ">=15.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "stable-baselines3", marker = "extra == 'gym'", specifier = ">=2.9.0" },
@@ -340,7 +348,7 @@ requires-dist = [
     { name = "transformers", marker = "extra == 'train'", specifier = ">=4.51" },
     { name = "trl", marker = "extra == 'train'", specifier = ">=0.15" },
 ]
-provides-extras = ["dev", "openenv", "sweep", "train", "adapters", "gym"]
+provides-extras = ["dev", "openenv", "sweep", "train", "adapters", "gym", "sab"]
 
 [[package]]
 name = "attrs"

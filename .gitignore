@@ -22,3 +22,19 @@ results/**/checkpoints/
 # construction -- the published copy lives on the Hub, the reproducible copy is
 # the script.
 build/
+
+# Third-party checkouts the BenchGuard scoring run needs at runtime: a clone of
+# XinmingTu/BenchGuard (its gold set quotes ScienceAgentBench instructions),
+# IsThatYou/auto-bench-audit's converter, and the drop path for SAB's gated
+# archive. Verdicts about other people's benchmarks ship; their copies do not
+# -- scripts/sab_benchguard_recall.py takes these as paths so a reader clones
+# them at the shas recorded in results/sab_benchguard/.
+third_party/
+
+# Intermediates of the BenchGuard scoring run. The audit records and the
+# normalized findings restate SAB's declared output paths per task; the reports
+# carry BenchGuard's gold wording. Only the redacted *_result.json is tracked.
+results/sab_benchguard/*/audits/
+results/sab_benchguard/*/normalized/
+results/sab_benchguard/*/matches/
+results/sab_benchguard/*/reports/

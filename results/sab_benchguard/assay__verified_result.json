@@ -1,0 +1,420 @@
+{
+  "what_this_is": "Assay scored against BenchGuard's 12 author-confirmed ScienceAgentBench defects. Every number under 'their_report' was computed by BenchGuard's eval/metrics.py from verdicts produced by BenchGuard's eval/match.py. Nothing in this file recomputes them.",
+  "arm": "assay",
+  "provenance": {
+    "benchguard_repo": "https://github.com/XinmingTu/BenchGuard",
+    "benchguard_sha": "1bdc464ee2dc7c946afdb030501d469b11ee2418",
+    "converter": "auto-bench-audit benchmarks/benchguard/audits_to_benchguard_findings.py",
+    "converter_sha256": "ef021013c8e5f8324734c738db91bb6e090854c4dbbf188f3be4bd1d826a6256",
+    "auto_bench_audit_repo": "https://github.com/IsThatYou/auto-bench-audit",
+    "gold_path": "/Users/caiotheodoro/Documents/personal/personal-ml/assay-sab/third_party/BenchGuard/eval/data/gold/sab_gold.json",
+    "gold_sha256": "25b0a0c8387792f2c5807afa5ff6d3d3e176a523e73aaff9f4b4af4625178f87",
+    "gold_human_verified": false,
+    "sab_split": "verified",
+    "sab_split_file": "data/verified-00000-of-00001.parquet",
+    "n_sab_tasks": 102,
+    "benchmark_root_supplied": false,
+    "eval_programs_present": false
+  },
+  "exclusions": {
+    "criterion": "declared output_fname is an image",
+    "reason_class": "scored by SAB's GPT-4o visual judge, not a deterministic verifier",
+    "n_excluded_of_102": 65,
+    "excluded_gold_tasks": [
+      "9",
+      "31",
+      "32"
+    ],
+    "note": "Exclusion suppresses findings, never the denominator: metrics.py scores all 12 gold issues regardless, so this can only lower recall.",
+    "per_task": {
+      "4": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "6": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "7": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "8": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "9": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "10": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "14": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "17": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "20": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "23": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "24": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "25": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "27": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "28": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "30": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "31": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "32": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "33": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "36": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "38": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "39": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "42": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "43": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "46": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "47": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "48": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "49": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "50": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "52": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "53": "declared output is `.tif`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "54": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "55": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "56": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "57": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "59": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "61": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "62": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "63": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "64": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "65": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "66": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "68": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "69": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "70": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "73": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "74": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "75": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "76": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "77": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "79": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "80": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "81": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "82": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "83": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "84": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "86": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "88": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "89": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "91": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "93": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "94": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "96": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "98": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "99": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge.",
+      "100": "declared output is `.png`, so SAB scores this task with its GPT-4o visual judge (SAB README: 'our evaluation leverages GPT-4o to judge output visualizations'; gpt4_visual_judge.py runs at temperature 0.2, n=3). Assay's verifier-integrity probes assume a deterministic verifier and cannot honestly probe a judge."
+    }
+  },
+  "gold_defect_presence": {
+    "per_task": {
+      "9": "defect_present",
+      "12": "already_fixed_upstream",
+      "21": "defect_present",
+      "26": "already_fixed_upstream",
+      "29": "already_fixed_upstream",
+      "31": "already_fixed_upstream",
+      "32": "already_fixed_upstream",
+      "34": "already_fixed_upstream",
+      "35": "already_fixed_upstream",
+      "67": "already_fixed_upstream",
+      "78": "defect_present",
+      "92": "already_fixed_upstream"
+    },
+    "counts": {
+      "defect_present": 3,
+      "already_fixed_upstream": 9
+    },
+    "note": "`already_fixed_upstream` means the split already contains BenchGuard's corrected wording, so no reader of that text can find the defect. `differs_from_both` is usually a transcription typo; check it by hand before treating it as either."
+  },
+  "arm_detail": {
+    "verdict": "UNVERIFIED",
+    "coverage": {
+      "PASS": 0,
+      "DEFECT": 0,
+      "NOT_APPLICABLE": 12,
+      "ERROR": 0
+    },
+    "probes": [
+      {
+        "family": "verifier_integrity",
+        "probe": "gold_passes",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: GOLD_TRAJECTORY, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "verifier_integrity",
+        "probe": "noop_fails",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "verifier_integrity",
+        "probe": "inverted_fails",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: GOLD_TRAJECTORY, INVERTIBLE_SPEC, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "verifier_integrity",
+        "probe": "known_wrong_fails",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: KNOWN_WRONG, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "trivial_floor",
+        "probe": "trivial_floor",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: TRIVIAL_POLICIES, GRADED_POLICIES, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "separability",
+        "probe": "separability",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: GRADED_POLICIES, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      },
+      {
+        "family": "difficulty_band",
+        "probe": "difficulty_band",
+        "status": "NOT_APPLICABLE",
+        "reason": "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler",
+        "n_findings": 0
+      },
+      {
+        "family": "contamination",
+        "probe": "train_eval_leak",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: SPLITS",
+        "n_findings": 0
+      },
+      {
+        "family": "shortcut_leakage",
+        "probe": "partial_input_baseline",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: SPLITS, ITEM_PARTS",
+        "n_findings": 0
+      },
+      {
+        "family": "spec_verifier_match",
+        "probe": "assert_traceability",
+        "status": "NOT_APPLICABLE",
+        "reason": "ScienceAgentBench's gold programs and eval scripts are in a password-protected archive behind a SharePoint link that redirects to a Microsoft login; no benchmark_root was supplied. See docs/SCIENCEAGENTBENCH.md for the URL, the password, and the drop path.",
+        "n_findings": 0
+      },
+      {
+        "family": "determinism",
+        "probe": "seed_determinism",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: SEEDED_RESET",
+        "n_findings": 0
+      },
+      {
+        "family": "reward_hackability",
+        "probe": "challenger",
+        "status": "NOT_APPLICABLE",
+        "reason": "environment does not expose: TRUE_COMPLETION, SEPARABLE_VERIFIER",
+        "n_findings": 0
+      }
+    ]
+  },
+  "findings_submitted": {
+    "total": 0,
+    "on_revised_tasks": 0,
+    "judge_calls_required": false
+  },
+  "steps": [
+    {
+      "step": "audits_to_benchguard_findings.py",
+      "exit": 0,
+      "log": "Wrote /Users/caiotheodoro/Documents/personal/personal-ml/assay-sab/results/sab_benchguard/assay__verified/normalized/sab_findings.json | tasks=102 findings=0 revised=12"
+    },
+    {
+      "step": "eval/match.py",
+      "exit": 0,
+      "log": "Total pairs to judge: 0\n\nTotal pairs: 0\nCached: 0, Judged: 0\nCost: $0.0000\n  ALIGNED: 0\n  PARTIAL: 0\n  UNRELATED: 0\nOutput: /Users/caiotheodoro/Documents/personal/personal-ml/assay-sab/results/sab_benchguard/assay__verified/matches/sab_matches.json"
+    },
+    {
+      "step": "eval/metrics.py",
+      "exit": 0,
+      "log": "Recall@ALIGNED: 0/12 = 0.0%\nRecall@PARTIAL+: 0/12 = 0.0%\nPrecision@ALIGNED: 0/0 = 0.0%\nPrecision@PARTIAL+: 0/0 = 0.0%\n\nBest single model: static_audit (Recall@A=0.0%)\n\nReports: /Users/caiotheodoro/Documents/personal/personal-ml/assay-sab/results/sab_benchguard/assay__verified/reports/sab_eval.json, /Users/caiotheodoro/Documents/personal/personal-ml/assay-sab/results/sab_benchguard/assay__verified/reports/sab_eval.md"
+    }
+  ],
+  "their_report": {
+    "benchmark": "ScienceAgentBench",
+    "judge_model": "gemini/gemini-3-flash-preview",
+    "summary": {
+      "total_gold_issues": 12,
+      "total_revised_tasks": 12,
+      "total_findings_on_revised": 0,
+      "models": [
+        "static_audit"
+      ]
+    },
+    "recall": {
+      "aligned": {
+        "count": 0,
+        "total": 12,
+        "rate": 0.0
+      },
+      "partial_plus": {
+        "count": 0,
+        "total": 12,
+        "rate": 0.0
+      }
+    },
+    "precision": {
+      "aligned": {
+        "count": 0,
+        "total": 0,
+        "rate": 0
+      },
+      "partial_plus": {
+        "count": 0,
+        "total": 0,
+        "rate": 0
+      }
+    },
+    "per_model_recall": {
+      "static_audit": {
+        "aligned": 0,
+        "partial_plus": 0,
+        "total": 12,
+        "recall_aligned": 0.0,
+        "recall_partial_plus": 0.0
+      }
+    },
+    "per_model_precision": {
+      "static_audit": {
+        "aligned": 0,
+        "partial_plus": 0,
+        "total": 0,
+        "precision_aligned": 0,
+        "precision_partial_plus": 0
+      }
+    },
+    "ensemble": {
+      "Any model": {
+        "recall_aligned": 0.0,
+        "recall_partial_plus": 0.0,
+        "count_aligned": 0,
+        "count_partial_plus": 0
+      },
+      ">=2 models": {
+        "recall_aligned": 0.0,
+        "recall_partial_plus": 0.0,
+        "count_aligned": 0,
+        "count_partial_plus": 0
+      },
+      ">=3 models": {
+        "recall_aligned": 0.0,
+        "recall_partial_plus": 0.0,
+        "count_aligned": 0,
+        "count_partial_plus": 0
+      }
+    },
+    "per_issue_detail": [
+      {
+        "issue_id": "9_issue_1",
+        "task_id": "9",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "64ed5d2abc96530ec35eda4fdc54671d66c3092b6e26b25b3da9af0d5b415814"
+      },
+      {
+        "issue_id": "12_issue_1",
+        "task_id": "12",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "525fae307de38b745e30b24874cba1c0ffd31efe95edb988615552ad326f350e"
+      },
+      {
+        "issue_id": "21_issue_1",
+        "task_id": "21",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "d4edb3ede7e08116f9ba32910611585a8c77d0352a0161e61025ac99193d5530"
+      },
+      {
+        "issue_id": "26_issue_1",
+        "task_id": "26",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "4e81999d8c6a38325615c9d4ea2c836fea116005227ffe8063699c91c148ae75"
+      },
+      {
+        "issue_id": "29_issue_1",
+        "task_id": "29",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "d2c9432b9bf8cb6efb382aab37f61d2444e6205b5df877112b880501e6413195"
+      },
+      {
+        "issue_id": "31_issue_1",
+        "task_id": "31",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "2f537481c43c34eabc92a62b763bde5cd82260f45e4cadddf3e37cb2aec47e01"
+      },
+      {
+        "issue_id": "32_issue_1",
+        "task_id": "32",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "5cec4b81324b8a4b0c05089f27d8f091f90deec6ac3ae10955131bea36564154"
+      },
+      {
+        "issue_id": "34_issue_1",
+        "task_id": "34",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "674ac49a2f8f32b124dcd57a6c7200f388432b665ad5c2e118e7facb938c2911"
+      },
+      {
+        "issue_id": "35_issue_1",
+        "task_id": "35",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "cb77903453b4894bfd8cc4730c0ee390cdd6f8172c83a3d0d4315b8670ece4a4"
+      },
+      {
+        "issue_id": "67_issue_1",
+        "task_id": "67",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "eeea83b9629221cffad19bd2065bdd631581056d7707ca06604979224dc3c50b"
+      },
+      {
+        "issue_id": "78_issue_1",
+        "task_id": "78",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "b69dd2b0b0e5323712b2599a7b4514fc591abf34b725fbf59fd4b456e45d2068"
+      },
+      {
+        "issue_id": "92_issue_1",
+        "task_id": "92",
+        "best_verdict": "MISSED",
+        "verdicts_by_model": {
+          "static_audit": "MISSED"
+        },
+        "description_sha256": "5ab256999b6bdbe2a223a70eaa1a2b88876c95e8ba5b1c90e87970b612a0e71e"
+      }
+    ],
+    "_redaction": "per_issue_detail[].description removed: it is BenchGuard's gold text and quotes ScienceAgentBench instructions. Recover it from BenchGuard eval/data/gold/sab_gold.json at the sha256 recorded under provenance.gold_sha256; the digests above let you confirm the match."
+  }
+}
