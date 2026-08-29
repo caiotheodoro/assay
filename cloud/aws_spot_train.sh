@@ -32,6 +32,10 @@ GROUP_SIZE=${GROUP_SIZE:-8}
 LR=${LR:-1e-5}
 ONLY=${ONLY:-"fixture harbor"}
 HOLDOUT=${HOLDOUT:-harbor/self-graded}
+# Source ships as a tarball through the run's own S3 bucket. Cloning from a
+# git remote is supported (set REPO_URL) but not required: this repo may not
+# have one, and pushing it somewhere public just to launch a training job is a
+# publication decision, not a deployment detail.
 REPO_URL=${REPO_URL:-}
 BRANCH=${BRANCH:-worker/train}
 BUCKET=${BUCKET:-assay-challenger-$(aws sts get-caller-identity --query Account --output text)}
@@ -42,23 +46,20 @@ MAX_PRICE=${MAX_PRICE:-}                         # blank = on-demand price cap
 DRY=${DRY:-0}
 AMI_NAME_GLOB=${AMI_NAME_GLOB:-'Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.*Ubuntu 22.04*'}
 
-if [ -z "$REPO_URL" ]; then
-  REPO_URL=$(git -C "$ROOT" remote get-url origin 2>/dev/null || true)
-fi
-if [ -z "$REPO_URL" ]; then
-  echo "REPO_URL is unset and this checkout has no origin remote." >&2
-  echo "The instance clones the repo; it cannot read your laptop." >&2
-  exit 2
-fi
-
 spot_price=$(aws ec2 describe-spot-price-history --instance-types "$ITYPE" \
-  --product-descriptions "Linux/UNIX" --max-items 1 \
-  --query 'SpotPriceHistory[0].SpotPrice' --output text 2>/dev/null || echo "unknown")
+  --product-descriptions "Linux/UNIX" \
+  --query 'min(SpotPriceHistory[].SpotPrice)' --output text 2>/dev/null | head -1)
+spot_price=${spot_price:-unknown}
 echo "instance:   $ITYPE (spot, current ${spot_price}/hr in ${REGION})"
 echo "model:      $MODEL"
 echo "steps:      $STEPS x group ${GROUP_SIZE}"
 echo "corpus:     only='${ONLY}'  holdout='${HOLDOUT}'"
 echo "artifacts:  s3://${BUCKET}/${NAME}/"
+if [ -n "$REPO_URL" ]; then
+  echo "source:     git clone $REPO_URL@$BRANCH"
+else
+  echo "source:     tarball of $ROOT -> s3://${BUCKET}/${NAME}/src.tar.gz"
+fi
 
 if [ "$DRY" = "1" ]; then
   echo "DRY RUN: nothing launched, nothing created."
@@ -77,6 +78,17 @@ aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null || \
   aws s3api create-bucket --bucket "$BUCKET" \
     $([ "$REGION" = us-east-1 ] || echo "--create-bucket-configuration LocationConstraint=$REGION") \
     >/dev/null
+
+if [ -z "$REPO_URL" ]; then
+  TARBALL=$(mktemp -t assay-src-XXXXXX).tar.gz
+  tar --exclude-vcs \
+      --exclude='.venv' --exclude='__pycache__' --exclude='.pytest_cache' \
+      --exclude='checkpoints' --exclude='results' --exclude='*.egg-info' \
+      -czf "$TARBALL" -C "$ROOT" .
+  aws s3 cp "$TARBALL" "s3://${BUCKET}/${NAME}/src.tar.gz"
+  rm -f "$TARBALL"
+  echo "uploaded source ($(aws s3 ls "s3://${BUCKET}/${NAME}/src.tar.gz" | awk '{print $3}') bytes)"
+fi
 
 if ! aws iam get-role --role-name "$ROLE_NAME" >/dev/null 2>&1; then
   aws iam create-role --role-name "$ROLE_NAME" --assume-role-policy-document '{
@@ -119,9 +131,19 @@ AMI=$(aws ec2 describe-images --owners amazon \
   --output text)
 [ "$AMI" = "None" ] && { echo "no Deep Learning AMI matched in $REGION" >&2; exit 2; }
 
-USERDATA=$(REPO_URL="$REPO_URL" BRANCH="$BRANCH" BUCKET="$BUCKET" NAME="$NAME" \
-  MODEL="$MODEL" STEPS="$STEPS" GROUP_SIZE="$GROUP_SIZE" LR="$LR" \
-  ONLY="$ONLY" HOLDOUT="$HOLDOUT" envsubst < "$ROOT/cloud/bootstrap.sh" | base64)
+# Substitute @@VARS@@ ourselves rather than shelling out to envsubst, which is
+# a gettext binary macOS does not ship. A launcher that needs `brew install`
+# before it will run is a step the reproduction guide has to carry.
+render() {
+  local text; text=$(cat "$1"); shift
+  local var
+  for var in "$@"; do
+    text=${text//@@${var}@@/${!var}}
+  done
+  printf '%s' "$text"
+}
+USERDATA=$(render "$ROOT/cloud/bootstrap.sh" \
+  REPO_URL BRANCH BUCKET NAME MODEL STEPS GROUP_SIZE LR ONLY HOLDOUT | base64)
 
 MARKET='{"MarketType":"spot","SpotOptions":{"SpotInstanceType":"one-time","InstanceInterruptionBehavior":"terminate"}}'
 if [ -n "$MAX_PRICE" ]; then

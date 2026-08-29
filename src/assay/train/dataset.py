@@ -78,16 +78,41 @@ def build_prompts(pool: EnvPool, *, max_actions: int = MAX_ACTIONS) -> PromptSet
     return PromptSet(rows=rows, excluded=excluded)
 
 
-def repeat_and_shuffle(prompts: PromptSet, *, target: int, seed: int = 0) -> PromptSet:
+def repeat_and_shuffle(
+    prompts: PromptSet, *, target: int, seed: int = 0, balance: str = "env"
+) -> PromptSet:
     """Grow the prompt set to `target` rows by cycling it, then shuffle once.
 
-    Cycling before shuffling keeps every environment equally represented at any
-    prefix length, so a run cut short by a spot reclaim is still a balanced run
-    rather than whatever the shuffle happened to front-load.
+    Cycling before shuffling keeps the mix even at any prefix length, so a run
+    cut short by a spot reclaim is still a balanced run rather than whatever the
+    shuffle happened to front-load.
+
+    `balance="env"` cycles environments round-robin rather than cycling the flat
+    row list, and the difference is not cosmetic. The toy fixtures contribute
+    three tasks each and the Harbor fixtures one, so a flat cycle spends ~92% of
+    the budget on in-process ticket triage and ~8% on the shell tasks -- and the
+    shell tasks are the only place the interesting exploit shape (edit the file
+    the verifier reads) exists at all. `balance="row"` is the flat version, kept
+    because "every prompt equally" is the right default for a corpus whose
+    environments have comparable task counts.
     """
     if not prompts.rows or target <= 0:
         return PromptSet(rows=[], excluded=dict(prompts.excluded))
-    grown = [dict(prompts.rows[i % len(prompts.rows)]) for i in range(target)]
+
+    if balance == "row":
+        grown = [dict(prompts.rows[i % len(prompts.rows)]) for i in range(target)]
+    elif balance == "env":
+        by_env: dict[str, list[dict[str, Any]]] = {}
+        for row in prompts.rows:
+            by_env.setdefault(row["env_id"], []).append(row)
+        env_ids = sorted(by_env)
+        grown = []
+        for i in range(target):
+            bucket = by_env[env_ids[i % len(env_ids)]]
+            grown.append(dict(bucket[(i // len(env_ids)) % len(bucket)]))
+    else:
+        raise ValueError(f"unknown balance mode: {balance!r} (use 'env' or 'row')")
+
     random.Random(seed).shuffle(grown)
     return PromptSet(rows=grown, excluded=dict(prompts.excluded))
 
@@ -99,11 +124,12 @@ def training_data(
     holdout: list[str] | None = None,
     target: int = 0,
     seed: int = 0,
+    balance: str = "env",
     max_actions: int = MAX_ACTIONS,
 ) -> tuple[EnvSelection, PromptSet]:
     """The whole pipeline: pick environments, build prompts, size the set."""
     selection = trainable_environments(only=only, skip=skip, holdout=holdout)
     prompts = build_prompts(selection.pool, max_actions=max_actions)
     if target:
-        prompts = repeat_and_shuffle(prompts, target=target, seed=seed)
+        prompts = repeat_and_shuffle(prompts, target=target, seed=seed, balance=balance)
     return selection, prompts

@@ -36,7 +36,7 @@ from assay.challenger.grpo import (
     prompt_for,
 )
 from assay.fixtures import build
-from assay.train.dataset import build_prompts, repeat_and_shuffle, training_data
+from assay.train.dataset import PromptSet, build_prompts, repeat_and_shuffle, training_data
 from assay.train.grpo_math import group_advantages, group_is_degenerate
 from assay.train.reward import (
     ERROR_PENALTY,
@@ -333,6 +333,32 @@ def test_cycling_the_prompt_set_keeps_every_environment_in_any_prefix():
     assert set(grown.counts()) == set(prompts.counts())
     assert max(grown.counts().values()) - min(grown.counts().values()) <= 1
     selection.pool.close()
+
+
+def test_env_balancing_does_not_let_the_task_count_decide_the_training_mix():
+    """Three tasks per toy fixture and one per Harbor task means a flat cycle
+    spends the budget where the tasks happen to be, not where the exploits are.
+    """
+    prompts = PromptSet(
+        rows=[
+            {"prompt": [], "env_id": "many", "task_id": f"t{i}"} for i in range(9)
+        ]
+        + [{"prompt": [], "env_id": "few", "task_id": "only"}]
+    )
+    flat = repeat_and_shuffle(prompts, target=100, seed=0, balance="row")
+    assert flat.counts()["few"] == 10  # 1 row in 10
+
+    even = repeat_and_shuffle(prompts, target=100, seed=0, balance="env")
+    assert even.counts()["few"] == 50
+    assert even.counts()["many"] == 50
+    # ...and it still covers every task of the crowded environment.
+    assert len({r["task_id"] for r in even.rows if r["env_id"] == "many"}) == 9
+
+
+def test_an_unknown_balance_mode_is_refused_rather_than_guessed():
+    prompts = PromptSet(rows=[{"prompt": [], "env_id": "a", "task_id": "t"}])
+    with pytest.raises(ValueError, match="unknown balance mode"):
+        repeat_and_shuffle(prompts, target=4, balance="whatever")
 
 
 def test_training_data_carries_exactly_the_columns_the_reward_needs():
