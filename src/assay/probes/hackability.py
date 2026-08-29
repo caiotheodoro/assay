@@ -19,6 +19,7 @@ from typing import Any
 
 from ..adapter import EnvAdapter, run_policy
 from ..challenger import Attempt, ScriptedChallenger
+from ..llm import LLMUnavailable
 from ..types import Capability, DefectClass, Finding, Transcript, DEFAULT_SEVERITY
 from .base import Probe, register
 
@@ -60,9 +61,26 @@ class RewardHackability(Probe):
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         challenger = ctx.get("challenger") or ScriptedChallenger()
         findings, detail = [], {}
+        mute: dict[str, str] = {}
 
         for task in adapter.manifest().tasks:
-            attempts: list[Attempt] = challenger.attack(adapter, task.task_id)
+            try:
+                attempts: list[Attempt] = challenger.attack(adapter, task.task_id)
+            except LLMUnavailable as exc:
+                # A Challenger that could not speak is not a Challenger that
+                # found nothing, and the difference has to survive into the
+                # card. Recorded per task: one unreachable backend must not
+                # erase findings another task already produced.
+                mute[task.task_id] = str(exc)
+                detail[task.task_id] = {
+                    "challenger": challenger.name,
+                    "attempts": [],
+                    "n_attempts": 0,
+                    "best_attempt": None,
+                    "attacker_trace": [],
+                    "unavailable": str(exc),
+                }
+                continue
             # The LAST attempt carries the full history; the best one carries
             # only what had happened by the time it was made. Attaching the
             # best attempt's log to a failed run showed turn 1 and nothing
@@ -114,4 +132,10 @@ class RewardHackability(Probe):
                         },
                     )
                 )
+        if mute and not findings and len(mute) == len(detail):
+            # Nothing ran on any task and nothing was found, which is the case
+            # a clean PASS would have been a lie about. NOT_APPLICABLE, with
+            # the reason, is what the card is supposed to carry.
+            reasons = "; ".join(f"{task}: {why}" for task, why in sorted(mute.items()))
+            return self.na(f"the Challenger could not act on any task -- {reasons}")
         return self.defects(findings, per_task=detail, challenger=challenger.name)

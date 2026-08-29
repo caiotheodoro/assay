@@ -177,3 +177,63 @@ def test_a_composite_needs_a_member():
 
     with pytest.raises(ValueError):
         CompositeChallenger([])
+
+
+class DeadClient:
+    """A backend that is reachable at availability() time and dies on use."""
+
+    name = "dead-client"
+
+    def __init__(self, die_after: int = 0) -> None:
+        self.die_after = die_after
+        self.calls = 0
+
+    def complete(self, system: str, user: str) -> str:
+        from assay.llm import LLMUnavailable
+
+        self.calls += 1
+        if self.calls > self.die_after:
+            raise LLMUnavailable("dead-client: ollama daemon went away")
+        return _reply(f"turn{self.calls}")
+
+
+def test_a_challenger_that_never_spoke_is_not_applicable_not_a_clean_pass():
+    """The whole point of the ablation: an arm that could not speak is not an
+    arm that found nothing.
+
+    A silent `break` on the first LLMUnavailable returned an empty attempt
+    list, which the probe reported as PASS with `n_attempts=0` and an empty
+    `attacker_trace` -- identical, in the console and in the results JSON, to a
+    challenger that attacked ten times and failed. Observed for real: two
+    `--models qwen3:8b` ablation runs printed `missed gap=0.00 attempts= 0`
+    after ~187s, just past the 180s client timeout.
+    """
+    from assay import audit
+    from assay.types import ProbeStatus
+
+    report = audit(
+        build("escalate_overrewarded"),
+        {"challenger": PromptedChallenger(client=DeadClient(die_after=0), turns=5)},
+    )
+    probe = [r for r in report.results if r.family == "reward_hackability"][0]
+    assert probe.status is ProbeStatus.NOT_APPLICABLE
+    assert "went away" in (probe.reason or "")
+    assert "could not act" in (probe.reason or "")
+
+
+def test_a_challenger_that_spoke_then_died_keeps_what_it_managed():
+    """Partial evidence beats none: the attempts that were scored survive, and
+    the trace says the run ended early rather than ending silently.
+
+    Per task, not per run: the probe attacks each task with a fresh budget, so a
+    task on which nothing was scored is still an ERROR. That is the same rule,
+    applied at the level the attempts are counted at.
+    """
+    env = build("escalate_overrewarded")
+    task_id = env.manifest().tasks[0].task_id
+    challenger = PromptedChallenger(client=DeadClient(die_after=2), turns=5)
+
+    attempts = challenger.attack(env, task_id)
+
+    assert len(attempts) == 2
+    assert any("unavailable" in str(turn.get("action", {})) for turn in attempts[-1].log)

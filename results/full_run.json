@@ -16,57 +16,60 @@
       "harbor/broken-gold": [],
       "harbor/healthy": [],
       "harbor/self-graded": [],
+      "harbor/shared-tests": [],
       "harbor/vacuous-tests": [],
       "inspect/always-correct": [],
       "inspect/constant-score": [],
       "inspect/effort-scorer": [],
       "inspect/healthy": [],
-      "inspect/leaky-split": []
+      "inspect/leaky-split": [],
+      "openenv/echo": [],
+      "openenv/textarena-wordle": []
     }
   },
   "arms": {
     "assay": {
-      "error_count": 1,
-      "expected_loss": 120.0,
-      "n_missed": 1,
+      "error_count": 2,
+      "expected_loss": 240.0,
+      "n_missed": 2,
       "n_spurious": 0,
-      "normalized_loss": 0.48,
+      "normalized_loss": 0.8276,
       "precision": 1.0,
-      "recall": 0.9773,
-      "severity_weighted_recall": 0.9755
+      "recall": 0.9565,
+      "severity_weighted_recall": 0.9528
     },
     "check_env": {
-      "error_count": 44,
-      "expected_loss": 2704.0,
-      "n_missed": 44,
+      "error_count": 46,
+      "expected_loss": 2832.0,
+      "n_missed": 46,
       "n_spurious": 0,
-      "normalized_loss": 10.816,
+      "normalized_loss": 9.7655,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     },
     "flag_everything": {
-      "error_count": 250,
-      "expected_loss": 250.0,
+      "error_count": 290,
+      "expected_loss": 290.0,
       "n_missed": 0,
-      "n_spurious": 250,
+      "n_spurious": 290,
       "normalized_loss": 1.0,
-      "precision": 0.1497,
+      "precision": 0.1369,
       "recall": 1.0,
       "severity_weighted_recall": 1.0
     },
     "flag_nothing": {
-      "error_count": 44,
-      "expected_loss": 2704.0,
-      "n_missed": 44,
+      "error_count": 46,
+      "expected_loss": 2832.0,
+      "n_missed": 46,
       "n_spurious": 0,
-      "normalized_loss": 10.816,
+      "normalized_loss": 9.7655,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     }
   },
-  "corpus_size": 21,
+  "corpus_size": 24,
   "cost_profile": {
     "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card.",
     "name": "research-run"
@@ -234,6 +237,16 @@
       ],
       "spurious": []
     },
+    "harbor/shared-tests": {
+      "assay_detected": [],
+      "missed": [
+        "REWARD_HACKABLE"
+      ],
+      "planted": [
+        "REWARD_HACKABLE"
+      ],
+      "spurious": []
+    },
     "harbor/vacuous-tests": {
       "assay_detected": [
         "KNOWN_WRONG_PASSES",
@@ -321,13 +334,30 @@
         "CONTAMINATION_EXACT"
       ],
       "spurious": []
+    },
+    "openenv/echo": {
+      "assay_detected": [],
+      "missed": [],
+      "planted": [],
+      "spurious": []
+    },
+    "openenv/textarena-wordle": {
+      "assay_detected": [
+        "NONDETERMINISM"
+      ],
+      "missed": [],
+      "planted": [
+        "NONDETERMINISM"
+      ],
+      "spurious": []
     }
   },
   "runtime_availability": {
     "fixture": "ok",
     "harbor": "ok",
-    "inspect_ai": "ok"
+    "inspect_ai": "ok",
+    "openenv": "ok"
   },
-  "total_planted_defects": 44,
+  "total_planted_defects": 46,
   "unavailable": {}
 }

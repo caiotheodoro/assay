@@ -2,7 +2,12 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
-uv.lock
+
+# uv.lock IS tracked. `openenv` is pinned to a git revision because an audit
+# whose subject moves between runs is not an audit -- and that argument applies
+# with equal force to `inspect-ai>=0.3.260` and `inspect_evals~=0.18.0`, whose
+# ranges are open. The lockfile is what makes the two defect write-ups in the
+# README reproducible against the versions they were found in.
 
 # Results are evidence, not scratch. The brief asks that every claim about a
 # result be connected to the evidence submitted, and a judge should be able to
