@@ -444,6 +444,22 @@ class StateEscapes(Exception):
     """The scorer hands `state` to a helper this filter cannot see through."""
 
 
+def unsafe_reads(reads: set[str], allowed: frozenset[str]) -> list[str]:
+    """Attribute chains that reach outside what this adapter populates.
+
+    Prefix-closed downward: `state.output.completion.strip` is safe because
+    `state.output.completion` is, and reaching further into a string cannot
+    reach anything else. `state.output` on its own is not safe, because from
+    there `.message` reaches the tool calls. So the check is on the prefix, and
+    the reported path stays the maximal chain the scorer actually wrote.
+    """
+    return sorted(
+        chain
+        for chain in reads
+        if not any(chain == ok or chain.startswith(ok + ".") for ok in allowed)
+    )
+
+
 def state_reads(fn: Any) -> set[str]:
     """Attribute paths the scorer reads off its `TaskState` argument.
 
@@ -709,7 +725,7 @@ def dynamic_filter(ref: TaskRef, task: Any) -> tuple[AnswerProtocol | None, Excl
                 f"scorer {scorer_name(fn)} source could not be read for analysis: "
                 f"{type(exc).__name__}: {exc}",
             )
-        unsafe = sorted(reads - allowed)
+        unsafe = unsafe_reads(reads, allowed)
         if unsafe:
             return None, Exclusion(
                 ref.name,
