@@ -11,6 +11,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+# One group per workstream, declared up front so concurrent work never has to
+# edit this table. Empty is fine -- an empty group is cheaper than a conflict.
+openenv = []
+sweep = []
+train = []
 adapters = [
     "inspect-ai>=0.3.260",
 ]

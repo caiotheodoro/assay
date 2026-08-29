@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from .corpus import CorpusEntry, register
 from .types import DefectClass
 
 SUITE = Path(__file__).parent / "fixtures" / "harbor_suite"
@@ -55,3 +56,26 @@ def build_harbor_environments(adapter_cls, sandbox_factory) -> list[tuple[str, A
         return make
 
     return [(f"harbor/{name}", factory(name), defects) for name, defects in CATALOG.items()]
+
+
+# -- registration -----------------------------------------------------------
+
+
+def _probe() -> tuple[bool, str]:
+    from .sandbox import docker_available
+
+    if not docker_available():
+        return False, "docker daemon not running; Harbor tasks execute in containers"
+    return True, "ok"
+
+
+def corpus_entries() -> list[CorpusEntry]:
+    from .adapters.harbor import HarborAdapter
+    from .sandbox import AutoApprove, DockerSandbox
+
+    return build_harbor_environments(
+        HarborAdapter, lambda: DockerSandbox(AutoApprove("assay corpus run"))
+    )
+
+
+register("harbor", corpus_entries, _probe)

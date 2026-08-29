@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
 from assay.baselines import DirectPromptArm, StructuralCheckArm, ToolAgentArm  # noqa: E402
-from assay.corpus import availability, entries, ground_truth  # noqa: E402
+from assay.corpus import availability, entries, ground_truth, unavailable  # noqa: E402
 from assay.costs import all_profiles, load  # noqa: E402
 from assay.metrics import ArmResult, Outcome, normalized_loss, trivial_arms  # noqa: E402
 
@@ -81,8 +81,14 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
     ap.add_argument("--profile", default="research-run")
-    ap.add_argument("--no-inspect", action="store_true")
-    ap.add_argument("--no-harbor", action="store_true")
+    ap.add_argument(
+        "--skip", nargs="*", default=[], metavar="ECOSYSTEM",
+        help="ecosystems to leave out (fixture, inspect_ai, harbor, ...)",
+    )
+    ap.add_argument(
+        "--only", nargs="*", default=None, metavar="ECOSYSTEM",
+        help="restrict the corpus to these ecosystems",
+    )
     ap.add_argument(
         "--llm-arms",
         metavar="MODEL",
@@ -90,13 +96,9 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    have = availability()
-    corpus = entries(
-        include_inspect=not args.no_inspect, include_harbor=not args.no_harbor
-    )
-    truth = ground_truth(
-        include_inspect=not args.no_inspect, include_harbor=not args.no_harbor
-    )
+    have = {name: reason for name, (_ok, reason) in availability().items()}
+    corpus = entries(only=args.only, skip=args.skip)
+    truth = ground_truth(only=args.only, skip=args.skip)
     profile = load(args.profile)
 
     arms = {"assay": run_assay(corpus)}
@@ -130,6 +132,7 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     payload = {
         "runtime_availability": have,
+        "unavailable": unavailable(),
         "corpus_size": len(corpus),
         "total_planted_defects": sum(len(v) for v in truth.values()),
         "cost_profile": {"name": profile.name, "description": profile.description},
@@ -149,9 +152,8 @@ def main() -> int:
 
     width = max(len(n) for n in rows)
     print(f"corpus: {len(corpus)} environments, {payload['total_planted_defects']} planted defects")
-    missing = [k for k, v in have.items() if not v]
-    if missing:
-        print(f"WARNING: unavailable here, corpus is reduced: {', '.join(missing)}")
+    for name, reason in unavailable().items():
+        print(f"WARNING: {name} unavailable, corpus is reduced -- {reason}")
     print(f"cost profile: {profile.name}\n")
     header = f"{'arm':{width}}  {'exp.loss':>9} {'norm':>7} {'recall':>7} {'prec':>7} {'miss':>5} {'spur':>5}"
     print(header)

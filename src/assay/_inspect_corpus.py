@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .corpus import CorpusEntry, register
 from .types import DefectClass
 
 _QA = [
@@ -117,3 +118,23 @@ def build_inspect_environments(adapter_cls) -> list[tuple[str, Any, frozenset[De
         ),
         (leaky_id, leaky_factory, frozenset({DefectClass.CONTAMINATION_EXACT})),
     ]
+
+
+# -- registration -----------------------------------------------------------
+
+
+def _probe() -> tuple[bool, str]:
+    try:
+        import inspect_ai  # noqa: F401
+    except ImportError as exc:
+        return False, f"inspect_ai not installed: {exc}"
+    return True, "ok"
+
+
+def corpus_entries() -> list[CorpusEntry]:
+    from .adapters.inspect_ai_adapter import InspectAdapter
+
+    return build_inspect_environments(InspectAdapter)
+
+
+register("inspect_ai", corpus_entries, _probe)
