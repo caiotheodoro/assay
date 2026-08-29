@@ -44,12 +44,14 @@ class _NullCtx:
         return False
 
 
-def run_assay(corpus) -> ArmResult:
-    arm = ArmResult("assay")
+def run_assay(corpus, ctx: dict | None = None, label: str = "assay") -> ArmResult:
+    arm = ArmResult(label)
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
-            report = audit(adapter)
+            report = audit(adapter, ctx)
         arm.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
+              flush=True)
     return arm
 
 
@@ -90,6 +92,15 @@ def main() -> int:
         help="restrict the corpus to these ecosystems",
     )
     ap.add_argument(
+        "--challenger",
+        choices=["scripted", "ollama", "claude"],
+        default="scripted",
+        help="which Challenger the assay arm uses; the agentic component is ablatable "
+        "and scripted is the default so the headline needs no model",
+    )
+    ap.add_argument("--challenger-model", default="qwen3:8b")
+    ap.add_argument("--challenger-turns", type=int, default=10)
+    ap.add_argument(
         "--llm-arms",
         metavar="MODEL",
         help="also run the two LLM baselines with this ollama model (e.g. qwen3:8b)",
@@ -101,7 +112,25 @@ def main() -> int:
     truth = ground_truth(only=args.only, skip=args.skip)
     profile = load(args.profile)
 
-    arms = {"assay": run_assay(corpus)}
+    ctx: dict = {}
+    label = "assay"
+    if args.challenger != "scripted":
+        from assay.challenger.prompted import PromptedChallenger
+        from assay.llm import ClaudeCLIClient, OllamaClient
+
+        client = ClaudeCLIClient() if args.challenger == "claude" else OllamaClient(
+            args.challenger_model
+        )
+        usable, reason = client.availability()
+        if not usable:
+            print(f"SKIPPING prompted challenger: {reason}")
+            print("an arm missing from a comparison is a result about the run, not the method")
+        else:
+            ctx["challenger"] = PromptedChallenger(client=client, turns=args.challenger_turns)
+            label = f"assay+{ctx['challenger'].name}"
+            print(f"assay arm uses {label}\n", flush=True)
+
+    arms = {label: run_assay(corpus, ctx or None, label)}
     check_arm, check_issues = run_check_env(corpus)
     arms["check_env"] = check_arm
     arms.update(trivial_arms(truth))
@@ -144,7 +173,7 @@ def main() -> int:
                 "missed": sorted(d.value for d in o.missed),
                 "spurious": sorted(d.value for d in o.spurious),
             }
-            for o in arms["assay"].outcomes
+            for o in arms[label].outcomes
         },
         "arm_logs": arm_logs,
     }
