@@ -8,6 +8,7 @@ __all__ = [
     "ScriptedChallenger",
     "CompositeChallenger",
     "PromptedChallenger",
+    "GRPOChallenger",
     "action_template",
     "action_vocabulary",
 ]
@@ -18,4 +19,8 @@ def __getattr__(name: str):
         from .prompted import PromptedChallenger
 
         return PromptedChallenger
+    if name == "GRPOChallenger":
+        from .grpo import GRPOChallenger
+
+        return GRPOChallenger
     raise AttributeError(name)

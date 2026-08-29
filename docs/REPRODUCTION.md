@@ -110,11 +110,89 @@ as no defects.
   requiring a browser session. See `docs/SCIENCEAGENTBENCH.md` for the manual
   step and the exact drop path. Upstream asks that the unzipped files not be
   redistributed, so nothing from it enters any published artifact.
-- **The GRPO-trained Challenger** needs a GPU. It is deliberately ablatable: the
-  scripted Challenger works without it and nothing in this guide requires it.
+- **The GRPO-trained Challenger** needs a GPU. It is deliberately ablatable:
+  the scripted Challenger works without it and nothing else here requires it.
+  The reward itself is verifiable with no GPU at all:
+
+  ```bash
+  uv run --extra adapters pytest tests/test_grpo_reward.py -q
+  uv run --extra adapters python scripts/reward_landscape.py --holdout harbor/self-graded
+  ```
+
+  The landscape script is what predicted the negative result before any GPU was
+  bought: 39 prompts, 19 with signal, 51.3% flat. To reproduce the runs
+  themselves, `cloud/aws_spot_train.sh` — and read
+  `docs/changelog/40-grpo-challenger.md` first, because both runs failed to
+  learn and the reason is worth knowing before spending the money.
+
+## The trained Challenger (optional, and the only part that wants a GPU)
+
+Everything above runs without one. This section is the exception, and it is
+built so that skipping it costs you an arm in one table and nothing else.
+
+**Without a GPU** you can still check the whole reward, which is the part that
+decides whether training would mean anything:
+
+```bash
+uv run --extra adapters pytest tests/test_grpo_reward.py tests/test_grpo_challenger.py -q
+uv run --extra adapters python scripts/reward_landscape.py --holdout harbor/self-graded
+```
+
+The first proves the exploit-gap reward on the fixtures — an honest solve pays
+zero, a planted hack pays the full gap, an unparseable completion pays less
+than any policy that ran. Four of those tests replay real Docker containers.
+
+The second prints what the reward can pay per environment before any model
+exists. Read `prompts_with_signal` and `fraction_flat`: GRPO learns from
+variance within a rollout group, so an environment where every candidate
+policy scores the same contributes exactly zero gradient no matter how long it
+is trained on. A corpus that is flat here was never going to teach, and that is
+a different finding from an optimiser that failed.
+
+**With a GPU**, or with AWS credentials:
+
+```bash
+# wiring gate: CPU, tiny model, two steps, no GPU and no Docker needed
+uv run --extra train --extra adapters python -m assay.train.run --smoke
+
+# the real run, on one A10G
+uv run --extra train --extra adapters python -m assay.train.run \
+    --model Qwen/Qwen3-1.7B --steps 300 --group-size 8 \
+    --only fixture harbor --holdout harbor/self-graded
+
+# or launch it on a spot g5.xlarge; DRY=1 prices it and launches nothing
+DRY=1 ./cloud/aws_spot_train.sh
+```
+
+`harbor/self-graded` is held out of training on purpose. It is the ablation
+target, and training on it and then reporting that the trained Challenger
+cracks it would be train-on-test.
+
+## The Challenger ablation
+
+```bash
+uv run --extra adapters python scripts/challenger_ablation.py --task self-graded
+uv run --extra adapters python scripts/challenger_ablation.py --task self-graded \
+    --grpo-adapter checkpoints/grpo/final --grpo-base qwen3:1.7b
+```
+
+Arms that cannot run are printed as skipped with a reason and recorded in the
+results JSON. An arm missing from a comparison is a result about the run, not
+about the method — and a challenger that could not speak is reported as
+`NOT_APPLICABLE`, never as an arm that found nothing.
+
+`--grpo-base` is the control worth having: the same one-shot prompt on an
+*untrained* model. If that arm finds the exploit too, the prompt format found
+it and the training did not.
 
 ## Costs
 
 Everything above is free apart from optional model calls. Container startup
 dominates at roughly four seconds each, which is why the sandbox holds one
 container open per suite rather than starting one per command.
+
+The one exception is `cloud/aws_spot_train.sh`. A spot `g5.xlarge` in
+`us-east-1` was $0.46/hr at the time of writing and a 300-step run is roughly
+an hour including model download — about **$0.50**. Nothing else in this guide
+needs it, and the trained adapter is an optional artifact rather than a
+dependency.

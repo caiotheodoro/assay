@@ -25,7 +25,20 @@ openenv = [
 sweep = [
     "inspect_evals~=0.18.0",
 ]
-train = []
+train = [
+    # The trained Challenger is an OPTIONAL artifact. Nothing in `assay` imports
+    # any of this at module scope, `uv sync --extra dev --extra adapters` still
+    # runs the whole audit, and the scripted Challenger never needs a GPU.
+    "torch>=2.4",
+    "transformers>=4.51",
+    "trl>=0.15",
+    "peft>=0.13",
+    "datasets>=2.20",
+    "accelerate>=0.34",
+    # 4-bit QLoRA only exists on CUDA. Marking it keeps `--extra train`
+    # installable on the laptop where the reward tests run.
+    "bitsandbytes>=0.43; platform_system == 'Linux'",
+]
 adapters = [
     "inspect-ai>=0.3.260",
 ]

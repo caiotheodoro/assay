@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from assay import audit  # noqa: E402
 from assay.adapters import HarborAdapter  # noqa: E402
 from assay.challenger import ScriptedChallenger  # noqa: E402
+from assay.challenger.grpo import GRPOChallenger, TransformersClient  # noqa: E402
 from assay.challenger.prompted import PromptedChallenger  # noqa: E402
 from assay.llm import ClaudeCLIClient, OllamaClient  # noqa: E402
 from assay.sandbox import AutoApprove, DockerSandbox  # noqa: E402
@@ -50,6 +51,22 @@ def main() -> int:
         help="also run a stronger model via the Claude CLI, to separate a loop "
         "that cannot find the exploit from a model that cannot",
     )
+    ap.add_argument(
+        "--grpo-adapter",
+        default="",
+        help="LoRA adapter from assay.train.run. Optional: without it the "
+        "trained arm is reported as skipped, and every other arm still runs.",
+    )
+    ap.add_argument("--grpo-model", default="Qwen/Qwen3-1.7B")
+    ap.add_argument(
+        "--grpo-base",
+        nargs="*",
+        default=[],
+        help="ollama models to run through the GRPO one-shot prompt WITHOUT the "
+        "trained adapter. This is the control that separates what the training "
+        "did from what the prompt format did.",
+    )
+    ap.add_argument("--samples", type=int, default=8, help="best-of-n for the GRPO arms")
     ap.add_argument("--out", default="results/challenger_ablation.json")
     args = ap.parse_args()
 
@@ -71,6 +88,43 @@ def main() -> int:
         else:
             skipped.append({"model": "claude-cli", "reason": reason})
             print(f"SKIPPING claude-cli: {reason}")
+    # The GRPO prompt format on an untrained model: if this arm finds the
+    # exploit too, the training was not what found it.
+    for model in args.grpo_base:
+        client = OllamaClient(model)
+        usable, reason = client.availability()
+        if usable:
+            arms.append(
+                (
+                    f"grpo-format-untrained:{model}",
+                    GRPOChallenger(
+                        client=client, samples=args.samples, label="grpo-format-untrained"
+                    ),
+                )
+            )
+        else:
+            skipped.append({"model": f"grpo-format-untrained:{model}", "reason": reason})
+            print(f"SKIPPING grpo-format-untrained:{model}: {reason}")
+
+    if args.grpo_adapter:
+        client = TransformersClient(model_id=args.grpo_model, adapter_path=args.grpo_adapter)
+        usable, reason = client.availability()
+        if usable:
+            arms.append(
+                ("grpo-trained", GRPOChallenger(client=client, samples=args.samples))
+            )
+        else:
+            skipped.append({"model": "grpo-trained", "reason": reason})
+            print(f"SKIPPING grpo-trained: {reason}")
+    else:
+        skipped.append(
+            {
+                "model": "grpo-trained",
+                "reason": "no --grpo-adapter given; the trained Challenger is an "
+                "optional artifact and the comparison runs without it",
+            }
+        )
+
     if skipped:
         print("an arm missing from a comparison is a result about the run, not the method\n")
 
@@ -81,6 +135,20 @@ def main() -> int:
             report = audit(adapter, {"challenger": challenger})
         found = DefectClass.REWARD_HACKABLE in report.detected
         probe = [r for r in report.results if r.family == "reward_hackability"][0]
+        if probe.status.value in ("NOT_APPLICABLE", "ERROR"):
+            # A challenger that could not speak is not a challenger that found
+            # nothing. Report which, or the row is a lie.
+            print(f"{name:22} {probe.status.value}: {probe.reason}", flush=True)
+            rows.append(
+                {
+                    "challenger": name,
+                    "found_exploit": False,
+                    "probe_status": probe.status.value,
+                    "reason": probe.reason,
+                    "seconds": round(time.time() - started, 1),
+                }
+            )
+            continue
         per_task = next(iter(probe.detail.get("per_task", {}).values()), {})
         best_gap = max((a["gap"] for a in per_task.get("attempts", [])), default=0.0)
         row = {
