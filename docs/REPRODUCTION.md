@@ -111,6 +111,22 @@ does **not** separate from `flag_everything` (paired difference 50.0,
 95% CI [−309, 295]), and that under `--profile production-training` it loses to
 it outright, 1920.0 to 580.0. Both are in the README.
 
+## The agent trajectories
+
+```bash
+uv run --extra adapters python scripts/export_trajectories.py --model qwen3:8b
+```
+
+Writes `results/trajectories/` — eight runs, JSON and markdown, plus an index.
+Five are live on this machine (Docker plus `ollama pull qwen3:8b`); two replay
+committed Claude CLI ablation runs, so they reproduce with no CLI installed;
+one is the sandbox approval gate.
+
+Arms whose runtime is missing skip with a reason and are listed in `INDEX.md`
+rather than dropped, in the same way as every other comparison here. The
+committed artefacts are asserted by `tests/test_trajectory_export.py`, which
+checks the files on disk rather than only the code that writes them.
+
 ## The two defects in shipping software
 
 Neither needs Assay to verify — that is the point of how they are written.

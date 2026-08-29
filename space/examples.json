@@ -1,0 +1,121 @@
+[
+  {
+    "name": "1 — Healthy: an exact-match Yes/No eval",
+    "spec": {
+      "env_id": "example/healthy",
+      "verifier": "exact",
+      "tasks": [
+        {"task_id": "q1", "instruction": "Answer Yes or No: is 2 greater than 1?", "target": "Yes", "gold": "Yes", "known_wrong": "No", "asserts": ["the answer equals Yes"]},
+        {"task_id": "q2", "instruction": "Answer Yes or No: is 1 greater than 2?", "target": "No", "gold": "No", "known_wrong": "Yes", "asserts": ["the answer equals No"]},
+        {"task_id": "q3", "instruction": "Answer Yes or No: is 3 greater than 2?", "target": "Yes", "gold": "Yes", "known_wrong": "No", "asserts": ["the answer equals Yes"]}
+      ],
+      "train": [{"item_id": "tr1", "text": "is five greater than four", "label": "Yes"}],
+      "eval": [{"item_id": "ev1", "text": "is four greater than five", "label": "No"}]
+    }
+  },
+  {
+    "name": "2 — Thin: three lines, and nine probes cannot run",
+    "spec": {
+      "env_id": "example/thin",
+      "tasks": [
+        {"task_id": "only", "instruction": "Do the thing.", "target": "done"}
+      ]
+    }
+  },
+  {
+    "name": "3 — Substring verifier: one constant string answers both labels",
+    "spec": {
+      "env_id": "example/substring-scorer",
+      "verifier": "includes",
+      "trivial_answers": ["YesNo", "I don't know"],
+      "tasks": [
+        {"task_id": "q1", "instruction": "Answer Yes or No: is 2 greater than 1?", "target": "Yes", "gold": "Yes", "known_wrong": "No", "asserts": ["the answer contains Yes"]},
+        {"task_id": "q2", "instruction": "Answer Yes or No: is 1 greater than 2?", "target": "No", "gold": "No", "known_wrong": "Yes", "asserts": ["the answer contains No"]},
+        {"task_id": "q3", "instruction": "Answer Yes or No: is 3 greater than 2?", "target": "Yes", "gold": "Yes", "known_wrong": "No", "asserts": ["the answer contains Yes"]}
+      ],
+      "train": [{"item_id": "tr1", "text": "is five greater than four", "label": "Yes"}],
+      "eval": [{"item_id": "ev1", "text": "is four greater than five", "label": "No"}]
+    }
+  },
+  {
+    "name": "4 — Unfalsifiable: the verifier cannot fail",
+    "spec": {
+      "env_id": "example/unfalsifiable",
+      "verifier": "always_pass",
+      "tasks": [
+        {"task_id": "q1", "instruction": "Answer Yes or No: is 2 greater than 1?", "target": "Yes", "gold": "Yes", "known_wrong": "No", "asserts": ["the answer equals Yes"]},
+        {"task_id": "q2", "instruction": "Answer Yes or No: is 1 greater than 2?", "target": "No", "gold": "No", "known_wrong": "Yes", "asserts": ["the answer equals No"]}
+      ]
+    }
+  },
+  {
+    "name": "5 — Leaked split: an eval item is byte-identical to a train item",
+    "spec": {
+      "env_id": "example/leaky-split",
+      "verifier": "exact",
+      "tasks": [
+        {"task_id": "q1", "instruction": "Classify the ticket as billing, technical or spam.", "target": "billing", "gold": "billing", "known_wrong": "spam", "asserts": ["the ticket is classified as billing"]},
+        {"task_id": "q2", "instruction": "Classify the ticket as billing, technical or spam.", "target": "technical", "gold": "technical", "known_wrong": "billing", "asserts": ["the ticket is classified as technical"]},
+        {"task_id": "q3", "instruction": "Classify the ticket as billing, technical or spam.", "target": "spam", "gold": "spam", "known_wrong": "technical", "asserts": ["the ticket is classified as spam"]}
+      ],
+      "train": [
+        {"item_id": "tr1", "text": "I was charged twice for my annual subscription this month and the second charge appeared three days after the first one cleared my account.", "label": "billing"},
+        {"item_id": "tr2", "text": "The export button returns a five hundred server error whenever the report contains more than roughly ten thousand rows of data.", "label": "technical"},
+        {"item_id": "tr3", "text": "CONGRATULATIONS you have been selected as our grand prize winner and a free luxury cruise for two is waiting to be claimed today.", "label": "spam"}
+      ],
+      "eval": [
+        {"item_id": "ev1", "text": "I was charged twice for my annual subscription this month and the second charge appeared three days after the first one cleared my account.", "label": "billing"},
+        {"item_id": "ev2", "text": "Every attempt to attach a file larger than twenty megabytes silently returns me to an empty form with no error shown.", "label": "technical"},
+        {"item_id": "ev3", "text": "URGENT NOTICE your account has been flagged for an unclaimed inheritance payout held in an offshore escrow facility.", "label": "spam"}
+      ]
+    }
+  },
+  {
+    "name": "6 — Paraphrased split: near-duplicate, invisible to exact hashing",
+    "spec": {
+      "env_id": "example/paraphrased-split",
+      "verifier": "exact",
+      "tasks": [
+        {"task_id": "q1", "instruction": "Classify the ticket as billing, technical or spam.", "target": "billing", "gold": "billing", "known_wrong": "spam", "asserts": ["the ticket is classified as billing"]},
+        {"task_id": "q2", "instruction": "Classify the ticket as billing, technical or spam.", "target": "technical", "gold": "technical", "known_wrong": "billing", "asserts": ["the ticket is classified as technical"]},
+        {"task_id": "q3", "instruction": "Classify the ticket as billing, technical or spam.", "target": "spam", "gold": "spam", "known_wrong": "technical", "asserts": ["the ticket is classified as spam"]}
+      ],
+      "train": [
+        {"item_id": "tr1", "text": "I was charged twice for my annual subscription this month and the second charge appeared three days after the first one cleared my account.", "label": "billing"},
+        {"item_id": "tr2", "text": "The export button returns a five hundred server error whenever the report contains more than roughly ten thousand rows of data.", "label": "technical"},
+        {"item_id": "tr3", "text": "CONGRATULATIONS you have been selected as our grand prize winner and a free luxury cruise for two is waiting to be claimed today.", "label": "spam"}
+      ],
+      "eval": [
+        {"item_id": "ev1", "text": "I was charged twice for my annual subscription this month and teh second charge appeared three days after the first one cleared my account.", "label": "billing"},
+        {"item_id": "ev2", "text": "The export button returns a five hundred server error whenever teh report contains more than roughly ten thousand rows of data.", "label": "technical"},
+        {"item_id": "ev3", "text": "CONGRATULATIONS you have been selected as our grand prize winner and a free luxury cruise for two is waiting to be claimed tomorrow.", "label": "spam"}
+      ]
+    }
+  },
+  {
+    "name": "7 — Shortcut: one metadata field alone predicts the label",
+    "spec": {
+      "env_id": "example/shortcut-leak",
+      "verifier": "exact",
+      "tasks": [
+        {"task_id": "q1", "instruction": "Classify the ticket as billing, technical or spam.", "target": "billing", "gold": "billing", "known_wrong": "spam", "asserts": ["the ticket is classified as billing"]},
+        {"task_id": "q2", "instruction": "Classify the ticket as billing, technical or spam.", "target": "technical", "gold": "technical", "known_wrong": "billing", "asserts": ["the ticket is classified as technical"]},
+        {"task_id": "q3", "instruction": "Classify the ticket as billing, technical or spam.", "target": "spam", "gold": "spam", "known_wrong": "technical", "asserts": ["the ticket is classified as spam"]}
+      ],
+      "train": [
+        {"item_id": "tr1", "text": "I was charged twice for my annual subscription this month.", "label": "billing", "parts": {"intake_queue": "finance-inbox"}},
+        {"item_id": "tr2", "text": "The export button returns a five hundred server error on large reports.", "label": "technical", "parts": {"intake_queue": "eng-oncall"}},
+        {"item_id": "tr3", "text": "CONGRATULATIONS you have been selected as our grand prize winner.", "label": "spam", "parts": {"intake_queue": "quarantine"}},
+        {"item_id": "tr4", "text": "My invoice shows a duplicate line item for the same quarter.", "label": "billing", "parts": {"intake_queue": "finance-inbox"}},
+        {"item_id": "tr5", "text": "File uploads over twenty megabytes fail without any error message.", "label": "technical", "parts": {"intake_queue": "eng-oncall"}},
+        {"item_id": "tr6", "text": "URGENT NOTICE claim your unclaimed inheritance payout today.", "label": "spam", "parts": {"intake_queue": "quarantine"}}
+      ],
+      "eval": [
+        {"item_id": "ev1", "text": "Two identical payments were taken for one renewal.", "label": "billing", "parts": {"intake_queue": "finance-inbox"}},
+        {"item_id": "ev2", "text": "The dashboard times out after sixty seconds on any large query.", "label": "technical", "parts": {"intake_queue": "eng-oncall"}},
+        {"item_id": "ev3", "text": "You are our lucky winner, confirm your banking details now.", "label": "spam", "parts": {"intake_queue": "quarantine"}},
+        {"item_id": "ev4", "text": "We were billed for the enterprise plan a second time.", "label": "billing", "parts": {"intake_queue": "finance-inbox"}}
+      ]
+    }
+  }
+]

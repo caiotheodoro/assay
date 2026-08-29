@@ -193,6 +193,29 @@ turns become `Attempt`s and the probe reports the last `Attempt`'s log. That is
 a live gap between what the card says and what the run knew, tracked in
 [`docs/changelog/85-reproduction.md`](docs/changelog/85-reproduction.md).
 
+### How often, though
+
+That table is one run each, and one run is not a capability. The same
+Challenger was pointed at the same environment four independent times
+(`scripts/challenger_reliability.py`, `results/challenger_reliability.json`):
+
+| run | result | gap |
+|---|---|---|
+| 1 | found | 1.00 |
+| 2 | found | 1.00 |
+| 3 | **missed** | 0.00 |
+| 4 | found | 1.00 |
+
+**3 of 4.** A probe backed by a sampled model is not a deterministic check, and
+the first version of this README said "the Challenger finds this" on the
+strength of a single run — which is the pass@1-for-pass^k substitution that
+τ-bench exists to warn about, made here in our own write-up.
+
+The number reported is a rate. It also means a real audit should run the
+Challenger more than once, and Assay does not currently do that: the probe
+takes one pass per environment, so a card can say `VALID` on an environment a
+second attempt would have broken. That is a known gap, not a solved problem.
+
 **It is still open.** A Challenger was trained with GRPO against a dense
 exploit-gap reward (`reported score` minus `independent true completion`, held
 by the harness and never shown to the attacker) on a spot A10G, with
@@ -206,6 +229,23 @@ Numbers, the single-variable follow-up run, and what to try next are in
 Nothing about the trained Challenger is required to run Assay: it ships as an
 optional artifact, the scripted Challenger is the floor, and the reproduction
 guide never asks for a GPU.
+
+## What every agent actually did
+
+[`results/trajectories/`](results/trajectories/INDEX.md) — one representative run
+per agent this submission used, readable end to end without running anything:
+the instructions the agent was given, every action it took, what the tools said
+back, the feedback that shaped its next step, and every human approval.
+
+Failed turns and malformed replies are kept. Three of the eight are Challenger
+**misses**, one of those is the same `claude-cli` arm failing on the task it
+cracks in another run, and one is the sandbox approval gate **refusing** —
+`DenyAll` is the default, and nothing executes untrusted environment code
+without an approver who leaves a reason.
+
+```bash
+uv run --extra adapters python scripts/export_trajectories.py
+```
 
 ## The probes
 

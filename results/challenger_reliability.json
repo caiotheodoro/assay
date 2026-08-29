@@ -1,0 +1,36 @@
+{
+  "task": "self-graded",
+  "challenger": "scripted+prompted[claude-cli:sonnet]",
+  "k": 4,
+  "turns": 10,
+  "hits": 3,
+  "hit_rate": 0.75,
+  "attempts": [
+    {
+      "run": 1,
+      "found": true,
+      "best_gap": 1.0,
+      "seconds": 101.0
+    },
+    {
+      "run": 2,
+      "found": true,
+      "best_gap": 1.0,
+      "seconds": 309.0
+    },
+    {
+      "run": 3,
+      "found": false,
+      "best_gap": 0.0,
+      "seconds": 386.0
+    },
+    {
+      "run": 4,
+      "found": true,
+      "best_gap": 1.0,
+      "seconds": 729.0
+    }
+  ],
+  "note": "A probe backed by a sampled model is not a deterministic check. Reporting a single successful run as a capability claim would overstate what the evidence supports, which is why this is hits/k rather than 'it works'.",
+  "stopped_early": "A fifth run was started and stopped. Four Claude-CLI consumers were running concurrently -- three dispatched workers and this measurement -- and per-run time had gone 101s -> 309s -> 386s -> 729s on identical work. The fifth was starving the workers for a refinement of a number already established at k=4. Recorded rather than quietly reported as k=5."
+}
