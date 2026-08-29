@@ -1,6 +1,6 @@
 """Adapters translate one ecosystem into the probe protocol."""
 
-__all__ = ["InspectAdapter", "HarborAdapter", "OpenEnvAdapter"]
+__all__ = ["InspectAdapter", "HarborAdapter", "OpenEnvAdapter", "SpecAdapter"]
 
 
 def __getattr__(name: str):
@@ -16,4 +16,8 @@ def __getattr__(name: str):
         from .openenv import OpenEnvAdapter
 
         return OpenEnvAdapter
+    if name == "SpecAdapter":
+        from .spec import SpecAdapter
+
+        return SpecAdapter
     raise AttributeError(name)

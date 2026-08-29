@@ -11,3 +11,9 @@ uv.lock
 results/**/rewards.jsonl
 results/**/*.safetensors
 results/**/checkpoints/
+
+# Staging area for scripts/publish_hf.py. Regenerated from tracked evidence on
+# every run, and it holds the fetched adapter weights, so it is scratch by
+# construction -- the published copy lives on the Hub, the reproducible copy is
+# the script.
+build/
