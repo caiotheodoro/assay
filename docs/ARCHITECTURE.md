@@ -51,7 +51,7 @@ plainly as the failures: the type boundary in `types.py` — *"adapters translat
 their world into these types; probes only ever see these types"* — is real, not
 aspirational.
 
-### 1.2 **The failure:** `verify` is required, and two of six adapters refuse it
+### 1.2 **The failure:** `verify` is required, and two of six adapters refuse it — *now fixed*
 
 `EnvAdapter` splits its surface in two. `manifest / reset / step / verify` are
 required — no default, no refusal path. The other eight are optional, and
@@ -81,14 +81,41 @@ The vocabulary to say it declaratively already exists: `Capability` has
 for this. That is the shape of the failure — not a missing concept, a concept
 that was defined and then not wired to the boundary it was defined for.
 
-**Not fixed here.** Moving `verify` into the optional set means a refusal
-default on `BaseAdapter`, a capability gate on every caller, and a re-read of
-both probe gating paths. It touches all six adapters and changes which probes
-report NOT_APPLICABLE, which changes card output, which changes published
-numbers. That is exactly the refactor the brief rules out, and it should be a
-deliberate protocol revision with its own tests, not a cleanup.
+**Not fixed in the review pass, fixed afterwards — and the prediction in this
+paragraph was wrong.** It originally read:
 
-### 1.3 `LIVE_STEPPING` is declared vocabulary that gates nothing
+> It touches all six adapters and changes which probes report NOT_APPLICABLE,
+> which changes card output, which changes published numbers.
+
+It touched two files of adapters and changed **nothing** a reader sees.
+`reset`, `step` and `verify` moved to `BaseAdapter` with refusal defaults;
+`LIVE_STEPPING` was wired to the six probes that drive an episode. Then every
+one of the 24 corpus environments was audited on both revisions and the cards
+compared:
+
+- **22 of 24 cards are byte-identical**, digest and all.
+- The 2 that differ are `fixture/flaky` and `openenv/textarena-wordle` — the
+  two `NONDETERMINISM` environments, whose digests differ **between two runs on
+  the same revision** (checked: three consecutive audits of `fixture/flaky`
+  give three digests). Their probe statuses and reasons are identical.
+- Every arm's expected loss is unchanged: assay 240.0, flag_everything 290.0,
+  check_env 2816.0, flag_nothing 2832.0, and both trivial arms.
+
+The blast radius was zero because the declarative capability gate was **already
+doing the work the required-method contract claimed to do**. OpenEnv withholds
+`SEPARABLE_VERIFIER` and ScienceAgentBench declares `frozenset()`, so the probes
+that would have called the refused methods were already declining before
+`check()` ran. The required-method contract was not protecting anything; it was
+describing a world the gate had already made obsolete.
+
+One genuine defect surfaced. `InspectAdapter` implements `reset` and `step` for
+real and **never declared `LIVE_STEPPING`** — nothing gated on it, so nothing
+noticed. Enforcing the capability made that under-declaration visible in a
+single test run. It now declares it, and
+`test_no_capability_is_dead_vocabulary` fails if any `Capability` is ever again
+declared by adapters and required by no probe.
+
+### 1.3 `LIVE_STEPPING` is declared vocabulary that gates nothing — *now wired*
 
 Five adapters and fixtures declare `Capability.LIVE_STEPPING`. One test asserts
 it is present. **No probe requires it.** It is the only member of the enum with
@@ -100,30 +127,41 @@ vocabulary sitting next to the gap it was designed to fill. Left in place —
 removing it would make five adapters' manifests silently narrower, and the right
 fix is to *use* it (§1.2), not to delete it.
 
-### 1.4 Probe prerequisites are gated two incompatible ways
+**Now used.** Six probes require it: all four verifier probes, `separability`,
+`trivial_floor`, `seed_determinism` and `challenger` — every probe that calls
+`run_policy` or touches `adapter.reset`/`adapter.step`. Two tests keep it that
+way: `test_no_capability_is_dead_vocabulary` fails if any `Capability` is
+declared by adapters and required by no probe, and
+`test_probes_that_drive_an_episode_require_live_stepping` reads each probe's
+source and fails if one drives an episode without declaring it.
 
-Eight probes gate declaratively, via `requires: ClassVar[tuple[Capability, ...]]`,
-which `Probe.run` answers from the manifest before `check()` is ever called.
+### 1.4 ~~Probe prerequisites are gated two incompatible ways~~ — **this finding was wrong**
 
-Four do not, and rely on `NotSupported` escaping into `Probe.run` instead:
+**Retracted.** This section claimed `TrivialFloor` and `Separability` carry
+`requires = ()` and gate only through a `NotSupported` escape. They do not, and
+did not when it was written:
 
-| probe | `requires` | capability it could have named |
-|---|---|---|
-| `TrivialFloor` | `()` | `TRIVIAL_POLICIES` |
-| `Separability` | `()` | `GRADED_POLICIES` |
-| `DifficultyBand` | `()` | — (needs a solve-rate estimate from `ctx`, not a capability) |
-| `SpecVerifierMatch` | `()` | — (needs `verifier_asserts`, which has no capability) |
+- `src/assay/probes/policies.py:43` — `TrivialFloor` requires
+  `(TRIVIAL_POLICIES, GRADED_POLICIES, SEPARABLE_VERIFIER)`
+- `src/assay/probes/policies.py:97` — `Separability` requires
+  `(GRADED_POLICIES, SEPARABLE_VERIFIER)`
 
-The card is correct either way; both routes end in NOT_APPLICABLE with a reason.
-The cost is that only the declarative half can be answered **without executing
-anything** — which matters for a tool whose pitch is that it reports what it
-could not check. `TRIVIAL_POLICIES` and `GRADED_POLICIES` are declared by
-adapters and consumed by nobody's `requires`.
+`git log -L` puts the last change to that file well before this review, so the
+table was wrong on the day it was written rather than going stale afterwards.
+The claim that "`TRIVIAL_POLICIES` and `GRADED_POLICIES` are declared by
+adapters and consumed by nobody's `requires`" is false for the same reason.
 
-Two of the four (`DifficultyBand`, `SpecVerifierMatch`) genuinely have no
-capability to name, so this is a two-case inconsistency, not a four-case one.
-Left alone: adding `requires` to the other two changes nothing a reader sees and
-risks changing which of two identical-looking NOT_APPLICABLE reasons is printed.
+What survives is the narrow, correct version: **two** probes gate only through
+the runtime escape, `DifficultyBand` and `SpecVerifierMatch`, and the section
+already conceded that neither has a capability to name — `DifficultyBand` needs
+a solve-rate estimate from `ctx`, and `SpecVerifierMatch` needs
+`verifier_asserts`, which has no `Capability`. So the inconsistency is real, has
+two cases rather than four, and is not fixable by naming a capability that does
+not exist.
+
+Left as a retraction rather than a rewrite. A review that quietly edits its own
+wrong table is worth less than one that says which of its findings did not hold
+— and this document exists to be checked, not to be right.
 
 ### 1.5 "Unknown task id" raises five different exception types
 

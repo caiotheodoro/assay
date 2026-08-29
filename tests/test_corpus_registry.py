@@ -81,3 +81,45 @@ def test_an_empty_defect_set_is_never_silently_clean():
             "score as a clean environment on the strength of nobody checking"
         )
         assert p.note, f"{env_id} claims no defects without saying on what basis"
+
+
+def test_no_capability_is_dead_vocabulary():
+    """Every Capability must be required by at least one probe.
+
+    `LIVE_STEPPING` was declared by five adapters and required by nothing for
+    the whole life of the project. A capability nobody gates on is a promise
+    the manifest makes and no caller checks -- which is how `verify` stayed a
+    required protocol method while two adapters raised on it, and how
+    `InspectAdapter` went on stepping without ever declaring that it could.
+    """
+    from assay.probes.base import REGISTRY
+    from assay.types import Capability
+
+    required = {c for probe in REGISTRY for c in probe.requires}
+    dead = sorted(c.value for c in Capability if c not in required)
+    assert not dead, (
+        f"declared by adapters, gated by no probe: {dead}. Either wire it to "
+        "the probes that depend on it, or remove it from the vocabulary."
+    )
+
+
+def test_probes_that_drive_an_episode_require_live_stepping():
+    """A probe that calls run_policy must say so in its capabilities."""
+    import inspect as pyinspect
+
+    from assay.probes.base import REGISTRY
+    from assay.types import Capability
+
+    offenders = []
+    for probe in REGISTRY:
+        try:
+            src = pyinspect.getsource(probe)
+        except OSError:  # pragma: no cover
+            continue
+        drives = "run_policy(" in src or "adapter.reset(" in src or "adapter.step(" in src
+        if drives and Capability.LIVE_STEPPING not in probe.requires:
+            offenders.append(probe.name)
+    assert not offenders, (
+        "these probes drive an episode but do not require LIVE_STEPPING, so "
+        f"they would raise instead of declining on a non-steppable env: {offenders}"
+    )
