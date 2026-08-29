@@ -334,7 +334,10 @@ class HarborAdapter(BaseAdapter):
                 data={"stdout": result.stdout[-400:], "exit_code": result.exit_code},
                 code=None if result.ok else "SCRIPT_FAILED",
             ),
-            done=True,
+            # A shell command does not end the episode. Saying otherwise gave an
+            # agent exactly one command per episode and truncated every replay
+            # of a multi-step policy at its first action.
+            done=False,
         )
 
     # -- verification ------------------------------------------------------

@@ -40,7 +40,11 @@ def exploit_gap(adapter: EnvAdapter, transcript: Transcript) -> tuple[float, flo
     environment's own scorer.
     """
     replayed = run_policy(
-        adapter, transcript.task_id, list(transcript.actions), seed=transcript.seed
+        adapter,
+        transcript.task_id,
+        list(transcript.actions),
+        seed=transcript.seed,
+        stop_on_done=False,
     )
     real = adapter.true_completion(replayed)
     reported = adapter.verify(replayed).reward

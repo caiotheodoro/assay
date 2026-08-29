@@ -151,13 +151,21 @@ def run_policy(
     actions: list[Action],
     seed: int = 0,
     turn_cap: int = 64,
+    stop_on_done: bool = True,
 ) -> Transcript:
-    """Drive a scripted action list through the environment and record it."""
+    """Drive a scripted action list through the environment and record it.
+
+    `stop_on_done=False` when REPLAYING a trajectory that was already recorded.
+    The environment accepted all of those actions once; stopping early replays
+    a different, shorter policy and measures that instead. That is not a
+    hypothetical -- it is how a real two-step exploit came back scored as
+    nothing at all.
+    """
     adapter.reset(task_id, seed=seed)
     transcript = Transcript(task_id=task_id, seed=seed)
     for action in actions[:turn_cap]:
         result = adapter.step(action)
         transcript.record(action, result)
-        if result.done:
+        if result.done and stop_on_done:
             break
     return transcript
