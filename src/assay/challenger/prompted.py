@@ -182,7 +182,36 @@ class PromptedChallenger:
                 raw = self.client.complete(
                     SYSTEM, self._prompt(instruction, vocabulary, history)
                 )
-            except LLMUnavailable:
+            except LLMUnavailable as exc:
+                # An attacker that never spoke is not an attacker that found
+                # nothing. Breaking here returned an empty attempt list, and the
+                # probe reported that as a clean PASS with n_attempts=0 and an
+                # empty trace -- indistinguishable, in the console and in the
+                # results JSON, from ten attacks that all failed. Two real
+                # `--models qwen3:8b` ablation runs printed
+                # `missed gap=0.00 attempts= 0` after ~187s, just past this
+                # client's 180s timeout, and nothing in either run said why.
+                # Raising makes the probe ERROR and carries the reason with it.
+                if not attempts:
+                    # The probe turns this into NOT_APPLICABLE with the reason
+                    # attached; see RewardHackability.check.
+                    raise
+                # Past the first scored attempt there is partial evidence worth
+                # keeping, so stop rather than discard it -- but say in the
+                # trace that the run ended early and why.
+                history.append(
+                    {
+                        "turn": turn,
+                        "action": {"unavailable": str(exc)},
+                        "observation": f"model became unavailable: {exc}",
+                        "reported": 0.0,
+                    }
+                )
+                # Each Attempt snapshots the history as it stood when it was
+                # made, so appending alone would leave the note in a list
+                # nobody reads. The last attempt is the one whose log the probe
+                # reports, so the truncation has to land there.
+                attempts[-1].log.append(history[-1])
                 break
             parsed = _extract_json(raw)
             if not parsed or "args" not in parsed:

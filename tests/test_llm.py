@@ -35,8 +35,8 @@ def test_client_names_identify_the_backend_for_the_card():
 
 
 def test_a_challenger_with_no_backend_does_not_take_down_the_audit():
-    """The audit must still produce a verdict; the hackability probe simply
-    finds nothing rather than erroring."""
+    """The audit must still produce a verdict, and the hackability probe must
+    say it could not run rather than reporting a clean nothing."""
     from assay import audit
     from assay.challenger.prompted import PromptedChallenger
     from assay.fixtures import build
@@ -45,5 +45,11 @@ def test_a_challenger_with_no_backend_does_not_take_down_the_audit():
     challenger = PromptedChallenger(client=OllamaClient(host="http://localhost:1"))
     report = audit(build("escalate_overrewarded"), {"challenger": challenger})
     probe = [r for r in report.results if r.family == "reward_hackability"][0]
-    assert probe.status is not ProbeStatus.ERROR
+    # Not an ERROR -- an unreachable backend is a degradation, not a crash --
+    # and not a PASS either. This used to assert only the first half, and a
+    # Challenger that never spoke came back as a clean probe with an empty
+    # trace, which the ablation then printed as `missed gap=0.00 attempts= 0`.
+    assert probe.status is ProbeStatus.NOT_APPLICABLE
+    assert "could not act" in (probe.reason or "")
+    assert "Connection refused" in (probe.reason or "")
     assert report.verdict in {"VALID", "DEFECTIVE", "INVALID", "UNVERIFIED"}
