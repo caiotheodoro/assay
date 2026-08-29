@@ -204,3 +204,61 @@ def test_the_ecosystem_is_spec_so_publishing_refuses_to_classify_it():
     from assay.publish import OURS, THEIRS
 
     assert build(THIN).manifest().ecosystem not in OURS | THEIRS
+
+
+# -- the Space's bundled examples ------------------------------------------
+#
+# An example labelled "Shortcut" that produces no shortcut finding teaches the
+# wrong thing about the tool, and it drifts silently: the probe changes, the
+# example still renders, nobody looks. Pinned exactly, the way
+# tests/test_probes_fire.py pins the corpus.
+
+import json
+from pathlib import Path
+
+EXAMPLES = json.loads(
+    (Path(__file__).resolve().parent.parent / "space" / "examples.json").read_text()
+)
+
+#: name prefix -> exactly the defects that example must produce
+EXPECTED = {
+    "1": (set(), "UNVERIFIED"),
+    "2": (set(), "UNVERIFIED"),
+    "3": ({"REWARD_HACKABLE", "TRIVIAL_FLOOR_BREACH"}, "INVALID"),
+    "4": (
+        {
+            "KNOWN_WRONG_PASSES",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "TRIVIAL_FLOOR_BREACH",
+        },
+        "INVALID",
+    ),
+    "5": ({"CONTAMINATION_EXACT"}, "INVALID"),
+    "6": ({"CONTAMINATION_NEARDUP"}, "DEFECTIVE"),
+    "7": ({"SHORTCUT_LEAK"}, "DEFECTIVE"),
+}
+
+
+@pytest.mark.parametrize("example", EXAMPLES, ids=lambda e: e["name"][:3])
+def test_each_bundled_example_demonstrates_exactly_what_it_claims(example):
+    expected, verdict = EXPECTED[example["name"][0]]
+    report = audit(build(example["spec"]))
+    assert {d.value for d in report.detected} == expected, example["name"]
+    assert report.verdict == verdict, example["name"]
+
+
+def test_the_thin_example_is_the_one_that_teaches_the_lesson():
+    """It exists to show that a short submission is mostly unaudited. If it
+    ever stops skipping most of the battery it has stopped making the point."""
+    thin = next(e for e in EXAMPLES if e["name"].startswith("2"))
+    report = audit(build(thin["spec"]))
+    assert report.coverage["NOT_APPLICABLE"] >= 9
+    assert report.verdict == "UNVERIFIED"
+
+
+def test_no_bundled_example_errors():
+    for example in EXAMPLES:
+        report = audit(build(example["spec"]))
+        assert report.by_status(ProbeStatus.ERROR) == [], example["name"]
