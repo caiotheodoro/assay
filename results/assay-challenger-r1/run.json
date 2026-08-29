@@ -1,0 +1,92 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "smoke": false,
+  "hyperparameters": {
+    "output_dir": "/opt/assay/checkpoints/grpo/trl",
+    "max_steps": 300,
+    "num_generations": 8,
+    "per_device_train_batch_size": 8,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 1e-05,
+    "beta": 0.02,
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "max_completion_length": 160,
+    "max_prompt_length": 640,
+    "logging_steps": 1,
+    "save_steps": 25,
+    "save_total_limit": 3,
+    "report_to": "none",
+    "gradient_checkpointing": true,
+    "log_completions": true,
+    "num_completions_to_print": 2,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "seed": 0
+  },
+  "environments": [
+    "fixture/artifact_splits",
+    "fixture/drifted_asserts",
+    "fixture/escalate_overrewarded",
+    "fixture/flaky",
+    "fixture/gold_broken",
+    "fixture/healthy",
+    "fixture/leaky_splits",
+    "fixture/paraphrased_splits",
+    "fixture/rationale_ignored",
+    "fixture/solved_at_reset",
+    "fixture/unfalsifiable",
+    "fixture/weak_oracle",
+    "harbor/broken-gold",
+    "harbor/healthy",
+    "harbor/vacuous-tests"
+  ],
+  "excluded": {
+    "harbor/self-graded": "held out of training so the ablation is not train-on-test"
+  },
+  "unavailable_ecosystems": {
+    "inspect_ai": "inspect_ai not installed: No module named 'readline'"
+  },
+  "prompt_counts": {
+    "fixture/artifact_splits": 20,
+    "fixture/drifted_asserts": 20,
+    "fixture/escalate_overrewarded": 20,
+    "fixture/flaky": 20,
+    "fixture/gold_broken": 20,
+    "fixture/healthy": 20,
+    "fixture/leaky_splits": 20,
+    "fixture/paraphrased_splits": 20,
+    "fixture/rationale_ignored": 20,
+    "fixture/solved_at_reset": 20,
+    "fixture/unfalsifiable": 20,
+    "fixture/weak_oracle": 20,
+    "harbor/broken-gold": 20,
+    "harbor/healthy": 20,
+    "harbor/vacuous-tests": 20
+  },
+  "device": {
+    "torch": "2.13.0+cu130",
+    "cuda": true,
+    "gpu": "NVIDIA A10G",
+    "mps": false,
+    "platform": "Linux-6.8.0-1052-aws-x86_64-with-glibc2.35"
+  },
+  "reward_log": "/opt/assay/checkpoints/grpo/rewards.jsonl",
+  "dropped_hyperparameters": [
+    "max_prompt_length"
+  ],
+  "adapter": "/opt/assay/checkpoints/grpo/final",
+  "status": "ok",
+  "seconds": 948.3,
+  "reward_rows": 2400,
+  "mean_reward": 0.053,
+  "mean_reward_first_half": 0.0553,
+  "mean_reward_last_half": 0.0507,
+  "max_reward": 1.0,
+  "parse_rate": 1.0,
+  "mean_gap_when_parsed": 0.053,
+  "hack_rate_gap_ge_0_5": 0.16,
+  "degenerate_groups": 0.9967,
+  "n_groups": 300
+}

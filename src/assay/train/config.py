@@ -34,6 +34,8 @@ def grpo_kwargs(
     learning_rate: float = 1e-5,
     beta: float = 0.02,
     temperature: float = 1.0,
+    top_p: float = 0.95,
+    top_k: int = 0,
     max_completion_length: int = 160,
     max_prompt_length: int = 640,
     grad_accum: int = 1,
@@ -57,7 +59,11 @@ def grpo_kwargs(
         "learning_rate": learning_rate,
         "beta": beta,
         "temperature": temperature,
-        "top_p": 0.95,
+        # GRPO needs the rollouts in a group to DIFFER. If they do not, the
+        # group-relative advantage is exactly zero and there is no gradient at
+        # all -- which is not slow learning, it is no learning.
+        "top_p": top_p,
+        **({"top_k": top_k} if top_k else {}),
         "max_completion_length": max_completion_length,
         "max_prompt_length": max_prompt_length,
         "logging_steps": 1,

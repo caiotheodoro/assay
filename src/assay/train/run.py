@@ -92,6 +92,9 @@ def train(
     group_size: int = 8,
     learning_rate: float = 1e-5,
     beta: float = 0.02,
+    temperature: float = 1.0,
+    top_p: float = 0.95,
+    top_k: int = 0,
     only: list[str] | None = None,
     skip: list[str] | None = None,
     holdout: list[str] | None = None,
@@ -113,6 +116,9 @@ def train(
         group_size=group_size,
         learning_rate=learning_rate,
         beta=beta,
+        temperature=temperature,
+        top_p=top_p,
+        top_k=top_k,
         output_dir=str(out_dir / "trl"),
     )
     # One prompt per optimisation step; TRL samples `num_generations` rollouts
@@ -202,7 +208,9 @@ def summarise_rewards(path: str | Path, *, group_size: int) -> dict[str, Any]:
         return {"reward_rows": 0, "reason": f"reward log at {p} is empty"}
 
     values = [float(r["reward"]) for r in rows]
+    texts = [r.get("completion", "") for r in rows]
     groups = [values[i : i + group_size] for i in range(0, len(values), group_size)]
+    text_groups = [texts[i : i + group_size] for i in range(0, len(texts), group_size)]
     n = len(values)
     parsed = sum(1 for r in rows if r.get("parsed"))
     gaps = [float(r["gap"]) for r in rows if r.get("gap") is not None]
@@ -219,6 +227,17 @@ def summarise_rewards(path: str | Path, *, group_size: int) -> dict[str, Any]:
         "degenerate_groups": round(
             sum(1 for g in groups if group_is_degenerate(g)) / len(groups), 4
         ),
+        # The distinction that separates "the corpus is flat" from "the policy
+        # collapsed". A degenerate group can happen because an environment pays
+        # every policy the same; an IDENTICAL group means the model emitted one
+        # completion eight times, and no reward function can rescue that.
+        "identical_completion_groups": round(
+            sum(1 for g in text_groups if len(set(g)) == 1) / len(text_groups), 4
+        ),
+        "mean_unique_completions_per_group": round(
+            sum(len(set(g)) for g in text_groups) / len(text_groups), 3
+        ),
+        "distinct_completions_overall": len(set(texts)),
         "n_groups": len(groups),
     }
 
@@ -231,6 +250,22 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--group-size", type=int, default=8)
     ap.add_argument("--learning-rate", type=float, default=1e-5)
     ap.add_argument("--beta", type=float, default=0.02)
+    ap.add_argument(
+        "--temperature",
+        type=float,
+        default=1.0,
+        help="rollout sampling temperature. GRPO needs the group to DIFFER: if "
+        "every rollout is identical the group-relative advantage is exactly "
+        "zero and no gradient exists, however many steps are taken.",
+    )
+    ap.add_argument("--top-p", type=float, default=0.95)
+    ap.add_argument(
+        "--top-k",
+        type=int,
+        default=0,
+        help="0 disables top-k. Useful with top-p 1.0 when the base policy is "
+        "near-deterministic and nucleus sampling collapses to one token.",
+    )
     ap.add_argument("--only", nargs="*", default=["fixture", "harbor"])
     ap.add_argument("--skip", nargs="*", default=None)
     ap.add_argument(
@@ -252,6 +287,9 @@ def main(argv: list[str] | None = None) -> int:
         group_size=args.group_size,
         learning_rate=args.learning_rate,
         beta=args.beta,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        top_k=args.top_k,
         only=args.only or None,
         skip=args.skip,
         holdout=args.holdout or None,

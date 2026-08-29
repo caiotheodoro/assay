@@ -30,7 +30,27 @@ follows, with the file that states it, so a reader can check the debt.
 `specula/forge/src/specula_forge/shortcuts.py` ·
 `regretbench/src/lossbench/metrics/loss.py` ·
 `reconforge/model/scripts/intervals.py` ·
-`suture/model/src/suture_model/rlvr_reward.py`
+`suture/model/src/suture_model/rlvr_reward.py` ·
+`suture/model/src/suture_model/rlvr_train.py` ·
+`suture/cloud/modal_train.py` · `plumb/cloud/aws_serve.sh`
+
+## Reused from a sibling project — vendored, with attribution
+
+One file, and it is stated here rather than left for a reader to notice. The
+ground rule is that what existed before is legible, not that nothing may be
+reused.
+
+| Here | From | What changed |
+|---|---|---|
+| `src/assay/train/grpo_math.py` | `plumb/curriculum/src/plumb_curriculum/grpo.py` | The torch-free GRPO functions — `group_advantages`, `decoupled_clip`, `grpo_loss`, `ratio_bounds` — kept as they were. The torch twin was dropped (TRL's `GRPOTrainer` runs the backward pass here, so a second implementation of it would be a second thing to keep correct). `group_is_degenerate` was added: it names the case where every rollout in a group scored the same, which is where this project's reward actually lands. |
+
+Three more files were read closely and their *shape* reused without their code:
+`suture/.../rlvr_train.py` for filtering `GRPOConfig` kwargs against
+`dataclasses.fields` (which caught TRL 1.12.0 dropping `max_prompt_length` on
+the first smoke run), `suture/.../rlvr_reward.py` for the `_completion_text`
+normalisation and the TRL `reward_funcs` signature, and
+`plumb/cloud/aws_serve.sh` for the Deep Learning AMI / SSM-only / IAM-on-first-use
+launcher shape.
 
 ## Added here
 
@@ -42,6 +62,10 @@ follows, with the file that states it, so a reader can check the debt.
 - The adversarial **Challenger** and the dense exploit-gap reward. This is the
   one component with no antecedent in the prose above; the closest prior text
   is a static five-row table of known hack patterns, not an agent that searches.
+- Training that Challenger with GRPO against
+  `reported score − independent true completion`, with the two terms held by
+  the harness and never by the attacker, and with the ablation target held out
+  of training. The GRPO machinery is reused; what it is pointed at is not.
 - Aggregating the trivial-floor and separability checks across the task set
   rather than per task — per-task comparison flags any task where the trivial
   answer happens to be right, which is small-n noise, not a property of the

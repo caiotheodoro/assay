@@ -150,18 +150,41 @@ if [ -n "$MAX_PRICE" ]; then
   MARKET="{\"MarketType\":\"spot\",\"SpotOptions\":{\"SpotInstanceType\":\"one-time\",\"MaxPrice\":\"${MAX_PRICE}\",\"InstanceInterruptionBehavior\":\"terminate\"}}"
 fi
 
-INSTANCE_ID=$(aws ec2 run-instances \
-  --image-id "$AMI" --instance-type "$ITYPE" \
-  --iam-instance-profile "Name=$ROLE_NAME" \
-  --security-group-ids "$SG_ID" \
-  --instance-market-options "$MARKET" \
-  --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":${DISK_GB},\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
-  --tag-specifications "[{\"ResourceType\":\"instance\",\"Tags\":[
+# A freshly created instance profile is not immediately visible to
+# RunInstances; IAM propagates it a few seconds later. Observed on the first
+# real launch as
+#   InvalidParameterValue ... iamInstanceProfile.name is invalid
+# after the source tarball had already been uploaded. Retrying is the fix --
+# failing here leaves an S3 object and no instance.
+run_instances() {
+  aws ec2 run-instances \
+    --image-id "$AMI" --instance-type "$ITYPE" \
+    --iam-instance-profile "Name=$ROLE_NAME" \
+    --security-group-ids "$SG_ID" \
+    --instance-market-options "$MARKET" \
+    --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":${DISK_GB},\"VolumeType\":\"gp3\",\"DeleteOnTermination\":true}}]" \
+    --tag-specifications "[{\"ResourceType\":\"instance\",\"Tags\":[
      {\"Key\":\"Name\",\"Value\":\"${NAME}\"},
      {\"Key\":\"project\",\"Value\":\"assay\"},
      {\"Key\":\"role\",\"Value\":\"challenger-grpo\"}]}]" \
-  --user-data "$USERDATA" \
-  --query 'Instances[0].InstanceId' --output text)
+    --user-data "$USERDATA" \
+    --query 'Instances[0].InstanceId' --output text
+}
+
+INSTANCE_ID=""
+for attempt in $(seq 1 12); do
+  if INSTANCE_ID=$(run_instances 2>/tmp/assay-run-instances.err); then
+    break
+  fi
+  if grep -q 'iamInstanceProfile' /tmp/assay-run-instances.err; then
+    echo "IAM instance profile not visible yet (attempt $attempt); retrying in 10s"
+    sleep 10
+    continue
+  fi
+  cat /tmp/assay-run-instances.err >&2
+  exit 1
+done
+[ -n "$INSTANCE_ID" ] || { echo "run-instances never succeeded" >&2; exit 1; }
 
 echo "launched $INSTANCE_ID"
 echo "waiting for SSM..."
