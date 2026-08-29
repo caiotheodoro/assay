@@ -19,17 +19,44 @@ REPEATS = 3
 
 @register
 class SeedDeterminism(Probe):
+    """Reproducibility needs a seed, not a verifier.
+
+    SEPARABLE_VERIFIER is deliberately NOT required. "Same seed, same episode"
+    is answerable from the observations the environment hands back, and
+    demanding a callable scorer would silence this probe on exactly the
+    ecosystems most likely to fail it: OpenEnv computes reward inside step()
+    and exposes no scorer at all, and its textarena_env accepts a seed on
+    reset() and never passes it on. Where a scorer IS available its verdict is
+    folded in too, because a run can be observationally identical and still
+    score differently.
+    """
+
     family = "determinism"
     name = "seed_determinism"
-    requires = (Capability.SEEDED_RESET, Capability.SEPARABLE_VERIFIER)
+    requires = (Capability.SEEDED_RESET,)
 
     def _policy(self, adapter: EnvAdapter, task_id: str) -> list[Action]:
+        """Gold first; failing that, an input-ignoring policy.
+
+        The fallback matters more than it looks. Without it an environment
+        shipping no gold trajectory was replayed with an EMPTY action list, so
+        the probe fingerprinted an empty episode and passed whatever the
+        environment did -- a check that could not fail.
+        """
         try:
             return adapter.gold_actions(task_id)
         except NotSupported:
+            pass
+        try:
+            policies = adapter.trivial_policies(task_id)
+        except NotSupported:
             return []
+        # The first declared policy that actually takes a turn. Adapters
+        # declare them in a fixed order, so the choice is reproducible.
+        return next((list(a) for a in policies.values() if a), [])
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
+        separable = adapter.manifest().has(Capability.SEPARABLE_VERIFIER)
         findings, detail = [], {}
         for task in adapter.manifest().tasks:
             actions = self._policy(adapter, task.task_id)
@@ -40,19 +67,22 @@ class SeedDeterminism(Probe):
                 # run, which is exactly what this probe must not accept.
                 if clear:
                     clear()
+                # The seed is consumed at reset, so what reset produced belongs
+                # in the fingerprint. Leaving it out is how an environment that
+                # redraws its hidden state every episode reads as deterministic.
+                opening = adapter.reset(task.task_id, seed=1234)
                 transcript = run_policy(adapter, task.task_id, actions, seed=1234)
-                score = adapter.verify(transcript)
-                fingerprints.append(
-                    digest(
-                        {
-                            "observations": [
-                                (o.ok, o.data, o.code) for o in transcript.observations
-                            ],
-                            "passed": score.passed,
-                            "reward": score.reward,
-                        }
-                    )
-                )
+                payload = {
+                    "reset": (opening.ok, opening.data),
+                    "observations": [
+                        (o.ok, o.data, o.code) for o in transcript.observations
+                    ],
+                }
+                if separable:
+                    score = adapter.verify(transcript)
+                    payload["passed"] = score.passed
+                    payload["reward"] = score.reward
+                fingerprints.append(digest(payload))
             unique = sorted(set(fingerprints))
             detail[task.task_id] = {"repeats": REPEATS, "distinct_fingerprints": len(unique)}
             if len(unique) > 1:
