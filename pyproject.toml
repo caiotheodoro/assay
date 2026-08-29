@@ -13,7 +13,15 @@ dependencies = [
 dev = ["pytest>=8.0"]
 # One group per workstream, declared up front so concurrent work never has to
 # edit this table. Empty is fine -- an empty group is cheaper than a conflict.
-openenv = []
+# The `openenv` framework is on PyPI; the environments are not. echo_env and
+# textarena_env live only in the huggingface/OpenEnv repo, so they are pinned to
+# the revision the audit in docs/changelog/20-openenv.md was run against -- an
+# audit of a moving target is not an audit anyone can reproduce.
+openenv = [
+    "openenv>=0.3.1,<0.4",
+    "openenv-echo-env @ git+https://github.com/huggingface/OpenEnv.git@e059726da215f615c44dd10f60402970a3cb20ad#subdirectory=envs/echo_env",
+    "openenv-textarena @ git+https://github.com/huggingface/OpenEnv.git@e059726da215f615c44dd10f60402970a3cb20ad#subdirectory=envs/textarena_env",
+]
 sweep = []
 train = []
 adapters = [
@@ -26,6 +34,12 @@ assay = "assay.cli:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+# echo_env and textarena_env are only distributed as subdirectories of the
+# huggingface/OpenEnv git repository, never as PyPI releases. Auditing them at
+# all requires a direct reference.
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/assay"]
