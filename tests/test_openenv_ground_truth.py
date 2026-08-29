@@ -160,3 +160,59 @@ def test_no_openenv_environment_can_be_probed_for_verifier_integrity():
         for probe in ("gold_passes", "inverted_fails", "known_wrong_fails", "challenger"):
             assert probe in unrunnable, f"{env_id}: {probe} unexpectedly ran"
             assert "SEPARABLE_VERIFIER" in unrunnable[probe], (env_id, probe)
+
+
+def test_an_empty_replay_would_have_missed_this_entirely():
+    """The determinism probe used to replay nothing, and so could not fail.
+
+    Reproduces both code paths side by side on an environment that genuinely
+    is nondeterministic. The old one fingerprints an episode with no turns in
+    it and reports PASS; the new one takes six turns and reports a defect. Kept
+    as a test because "the check was vacuous" is a claim, and a claim in a
+    changelog that nobody can rerun is just an assertion.
+    """
+    from assay.adapter import NotSupported, run_policy
+    from assay.adapters.openenv import OpenEnvAdapter, wordle_binding
+    from assay.types import digest
+
+    adapter = OpenEnvAdapter(wordle_binding())
+    try:
+        try:
+            old_policy = adapter.gold_actions("Wordle-v0")
+        except NotSupported:
+            old_policy = []
+        assert old_policy == [], "textarena_env now ships gold; this test is stale"
+
+        old = set()
+        for _ in range(3):
+            transcript = run_policy(adapter, "Wordle-v0", old_policy, seed=SEED)
+            old.add(
+                digest(
+                    {"observations": [(o.ok, o.data, o.code) for o in transcript.observations]}
+                )
+            )
+        assert len(old) == 1, "the old path was vacuous, not merely weak"
+
+        new_policy = next(
+            (list(a) for a in adapter.trivial_policies("Wordle-v0").values() if a), []
+        )
+        assert new_policy, "the fallback needs a policy that takes at least one turn"
+
+        new = set()
+        for _ in range(3):
+            opening = adapter.reset("Wordle-v0", seed=SEED)
+            transcript = run_policy(adapter, "Wordle-v0", new_policy, seed=SEED)
+            new.add(
+                digest(
+                    {
+                        "reset": (opening.ok, opening.data),
+                        "observations": [
+                            (o.ok, o.data, o.code) for o in transcript.observations
+                        ],
+                    }
+                )
+            )
+    finally:
+        adapter.close()
+
+    assert len(new) > 1, "the same seed should be producing different games"

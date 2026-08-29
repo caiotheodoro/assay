@@ -212,10 +212,13 @@ class OpenEnvAdapter(BaseAdapter):
     def describe(self) -> str:
         """The manifest, plus the one number OpenEnv does hand over.
 
-        A human reviewer can see here that a policy ignoring the input earns
-        0.1 while a policy genuinely trying earns 0.0. Assay cannot turn that
-        into a probe result -- nothing on the client contract says which of
-        those is a pass -- but printing it beats withholding it.
+        Two reasons this is printed and not scored. Nothing on the client
+        contract says which of these numbers counts as a pass, so turning them
+        into a probe result would mean inventing a threshold. And on
+        textarena_env the numbers are not even stable: the hidden word is
+        redrawn every episode, so consecutive runs of the same policy return
+        different rewards. A reviewer can read that off the table directly,
+        which is worth more than a confident number would be.
         """
         lines = [
             super().describe(),
@@ -428,10 +431,12 @@ def wordle_binding(*, download_nltk: bool = False) -> OpenEnvBinding:
             )
         ],
         # Input-ignoring by construction: each replays a fixed script and never
-        # reads the feedback. `repeat_one_guess` is first because it is the one
-        # that reveals something -- TextArena ends the episode on a repeated
-        # guess and still pays out, which is the closest thing to a trivial
-        # floor breach obtainable without a verifier.
+        # reads the feedback. Deliberately NOT ranked by quality -- their
+        # rewards are not comparable, because each episode is played against a
+        # different secret word. Measuring a trivial floor needs a fixed task
+        # to measure it on, and this environment does not offer one; that is a
+        # consequence of the nondeterminism the battery reports, not a separate
+        # complaint.
         trivial={
             "repeat_one_guess": [say("[crane]")] * 6,
             "fixed_six_guesses": [
