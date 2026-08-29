@@ -299,6 +299,72 @@ without an approver who leaves a reason.
 uv run --extra adapters python scripts/export_trajectories.py
 ```
 
+## Where Assay sits in the field
+
+Everything above is measured against defects **this repo planted**. That is a closed
+loop, and the two sections below break it — recall against defect lists other people
+confirmed, scored where possible by their code rather than ours.
+
+### τ²-bench — 62 defects an independent team labelled
+
+`amazon-agi/tau2-bench-verified`: an independent team read all 164 τ-bench retail and
+airline tasks, judged some wrong, and shipped corrected files. Labels here are built
+from the **diff between two pinned revisions**, not from the prose — anyone can
+recompute them with `json.load` and `==`.
+
+| | recall | precision |
+|---|---|---|
+| all 12 probes | **0.339** (21/62) | 0.389 |
+| excluding `assert_traceability` | 0.210 (13/62) | 0.565 |
+
+Both are published because that probe's own docstring calls its findings advisory: it
+supplies 8 of 21 true positives **and** 23 of 33 false positives, and a reader deciding
+whether to act on a finding needs to see both halves.
+
+**The split is the result, not the headline:**
+
+| what the fix actually corrected | recall |
+|---|---|
+| ground-truth annotation errors | **13/20 = 0.65** |
+| instruction under-specification | **8/42 = 0.19** |
+
+Assay reads verifiers. **Two thirds of what τ-bench needed fixed was not a verifier** —
+it was an instruction too vague to grade consistently. By category: logical consistency
+0.71, policy compliance 0.43, unattributed 0.27, evaluation ambiguity 0.24 — and
+evaluation ambiguity is **0/21** once the advisory heuristic is removed.
+
+### ScienceAgentBench — 0 of 12, by BenchGuard's own scorer
+
+BenchGuard reports 12 author-confirmed defects across SAB's 102 tasks. Assay was scored
+against them by `BenchGuard/eval/metrics.py` over verdicts from their `eval/match.py`.
+Nothing here recomputes it.
+
+**Recall@ALIGNED 0/12.** Assay submitted zero findings, so their judge scored zero pairs
+at $0.00.
+
+The honest reading is not that Assay finds instruction defects hard. It is that **Assay
+could not run at all on this benchmark, and said so twelve times** — all 12 probes
+returned `NOT_APPLICABLE` with a reason, verdict `UNVERIFIED`. ScienceAgentBench is a
+static task-definition set; these probes need an executable environment with a separable
+verifier. On this benchmark the two tools are not competitors, and the zero says so more
+plainly than any argument.
+
+Two things that fell out of running their scorer:
+
+- **Nine of the twelve defects are already fixed** in the split SAB tells you to use, so
+  any tool's SAB recall number is uninterpretable without naming the split.
+- **The heuristic this project rejected would score respectably through their metric.**
+  R1 fires on 61 of 102 tasks; `metrics.py` computes precision only over findings on the
+  12 revised tasks, so its 41 findings on clean tasks are invisible to it. Assay's
+  trivial-floor rule caught what their precision metric structurally cannot.
+
+### What this changes about the claims above
+
+The blind spot is now measured twice, on two independently labelled sets: **Assay does
+not detect instruction defects, because "this instruction is ambiguous" is a judgement
+and nothing here scores with a judge.** That was published as a limitation before it was
+measured; it is now a number.
+
 ## The probes
 
 | Family | Question | A "no" means |
