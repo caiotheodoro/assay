@@ -14,7 +14,8 @@
     "sab_split_file": "data/verified-00000-of-00001.parquet",
     "n_sab_tasks": 102,
     "benchmark_root_supplied": false,
-    "eval_programs_present": false
+    "eval_programs_present": false,
+    "path_note": "Absolute paths below and in captured stdout point at `.../personal-ml/assay-sab/`, a sibling git worktree this run executed in -- not at this repository. They are left exactly as the tools emitted them: rewriting a captured stdout to look tidier would edit a record of what ran, which is the failure class this project exists to catch. Paths under that root are reconstructible as `third_party/BenchGuard/...` and `results/sab_benchguard/...` relative to a checkout following docs/SCIENCEAGENTBENCH.md."
   },
   "exclusions": {
     "criterion": "declared output_fname is an image",

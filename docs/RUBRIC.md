@@ -4,7 +4,26 @@ Scored against `micro1 - First Hackathon`, pages 5 (judging), 6 (ground rules) a
 7 (final deliverables). Marked hard, on the assumption that a judge reads the repo
 cold and follows only what the README points them at.
 
-**Total: 74 / 100.**
+**Total: 74 / 100** — *as scored on 2026-08-29, before the correction and
+finishing passes.*
+
+> **This document is a snapshot and is now partly stale.** It was written before
+> `docs/RED-TEAM.md` broke twelve published claims and before those were fixed,
+> so it quotes numbers that have since moved: `493 passed / 18 skipped` (now 513+
+> with the τ² snapshots fetched), `0.339` as the README's τ² headline (now
+> labelled chance, p = 0.486), and an example card carrying a "signature" (now
+> `content_digest`). Line references into `README.md` no longer resolve.
+>
+> It is kept unedited rather than regenerated, because a rubric rewritten after
+> the fixes it prescribed would no longer be evidence of anything. What it is
+> good for is the **deduction list and the costed fix table** — those are still
+> the live to-do, and `docs/changelog/73-remediation.md` and `74-finishing.md`
+> record which items have since been closed.
+>
+> One instruction in it is now **unsafe to follow**: fix #7 says to lift the hot
+> take from `docs/VIDEO.md:148-155` verbatim into the README. That passage
+> contains "not distinguishable from checking nothing", which Slice 22e
+> retracted. The README's hot take was written fresh instead.
 
 | Criterion | Available | Scored | Lost |
 |---|---|---|---|
