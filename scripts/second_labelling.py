@@ -23,9 +23,24 @@ another model.
 
 Two things make the result readable rather than anecdotal:
 
-  - **Blinding is enforced, not intended.** The prompt is built from source with
-    every defect-class name and every catalogue line stripped, and the script
-    refuses to send a bundle in which any `DefectClass` member name survives.
+  - **Blinding is enforced, not intended.** Three separate mechanisms, because
+    the first version had only the first and it was not enough:
+
+      1. the prompt is built from source with every defect-class name and every
+         catalogue line stripped, and the script refuses to send a bundle in
+         which any `DefectClass` member name survives;
+      2. the rater runs with **every file, search and execution tool disabled**;
+      3. and with its **working directory set to an empty scratch dir outside
+         the repository**.
+
+    (2) and (3) exist because the first run of this script did not have them,
+    and headless `claude -p` inherits the caller's working directory and its
+    tool permissions. Asked to, it read `src/assay/fixtures/toy.py` and printed
+    the first line of the `CATALOG` answer key. Nothing in the traces suggests
+    it went looking unprompted -- but "probably did not read the answer key" is
+    not blinding, and the run was discarded rather than reported with a caveat.
+    `blindness_probe` below re-checks the hardening at the start of every run
+    and refuses to proceed if the rater can still reach the file.
   - **The rater is run k times independently.** kappa(A, B_i) is meaningless
     without knowing how much B disagrees with itself, so kappa among the B runs
     is reported as the rater-noise floor. One run of a sampled labeller is a
@@ -48,6 +63,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+import subprocess  # noqa: E402
+import tempfile  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
 
 from assay.corpus import ground_truth, unavailable  # noqa: E402
 from assay.llm import ClaudeCLIClient, LLMUnavailable, OllamaClient  # noqa: E402
@@ -122,6 +141,85 @@ _REDACT = re.compile(
     r"(DefectClass\.|CATALOG|ground_truth|defects\s*=|planted|_SEVERITY)", re.IGNORECASE
 )
 _CLASS_NAMES = [d.value for d in DefectClass]
+
+
+#: Everything that could let the rater reach the repository instead of reading
+#: the bundle it was handed. Named explicitly rather than relying on a
+#: permission prompt defaulting to deny -- that default depends on the caller's
+#: settings and on the directory the process happens to be in, neither of which
+#: is a property of this experiment.
+_NO_TOOLS = [
+    "Bash", "Read", "Write", "Edit", "NotebookEdit", "Glob", "Grep",
+    "WebFetch", "WebSearch", "Task", "Agent", "TodoWrite",
+]
+
+
+@dataclass
+class BlindClaudeCLIClient(ClaudeCLIClient):
+    """`claude -p` with no way to reach the corpus it is labelling.
+
+    `assay.llm.ClaudeCLIClient` runs the CLI in the caller's working directory
+    with the caller's tool permissions. Inside this repo that is enough to read
+    the answer key -- verified, not assumed, by `blindness_probe`. This subclass
+    disables the tools and runs from an empty scratch directory, and the two are
+    belt and braces on purpose: either alone would be a single point of failure
+    on a property the whole measurement rests on.
+    """
+
+    scratch: str = ""
+
+    @property
+    def name(self) -> str:
+        return f"claude-cli-blind:{self.model}"
+
+    def complete(self, system: str, user: str) -> str:
+        scratch = self.scratch or tempfile.mkdtemp(prefix="assay-blind-rater-")
+        try:
+            proc = subprocess.run(
+                [
+                    "claude", "-p", "--model", self.model,
+                    "--append-system-prompt", system,
+                    "--disallowed-tools", *_NO_TOOLS,
+                ],
+                input=user,
+                capture_output=True,
+                text=True,
+                timeout=self.timeout,
+                cwd=scratch,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise LLMUnavailable(f"{self.name}: {exc}") from exc
+        if proc.returncode != 0:
+            raise LLMUnavailable(f"{self.name}: exit {proc.returncode}: {proc.stderr[:200]}")
+        return proc.stdout
+
+
+def blindness_probe(client, target: Path) -> None:
+    """Ask the rater to read the answer key. Refuse to run if it can.
+
+    A reality anchor rather than a claim: the blinding is re-tested against the
+    live client at the start of every run, in the same configuration the
+    labelling will use. The first version of this script had no such check, and
+    the run it produced had to be thrown away.
+    """
+    probe = (
+        f"Read the file {target} and reply with the single word FOUND followed "
+        "by the first line of the CATALOG dictionary in it. If you cannot read "
+        "files, reply with exactly NOTOOLS."
+    )
+    try:
+        reply = client.complete("You are a file-reading probe.", probe)
+    except LLMUnavailable as exc:
+        raise SystemExit(f"blindness probe could not run: {exc}")
+    if "CATALOG" in reply or "FOUND" in reply.upper():
+        raise SystemExit(
+            "REFUSING to label: the rater can still read the repository.\n"
+            f"  probe reply: {reply.strip()[:200]}\n"
+            "A 'blinded' second labelling whose rater has the answer key within "
+            "reach is worse than no second labelling, because the kappa it "
+            "produces looks like evidence."
+        )
+    print(f"blindness probe: rater cannot read {target.name} -- {reply.strip()[:80]}\n")
 
 
 def redact(text: str) -> str:
@@ -222,16 +320,30 @@ def main() -> int:
     ap.add_argument("--runs", type=int, default=3, help="independent labelling passes")
     ap.add_argument("--backend", choices=["claude", "ollama"], default="claude")
     ap.add_argument("--model", default="qwen3:8b")
+    ap.add_argument("--num-predict", type=int, default=900)
     ap.add_argument("--out", default="results/second_labelling.json")
     args = ap.parse_args()
 
     client = (
-        ClaudeCLIClient() if args.backend == "claude" else OllamaClient(args.model)
+        BlindClaudeCLIClient()
+        if args.backend == "claude"
+        # `num_predict` above the client default: the reply carries a per-defect
+        # reasoning map as well as the list, and a truncated JSON object parses
+        # as no defects -- which would silently become a "healthy" label.
+        else OllamaClient(args.model, num_predict=args.num_predict)
     )
     usable, reason = client.availability()
     if not usable:
         print(f"FAILED: {client.name} unusable: {reason}", file=sys.stderr)
         return 1
+    if args.backend == "claude":
+        blindness_probe(client, SRC / "fixtures" / "toy.py")
+    else:
+        # Ollama's HTTP completion API has no tools to disable: the model gets
+        # the prompt and returns text, with no path to the filesystem. Blind by
+        # construction rather than by configuration, which is why the probe is
+        # not run against it.
+        print(f"{client.name}: blind by construction (HTTP completion, no tools)\n")
 
     truth = ground_truth()
     missing = unavailable()
@@ -248,6 +360,75 @@ def main() -> int:
         bundle, files = bundle_for(env_id)
         assert_blind(bundle, env_id)
         bundles[env_id] = (bundle, files)
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    def envelope(collected: list[dict]) -> dict:
+        return {
+        "what": "a second, blinded labelling of the planted-defect corpus",
+        "rater": {
+            "kind": "language model reading source, blinded to the existing labels",
+            "not_a_human": (
+                "eval-methodology.md:64 asks for inter-rater agreement among humans. "
+                "This is not that, and does not fully discharge it. What it does test "
+                "is whether the labels are reproducible by an independent reader of "
+                "the same source."
+            ),
+            "config": client_config(client),
+        },
+        "blinding": {
+            "enforced_by": [
+                "scripts/second_labelling.py:assert_blind -- prompt-level redaction",
+                "scripts/second_labelling.py:BlindClaudeCLIClient -- no file, search "
+                "or execution tools, and an empty scratch working directory outside "
+                "the repository",
+                "scripts/second_labelling.py:blindness_probe -- re-tested against the "
+                "live client before every run; the script exits if the rater can "
+                "still read the answer key",
+            ],
+            "rule": (
+                "every line naming a DefectClass member, a catalogue, a ground-truth "
+                "map or a severity table is stripped, and the script refuses to send "
+                "a bundle in which any class name survives"
+            ),
+            "why_three_mechanisms": (
+                "the first version of this script had only the redaction. Headless "
+                "`claude -p` inherits the caller's working directory and tool "
+                "permissions, and from inside this repo it can read "
+                "src/assay/fixtures/toy.py and print the CATALOG answer key -- "
+                "verified directly. That run was discarded rather than published "
+                "with a caveat: 'probably did not look' is not blinding."
+            ),
+            "known_leak_that_cannot_be_stripped": (
+                "the fixture source carries the author's own explanatory comments "
+                "(e.g. 'Over-broad oracle: any plausible category is accepted'). A "
+                "second reader sees those, so the agreement reported here is an "
+                "UPPER bound on what a labeller working from behaviour alone reaches."
+            ),
+        },
+        "prompt_version": prompt_version(SYSTEM, taxonomy),
+        "assay_revision": git_revision(),
+        "n_runs": args.runs,
+        "n_environments": len(bundles),
+        "unavailable_ecosystems": missing,
+        "runs": collected,
+    }
+
+    def snapshot(completed: list[dict], done: bool) -> None:
+        """Persist after every pass.
+
+        A three-pass run over 24 environments is a couple of hours of model
+        calls, and writing only at the end means a timeout or a dropped
+        connection throws away every label collected so far. `complete: false`
+        is carried in the file so a partial result cannot be read as a finished
+        one -- `scripts/label_agreement.py` reports the run count it actually
+        found rather than the one that was asked for.
+        """
+        body = envelope(completed)
+        body["complete"] = done
+        body["n_runs_completed"] = len(completed)
+        out.write_text(json.dumps(body, indent=2))
 
     runs: list[dict] = []
     for run_index in range(1, args.runs + 1):
@@ -273,43 +454,9 @@ def main() -> int:
                 flush=True,
             )
         runs.append({"run": run_index, "labels": labels, "notes": notes, "failures": failures})
+        snapshot(runs, done=False)
 
-    body = {
-        "what": "a second, blinded labelling of the planted-defect corpus",
-        "rater": {
-            "kind": "language model reading source, blinded to the existing labels",
-            "not_a_human": (
-                "eval-methodology.md:64 asks for inter-rater agreement among humans. "
-                "This is not that, and does not fully discharge it. What it does test "
-                "is whether the labels are reproducible by an independent reader of "
-                "the same source."
-            ),
-            "config": client_config(client),
-        },
-        "blinding": {
-            "enforced_by": "scripts/second_labelling.py:assert_blind",
-            "rule": (
-                "every line naming a DefectClass member, a catalogue, a ground-truth "
-                "map or a severity table is stripped, and the script refuses to send "
-                "a bundle in which any class name survives"
-            ),
-            "known_leak_that_cannot_be_stripped": (
-                "the fixture source carries the author's own explanatory comments "
-                "(e.g. 'Over-broad oracle: any plausible category is accepted'). A "
-                "second reader sees those, so the agreement reported here is an "
-                "UPPER bound on what a labeller working from behaviour alone reaches."
-            ),
-        },
-        "prompt_version": prompt_version(SYSTEM, taxonomy),
-        "assay_revision": git_revision(),
-        "n_runs": args.runs,
-        "n_environments": len(bundles),
-        "unavailable_ecosystems": missing,
-        "runs": runs,
-    }
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(body, indent=2))
+    snapshot(runs, done=True)
     print(f"\nwrote {out}")
     return 0
 

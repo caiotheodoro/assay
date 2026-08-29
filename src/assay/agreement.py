@@ -151,6 +151,12 @@ def bootstrap_kappa(
     envs = sorted(set(a) & set(b))
     if not envs:
         return {"point": None, "ci95": [None, None], "reason": "no shared environments"}
+    if resamples <= 0:
+        return {
+            "point": _round(cohen_kappa(cells(a, b))),
+            "ci95": [None, None],
+            "reason": "not bootstrapped: resamples=0 was requested for this comparison",
+        }
     rng = random.Random(seed)
     draws = []
     for _ in range(resamples):

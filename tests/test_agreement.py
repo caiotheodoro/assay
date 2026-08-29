@@ -30,13 +30,26 @@ REPO = Path(__file__).resolve().parents[1]
 D = DefectClass
 
 
-def _load_second_labelling_module():
-    spec = importlib.util.spec_from_file_location(
-        "second_labelling", REPO / "scripts" / "second_labelling.py"
-    )
+def _load_script(name: str):
+    """Load a script as a module.
+
+    Registered in `sys.modules` before executing: a dataclass declared in the
+    module resolves its own annotations through `sys.modules[cls.__module__]`,
+    which is `None` for a module loaded and never registered.
+    """
+    import sys
+
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, REPO / "scripts" / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _load_second_labelling_module():
+    return _load_script("second_labelling")
 
 
 def test_identical_labellings_give_kappa_one():
@@ -217,11 +230,7 @@ def test_parse_reports_an_unparseable_reply_rather_than_an_empty_labelling():
 def test_majority_pooling_is_not_biased_by_the_number_of_runs():
     """Union gets more defect-happy with k and intersection more conservative;
     neither converges on what the rater believes."""
-    spec = importlib.util.spec_from_file_location(
-        "label_agreement", REPO / "scripts" / "label_agreement.py"
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = _load_script("label_agreement")
     runs = [
         {"e1": ["GOLD_FAILS"]},
         {"e1": ["GOLD_FAILS"]},
@@ -229,3 +238,56 @@ def test_majority_pooling_is_not_biased_by_the_number_of_runs():
     ]
     assert module.majority(runs)["e1"] == frozenset({D.GOLD_FAILS})
     assert module.majority(runs[:1] + runs[2:])["e1"] == frozenset()
+
+
+def test_asking_for_no_bootstrap_says_so_rather_than_claiming_it_failed():
+    """`resamples=0` is a deliberate request, not a degenerate result. Reporting
+    it as 'kappa undefined on every resample' would read as a finding about the
+    data."""
+    a = {"e1": frozenset({D.GOLD_FAILS}), "e2": frozenset()}
+    block = compare(a, dict(a), resamples=0)["bootstrap"]
+    assert block["point"] == 1.0
+    assert block["ci95"] == [None, None]
+    assert "resamples=0 was requested" in block["reason"]
+
+
+# -- the blinding, at the process level -------------------------------------
+#
+# Prompt-level redaction was the whole of the first version and it was not
+# enough: headless `claude -p` inherits the caller's working directory and tool
+# permissions, and from inside this repo it can read the answer key. That run
+# was discarded. These pin the hardening that replaced it.
+
+
+def test_the_blind_client_disables_every_tool_that_could_reach_the_repo():
+    module = _load_second_labelling_module()
+    for tool in ("Bash", "Read", "Glob", "Grep", "WebFetch", "Task"):
+        assert tool in module._NO_TOOLS, tool
+
+
+def test_the_blind_client_is_distinguishable_by_name():
+    """So a results file cannot claim blinding it did not have -- the client
+    name is recorded in results/second_labelling.json."""
+    module = _load_second_labelling_module()
+    assert module.BlindClaudeCLIClient().name.startswith("claude-cli-blind")
+
+
+def test_the_blindness_probe_refuses_when_the_rater_can_read_the_answer_key():
+    module = _load_second_labelling_module()
+
+    class Leaky:
+        def complete(self, system, user):
+            return "FOUND: CATALOG: dict[str, frozenset[DefectClass]] = {"
+
+    with pytest.raises(SystemExit, match="REFUSING to label"):
+        module.blindness_probe(Leaky(), REPO / "src" / "assay" / "fixtures" / "toy.py")
+
+
+def test_the_blindness_probe_passes_a_rater_with_no_file_access():
+    module = _load_second_labelling_module()
+
+    class Blind:
+        def complete(self, system, user):
+            return "NOTOOLS"
+
+    module.blindness_probe(Blind(), REPO / "src" / "assay" / "fixtures" / "toy.py")

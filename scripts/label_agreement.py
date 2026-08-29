@@ -71,29 +71,62 @@ def majority(runs: list[dict[str, list[str]]]) -> dict[str, frozenset[DefectClas
     return out
 
 
+def load_family(path: Path) -> tuple[str, list[dict[str, list[str]]], dict]:
+    payload = json.loads(path.read_text())
+    runs = [run["labels"] for run in payload["runs"]]
+    name = payload.get("rater", {}).get("config", {}).get("client") or path.stem
+    return name, runs, payload
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--labelling", default="results/second_labelling.json")
+    ap.add_argument(
+        "--labelling",
+        nargs="*",
+        default=[
+            "results/second_labelling.json",
+            "results/second_labelling_qwen.json",
+        ],
+        help="one or more second-labelling files, each from a different rater "
+        "family. Two families are better than one: correlated error between two "
+        "runs of the same model is not independent evidence, and "
+        "eval-methodology.md B2 says to judge from a different model family.",
+    )
     ap.add_argument("--resamples", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--out", default="results/label_agreement.json")
     args = ap.parse_args()
 
-    path = Path(args.labelling)
-    if not path.exists():
+    families: dict[str, list[dict[str, list[str]]]] = {}
+    missing_files: list[str] = []
+    for name in args.labelling:
+        path = Path(name)
+        if not path.exists():
+            missing_files.append(name)
+            continue
+        family, runs, _payload = load_family(path)
+        if runs:
+            families[family] = runs
+    if not families:
         print(
-            f"FAILED: {path} not present. Run scripts/second_labelling.py first -- "
-            "it needs a model, and a kappa computed against a labelling that does "
-            "not exist would be a number about nothing.",
+            f"FAILED: none of {args.labelling} is present. Run "
+            "scripts/second_labelling.py first -- it needs a model, and a kappa "
+            "computed against a labelling that does not exist would be a number "
+            "about nothing.",
             file=sys.stderr,
         )
         return 1
+    if missing_files:
+        print(
+            f"NOTE: {missing_files} not present; the panel is smaller than intended "
+            "and that is recorded in the output rather than left implicit.",
+            file=sys.stderr,
+        )
 
-    payload = json.loads(path.read_text())
-    runs = [run["labels"] for run in payload["runs"]]
-    if not runs:
-        print("FAILED: the labelling file records no runs", file=sys.stderr)
-        return 1
+    # The primary rater is the first family that was actually produced, so the
+    # headline number does not silently change identity when one file is absent.
+    primary = next(iter(families))
+    runs = families[primary]
 
     rater_a = ground_truth()
     rater_b = majority(runs)
@@ -151,14 +184,69 @@ def main() -> int:
             }
         )
 
+    # Every family against the catalogue, and against each other. Two runs of
+    # one model share its blind spots; two model families do not, so a
+    # disagreement both families make is evidence about the label and a
+    # disagreement only one makes is evidence about the rater.
+    panel: dict[str, dict] = {}
+    for family, family_runs in families.items():
+        b = majority(family_runs)
+        common = sorted(set(rater_a) & set(b))
+        block = compare(
+            {e: rater_a[e] for e in common},
+            {e: b[e] for e in common},
+            resamples=args.resamples if family == primary else 0,
+            seed=args.seed,
+        )
+        panel[family] = {
+            "n_runs": len(family_runs),
+            "cohen_kappa": block["cohen_kappa"],
+            "interpretation": block["interpretation"],
+            "percent_agreement": block["percent_agreement"],
+            "bootstrap": block["bootstrap"],
+            "n_environments_exact_set_match": block["n_environments_exact_set_match"],
+            "n_environments": block["n_environments"],
+            "disagreements": block["disagreements"],
+        }
+
+    cross_family = None
+    if len(families) > 1:
+        names = list(families)
+        first, second = majority(families[names[0]]), majority(families[names[1]])
+        common = sorted(set(first) & set(second))
+        cross = compare(
+            {e: first[e] for e in common},
+            {e: second[e] for e in common},
+            resamples=0,
+            seed=args.seed,
+        )
+        cross_family = {
+            "families": names[:2],
+            "cohen_kappa": cross["cohen_kappa"],
+            "interpretation": cross["interpretation"],
+            "n_environments_exact_set_match": cross["n_environments_exact_set_match"],
+            "n_environments": cross["n_environments"],
+            "why": (
+                "two independent readers from different model families agreeing "
+                "with each other and disagreeing with the catalogue in the same "
+                "place is evidence about the label. One family disagreeing alone "
+                "is evidence about that rater."
+            ),
+        }
+
     body = {
         "spec": "eval-methodology.md:64 -- measure inter-rater agreement (Cohen's "
                 "kappa) before trusting human labels",
         "rater_a": "assay.corpus.ground_truth() -- the repo's hand labels",
         "rater_b": (
-            f"blinded second labelling, majority over {len(runs)} independent runs; "
-            "see results/second_labelling.json for what the rater is and is not"
+            f"blinded second labelling by {primary}, majority over {len(runs)} "
+            "independent runs; see results/second_labelling*.json for what the "
+            "rater is and is not"
         ),
+        "rater_families": sorted(families),
+        "labelling_files_missing": missing_files,
+        "panel": panel,
+        "cross_family": cross_family,
         "assay_revision": git_revision(),
         "ground_truth_was_not_edited": (
             "Retro-fitting the corpus to a second opinion would invalidate every "
@@ -207,6 +295,19 @@ def main() -> int:
         print(f"    run {r['run']}: kappa {r['cohen_kappa']}, "
               f"{r['n_environments_exact_set_match']}/{r['n_environments']} exact, "
               f"{r['n_disagreements']} disagreements")
+
+    print("\n  panel -- each rater family against the catalogue:")
+    for family, blk in panel.items():
+        print(f"    {family:26} kappa {str(blk['cohen_kappa']):>8} "
+              f"({blk['interpretation']}), "
+              f"{blk['n_environments_exact_set_match']}/{blk['n_environments']} exact, "
+              f"{len(blk['disagreements'])} disagreements")
+    if cross_family:
+        print(f"\n  cross-family {cross_family['families']}: "
+              f"kappa {cross_family['cohen_kappa']} "
+              f"({cross_family['interpretation']}), "
+              f"{cross_family['n_environments_exact_set_match']}/"
+              f"{cross_family['n_environments']} exact")
 
     print("\n  per class (kappa, prevalence A / B, cells where only one rater said yes):")
     for name, row in a["per_class"].items():
