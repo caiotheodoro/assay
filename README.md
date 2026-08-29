@@ -8,8 +8,11 @@ result, plus machine-readable JSON and a nonzero exit code that blocks a
 training run.
 
 > Status: early. Core, all nine probe families, and the inspect_ai and Harbor
-> adapters are implemented and tested. The OpenEnv adapter, the prompted and
-> learned Challengers, and the wild sweep are not built yet.
+> adapters are implemented and tested. The prompted and GRPO-trained
+> Challengers are built; the trained one **does not beat the scripted floor**,
+> and the two runs behind that statement are written up with their numbers in
+> [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
+> The OpenEnv adapter and the wild sweep are not built yet.
 
 ## The problem
 
@@ -54,6 +57,20 @@ exhibited directly in `tests/test_harbor_ground_truth.py` — and the scripted
 Challenger does not find it. That miss is the reason the corpus discriminates
 at all, and closing it is what the prompted and trained Challengers are for.
 
+**It is still open.** A Challenger was trained with GRPO against a dense
+exploit-gap reward (`reported score` minus `independent true completion`, held
+by the harness and never shown to the attacker) on a spot A10G, with
+`harbor/self-graded` held out so the test would mean something. It did not
+close the miss, and neither did the prompted Challenger on local 1.7B/8B
+models. The reward itself is verified -- 36 tests, four against real
+containers, no GPU -- and the run logs say precisely what failed: 99.7% of GRPO
+rollout groups had zero reward spread, so there was no gradient at all.
+Numbers, the single-variable follow-up run, and what to try next are in
+[`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
+Nothing about the trained Challenger is required to run Assay: it ships as an
+optional artifact, the scripted Challenger is the floor, and the reproduction
+guide never asks for a GPU.
+
 ## The probes
 
 | Family | Question | A "no" means |
@@ -69,7 +86,15 @@ at all, and closing it is what the prompted and trained Challengers are for.
 | Reward hackability | Can a policy score well without doing the job? | training on it teaches the exploit |
 
 Families 1–8 are deterministic programs. Family 9 is an adversarial
-**Challenger** agent. **No LLM judge scores anything, anywhere.**
+**Challenger** agent -- scripted, prompted, or GRPO-trained. **No LLM judge
+scores anything, anywhere.** The Challenger only ever proposes actions; every
+one of them is scored by a program, and the ground truth it is scored against
+is held by the probe and never shown to the attacker.
+
+```bash
+uv run --extra adapters pytest tests/test_grpo_reward.py -q      # the reward, no GPU
+uv run --extra adapters python scripts/reward_landscape.py       # what it can pay
+```
 
 ## Prior art
 
