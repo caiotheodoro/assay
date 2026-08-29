@@ -536,6 +536,16 @@ class TestEnumeration:
         for package in {r.package for r in kept}:
             assert package_signals(package)["container_artifacts"] == []
 
+    def test_multimodal_packages_are_excluded_as_a_cost_exclusion(self):
+        """Labelled honestly: the audit would lose nothing, because a
+        completion-only scorer never reads the image. Pulling the corpus to
+        discard it is the cost being avoided."""
+        kept, exclusions = static_filter(enumerate_tasks())
+        assert not [r for r in kept if r.package in {"docvqa", "mmiu", "mathvista"}]
+        reasons = {e.reason for e in exclusions if e.rule == "risk_token:multimodal"}
+        assert reasons
+        assert all("cost exclusion" in r for r in reasons)
+
     def test_the_static_gate_keeps_the_lexical_benchmarks(self):
         """A filter that excluded everything would be safe and useless."""
         kept = {r.name for r in static_filter(enumerate_tasks())[0]}

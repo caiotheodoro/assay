@@ -311,6 +311,12 @@ RISK_TOKENS: dict[str, tuple[str, ...]] = {
         r"\bget_model\s*\(",
         r"\bmodel\.generate\b",
     ),
+    "multimodal": (
+        r"\bContentImage\b",
+        r"\bContentAudio\b",
+        r"\bContentVideo\b",
+        r"\bContentPdf\b",
+    ),
 }
 
 _RISK_REASON = {
@@ -322,6 +328,12 @@ _RISK_REASON = {
     "leaves empty",
     "model_judge": "package grades with a model; no LLM judge scores anything in "
     "this project, and a judge is not a deterministic oracle",
+    "multimodal": "package builds samples with non-text content; the sweep does "
+    "not pull image, audio or video corpora. This is a cost exclusion and is "
+    "labelled as one -- the audit itself would lose nothing, because a "
+    "completion-only scorer never reads the image -- but pulling tens of "
+    "gigabytes to discard them is not a cost this sweep takes. Two runs stalled "
+    "on docvqa and mmiu before this rule existed",
 }
 
 
