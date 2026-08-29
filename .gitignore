@@ -38,3 +38,6 @@ results/sab_benchguard/*/audits/
 results/sab_benchguard/*/normalized/
 results/sab_benchguard/*/matches/
 results/sab_benchguard/*/reports/
+# Two pinned third-party benchmark snapshots, fetched by
+# scripts/tau2_fetch.py. Verdicts about tau2-bench ship; tau2-bench does not.
+.tau2_cache/
