@@ -2,22 +2,22 @@
   "resamples": 10000,
   "seed": 11,
   "cost_profile": "production-training",
-  "n_environments": 21,
+  "n_environments": 24,
   "resampling_unit": "environment",
   "why": "Defects within one environment are not independent -- a verifier that always passes fails six probes at once -- so resampling defects would report an interval far tighter than the data supports.",
   "arms": {
     "assay": {
       "expected_loss": {
-        "point": 960.0,
+        "point": 1920.0,
         "ci95": [
           0.0,
-          2880.0
+          4800.0
         ]
       },
       "recall": {
-        "point": 0.9773,
+        "point": 0.9565,
         "ci95": [
-          0.9118,
+          0.8684,
           1.0
         ]
       },
@@ -30,26 +30,26 @@
       },
       "loss_saved_vs": {
         "check_env": {
-          "point": 18800.0,
+          "point": 18840.0,
           "ci95": [
-            11000.0,
-            27440.0
+            10680.0,
+            28280.0
           ],
           "separated": true
         },
         "flag_nothing": {
-          "point": 18800.0,
+          "point": 18840.0,
           "ci95": [
-            11000.0,
-            27440.0
+            10680.0,
+            28280.0
           ],
           "separated": true
         },
         "flag_everything": {
-          "point": -460.0,
+          "point": -1340.0,
           "ci95": [
-            -2394.0,
-            522.0
+            -4218.0,
+            590.0
           ],
           "separated": false
         }
@@ -57,10 +57,10 @@
     },
     "check_env": {
       "expected_loss": {
-        "point": 19760.0,
+        "point": 20760.0,
         "ci95": [
-          12240.0,
-          28240.0
+          12720.0,
+          29640.0
         ]
       },
       "recall": {
@@ -79,10 +79,10 @@
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -18800.0,
+          "point": -18840.0,
           "ci95": [
-            -27440.0,
-            -11000.0
+            -28280.0,
+            -10680.0
           ],
           "separated": true
         },
@@ -95,10 +95,10 @@
           "separated": false
         },
         "flag_everything": {
-          "point": -19260.0,
+          "point": -20180.0,
           "ci95": [
-            -27772.0,
-            -11716.0
+            -29092.0,
+            -12104.0
           ],
           "separated": true
         }
@@ -106,10 +106,10 @@
     },
     "flag_nothing": {
       "expected_loss": {
-        "point": 19760.0,
+        "point": 20760.0,
         "ci95": [
-          12240.0,
-          28240.0
+          12720.0,
+          29640.0
         ]
       },
       "recall": {
@@ -128,10 +128,10 @@
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -18800.0,
+          "point": -18840.0,
           "ci95": [
-            -27440.0,
-            -11000.0
+            -28280.0,
+            -10680.0
           ],
           "separated": true
         },
@@ -144,10 +144,10 @@
           "separated": false
         },
         "flag_everything": {
-          "point": -19260.0,
+          "point": -20180.0,
           "ci95": [
-            -27772.0,
-            -11716.0
+            -29092.0,
+            -12104.0
           ],
           "separated": true
         }
@@ -155,10 +155,10 @@
     },
     "flag_everything": {
       "expected_loss": {
-        "point": 500.0,
+        "point": 580.0,
         "ci95": [
-          464.0,
-          532.0
+          542.0,
+          614.0
         ]
       },
       "recall": {
@@ -169,34 +169,34 @@
         ]
       },
       "precision": {
-        "point": 0.1497,
+        "point": 0.1369,
         "ci95": [
-          0.0952,
-          0.2109
+          0.0863,
+          0.1935
         ]
       },
       "loss_saved_vs": {
         "assay": {
-          "point": 460.0,
+          "point": 1340.0,
           "ci95": [
-            -522.0,
-            2394.0
+            -590.0,
+            4218.0
           ],
           "separated": false
         },
         "check_env": {
-          "point": 19260.0,
+          "point": 20180.0,
           "ci95": [
-            11716.0,
-            27772.0
+            12104.0,
+            29092.0
           ],
           "separated": true
         },
         "flag_nothing": {
-          "point": 19260.0,
+          "point": 20180.0,
           "ci95": [
-            11716.0,
-            27772.0
+            12104.0,
+            29092.0
           ],
           "separated": true
         }
