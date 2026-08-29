@@ -469,3 +469,100 @@ def test_a_truncated_tool_response_says_that_it_was_truncated():
         turns=[Turn(index=1, action={"tool": "run"}, observation="ok")],
     )
     assert "truncated" not in short.to_markdown()
+
+
+# -- the committed deliverable ----------------------------------------------
+#
+# These assert the files in the repo, not just the builders. A test that only
+# exercised the builders would pass while results/trajectories/ was stale.
+
+from pathlib import Path  # noqa: E402
+
+TRAJECTORIES = Path(__file__).resolve().parents[1] / "results" / "trajectories"
+
+
+def _committed() -> list[dict]:
+    return [json.loads(p.read_text()) for p in sorted(TRAJECTORIES.glob("*.json"))]
+
+
+def test_the_committed_deliverable_covers_every_agent_the_submission_used():
+    """The brief asks for a trajectory per agent, so a missing one is a defect
+    in the deliverable, not an absent nice-to-have."""
+    assert (TRAJECTORIES / "INDEX.md").exists(), "run scripts/export_trajectories.py"
+    roles = {t["role"] for t in _committed()}
+    assert {"challenger", "solver", "baseline", "human_checkpoint"} <= roles, roles
+
+    agents = " ".join(t["agent"] for t in _committed())
+    for form in ("scripted", "ollama", "claude-cli"):
+        assert form in agents, f"no {form} Challenger trajectory"
+    for arm in ("direct_prompt", "agent_with_tools"):
+        assert arm in agents, f"no {arm} baseline trajectory"
+
+
+def test_every_committed_trajectory_has_both_files_and_is_in_the_index():
+    text = (TRAJECTORIES / "INDEX.md").read_text()
+    slugs = sorted(p.stem for p in TRAJECTORIES.glob("*.json"))
+    assert slugs, "no trajectories exported"
+    for slug in slugs:
+        assert (TRAJECTORIES / f"{slug}.md").exists(), f"{slug} has no markdown"
+        assert f"{slug}.md" in text, f"{slug} is not in the index"
+
+
+def test_the_committed_trajectories_are_signed_and_unmodified():
+    from assay.types import digest
+
+    for path in sorted(TRAJECTORIES.glob("*.json")):
+        payload = json.loads(path.read_text())
+        signature = payload.pop("signature")
+        assert signature == digest(payload), f"{path.name} was edited after export"
+
+
+def test_at_least_one_committed_trajectory_is_a_failure():
+    """An index of successes is a highlight reel."""
+    misses = [
+        t["agent"]
+        for t in _committed()
+        if t["outcome"].get("found_exploit") is False or t["outcome"].get("refused")
+    ]
+    assert misses, "no failed run in the deliverable"
+
+
+def test_the_same_agent_ships_both_a_hit_and_a_miss():
+    """claude-cli finds the self-graded exploit in one run and not in another.
+    Publishing only the hit would report a nondeterministic agent as reliable."""
+    claude = [t for t in _committed() if "claude-cli" in t["agent"]]
+    outcomes = {t["outcome"]["found_exploit"] for t in claude}
+    assert outcomes == {True, False}, outcomes
+
+
+def test_a_human_approval_checkpoint_is_in_the_deliverable():
+    gates = [t for t in _committed() if t["role"] == "human_checkpoint"]
+    assert gates, "no human checkpoint trajectory"
+    gate = gates[0]
+    assert gate["outcome"]["executed_without_approval"] == 0
+    assert any(not a["granted"] for a in gate["human_checkpoints"]), (
+        "a gate that only ever says yes demonstrates nothing"
+    )
+
+
+def test_the_challenger_trajectories_carry_the_sandbox_approval_that_let_them_run():
+    """Every Harbor run executed untrusted code, so every one of them had an
+    approver. A run with no recorded approval would mean the gate was bypassed."""
+    for traj in _committed():
+        if traj["environment"].startswith("harbor/") and traj["role"] == "challenger":
+            assert traj["human_checkpoints"], traj["agent"]
+
+
+def test_no_third_party_environment_content_is_redistributed():
+    """inspect_evals, OpenEnv and ScienceAgentBench content may not ship. Every
+    trajectory runs on this repo's own fixtures."""
+    for traj in _committed():
+        assert traj["environment"].startswith(("harbor/", "toy-triage/", "fixture/")), (
+            traj["environment"]
+        )
+
+
+def test_the_index_says_why_an_agent_has_no_run():
+    text = (TRAJECTORIES / "INDEX.md").read_text()
+    assert "Agents with no trajectory here, and why" in text
+    assert "grpo-trained" in text
