@@ -1,0 +1,1000 @@
+{
+  "what": "a second, blinded labelling of the planted-defect corpus",
+  "rater": {
+    "kind": "language model reading source, blinded to the existing labels",
+    "not_a_human": "eval-methodology.md:64 asks for inter-rater agreement among humans. This is not that, and does not fully discharge it. What it does test is whether the labels are reproducible by an independent reader of the same source.",
+    "config": {
+      "client": "ollama:qwen3:8b",
+      "backend": "ollama",
+      "model_tag": "qwen3:8b",
+      "model_revision": {
+        "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+        "modified_at": "2026-08-19T16:03:17.906790616-04:00",
+        "size_bytes": 5225388164,
+        "parameter_size": "8.2B",
+        "quantization_level": "Q4_K_M",
+        "family": "qwen3"
+      },
+      "temperature": 0.8,
+      "top_p": {
+        "value": null,
+        "unavailable": "OllamaClient does not send top_p, so the server's own default applies and the client cannot report which value that was"
+      },
+      "top_k": {
+        "value": null,
+        "unavailable": "not sent by OllamaClient; server default applies"
+      },
+      "max_tokens": 900,
+      "thinking_mode": false,
+      "request_timeout_s": 180
+    }
+  },
+  "blinding": {
+    "enforced_by": [
+      "scripts/second_labelling.py:assert_blind -- prompt-level redaction",
+      "scripts/second_labelling.py:BlindClaudeCLIClient -- no file, search or execution tools, and an empty scratch working directory outside the repository",
+      "scripts/second_labelling.py:blindness_probe -- re-tested against the live client before every run; the script exits if the rater can still read the answer key"
+    ],
+    "rule": "every line naming a DefectClass member, a catalogue, a ground-truth map or a severity table is stripped, and the script refuses to send a bundle in which any class name survives",
+    "why_three_mechanisms": "the first version of this script had only the redaction. Headless `claude -p` inherits the caller's working directory and tool permissions, and from inside this repo it can read src/assay/fixtures/toy.py and print the CATALOG answer key -- verified directly. That run was discarded rather than published with a caveat: 'probably did not look' is not blinding.",
+    "known_leak_that_cannot_be_stripped": "the fixture source carries the author's own explanatory comments (e.g. 'Over-broad oracle: any plausible category is accepted'). A second reader sees those, so the agreement reported here is an UPPER bound on what a labeller working from behaviour alone reaches."
+  },
+  "prompt_version": {
+    "digest": "973c77fccdeec1e5",
+    "n_sources": "2"
+  },
+  "assay_revision": {
+    "commit": "223a1785a1a111c845765d10f3eeab15cb72cd59",
+    "dirty": true
+  },
+  "n_runs": 3,
+  "n_environments": 24,
+  "unavailable_ecosystems": {},
+  "runs": [
+    {
+      "run": 1,
+      "labels": {
+        "fixture/artifact_splits": [
+          "CONTAMINATION_EXACT",
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/drifted_asserts": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/escalate_overrewarded": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/flaky": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/gold_broken": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/healthy": [],
+        "fixture/leaky_splits": [
+          "CONTAMINATION_EXACT"
+        ],
+        "fixture/paraphrased_splits": [
+          "CONTAMINATION_NEARDUP"
+        ],
+        "fixture/rationale_ignored": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/solved_at_reset": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/unfalsifiable": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/weak_oracle": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "harbor/broken-gold": [],
+        "harbor/healthy": [],
+        "harbor/self-graded": [],
+        "harbor/shared-tests": [],
+        "harbor/vacuous-tests": [],
+        "inspect/always-correct": [],
+        "inspect/constant-score": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/effort-scorer": [
+          "SEPARABILITY_LOSS",
+          "SHORTCUT_LEAK",
+          "SPEC_VERIFIER_MISMATCH",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/healthy": [],
+        "inspect/leaky-split": [
+          "GOLD_FAILS",
+          "KNOWN_WRONG_PASSES",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "openenv/echo": [],
+        "openenv/textarena-wordle": []
+      },
+      "notes": {
+        "fixture/artifact_splits": {
+          "reasoning": {
+            "CONTAMINATION_EXACT": "the train and eval splits have identical items",
+            "TRIVIAL_FLOOR_BREACH": "a policy that ignores the input entirely scores as well as one that reads it",
+            "REWARD_HACKABLE": "a policy can score highly WITHOUT doing the job"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/drifted_asserts": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution despite it not addressing the task",
+            "REWARD_HACKABLE": "the environment allows policies to score highly without actually solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/escalate_overrewarded": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it doesn't address the task",
+            "REWARD_HACKABLE": "escalation is treated as a solve without actually completing the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/flaky": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment over-rewards escalation as a trivial-floor breach",
+            "REWARD_HACKABLE": "the environment over-rewards escalation as a reward-hackable surface"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/gold_broken": {
+          "reasoning": {
+            "GOLD_FAILS": "the gold actions submit the wrong label",
+            "TRIVIAL_FLOOR_BREACH": "a policy that ignores the input entirely scores as well as one that reads it",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/leaky_splits": {
+          "reasoning": {
+            "CONTAMINATION_EXACT": "the eval split contains items that are byte-identical to the train split"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/paraphrased_splits": {
+          "reasoning": {
+            "CONTAMINATION_NEARDUP": "The environment uses paraphrased_splits, which creates near-duplicates in the eval split by changing one word in the train text."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/rationale_ignored": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it does not address the task",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job by escalating instead of solving the ticket"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/solved_at_reset": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment allows policies that ignore the input to score highly",
+            "REWARD_HACKABLE": "the verifier passes even if the task is not completed, allowing reward hacking"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/unfalsifiable": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards trivial actions that ignore the input",
+            "REWARD_HACKABLE": "the reward can be achieved without performing the actual task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/weak_oracle": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment accepts any plausible category as correct, which is a trivial-floor breach",
+            "REWARD_HACKABLE": "the environment rewards any plausible category as correct, allowing policies to score highly without solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "harbor/broken-gold": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/broken-gold/instruction.md",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/task.toml",
+            "src/assay/fixtures/harbor_suite/broken-gold/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/healthy/instruction.md",
+            "src/assay/fixtures/harbor_suite/healthy/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/healthy/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/healthy/task.toml",
+            "src/assay/fixtures/harbor_suite/healthy/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/healthy/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/self-graded": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/self-graded/environment/expected.txt",
+            "src/assay/fixtures/harbor_suite/self-graded/instruction.md",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/task.toml",
+            "src/assay/fixtures/harbor_suite/self-graded/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/shared-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/shared-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/shared-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/vacuous-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/vacuous-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "inspect/always-correct": {
+          "reasoning": {
+            "": "The environment 'always-correct' is designed to always return the correct answer, and there is no indication of any defect in the provided code."
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/constant-score": {
+          "reasoning": {
+            "GOLD_FAILS": "the scorer always returns a correct score regardless of the actual answer",
+            "TRIVIAL_FLOOR_BREACH": "the scorer ignores the input entirely and gives the same score",
+            "SEPARABILITY_LOSS": "the scorer cannot differentiate between different policies as they all get the same score",
+            "REWARD_HACKABLE": "a policy can score highly without actually solving the task"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/effort-scorer": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the scorer gives a middling score regardless of input",
+            "SEPARABILITY_LOSS": "the scorer cannot distinguish between different policies",
+            "SHORTCUT_LEAK": "the scorer is based on non-task-related input",
+            "SPEC_VERIFIER_MISMATCH": "the scorer checks for non-empty answers, not correctness"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/leaky-split": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the policy that ignores the input entirely scores as well as one that reads it",
+            "SEPARABILITY_LOSS": "the environment cannot tell apart two policies that are known to differ in quality -- they get the same score",
+            "GOLD_FAILS": "the known-good reference solution does NOT pass the verifier",
+            "KNOWN_WRONG_PASSES": "a deliberately wrong answer passes the verifier"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "openenv/echo": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        },
+        "openenv/textarena-wordle": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        }
+      },
+      "failures": {
+        "harbor/broken-gold": "unparseable reply: 'This environment is implemented in Python and is likely part of a reinforcement learning or AI agent training setup, where the agent interacts with a simulation'",
+        "harbor/healthy": "unparseable reply: 'This environment, implemented as a `HarborAdapter`, is a custom interface for interacting with a task-based environment, likely used in reinforcement learning o'",
+        "harbor/self-graded": "unparseable reply: 'This environment (a `HarborAdapter` class) appears to be designed for evaluating agent behavior in a task-based environment, likely involving shell scripts and '",
+        "harbor/shared-tests": "unparseable reply: 'This code represents a custom reinforcement learning environment for a task-based shell scripting scenario, likely part of a project like **Assay** or a similar'",
+        "harbor/vacuous-tests": "unparseable reply: \"This `HarborAdapter` class is an environment for running shell-based tasks, such as coding challenges, and it's likely part of a reinforcement learning or agent\"",
+        "openenv/echo": "unparseable reply: \"The code you've shared defines a framework for creating environments in `OpenEnv`, along with two concrete environment bindings: `echo_env` and `textarena_env` \"",
+        "openenv/textarena-wordle": "unparseable reply: \"The code you've shared is a **framework for creating and managing environments in OpenEnv**, which is a Python framework for building and testing AI agents. The\""
+      }
+    },
+    {
+      "run": 2,
+      "labels": {
+        "fixture/artifact_splits": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/drifted_asserts": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/escalate_overrewarded": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/flaky": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/gold_broken": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/healthy": [],
+        "fixture/leaky_splits": [
+          "CONTAMINATION_EXACT"
+        ],
+        "fixture/paraphrased_splits": [
+          "CONTAMINATION_NEARDUP"
+        ],
+        "fixture/rationale_ignored": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/solved_at_reset": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/unfalsifiable": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/weak_oracle": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "harbor/broken-gold": [],
+        "harbor/healthy": [],
+        "harbor/self-graded": [],
+        "harbor/shared-tests": [],
+        "harbor/vacuous-tests": [],
+        "inspect/always-correct": [],
+        "inspect/constant-score": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/effort-scorer": [
+          "KNOWN_WRONG_PASSES",
+          "NONDETERMINISM",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/healthy": [],
+        "inspect/leaky-split": [
+          "GOLD_FAILS",
+          "KNOWN_WRONG_PASSES",
+          "SEPARABILITY_LOSS",
+          "SHORTCUT_LEAK",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "openenv/echo": [],
+        "openenv/textarena-wordle": []
+      },
+      "notes": {
+        "fixture/artifact_splits": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution, which is a trivial floor breach",
+            "REWARD_HACKABLE": "the environment allows a policy to score highly without actually solving the task by escalating"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/drifted_asserts": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution",
+            "REWARD_HACKABLE": "escalation is treated as a solve without actually addressing the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/escalate_overrewarded": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "The environment rewards escalation as a solve, which is a trivial policy that ignores the input.",
+            "REWARD_HACKABLE": "Escalation is treated as a solve without actually performing the task, allowing policies to score highly without completing the task."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/flaky": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "The environment over-rewards escalation, which is a trivial-floor breach.",
+            "REWARD_HACKABLE": "The environment allows a policy to score highly without doing the job, as escalation is treated as a solve."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/gold_broken": {
+          "reasoning": {
+            "GOLD_FAILS": "the gold actions submit the wrong label",
+            "TRIVIAL_FLOOR_BREACH": "escalation is rewarded as a solve without doing the task",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job by escalating"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/leaky_splits": {
+          "reasoning": {
+            "CONTAMINATION_EXACT": "the eval split contains items identical to the train split"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/paraphrased_splits": {
+          "reasoning": {
+            "CONTAMINATION_NEARDUP": "the eval split contains near-duplicates of the train split"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/rationale_ignored": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it doesn't address the task",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job by escalating instead of solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/solved_at_reset": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "The environment rewards escalation as a solve, which is a trivial floor breach.",
+            "REWARD_HACKABLE": "The environment allows a policy to score highly without doing the job by escalating, which is a reward hackable issue."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/unfalsifiable": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution",
+            "REWARD_HACKABLE": "the reward is based on label correctness rather than task completion"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/weak_oracle": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment over-rewards escalation, which is a trivial-floor breach",
+            "REWARD_HACKABLE": "the environment allows a policy to score highly without doing the job, as any plausible category is accepted"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "harbor/broken-gold": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/broken-gold/instruction.md",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/task.toml",
+            "src/assay/fixtures/harbor_suite/broken-gold/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/healthy/instruction.md",
+            "src/assay/fixtures/harbor_suite/healthy/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/healthy/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/healthy/task.toml",
+            "src/assay/fixtures/harbor_suite/healthy/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/healthy/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/self-graded": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/self-graded/environment/expected.txt",
+            "src/assay/fixtures/harbor_suite/self-graded/instruction.md",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/task.toml",
+            "src/assay/fixtures/harbor_suite/self-graded/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/shared-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/shared-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/shared-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/vacuous-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/vacuous-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "inspect/always-correct": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/constant-score": {
+          "reasoning": {
+            "GOLD_FAILS": "the scorer always gives a correct score regardless of the answer",
+            "TRIVIAL_FLOOR_BREACH": "the scorer gives the same score regardless of the answer",
+            "SEPARABILITY_LOSS": "the scorer cannot distinguish between different answers",
+            "REWARD_HACKABLE": "the scorer rewards non-answers as much as correct answers"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/effort-scorer": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the policy that ignores the input entirely scores as well as one that reads it",
+            "SEPARABILITY_LOSS": "the environment cannot tell apart two policies that are known to differ in quality -- they get the same score",
+            "KNOWN_WRONG_PASSES": "a deliberately wrong answer passes the verifier",
+            "NONDETERMINISM": "the same seed and the same actions do not give the same result"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/leaky-split": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the policy that ignores the input entirely scores as well as one that reads it",
+            "SEPARABILITY_LOSS": "the environment cannot tell apart two policies that are known to differ in quality -- they get the same score",
+            "SHORTCUT_LEAK": "the answer is recoverable from part of the input that is not the task -- an artefact, a length cue, a metadata field",
+            "KNOWN_WRONG_PASSES": "a deliberately wrong answer passes the verifier",
+            "GOLD_FAILS": "the known-good reference solution does NOT pass the verifier"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "openenv/echo": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        },
+        "openenv/textarena-wordle": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        }
+      },
+      "failures": {
+        "harbor/broken-gold": "unparseable reply: 'This code appears to be part of a reinforcement learning or AI agent environment interface for interacting with a **Harbor** task suite, which likely involves r'",
+        "harbor/healthy": "unparseable reply: 'This environment is based on a custom shell-based task execution system, likely for reinforcement learning or agent training. It has a complex internal structur'",
+        "harbor/self-graded": "unparseable reply: 'This environment, which appears to be a **HarborAdapter** for an agent-based learning or reinforcement learning setup, has several **defects** and **design issu'",
+        "harbor/shared-tests": "unparseable reply: 'This code represents a custom reinforcement learning environment for interacting with a **Harbor**-style task suite, likely used for training agents to solve co'",
+        "harbor/vacuous-tests": "unparseable reply: \"The code you've provided appears to be a Python implementation of a custom environment for a reinforcement learning (RL) or agent-based system, likely used in t\"",
+        "openenv/echo": "unparseable reply: \"The code you've shared defines two `OpenEnvBinding`-based environments, one of which is a pure MCP environment (`echo_env`) and the other is a more complex envi\"",
+        "openenv/textarena-wordle": "unparseable reply: 'The provided code defines two environments (`echo_env` and `textarena_env`) using the `OpenEnv` framework. These environments are used for testing and auditing '"
+      }
+    },
+    {
+      "run": 3,
+      "labels": {
+        "fixture/artifact_splits": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/drifted_asserts": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/escalate_overrewarded": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/flaky": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/gold_broken": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/healthy": [],
+        "fixture/leaky_splits": [
+          "CONTAMINATION_EXACT"
+        ],
+        "fixture/paraphrased_splits": [
+          "CONTAMINATION_NEARDUP"
+        ],
+        "fixture/rationale_ignored": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/solved_at_reset": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/unfalsifiable": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "fixture/weak_oracle": [
+          "REWARD_HACKABLE",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "harbor/broken-gold": [],
+        "harbor/healthy": [],
+        "harbor/self-graded": [],
+        "harbor/shared-tests": [],
+        "harbor/vacuous-tests": [],
+        "inspect/always-correct": [],
+        "inspect/constant-score": [
+          "GOLD_FAILS",
+          "REWARD_HACKABLE",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/effort-scorer": [
+          "DIFFICULTY_SATURATED",
+          "NONDETERMINISM",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "inspect/healthy": [],
+        "inspect/leaky-split": [
+          "GOLD_FAILS",
+          "KNOWN_WRONG_PASSES",
+          "SEPARABILITY_LOSS",
+          "TRIVIAL_FLOOR_BREACH"
+        ],
+        "openenv/echo": [],
+        "openenv/textarena-wordle": []
+      },
+      "notes": {
+        "fixture/artifact_splits": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it does not address the task",
+            "REWARD_HACKABLE": "the environment allows a policy to score highly without solving the task by escalating"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/drifted_asserts": {
+          "reasoning": {
+            "GOLD_FAILS": "the known-good reference solution does NOT pass the verifier",
+            "TRIVIAL_FLOOR_BREACH": "a policy that ignores the input entirely scores as well as one that reads it",
+            "REWARD_HACKABLE": "a policy can score highly WITHOUT doing the job -- the reported score and genuine task completion come apart"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/escalate_overrewarded": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it doesn't address the task",
+            "REWARD_HACKABLE": "escalation is treated as a solve without actually solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/flaky": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment over-rewards escalation as a trivial-floor breach",
+            "REWARD_HACKABLE": "the environment over-rewards escalation as a reward-hackable surface"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/gold_broken": {
+          "reasoning": {
+            "GOLD_FAILS": "the gold actions submit the wrong label",
+            "TRIVIAL_FLOOR_BREACH": "escalation is rewarded as a solution",
+            "REWARD_HACKABLE": "the reward is based on label correctness, not task completion"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/leaky_splits": {
+          "reasoning": {
+            "CONTAMINATION_EXACT": "the eval split contains items that are byte-identical to the train split"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/paraphrased_splits": {
+          "reasoning": {
+            "CONTAMINATION_NEARDUP": "The environment uses paraphrased_splits, which involves near-duplicates of train items in the eval split."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/rationale_ignored": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it doesn't address the task",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job by escalating instead of solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/solved_at_reset": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "The environment allows a policy that ignores the input entirely to score as well as one that reads it.",
+            "REWARD_HACKABLE": "A policy can score highly without doing the job, as the verifier passes before any action is taken."
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/unfalsifiable": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment rewards escalation as a solution even though it doesn't address the task",
+            "REWARD_HACKABLE": "a policy can score highly without doing the job by escalating instead of solving the task"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "fixture/weak_oracle": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment accepts any plausible category as correct, which is a trivial-floor breach",
+            "REWARD_HACKABLE": "the environment rewards any plausible category as correct, allowing a policy to score highly without doing the job"
+          },
+          "source_files": [
+            "src/assay/fixtures/toy.py"
+          ]
+        },
+        "harbor/broken-gold": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/broken-gold/instruction.md",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/task.toml",
+            "src/assay/fixtures/harbor_suite/broken-gold/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/broken-gold/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/healthy/instruction.md",
+            "src/assay/fixtures/harbor_suite/healthy/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/healthy/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/healthy/task.toml",
+            "src/assay/fixtures/harbor_suite/healthy/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/healthy/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/self-graded": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/self-graded/environment/expected.txt",
+            "src/assay/fixtures/harbor_suite/self-graded/instruction.md",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/task.toml",
+            "src/assay/fixtures/harbor_suite/self-graded/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/self-graded/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/shared-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/shared-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/shared-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/shared-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "harbor/vacuous-tests": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/fixtures/harbor_suite/vacuous-tests/instruction.md",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/solve.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/solution/wrong.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/task.toml",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/tests/test.sh",
+            "src/assay/fixtures/harbor_suite/vacuous-tests/truth/test.sh",
+            "src/assay/adapters/harbor.py"
+          ]
+        },
+        "inspect/always-correct": {
+          "reasoning": {
+            "": "The environment 'always-correct' is designed to always return the correct answer, and there is no indication of any defects in the provided code."
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/constant-score": {
+          "reasoning": {
+            "GOLD_FAILS": "the scorer always gives a correct score regardless of the answer",
+            "TRIVIAL_FLOOR_BREACH": "the scorer ignores the input and gives a fixed score",
+            "SEPARABILITY_LOSS": "the scorer cannot differentiate between different answers as it gives the same score",
+            "REWARD_HACKABLE": "a policy can score highly without providing the correct answer"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/effort-scorer": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the scorer gives a middling score regardless of the input",
+            "SEPARABILITY_LOSS": "the scorer cannot distinguish between different policies",
+            "NONDETERMINISM": "the same seed and actions may not produce the same result",
+            "DIFFICULTY_SATURATED": "essentially every policy solves it"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/healthy": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "inspect/leaky-split": {
+          "reasoning": {
+            "TRIVIAL_FLOOR_BREACH": "the environment uses a scorer that gives a constant score, making it impossible to differentiate between policies that ignore the input and those that read it",
+            "SEPARABILITY_LOSS": "the environment cannot differentiate between policies that differ in quality because they all get the same score",
+            "GOLD_FAILS": "the known-good reference solution does not pass the verifier because the scorer gives a constant score",
+            "KNOWN_WRONG_PASSES": "a policy that ignores the input and gives a constant score passes the verifier as it gets the same score as the correct answer"
+          },
+          "source_files": [
+            "src/assay/_inspect_corpus.py"
+          ]
+        },
+        "openenv/echo": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        },
+        "openenv/textarena-wordle": {
+          "reasoning": {},
+          "source_files": [
+            "src/assay/_openenv_corpus.py",
+            "src/assay/adapters/openenv.py"
+          ]
+        }
+      },
+      "failures": {
+        "harbor/broken-gold": "unparseable reply: 'This code defines a `HarborAdapter` class that serves as an interface between a reinforcement learning agent and a \"Harbor\" environment, which runs shell-based '",
+        "harbor/healthy": "unparseable reply: 'This `HarborAdapter` class seems to be part of a reinforcement learning (RL) or agent-based environment, possibly for training agents to solve tasks through a s'",
+        "harbor/self-graded": "unparseable reply: 'The provided code defines a custom environment for interacting with a **Harbor**-style task system, likely used in reinforcement learning or agent training scen'",
+        "harbor/shared-tests": "unparseable reply: \"This code defines a **HarborAdapter**, which is used for running shell-based tasks in a reinforcement learning environment. It's likely part of a system that tr\"",
+        "harbor/vacuous-tests": "unparseable reply: 'This code appears to be part of a reinforcement learning environment, specifically for interacting with a **Harbor** task, likely used in a programming or codin'",
+        "openenv/echo": "unparseable reply: 'The provided code defines two environment bindings for the `openenv` framework: `echo_binding()` and `wordle_binding()`. These bindings define how the environme'",
+        "openenv/textarena-wordle": "unparseable reply: 'The provided code defines a framework for interacting with environments using the **OpenEnv** API, and it includes two concrete bindings:\\n\\n- `echo_binding()` fo'"
+      }
+    }
+  ],
+  "complete": true,
+  "n_runs_completed": 3
+}
