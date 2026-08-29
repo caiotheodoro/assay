@@ -4,52 +4,53 @@
       "harbor/broken-gold": [],
       "harbor/healthy": [],
       "harbor/self-graded": [],
+      "harbor/shared-tests": [],
       "harbor/vacuous-tests": []
     }
   },
   "arms": {
     "assay+scripted+prompted[claude-cli:sonnet]": {
       "error_count": 1,
-      "expected_loss": 1.0,
-      "n_missed": 0,
-      "n_spurious": 1,
-      "normalized_loss": 0.0213,
-      "precision": 0.9,
-      "recall": 1.0,
-      "severity_weighted_recall": 1.0
+      "expected_loss": 120.0,
+      "n_missed": 1,
+      "n_spurious": 0,
+      "normalized_loss": 2.0,
+      "precision": 1.0,
+      "recall": 0.9,
+      "severity_weighted_recall": 0.8913
     },
     "check_env": {
-      "error_count": 9,
-      "expected_loss": 456.0,
-      "n_missed": 9,
+      "error_count": 10,
+      "expected_loss": 576.0,
+      "n_missed": 10,
       "n_spurious": 0,
-      "normalized_loss": 9.7021,
+      "normalized_loss": 9.6,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     },
     "flag_everything": {
-      "error_count": 47,
-      "expected_loss": 47.0,
+      "error_count": 60,
+      "expected_loss": 60.0,
       "n_missed": 0,
-      "n_spurious": 47,
+      "n_spurious": 60,
       "normalized_loss": 1.0,
-      "precision": 0.1607,
+      "precision": 0.1429,
       "recall": 1.0,
       "severity_weighted_recall": 1.0
     },
     "flag_nothing": {
-      "error_count": 9,
-      "expected_loss": 456.0,
-      "n_missed": 9,
+      "error_count": 10,
+      "expected_loss": 576.0,
+      "n_missed": 10,
       "n_spurious": 0,
-      "normalized_loss": 9.7021,
+      "normalized_loss": 9.6,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     }
   },
-  "corpus_size": 4,
+  "corpus_size": 5,
   "cost_profile": {
     "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card.",
     "name": "research-run"
@@ -58,7 +59,6 @@
     "harbor/broken-gold": {
       "assay_detected": [
         "GOLD_FAILS",
-        "REWARD_HACKABLE",
         "SEPARABILITY_LOSS",
         "TRIVIAL_FLOOR_BREACH"
       ],
@@ -68,9 +68,7 @@
         "SEPARABILITY_LOSS",
         "TRIVIAL_FLOOR_BREACH"
       ],
-      "spurious": [
-        "REWARD_HACKABLE"
-      ]
+      "spurious": []
     },
     "harbor/healthy": {
       "assay_detected": [],
@@ -79,6 +77,16 @@
       "spurious": []
     },
     "harbor/self-graded": {
+      "assay_detected": [],
+      "missed": [
+        "REWARD_HACKABLE"
+      ],
+      "planted": [
+        "REWARD_HACKABLE"
+      ],
+      "spurious": []
+    },
+    "harbor/shared-tests": {
       "assay_detected": [
         "REWARD_HACKABLE"
       ],
@@ -110,8 +118,9 @@
   "runtime_availability": {
     "fixture": "ok",
     "harbor": "ok",
-    "inspect_ai": "ok"
+    "inspect_ai": "ok",
+    "openenv": "ok"
   },
-  "total_planted_defects": 9,
+  "total_planted_defects": 10,
   "unavailable": {}
 }
