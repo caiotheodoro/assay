@@ -14,7 +14,7 @@ What they are NOT given is the planted ground truth, and neither is Assay.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from ..adapter import EnvAdapter
@@ -65,6 +65,9 @@ class DirectPromptArm:
 
     client: LLMClient
     arm: str = "direct_prompt"
+    #: Turn-level record. `log` is truncated raw text for the results JSON;
+    #: this is what a readable trajectory gets built from.
+    trace: list[dict[str, Any]] = field(default_factory=list)
 
     def run(self, adapter: EnvAdapter) -> tuple[frozenset[DefectClass], list[str]]:
         prompt = (
@@ -74,8 +77,33 @@ class DirectPromptArm:
         try:
             raw = self.client.complete(SYSTEM, prompt)
         except LLMUnavailable as exc:
+            self.trace.append(
+                {
+                    "turn": 1,
+                    "observation": f"model unavailable: {exc}",
+                    "unavailable": str(exc),
+                }
+            )
             return frozenset(), [f"model unavailable: {exc}"]
-        return frozenset(_parse_defects(raw)), [raw[:400]]
+        parsed = _extract_json(raw)
+        defects = _parse_defects(raw)
+        self.trace.append(
+            {
+                "turn": 1,
+                "reasoning": str((parsed or {}).get("reasoning", ""))[:300],
+                "raw": raw[:800],
+                # A reply with no `defects` key is not "found nothing", it is a
+                # reply that never answered the question. Collapsing the two
+                # would credit the arm with a clean verdict it did not give.
+                "malformed": None if (parsed and "defects" in parsed) else raw[:400],
+                "observation": (
+                    "read the manifest, the instructions and the verifier source; "
+                    "ran nothing"
+                ),
+                "reported_defects": sorted(d.value for d in defects),
+            }
+        )
+        return frozenset(defects), [raw[:400]]
 
 
 @dataclass
@@ -85,10 +113,14 @@ class ToolAgentArm:
     client: LLMClient
     turns: int = 6
     arm: str = "agent_with_tools"
+    trace: list[dict[str, Any]] = field(default_factory=list)
 
     def run(self, adapter: EnvAdapter) -> tuple[frozenset[DefectClass], list[str]]:
         manifest = adapter.manifest()
         if not manifest.tasks:
+            self.trace.append(
+                {"turn": 1, "observation": "environment declares no tasks"}
+            )
             return frozenset(), ["environment declares no tasks"]
         task_id = manifest.tasks[0].task_id
         vocabulary = action_vocabulary(adapter, task_id)
@@ -108,16 +140,47 @@ class ToolAgentArm:
                 raw = self.client.complete(system, prompt)
             except LLMUnavailable as exc:
                 log.append(f"model unavailable: {exc}")
+                self.trace.append(
+                    {
+                        "turn": turn,
+                        "observation": f"model unavailable: {exc}",
+                        "unavailable": str(exc),
+                    }
+                )
                 break
             log.append(raw[:300])
             parsed = _extract_json(raw)
             if not parsed:
                 history.append(f"turn {turn}: reply was not JSON; ignored")
+                self.trace.append(
+                    {
+                        "turn": turn,
+                        "malformed": raw[:400],
+                        "observation": "reply was not JSON; ignored",
+                    }
+                )
                 continue
             if "defects" in parsed:
-                return frozenset(_parse_defects(raw)), log
+                defects = _parse_defects(raw)
+                self.trace.append(
+                    {
+                        "turn": turn,
+                        "reasoning": str(parsed.get("reasoning", ""))[:300],
+                        "raw": raw[:800],
+                        "observation": "reported its verdict and stopped",
+                        "reported_defects": sorted(d.value for d in defects),
+                    }
+                )
+                return frozenset(defects), log
             if "args" not in parsed or not vocabulary:
                 history.append(f"turn {turn}: reply was neither an action nor a report")
+                self.trace.append(
+                    {
+                        "turn": turn,
+                        "malformed": raw[:400],
+                        "observation": "reply was neither an action nor a report",
+                    }
+                )
                 continue
             action = Action(str(parsed.get("tool") or vocabulary[0][0]), dict(parsed["args"]))
             adapter.reset(task_id, seed=0)
@@ -129,6 +192,15 @@ class ToolAgentArm:
                 f"turn {turn}: {json.dumps({'tool': action.tool, 'args': action.args})[:200]}"
                 f"\n  output: {json.dumps(result.observation.data)[:250]}"
                 f"\n  environment scored it: {score.reward}"
+            )
+            self.trace.append(
+                {
+                    "turn": turn,
+                    "reasoning": str(parsed.get("reasoning", ""))[:300],
+                    "action": {"tool": action.tool, "args": action.args},
+                    "observation": json.dumps(result.observation.data, default=str)[:300],
+                    "reported": score.reward,
+                }
             )
 
         # Out of turns without a report. That is a null result, not a clean one.

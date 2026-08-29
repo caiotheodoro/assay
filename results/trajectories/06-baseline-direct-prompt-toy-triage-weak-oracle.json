@@ -1,0 +1,48 @@
+{
+  "agent": "direct_prompt[ollama:qwen3:8b]",
+  "role": "baseline",
+  "environment": "toy-triage/weak_oracle",
+  "task_id": "t1",
+  "shows": "one prompt, everything a careful human reviewer could read, one answer. It gets the exact defect taxonomy Assay reports against and the same source access Assay has. It never gets the planted ground truth -- that is recorded in the outcome after the fact, so a reader can see whether it was right.",
+  "exported": "2026-08-29T04:56:24+00:00",
+  "system_prompt": "You audit evaluation environments for validity defects.\n\nYou are asked whether an environment measures what it claims. Report only\ndefects you have positive reason to believe are present. Guessing costs you --\na false alarm is a real cost, not a free lottery ticket.\n\nThe defect classes are exactly these:\n  GOLD_FAILS\n  NOOP_PASSES\n  INVERT_PASSES\n  KNOWN_WRONG_PASSES\n  TRIVIAL_FLOOR_BREACH\n  SEPARABILITY_LOSS\n  CONTAMINATION_EXACT\n  CONTAMINATION_NEARDUP\n  SHORTCUT_LEAK\n  SPEC_VERIFIER_MISMATCH\n  NONDETERMINISM\n  DIFFICULTY_SATURATED\n  DIFFICULTY_IMPOSSIBLE\n  REWARD_HACKABLE\n\nReply with ONE JSON object and nothing else:\n{\"defects\": [\"CLASS\", ...], \"reasoning\": \"<two sentences at most>\"}\nAn empty list is a valid and often correct answer. No markdown fences.",
+  "instruction": "Which validity defects, if any, does this environment have?",
+  "turns": [
+    {
+      "index": 1,
+      "action": {
+        "report_defects": [
+          "TRIVIAL_FLOOR_BREACH"
+        ]
+      },
+      "observation": "read the manifest, the instructions and the verifier source; ran nothing",
+      "reported_score": null,
+      "reasoning": "The tasks involve classification of support tickets into categories, which is a trivial task for any model. The environment does not provide sufficient complexity to measure the claimed capabilities like GRADING_POLICIES or INVERTIBLE_SPEC.",
+      "malformed": null
+    }
+  ],
+  "human_checkpoints": [],
+  "outcome": {
+    "arm": "direct_prompt",
+    "reported_defects": [
+      "TRIVIAL_FLOOR_BREACH"
+    ],
+    "turns_used": 1,
+    "scored_by": "set comparison against the fixture's planted ground truth",
+    "planted_defects": [
+      "INVERT_PASSES",
+      "KNOWN_WRONG_PASSES",
+      "REWARD_HACKABLE"
+    ],
+    "missed": [
+      "INVERT_PASSES",
+      "KNOWN_WRONG_PASSES",
+      "REWARD_HACKABLE"
+    ],
+    "spurious": [
+      "TRIVIAL_FLOOR_BREACH"
+    ],
+    "exact_match": false
+  },
+  "signature": "49de39ee6ac6a581eb6f481e00050388571068568c998455cabdd75aa1a25aad"
+}

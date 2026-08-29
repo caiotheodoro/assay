@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from .adapter import EnvAdapter, run_policy
@@ -38,6 +38,11 @@ No markdown fences. No prose outside the JSON."""
 class SolveRateSampler:
     client: LLMClient | None = None
     samples: int = 5
+    #: One row per sample actually taken, including the replies that could not
+    #: be parsed. A solve rate with no record behind it is a number the reader
+    #: has to trust, and dropping the unparseable attempts would raise it by
+    #: deleting the failures with the dullest cause.
+    trace: list[dict[str, Any]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.client is None:
@@ -56,6 +61,7 @@ class SolveRateSampler:
 
     def solve_rates(self, adapter: EnvAdapter) -> dict[str, float]:
         rates: dict[str, float] = {}
+        turn = 0
         for task in adapter.manifest().tasks:
             vocabulary = action_vocabulary(adapter, task.task_id)
             if not vocabulary:
@@ -63,22 +69,60 @@ class SolveRateSampler:
             default_tool = vocabulary[0][0]
             solved = 0
             attempted = 0
-            for _ in range(self.samples):
+            for sample in range(self.samples):
                 try:
                     raw = self.client.complete(
                         SYSTEM, self._prompt(task.instruction, vocabulary)
                     )
-                except LLMUnavailable:
+                except LLMUnavailable as exc:
+                    turn += 1
+                    self.trace.append(
+                        {
+                            "turn": turn,
+                            "task_id": task.task_id,
+                            "sample": sample,
+                            "observation": f"model unavailable: {exc}",
+                            "solved": False,
+                            "unavailable": str(exc),
+                        }
+                    )
                     break
                 parsed = _extract_json(raw)
                 attempted += 1
+                turn += 1
                 if not parsed or "args" not in parsed:
-                    continue  # a malformed reply is a failed attempt, not a skipped one
+                    # a malformed reply is a failed attempt, not a skipped one
+                    self.trace.append(
+                        {
+                            "turn": turn,
+                            "task_id": task.task_id,
+                            "sample": sample,
+                            "malformed": raw[:400],
+                            "observation": "reply was not a single JSON action; "
+                            "counted as a failed attempt",
+                            "solved": False,
+                        }
+                    )
+                    continue
                 from .types import Action
 
                 action = Action(str(parsed.get("tool") or default_tool), dict(parsed["args"]))
                 transcript = run_policy(adapter, task.task_id, [action])
-                if adapter.verify(transcript).passed:
+                score = adapter.verify(transcript)
+                self.trace.append(
+                    {
+                        "turn": turn,
+                        "task_id": task.task_id,
+                        "sample": sample,
+                        "action": {"tool": action.tool, "args": action.args},
+                        "observation": json.dumps(
+                            [o.data for o in transcript.observations], default=str
+                        )[:300],
+                        "solved": bool(score.passed),
+                        "reported": score.reward,
+                    }
+                )
+                if score.passed:
                     solved += 1
             if attempted:
                 rates[task.task_id] = solved / attempted

@@ -1,0 +1,146 @@
+{
+  "agent": "sandbox approval gate",
+  "role": "human_checkpoint",
+  "environment": "harbor/self-graded",
+  "task_id": "self-graded",
+  "shows": "**the human checkpoint.** The identical request is put to two approvers: the default refuses and nothing runs, an explicit standing approval carrying a reason lets it through. Nothing in Assay executes untrusted environment code without one of these.",
+  "exported": "2026-08-29T04:56:32+00:00",
+  "system_prompt": "",
+  "instruction": "Assay has to run third-party gold solutions, verifier scripts and adversarial policies. Containment is Docker with the network off and a read-only root; the other half is a human who has to say yes.",
+  "turns": [
+    {
+      "index": 1,
+      "action": {
+        "ask_human_to_approve": {
+          "image": "alpine:3.20",
+          "command": [
+            "sh",
+            "-c",
+            "cat expected.txt"
+          ],
+          "mounts": [
+            {
+              "source": "src/assay/fixtures/harbor_suite/self-graded/environment",
+              "target": "/work",
+              "read_only": true
+            }
+          ],
+          "network": "off",
+          "limits": {
+            "cpus": 1.0,
+            "memory": "512m",
+            "pids": 128,
+            "wall_seconds": 120,
+            "read_only_root": true
+          }
+        },
+        "approver": "DenyAll"
+      },
+      "observation": "ApprovalDenied: execution of 'sh -c cat expected.txt' in alpine:3.20 was not approved; nothing ran \u2014 requests recorded as approved: 0",
+      "reported_score": null,
+      "reasoning": "the default approver. An unattended Assay executes nothing.",
+      "malformed": null
+    },
+    {
+      "index": 2,
+      "action": {
+        "ask_human_to_approve": {
+          "image": "alpine:3.20",
+          "command": [
+            "sh",
+            "-c",
+            "cat expected.txt"
+          ],
+          "mounts": [
+            {
+              "source": "src/assay/fixtures/harbor_suite/self-graded/environment",
+              "target": "/work",
+              "read_only": true
+            }
+          ],
+          "network": "off",
+          "limits": {
+            "cpus": 1.0,
+            "memory": "512m",
+            "pids": 128,
+            "wall_seconds": 120,
+            "read_only_root": true
+          }
+        },
+        "approver": "AutoApprove('standing approval for the trajectory export')"
+      },
+      "observation": "approved and executed: exit 0, stdout '42'",
+      "reported_score": null,
+      "reasoning": "explicit standing approval, carrying a reason. An approval nobody can account for later is the same as no approval.",
+      "malformed": null
+    }
+  ],
+  "human_checkpoints": [
+    {
+      "what": "execute untrusted environment code in alpine:3.20",
+      "approver": "DenyAll",
+      "granted": false,
+      "detail": "the default approver. An unattended Assay executes nothing. \u2014 ApprovalDenied: execution of 'sh -c cat expected.txt' in alpine:3.20 was not approved; nothing ran \u2014 requests recorded as approved: 0",
+      "request": {
+        "image": "alpine:3.20",
+        "command": [
+          "sh",
+          "-c",
+          "cat expected.txt"
+        ],
+        "mounts": [
+          {
+            "source": "src/assay/fixtures/harbor_suite/self-graded/environment",
+            "target": "/work",
+            "read_only": true
+          }
+        ],
+        "network": "off",
+        "limits": {
+          "cpus": 1.0,
+          "memory": "512m",
+          "pids": 128,
+          "wall_seconds": 120,
+          "read_only_root": true
+        }
+      }
+    },
+    {
+      "what": "execute untrusted environment code in alpine:3.20",
+      "approver": "AutoApprove('standing approval for the trajectory export')",
+      "granted": true,
+      "detail": "explicit standing approval, carrying a reason. An approval nobody can account for later is the same as no approval. \u2014 approved and executed: exit 0, stdout '42'",
+      "request": {
+        "image": "alpine:3.20",
+        "command": [
+          "sh",
+          "-c",
+          "cat expected.txt"
+        ],
+        "mounts": [
+          {
+            "source": "src/assay/fixtures/harbor_suite/self-graded/environment",
+            "target": "/work",
+            "read_only": true
+          }
+        ],
+        "network": "off",
+        "limits": {
+          "cpus": 1.0,
+          "memory": "512m",
+          "pids": 128,
+          "wall_seconds": 120,
+          "read_only_root": true
+        }
+      }
+    }
+  ],
+  "outcome": {
+    "requests": 2,
+    "granted": 1,
+    "refused": 1,
+    "executed_without_approval": 0,
+    "default_approver": "DenyAll \u2014 an unattended Assay executes nothing"
+  },
+  "signature": "7fe366d2af533a0f3350778ba7fc38040d2bebff0005fa80995a24937c7f22f2"
+}
