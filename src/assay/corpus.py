@@ -179,6 +179,53 @@ def provenance(
     }
 
 
+def scored_entries(
+    only: list[str] | None = None, skip: list[str] | None = None
+) -> list[CorpusEntry]:
+    """The environments whose labels are established, and only those.
+
+    An environment nobody audited carries `frozenset()`, and so does one that
+    was audited and found clean. They are the same value and they are not the
+    same claim. On this loss function the difference is worth
+    `14 x false_alarm` per environment to the trivial floor -- +14 under
+    `research-run`, +112 under `benchmark-publication` -- and nothing to a
+    detector that reports the truth. So a corpus can be grown into a better
+    headline without anyone writing down a false number: register enough
+    unlabelled environments and `flag_everything` pays for all of them.
+
+    `Provenance.is_evidence` existed to name that distinction and gated
+    nothing. This is where it becomes load-bearing. `entries()` still returns
+    everything, because an unaudited environment should still be audited and
+    still get a card -- it just cannot be scored against.
+    """
+    declared = provenance(only, skip)
+    return [e for e in entries(only, skip) if declared[e[0]].is_evidence]
+
+
+def scored_ground_truth(
+    only: list[str] | None = None, skip: list[str] | None = None
+) -> dict[str, frozenset[DefectClass]]:
+    return {env_id: defects for env_id, _, defects in scored_entries(only, skip)}
+
+
+def unscored(
+    only: list[str] | None = None, skip: list[str] | None = None
+) -> dict[str, str]:
+    """Environments held out of scoring, and the reason for each.
+
+    Reported, never silent. `unavailable()` exists because a corpus that shrank
+    because Docker was not running would make every arm look better than it is;
+    this is the same failure with the sign flipped, and it needs saying just as
+    loudly.
+    """
+    declared = provenance(only, skip)
+    return {
+        env_id: declared[env_id].note or "no reason recorded"
+        for env_id, _, _ in entries(only, skip)
+        if not declared[env_id].is_evidence
+    }
+
+
 def unavailable() -> dict[str, str]:
     """Ecosystems that could not be loaded here, and the reason for each."""
     return {name: reason for name, (usable, reason) in availability().items() if not usable}

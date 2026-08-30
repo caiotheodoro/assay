@@ -123,3 +123,91 @@ def test_probes_that_drive_an_episode_require_live_stepping():
         "these probes drive an episode but do not require LIVE_STEPPING, so "
         f"they would raise instead of declining on a non-steppable env: {offenders}"
     )
+
+
+def test_an_unaudited_environment_is_audited_but_never_scored():
+    """The guard that stops a bigger corpus becoming a better headline.
+
+    `frozenset()` is what a verified-clean environment carries and what one
+    nobody looked at carries. They are the same value and not the same claim.
+    On this loss function the difference is worth `14 x false_alarm` per
+    environment to `flag_everything` -- +14 under `research-run`, +112 under
+    `benchmark-publication` -- and nothing to a detector reporting the truth.
+    So registering unlabelled environments pays the trivial floor for work
+    nobody did, and `Provenance.is_evidence` exists to stop it.
+    """
+    from assay.corpus import (
+        EnvAuthor,
+        LabelSource,
+        Provenance,
+        entries,
+        register,
+        scored_entries,
+        unscored,
+        _PROVIDERS,
+    )
+
+    before_scored = {e[0] for e in scored_entries()}
+    before_audited = {e[0] for e in entries()}
+    fake = "unaudited-probe/example"
+
+    register(
+        "unaudited_probe",
+        lambda: [(fake, lambda: None, frozenset())],
+        provenance=lambda: {
+            fake: Provenance(
+                EnvAuthor.EXTERNAL,
+                LabelSource.UNAUDITED,
+                "registered by a test; nobody established anything about it",
+            )
+        },
+    )
+    try:
+        assert fake in {e[0] for e in entries()}, "it must still be audited"
+        assert fake not in {e[0] for e in scored_entries()}, "it must not be scored"
+        assert {e[0] for e in scored_entries()} == before_scored
+        assert {e[0] for e in entries()} == before_audited | {fake}
+        assert fake in unscored(), "holding it out must be reported, not silent"
+        assert unscored()[fake]
+    finally:
+        _PROVIDERS.pop("unaudited_probe", None)
+
+    assert {e[0] for e in entries()} == before_audited
+
+
+def test_holding_an_environment_out_moves_no_arm():
+    """Same guard, stated as the number it protects."""
+    from assay.costs import load
+    from assay.metrics import trivial_arms
+
+    from assay.corpus import (
+        EnvAuthor,
+        LabelSource,
+        Provenance,
+        register,
+        scored_ground_truth,
+        _PROVIDERS,
+    )
+
+    profile = load("research-run")
+    before = {n: a.expected_loss(profile) for n, a in trivial_arms(scored_ground_truth()).items()}
+    fake = "unaudited-arm/example"
+    register(
+        "unaudited_arm",
+        lambda: [(fake, lambda: None, frozenset())],
+        provenance=lambda: {
+            fake: Provenance(EnvAuthor.EXTERNAL, LabelSource.UNAUDITED, "test fixture")
+        },
+    )
+    try:
+        after = {
+            n: a.expected_loss(profile)
+            for n, a in trivial_arms(scored_ground_truth()).items()
+        }
+    finally:
+        _PROVIDERS.pop("unaudited_arm", None)
+
+    assert after == before, (
+        "an unaudited environment changed an arm's expected loss; "
+        "flag_everything would have been paid 14 points for an unlabelled row"
+    )

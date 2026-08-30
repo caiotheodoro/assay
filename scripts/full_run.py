@@ -23,7 +23,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
 from assay.baselines import DirectPromptArm, StructuralCheckArm, ToolAgentArm  # noqa: E402
-from assay.corpus import availability, entries, ground_truth, unavailable  # noqa: E402
+from assay.corpus import (  # noqa: E402
+    availability,
+    entries,
+    scored_entries,
+    scored_ground_truth,
+    unavailable,
+    unscored,
+)
 from assay.costs import all_profiles, load  # noqa: E402
 from assay.metrics import ArmResult, Outcome, normalized_loss, trivial_arms  # noqa: E402
 
@@ -79,6 +86,13 @@ def run_check_env(corpus) -> tuple[ArmResult, dict]:
     return arm, issues
 
 
+def _eco(env_id: str) -> str:
+    """Ecosystem from an env id. The manifest is authoritative in general, but
+    every corpus id is `<ecosystem>/<name>` by registry convention and this
+    runs over outcomes, which do not carry a manifest."""
+    return env_id.split("/", 1)[0]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
@@ -108,8 +122,16 @@ def main() -> int:
     args = ap.parse_args()
 
     have = {name: reason for name, (_ok, reason) in availability().items()}
-    corpus = entries(only=args.only, skip=args.skip)
-    truth = ground_truth(only=args.only, skip=args.skip)
+    # Audit everything; score only what has established labels. An unaudited
+    # environment carries frozenset(), which is the same value a verified-clean
+    # one carries and not the same claim -- and on this loss function the
+    # difference is worth 14 x false_alarm to the trivial floor and nothing to
+    # a truthful detector. Scoring them would grow the headline for work nobody
+    # did. See docs/PRE-REGISTRATION.md.
+    audited = entries(only=args.only, skip=args.skip)
+    corpus = scored_entries(only=args.only, skip=args.skip)
+    truth = scored_ground_truth(only=args.only, skip=args.skip)
+    held_out = unscored(only=args.only, skip=args.skip)
     profile = load(args.profile)
 
     ctx: dict = {}
@@ -179,6 +201,11 @@ def main() -> int:
         "runtime_availability": have,
         "unavailable": unavailable(),
         "corpus_size": len(corpus),
+        "audited_size": len(audited),
+        # Held out of every number above, with the reason. Reported as loudly
+        # as `unavailable`, because a corpus that silently grew flatters an arm
+        # exactly as much as one that silently shrank.
+        "unscored": held_out,
         "total_planted_defects": sum(len(v) for v in truth.values()),
         "cost_profile": {"name": profile.name, "description": profile.description},
         "arms": rows,
@@ -202,13 +229,36 @@ def main() -> int:
             }
             for name, arm in arms.items()
         },
+        # Per-ecosystem, so one ecosystem dominating the pooled number is
+        # legible in the artifact rather than only in corpus_splits.py, which
+        # is a separate script that CI does not run and the README does not
+        # quote.
+        "by_ecosystem": {
+            eco: {
+                "n_environments": sum(1 for o in arms[label].outcomes if _eco(o.env_id) == eco),
+                "n_planted": sum(
+                    len(o.planted) for o in arms[label].outcomes if _eco(o.env_id) == eco
+                ),
+                "arms": {
+                    name: ArmResult(
+                        name, [o for o in arm.outcomes if _eco(o.env_id) == eco]
+                    ).profile_row(profile)
+                    for name, arm in arms.items()
+                },
+            }
+            for eco in sorted({_eco(o.env_id) for o in arms[label].outcomes})
+        },
     }
     target.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
     width = max(len(n) for n in rows)
     print(f"corpus: {len(corpus)} environments, {payload['total_planted_defects']} planted defects")
+    if len(audited) != len(corpus):
+        print(f"        {len(audited)} audited, {len(held_out)} held out of scoring")
     for name, reason in unavailable().items():
         print(f"WARNING: {name} unavailable, corpus is reduced -- {reason}")
+    for env_id, reason in sorted(held_out.items()):
+        print(f"UNSCORED: {env_id} -- {reason}")
     print(f"cost profile: {profile.name}\n")
     header = f"{'arm':{width}}  {'exp.loss':>9} {'norm':>7} {'recall':>7} {'prec':>7} {'miss':>5} {'spur':>5}"
     print(header)

@@ -29,7 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from assay.corpus import EnvAuthor, LabelSource, provenance  # noqa: E402
+from assay.corpus import UNDECLARED, EnvAuthor, LabelSource, provenance  # noqa: E402
 from assay.costs import load  # noqa: E402
 from intervals import bootstrap, load_arms  # noqa: E402
 
@@ -37,12 +37,29 @@ PROV = provenance()
 
 PROFILES = ["research-run", "production-training", "benchmark-publication", "flat"]
 
+#: PROV comes from the live registry; the env ids come from a results file
+#: written on some other machine. A provider whose `_probe()` fails here --
+#: no Docker, no `sweep` extra -- is absent from PROV while its rows are
+#: present in the file, and a bare lookup raises KeyError on every one of
+#: them. Fall back loudly instead: UNDECLARED is UNAUDITED, so an
+#: unresolvable environment lands in no provenance split rather than
+#: silently joining the wrong one.
+_UNRESOLVED: set[str] = set()
+
+
+def _prov(env_id: str):
+    if env_id not in PROV:
+        _UNRESOLVED.add(env_id)
+        return UNDECLARED
+    return PROV[env_id]
+
+
 def _author(env_id: str) -> EnvAuthor:
-    return PROV[env_id].env_author
+    return _prov(env_id).env_author
 
 
 def _labels(env_id: str) -> LabelSource:
-    return PROV[env_id].label_source
+    return _prov(env_id).label_source
 
 
 SPLITS = {
@@ -123,6 +140,7 @@ def main() -> int:
         "seed": args.seed,
         "resampling_unit": "environment",
         "read_this_one": "external-envs",
+        "n_external": len(out.get("external-envs", {}).get("environments", [])),
         "caveat": (
             "in-process-fixtures is not a measurement: tests/test_probes_fire.py "
             "asserts detected == planted on exactly those twelve environments, so a "
@@ -142,6 +160,13 @@ def main() -> int:
     }
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(body, indent=2) + "\n")
+    if _UNRESOLVED:
+        print(
+            f"WARNING: {len(_UNRESOLVED)} environment(s) in the results file could not be "
+            "resolved against the live registry, so their provenance is unknown here and "
+            "they fall into no provenance split. Usually a provider whose runtime is "
+            f"missing on this machine: {sorted(_UNRESOLVED)}"
+        )
     print(f"wrote {args.out}\n")
 
     hdr = f"{'split':<14}{'n':>4}{'planted':>9}  " + "".join(f"{p[:12]:>14}" for p in PROFILES)
