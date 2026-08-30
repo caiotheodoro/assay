@@ -39,6 +39,8 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # headline,
 | | |
 |---|---|
 | **The method, written to be reused** | [`docs/METHOD.md`](docs/METHOD.md) |
+| **What the tool cannot see**, in someone else's vocabulary | [`docs/COVERAGE.md`](docs/COVERAGE.md) |
+| **What the tool cannot see**, in someone else's vocabulary | [`docs/COVERAGE.md`](docs/COVERAGE.md) |
 | Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
 | What changed, slice by slice, with evidence | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |
 | Read an agent run without executing anything | [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md) |

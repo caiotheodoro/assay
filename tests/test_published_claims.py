@@ -247,3 +247,31 @@ def test_the_outward_floor_test_quotes_its_own_artifact():
         # The claim is about reportability, not about anyone's care. If a flag
         # count ever becomes recoverable, this stops being the right framing.
         assert row["n_flagged_is_reported"] is False
+
+
+def test_the_coverage_matrix_names_every_defect_class_and_flaw_class():
+    """docs/COVERAGE.md states what the tool cannot see. Keep it complete.
+
+    A coverage document that silently drops a class is worse than none: the
+    omission reads as coverage. Both directions are checked, because a
+    one-directional map is always the flattering one.
+    """
+    from assay.types import DefectClass
+
+    coverage = (ROOT / "docs" / "COVERAGE.md").read_text()
+    for cls in DefectClass:
+        assert cls.value in coverage, f"COVERAGE.md does not mention {cls.value}"
+    for v in range(1, 9):
+        assert f"**V{v}**" in coverage, f"COVERAGE.md does not cover BenchJack V{v}"
+
+
+def test_the_coverage_matrix_agrees_with_the_shipped_miss():
+    """Its central example must stay the environment actually missed."""
+    fr = _load("full_run.json")
+    missed = {e: r["missed"] for e, r in fr["per_env"].items() if r["missed"]}
+    coverage = (ROOT / "docs" / "COVERAGE.md").read_text()
+    assert missed == {"inspect_evals/boolq": ["SHORTCUT_LEAK"]}, (
+        f"the corpus miss set changed to {missed}; COVERAGE.md's closing "
+        "example and the README both describe the old one"
+    )
+    assert "inspect_evals/boolq" in coverage
