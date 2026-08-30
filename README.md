@@ -33,6 +33,7 @@ recompute it.
 
 | | |
 |---|---|
+| Everything, in one place | [**Collection**](https://huggingface.co/collections/caiotheodoro/assay-auditing-rl-environments-with-error-bars-6a946953e05a8669da74ee65) |
 | Code | [`github.com/caiotheodoro/assay`](https://github.com/caiotheodoro/assay) |
 | The corpus, every card and every arm | [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus) |
 | The GRPO Challenger adapter, **a negative result** | [`caiotheodoro/assay-challenger-grpo`](https://huggingface.co/caiotheodoro/assay-challenger-grpo) |

@@ -37,6 +37,9 @@ Implementation details of one section of the README, or of one document in
 
 - `challenger_ablation.py` — scripted vs prompted vs `claude-cli` on `harbor/self-graded`.
 - `challenger_reliability.py` — the same arm four times, because one run is not a capability.
+- `publish_collection.py` — groups the published artifacts into one Hugging Face
+  collection. Dry run by default; every figure in the blurb is re-derived from
+  `results/` and both Hub length limits are gated rather than discovered on upload.
 - `challenger_calibration.py` — whether the Challenger's own `solves_the_task` self-report can be trusted.
 
 **Against defects this repo did not plant** (README § *Where Assay sits in the field*)
