@@ -169,5 +169,12 @@
         "flat": 3.0
       }
     }
-  ]
+  ],
+  "SUPERSEDED": "Measured before two changes that invalidate both halves of the comparison: the CompositeChallenger fix (6a8bbc9) -- so the numerator describes a composite that could discard a working member's attempts -- and the taxonomy-derived Harbor policies (8fe1309), which took the scripted floor in the denominator from 2 misses / recall 0.80 / loss 240.0 to 0 misses / recall 1.000 / loss 0.0 on this slice. Kept as the record of what was measured, not as a current claim.",
+  "superseded_by": {
+    "artifact": "results/agentic_runs/harbor_post_taxonomy.json",
+    "result": "agentic 0.0 / recall 1.000 / precision 1.000, identical to scripted 0.0 / 1.000 / 1.000",
+    "argument": "The composite concatenates scripted and prompted attempts and the hackability probe takes the MAX exploit gap over attempts, so composite detections are a superset of scripted detections. With the scripted arm already perfect on this slice the agent cannot improve it -- that is monotonicity, not an estimate, and the run above confirms it rather than establishing it.",
+    "cost": "~45 minutes and paid sampling, against ~2 seconds and zero for the scripted arm"
+  }
 }

@@ -181,11 +181,18 @@ with no model at all, in about two seconds against ~30 minutes. So the honest
 statement got stronger and less flattering at once: the agent demonstrated a
 class existed, and the cheapest possible response captured it permanently.
 
-It also **invalidated the measurement above**. Those four runs compared against
-a four-policy floor that no longer ships; the current floor misses nothing on
-that slice. The conclusion survives *a fortiori* — a higher floor leaves an
-agent less room, not more — but the number behind it is now unmeasured, and this
-paragraph says so rather than letting a superseded comparison stand as evidence.
+It also **invalidated the measurement above**, so it was re-run. Against the
+current floor: **agentic 0.0 loss, recall 1.000, precision 1.000 — identical to
+the scripted arm**, at roughly 45 minutes and paid sampling against about two
+seconds and nothing.
+
+That re-run confirms rather than establishes the point, because there is a
+proof. The composite concatenates its members' attempts and the probe takes the
+**maximum** exploit gap over them, so composite detections are a *superset* of
+scripted detections. Once the script is perfect on a slice, the agent cannot
+improve it — only match it or add false positives. **An ablation against a
+saturated floor cannot produce information**, and noticing that is cheaper than
+buying it.
 
 **The check.** Report the distribution, not a run. Ablate downward — the
 comparison that matters is against the version with the agent removed. And when
