@@ -529,10 +529,16 @@ from datasets import load_dataset
 load_dataset("{DATASET_REPO}", "corpus", revision="{TAG}")
 ```
 
-Related: [`{SPACE_REPO}`](https://huggingface.co/spaces/{SPACE_REPO}) audits a
-submitted environment. [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}) is
-a **negative result** — a GRPO-trained adversarial Challenger that did not
-learn — published so the ablation row is checkable.
+Related: [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}) is a **negative
+result** — a GRPO-trained adversarial Challenger that did not learn —
+published so the ablation row is checkable.
+
+The interactive Space that audits a submitted environment is **not deployed**.
+Hugging Face requires a paid plan to host a Gradio Space, and this account does
+not have one. The app is in the repository under `space/` and runs locally with
+`python space/app.py`. Linking to a Space that does not exist would be a dead
+citation in a published card, which is the class of defect this dataset is
+about.
 """
 
 
@@ -1241,7 +1247,12 @@ def report(staged: dict[str, Path], repos: dict[str, tuple[str, str]]) -> None:
 def push(repo: str, repo_type: str, path: Path, message: str) -> None:
     subprocess.run(
         ["hf", "repos", "create", repo, "--type", repo_type, "--exist-ok"]
-        + (["--sdk", "gradio"] if repo_type == "space" else []),
+        # `--space-sdk`, not `--sdk`. The CLI rejects the short form outright
+        # ("No such option: --sdk"), so this line had never worked -- and could
+        # not have, because nothing ran it until the first real --push. Every
+        # one of the 26 gates passed while it was broken: they check what is
+        # staged, not that it can be uploaded.
+        + (["--space-sdk", "gradio"] if repo_type == "space" else []),
         check=True,
     )
     subprocess.run(
@@ -1327,10 +1338,30 @@ def main() -> int:
         print("Re-run with --push to publish.")
         return 0
 
+    # One artifact failing must not strand the others. The first real --push
+    # died on the Space and never reached the model, so a Space that needs a
+    # paid plan silently blocked an artifact that does not. Each is attempted,
+    # each result is reported, and the exit code reflects the whole set.
+    published, failed = [], []
     for kind, path in staged.items():
         repo, repo_type = repos[kind]
         print(f"\n--> {repo}")
-        push(repo, repo_type, path, f"Assay {TAG}")
+        try:
+            push(repo, repo_type, path, f"Assay {TAG}")
+            published.append((kind, repo))
+        except subprocess.CalledProcessError as exc:
+            failed.append((kind, repo, exc))
+            print(f"!! {kind} did not publish: {exc}", file=sys.stderr)
+
+    print(f"\n{'=' * 78}")
+    for kind, repo in published:
+        print(f"  published  {kind:8} {repo}")
+    for kind, repo, _ in failed:
+        print(f"  FAILED     {kind:8} {repo}")
+    if failed:
+        print(f"\n{len(failed)} artifact(s) did not publish. An artifact missing "
+              f"from a publish is a result about the run, not a detail.")
+        return 1
     print(f"\nPublished at tag {TAG}.")
     return 0
 
