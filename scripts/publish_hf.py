@@ -558,6 +558,7 @@ colorFrom: indigo
 colorTo: gray
 sdk: gradio
 sdk_version: 5.49.1
+python_version: "3.11"
 app_file: app.py
 pinned: false
 license: apache-2.0
@@ -620,7 +621,7 @@ omission is reported just as loudly.
 
 The bundled examples are **synthetic** fixtures with defects planted on
 purpose. Neither this Space nor the tool behind it is
-**not production-validated**: it has been measured against defects its own
+**production-validated**: it has been measured against defects its own
 authors planted, which is a lower bar than defects found in the wild. Do not
 use a `VALID` verdict here as sign-off on anything that matters. The card says
 as much, every time, and it stays unsigned until a human signs it.
@@ -972,6 +973,50 @@ def gate(name: str, ok: bool, detail: str) -> tuple[str, bool, str]:
     return (name, ok, detail)
 
 
+def _space_behaviour_gates(sp: Path) -> list[tuple[str, bool, str]]:
+    """Render a real report with the staged app and look at what came out.
+
+    Substring gates over source text are the cheapest thing to write and the
+    least evidence they can carry: `"NOT_APPLICABLE" in app` passes on a file
+    that only mentions the constant in a comment. These import the staged copy
+    -- the one about to be uploaded, not the one in the repo -- and check the
+    two properties the Space exists for: a thin submission shows its skipped
+    probes, and a submitted string cannot reach the page as live HTML.
+    """
+    import importlib.util
+    import json as _json
+
+    try:
+        spec = importlib.util.spec_from_file_location("staged_space_app", sp / "app.py")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["staged_space_app"] = mod
+        spec.loader.exec_module(mod)
+    except Exception as exc:  # noqa: BLE001 - a Space that cannot import cannot ship
+        return [gate("space imports", False, f"{type(exc).__name__}: {exc}")]
+
+    thin = _json.dumps({
+        "env_id": "gate/thin",
+        "tasks": [{"task_id": "q1", "instruction": "Answer Yes or No", "target": "Yes"}],
+    })
+    html = mod.run_audit(thin)[0]
+    out = [gate("space renders skipped probes", "could not be checked" in html,
+                "a thin spec shows its skip table")]
+
+    payload = '<img src=x onerror="alert(1)">'
+    hostile = _json.dumps({
+        "env_id": "gate/hostile",
+        "verifier": "includes",
+        "tasks": [{"task_id": payload, "instruction": "Answer Yes or No",
+                   "target": "Yes", "gold": "Yes", "known_wrong": "No"}],
+    })
+    rendered = mod.run_audit(hostile)[0]
+    clean = "<img src=x" not in rendered
+    out.append(gate("space escapes submitted text", clean,
+                    "a hostile task id renders escaped" if clean
+                    else "SUBMITTED HTML REACHED THE PAGE"))
+    return out
+
+
 def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str, bool, str]]:
     from assay.publish import verify_no_redistribution
 
@@ -979,13 +1024,20 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
 
     # The innermost one, re-run here so it is visible in the gate table even
     # though `write` already enforced it.
-    try:
-        verify_no_redistribution(payload)
+    if payload is None:
+        # `--only space` stages no dataset. The redistribution gate has nothing
+        # to check and says so, rather than the whole gate table being skipped.
         out.append(gate("no redistribution", True,
-                        f"{len(payload.rows)} rows, {len(payload.cards)} cards, "
-                        f"{sum(1 for r in payload.rows if not r['content_included'])} verdict-only"))
-    except Exception as exc:
-        out.append(gate("no redistribution", False, str(exc)))
+                        "no dataset staged; nothing to redistribute"))
+    else:
+        try:
+            verify_no_redistribution(payload)
+            out.append(gate(
+                "no redistribution", True,
+                f"{len(payload.rows)} rows, {len(payload.cards)} cards, "
+                f"{sum(1 for r in payload.rows if not r['content_included'])} verdict-only"))
+        except Exception as exc:  # noqa: BLE001 - any failure here blocks the upload
+            out.append(gate("no redistribution", False, str(exc)))
 
     # No card file for an ecosystem we do not own, checked on disk rather than
     # in memory -- what is on disk is what gets uploaded.
@@ -1019,6 +1071,25 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         missing = [d for d in MANDATORY_DISCLAIMERS if d.lower() not in text.lower()]
         out.append(gate(f"{kind}: disclaimers", not missing,
                         ", ".join(missing) or f"all {len(MANDATORY_DISCLAIMERS)} present"))
+
+    # ...and a gate that only searches for a substring cannot tell a claim from
+    # its negation. The Space card read "Neither this Space nor the tool behind
+    # it is **not production-validated**" -- a double negative asserting the
+    # tool IS validated, on the page whose whole job is to say it is not. The
+    # gate above found `not production-validated` inside it and passed. This is
+    # exactly the vacuous-check shape Assay flags in other people's
+    # environments (`always_pass`, a verifier that cannot fail), so shipping it
+    # in the publisher is worse than an ordinary bug.
+    for kind, path in staged.items():
+        text = (path / "README.md").read_text() if (path / "README.md").exists() else ""
+        inverted = re.findall(
+            r"\bis\s+\**not\s+production-validated|"
+            r"neither[^.]{0,120}\bnot\s+production-validated",
+            text, flags=re.I,
+        )
+        negations = [m for m in inverted if m.lower().startswith("neither")]
+        out.append(gate(f"{kind}: disclaimer is not negated", not negations,
+                        (negations[0][:70] if negations else "reads as a disclaimer")))
 
     # Section 12.1: no card cites `main`.
     for kind, path in staged.items():
@@ -1115,9 +1186,11 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
     # The Space must render skip reasons, not only findings.
     sp = staged.get("space")
     if sp and (sp / "app.py").exists():
-        app = (sp / "app.py").read_text()
-        out.append(gate("space renders NOT_APPLICABLE", "NOT_APPLICABLE" in app,
-                        "app.py references the skipped-probe section"))
+        # This used to be `"NOT_APPLICABLE" in app`, which a comment saying the
+        # word would satisfy. The check now renders a report through the real
+        # function and asserts the skipped-probe table is in the output --
+        # a gate that can only pass if the behaviour it names actually happens.
+        out.extend(_space_behaviour_gates(sp))
 
     return out
 
@@ -1232,7 +1305,15 @@ def main() -> int:
     report(staged, repos)
 
     print(f"\n{'=' * 78}\nPRE-PUBLICATION GATES\n{'=' * 78}")
-    gates = run_gates(ev, staged, payload) if payload is not None else []
+    # `run_gates(...) if payload is not None else []` meant `--only space --push`
+    # ran ZERO gates and uploaded, because only `stage_dataset` sets `payload`.
+    # The bypass was invisible: the gate table printed empty and `failed` was
+    # empty, so the run looked like a clean pass. Every gate that does not need
+    # the dataset payload now runs regardless of which artifacts were staged.
+    gates = run_gates(ev, staged, payload)
+    if not gates:
+        print("  no gates ran, which is never a pass; refusing to upload")
+        return 1
     for name, ok, detail in gates:
         print(f"  [{'PASS' if ok else 'FAIL'}]  {name:38s}  {detail}")
     failed = [g for g in gates if not g[1]]

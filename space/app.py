@@ -14,6 +14,7 @@ description into an adapter the probe battery can drive.
 
 from __future__ import annotations
 
+import html as html_mod
 import json
 import traceback
 from pathlib import Path
@@ -52,6 +53,36 @@ VERDICT_MEANING = {
 
 SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW]
 
+#: The one probe that can never run here, because it needs a rollout sampler.
+#: Named rather than inferred so the banner can say *why* a clean submission
+#: still cannot reach VALID.
+SAMPLER_ONLY = "difficulty_band"
+
+
+def _e(value: object, limit: int | None = None) -> str:
+    """Everything that reaches the page from a submitted spec goes through here.
+
+    A spec is a stranger's JSON on a public host, and every string in it --
+    task ids, verifier names, the text of a `SpecError` quoting the offending
+    value -- was being interpolated raw into HTML. A `task_id` of
+    `<img src=x onerror=...>` rendered verbatim and executed. `card/render.py`
+    has escaped since it was written; this file never did, and this file is the
+    one with an audience.
+
+    Escaping and truncation belong together because both bound what a
+    submission can do to the page: without the cap a 20,000-character task id
+    is a denial-of-service on the reader rather than on the server.
+    """
+    text = str(value)
+    if limit is not None and len(text) > limit:
+        text = text[:limit] + "\u2026"
+    return html_mod.escape(text, quote=True)
+
+#: The example the page opens on. Not the healthy one: a visitor who lands on
+#: an environment with nothing wrong learns what the UI looks like and nothing
+#: about why the tool exists.
+PRELOADED = "3 \u2014 Substring verifier: one constant string answers both labels"
+
 BLANK = """<div class="assay-idle">
 Paste a spec, or load an example, then press <b>Audit</b>.
 </div>"""
@@ -62,7 +93,7 @@ def _banner(report) -> str:
     colour = VERDICT_COLOUR[report.verdict]
     return f"""
 <div class="assay-banner" style="border-left:6px solid {colour}">
-  <div class="assay-verdict" style="background:{colour}">{report.verdict}</div>
+  <div class="assay-verdict" style="background:{colour}">{_e(report.verdict)}</div>
   <div class="assay-meaning">{VERDICT_MEANING[report.verdict]}</div>
   <div class="assay-coverage">
     <span><b>{cov['PASS']}</b> passed</span>
@@ -70,10 +101,35 @@ def _banner(report) -> str:
     <span class="assay-skip"><b>{cov['NOT_APPLICABLE']}</b> could not run</span>
     <span><b>{cov['ERROR']}</b> errored</span>
   </div>
-  <div class="assay-exit">Exit code <code>{report.exit_code}</code> &mdash;
+{_ceiling(report)}  <div class="assay-exit">Exit code <code>{_e(report.exit_code)}</code> &mdash;
     nonzero for anything that is not <code>VALID</code>, including
     <code>UNVERIFIED</code>. No defects found is not the same as no defects.</div>
 </div>"""
+
+
+def _ceiling(report) -> str:
+    """Say when UNVERIFIED is the best this Space can do, and why.
+
+    `VALID` requires that every probe ran, and `difficulty_band` needs a
+    rollout sampler that a Space without Docker does not have -- so a
+    submission with nothing whatever wrong with it still comes back purple.
+    Showing that to someone whose eval is genuinely fine, with no explanation,
+    teaches them the tool is broken rather than that the check was skipped.
+    Only shown when the sampler is the *only* thing missing; if other probes
+    were skipped too, the honest message is the ordinary one.
+    """
+    skipped = {r.probe for r in report.by_status(ProbeStatus.NOT_APPLICABLE)}
+    errored = report.by_status(ProbeStatus.ERROR)
+    if errored or skipped != {SAMPLER_ONLY} or report.findings:
+        return ""
+    return (
+        '  <div class="assay-ceiling">Nothing was found wrong with this '
+        "submission. <b>VALID is still out of reach here</b>, and that is a "
+        "limit of this Space rather than a reservation about your "
+        "environment: <code>difficulty_band</code> needs a rollout sampler, "
+        "which a Space without Docker cannot provide. Run Assay locally with a "
+        "sampler to close the last probe.</div>\n"
+    )
 
 
 def _not_run(report) -> str:
@@ -87,7 +143,7 @@ def _not_run(report) -> str:
             "<p>Nothing. Every probe ran.</p></div>"
         )
     rows = "".join(
-        f"<tr><td><code>{r.probe}</code></td><td>{r.reason}</td></tr>"
+        f"<tr><td><code>{_e(r.probe)}</code></td><td>{_e(r.reason, 400)}</td></tr>"
         for r in skipped + errored
     )
     return f"""<div class="assay-section assay-notrun">
@@ -112,21 +168,21 @@ def _findings(report) -> str:
             continue
         items = []
         for f in group:
-            where = f" &mdash; <code>{f.task_id}</code>" if f.task_id else ""
-            note = f.evidence.get("note")
+            where = f" &mdash; <code>{_e(f.task_id, 120)}</code>" if f.task_id else ""
+            note = _e(f.evidence["note"], 600) if f.evidence.get("note") else ""
             ev = "; ".join(
-                f"<code>{k}</code>: {str(v)[:160]}"
+                f"<code>{_e(k, 80)}</code>: {_e(v, 160)}"
                 for k, v in f.evidence.items()
                 if k not in {"note", "attacker_trace"}
             )
             items.append(
-                f"<li><b>{f.defect.value}</b>{where}"
+                f"<li><b>{_e(f.defect.value)}</b>{where}"
                 + (f"<blockquote>{note}</blockquote>" if note else "")
                 + (f"<div class='assay-ev'>{ev}</div>" if ev else "")
                 + "</li>"
             )
         blocks.append(
-            f"<h4 class='sev-{severity.value.lower()}'>{severity.value}</h4>"
+            f"<h4 class='sev-{_e(severity.value.lower())}'>{_e(severity.value)}</h4>"
             f"<ul>{''.join(items)}</ul>"
         )
     return f"<div class='assay-section'><h3>Findings</h3>{''.join(blocks)}</div>"
@@ -144,7 +200,7 @@ def run_audit(spec_text: str):
         adapter = build(spec_text)
     except SpecError as exc:
         return (
-            f'<div class="assay-error"><b>The spec could not be read.</b><br>{exc}</div>',
+            f'<div class="assay-error"><b>The spec could not be read.</b><br>{_e(exc, 800)}</div>',
             "",
             "",
         )
@@ -152,7 +208,7 @@ def run_audit(spec_text: str):
         return (
             '<div class="assay-error"><b>Assay crashed reading that spec.</b> That is '
             "a bug in Assay, not a verdict about your environment.<pre>"
-            f"{traceback.format_exc()[-1200:]}</pre></div>",
+            f"{_e(traceback.format_exc()[-1200:])}</pre></div>",
             "",
             "",
         )
@@ -191,6 +247,8 @@ CSS = """
 .assay-error { padding:1rem; border-radius:.4rem; border:1px solid #cf222e55;
   background:#cf222e0d; }
 .assay-idle { padding:1.5rem; opacity:.7; }
+.assay-ceiling { margin-top:.7rem; padding:.6rem .8rem; border-radius:.3rem;
+  background:#1a7f3714; border:1px solid #1a7f3733; font-size:.92rem; }
 """
 
 INTRO = """
@@ -275,8 +333,21 @@ with gr.Blocks(title="Assay", css=CSS) as demo:
                 [e["name"] for e in EXAMPLES],
                 label="Load an example",
                 info="Each one is a fixture with a known defect, or a deliberately thin spec.",
+                value=PRELOADED,
             )
-            spec = gr.Code(label="Environment spec (JSON)", language="json", lines=22)
+            spec = gr.Code(
+                label="Environment spec (JSON)",
+                language="json",
+                lines=22,
+                # Pre-loaded rather than blank. An empty box asks a visitor to
+                # supply the argument for the tool before they have seen it
+                # make one; this example IS the argument -- a substring
+                # verifier where the single string "Yes, I think so" is
+                # credited for both labels, so a policy that ignores the input
+                # entirely scores 100%. Landing on the thesis costs one click
+                # less than reaching it.
+                value=load_example(PRELOADED),
+            )
             go = gr.Button("Audit", variant="primary")
         with gr.Column(scale=6):
             out = gr.HTML(BLANK)

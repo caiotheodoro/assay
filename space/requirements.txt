@@ -1,2 +1,9 @@
+# `assay/` is not a dependency: the publisher vendors the package into the
+# Space directory at publish time, so the deployed app runs the exact tree that
+# was audited rather than whatever a version range resolves to that morning.
+#
+# The Space needs python 3.11 -- `assay.adapters.harbor` imports `tomllib` at
+# module level, and the Spaces gradio default image is 3.10. That is pinned in
+# the README front matter, not here, because pip cannot express it.
 gradio==5.49.1
 pyyaml>=6.0
