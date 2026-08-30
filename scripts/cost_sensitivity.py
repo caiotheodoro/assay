@@ -88,25 +88,20 @@ def main() -> int:
     # are misses, so its loss is (n_critical_misses * C); flag_everything's is
     # all false alarms and does not move with C at all. They cross where
     # n_misses * C == flag_everything's constant loss.
+    # The crossover is analytic for any mix of severities, not just an
+    # all-CRITICAL one. `scaled()` moves every severity by the same factor
+    # about the CRITICAL anchor, so assay's loss is linear in C:
+    #   loss(C) = loss(shipped) * C / shipped
+    # flag_everything never misses, so its loss is pure false alarms and does
+    # not move with C at all. They cross where those are equal. The earlier
+    # version only handled the case where every miss was CRITICAL, and went
+    # silent the moment the corpus had one HIGH miss left -- which is exactly
+    # when the number became interesting.
     crossover = None
-    if "flag_everything" in arms:
-        critical_misses = sum(
-            1
-            for o in arms["assay"].outcomes
-            for d in o.missed
-            if DEFAULT_SEVERITY[d] is Severity.CRITICAL
-        )
-        other_misses = sum(
-            1
-            for o in arms["assay"].outcomes
-            for d in o.missed
-            if DEFAULT_SEVERITY[d] is not Severity.CRITICAL
-        )
-        # flag_everything never misses, so its loss is pure false alarms and is
-        # independent of C. Assay never false-alarms, so its loss is all misses.
+    if "flag_everything" in arms and arms["assay"].expected_loss(base) > 0:
+        shipped_c = base.miss[Severity.CRITICAL]
         fe = arms["flag_everything"].expected_loss(base)
-        if critical_misses and not other_misses:
-            crossover = round(fe / critical_misses, 2)
+        crossover = round(shipped_c * fe / arms["assay"].expected_loss(base), 2)
 
     winners = [r["winner"] for r in rows]
     flips = [

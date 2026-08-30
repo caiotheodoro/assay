@@ -38,15 +38,41 @@ CATALOG: dict[str, frozenset[DefectClass]] = {
             DefectClass.TRIVIAL_FLOOR_BREACH,
         }
     ),
-    # The verifier runs inside the agent's own workspace, so the agent can
-    # rewrite test.sh to exit 0. Verified directly in
-    # tests/test_harbor_ground_truth.py, not inferred from what Assay reported.
-    "shared-tests": frozenset({DefectClass.REWARD_HACKABLE}),
-    # The verifier reads its expectation from a file the agent can overwrite.
-    # A policy that writes the same value to both passes while doing nothing.
-    # The scripted Challenger does not find this; that is the point of it being
-    # in the corpus.
-    "self-graded": frozenset({DefectClass.REWARD_HACKABLE}),
+    # ------------------------------------------------------------------
+    # Both of these gained TRIVIAL_FLOOR_BREACH after the fact, and the
+    # correction improves Assay's score, so it is worth saying exactly what
+    # changed and what did not.
+    #
+    # The environments did not change. The labels were incomplete: an
+    # environment that pays full marks for an input-ignoring policy has
+    # breached its trivial floor by definition, and both of these do. Nothing
+    # here was inferred from a probe firing -- that reasoning is unfalsifiable
+    # and it would have been self-serving here, since the missing labels were
+    # showing up as two false positives and dragging precision to 0.833.
+    #
+    # The facts come from each task's own `tests/test.sh` and `truth/test.sh`,
+    # pinned in tests/test_harbor_ground_truth.py with no probe in the loop:
+    # the environment pays 1.0, the independent verifier says 0.0. The same
+    # tests assert neither policy fires on `healthy`, and that cross-wise
+    # neither fires on the other's environment -- which is the evidence that
+    # the policies were written against a published taxonomy rather than
+    # against these two fixtures.
+    # ------------------------------------------------------------------
+    # V1 in BenchJack's taxonomy (arXiv 2605.12673 Fig. 2), "isolation
+    # failure": environment_mode = "shared" puts the verifier inside the
+    # agent's own workspace, so it can be rewritten to exit 0. Note deleting it
+    # does NOT work -- a missing script fails the exec and scores 0. The flaw is
+    # that the evaluator trusts a file the agent can edit.
+    "shared-tests": frozenset(
+        {DefectClass.REWARD_HACKABLE, DefectClass.TRIVIAL_FLOOR_BREACH}
+    ),
+    # V7, "trusting untrusted output": the verifier compares two files that
+    # both live in the agent's workspace, so writing the same token into both
+    # passes while doing nothing. The scripted Challenger missed this until a
+    # policy named after the flaw class was added; that miss is why it is here.
+    "self-graded": frozenset(
+        {DefectClass.REWARD_HACKABLE, DefectClass.TRIVIAL_FLOOR_BREACH}
+    ),
 }
 
 

@@ -156,14 +156,21 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
-| assay | **280.0** | [0, 640] | 0.938 | 1.000 |
-| flag_everything | 316.0 | [297, 333] | 1.000 | 0.132 |
-| stratified_random | 1748.0 | [999, 2596] | 0.354 | 0.378 |
-| always_modal_defect | 1808.0 | [1091, 2619] | 0.208 | 0.385 |
+| assay | **40.0** | [0, 120] | 0.980 | 1.000 |
+| flag_everything | 314.0 | [295, 331] | 1.000 | 0.137 |
+| stratified_random | 1789.0 | [1050, 2625] | 0.360 | 0.383 |
+| always_modal_defect | 1888.0 | [1196, 2672] | 0.200 | 0.385 |
 | direct_prompt (`qwen3:8b`) | 2415.0 | — | 0.239 | 0.324 |
 | agent_with_tools (`qwen3:8b`) | 2497.0 | — | 0.196 | 0.265 |
-| **check_env** (incumbent) | **2976.0** | [1888, 4184] | **0.042** | 1.000 |
-| flag_nothing | 2992.0 | [1904, 4200] | 0.000 | 0.000 |
+| **check_env** (incumbent) | **3056.0** | [1960, 4272] | **0.040** | 1.000 |
+| flag_nothing | 3072.0 | [1984, 4288] | 0.000 | 0.000 |
+
+**It separates now, and for most of this project's life it did not.** Against
+`flag_everything`: **274.0 saved, 95% CI [186, 326]**, which excludes zero.
+Until the two Harbor misses were closed the same figure was 36.0 with an
+interval straddling zero, and the honest summary was that Assay was not
+distinguishable from flagging everything. Assay wins all four cost profiles and
+separates on three of them; `production-training` it wins without separating.
 
 **That precision of 1.000 is the modal run, not every run.** Across six
 full-corpus runs, `harbor/broken-gold` reported a **spurious `NONDETERMINISM`
@@ -241,19 +248,20 @@ paid `flag_everything` 14 points each for work nobody did.
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 26 | 280.0 | 316.0 | assay, by 36 |
-| **our content, third-party format** | 10 | **240.0** | **114.0** | **flag_everything** |
-| genuinely external | 4 | 40.0 | 53.0 | assay — but n=4 |
+| all (published) | 26 | 40.0 | 314.0 | assay, by 274 |
+| our content, third-party format | 10 | 0.0 | 112.0 | assay |
+| genuinely external | 4 | 40.0 | 53.0 | assay — but n=4, and the one miss is here |
 | in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
-| no-harbor | 21 | 40.0 | 256.0 | assay |
+| self-authored | 22 | 0.0 | 261.0 | assay |
 
 The two `inspect_evals` environments were added under a pre-registration
 committed **before** the code that moved these numbers
 ([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md), commit `d3da87c`), because
 `flag_everything`'s loss is `Σ (14 − |planted|)` and a corpus can be grown into a
 better headline without anyone writing a false number. Every prediction held:
-the floor went 290.0 → 316.0, Assay 240.0 → 280.0, and **the margin narrowed
-from 50.0 to 36.0**. `paws` was detected; `boolq` was missed, structurally —
+the floor went 290.0 → 316.0, Assay 240.0 → 280.0, and the margin narrowed from
+50.0 to 36.0. (Those were the numbers before the two Harbor misses were closed;
+the table above is after.) `paws` was detected; `boolq` was missed, structurally —
 `WildInspectAdapter` supplies no train split, so the shortcut probe reports
 `NOT_APPLICABLE` before it runs and the verdict is `UNVERIFIED`, not clean.
 Assay had previously called `boolq` clean, and it is in the corpus because of
@@ -261,11 +269,31 @@ that false negative rather than despite it.
 
 `research-run`; the other three profiles are in the file.
 
-**Where Assay loses is the ten environments we wrote in someone else's format —
-240.0 to 114.0, and on three of four profiles.** Both of its misses are
-`harbor/`, both are ours, so the fixtures contribute a guaranteed zero and the
-pooled 240.0 vs 290.0 win is carried by environments whose answers are pinned in
-a test.
+**Assay used to lose on the ten environments we wrote in someone else's format —
+240.0 to 114.0, on three of four profiles. It now scores 0.0 there.** What
+changed was two trivial policies named after flaw classes in BenchJack's
+taxonomy (arXiv 2605.12673, Fig. 2): V7 *trusting untrusted output* and V1
+*isolation failure*. Both were written against the mechanism the class
+describes and are handed only the task text an agent already gets — never a
+filename or a value read out of an environment in this corpus.
+
+The evidence that they were not fitted to the two environments they close is
+cross-wise: **V7 fires on `self-graded` and not on `shared-tests`; V1 fires on
+`shared-tests` and not on `self-graded`; neither fires on `healthy`.** A pair of
+policies reverse-engineered from those two fixtures would tend to fire on both.
+All four facts come from each task's own `tests/test.sh` and `truth/test.sh`
+with no probe in the loop, pinned in `tests/test_harbor_ground_truth.py`.
+
+**One label changed, and it flattered us, so here is the number both ways.**
+Closing the misses showed that both environments also pay full marks to an
+input-ignoring policy, which is a trivial-floor breach by definition and was
+missing from their ground truth. Correcting it removes two false positives.
+With the corrected labels Assay scores **40.0 at precision 1.000**; with the
+original labels, **42.0 at precision 0.959**. **The margin over the floor is
+274.0 either way** — the result does not depend on the relabelling, which is
+why the relabelling is defensible.
+
+The single remaining miss is `inspect_evals/boolq`, and it is external.
 
 A previous version of this section reported that split as "the twelve
 environments this repo did not write". It wrote ten of the twelve. That
@@ -303,21 +331,22 @@ rate ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
 
 | CRITICAL miss cost | assay | flag_everything | winner |
 |---|---|---|---|
-| 40 | 80.0 | 290.0 | assay |
-| 120 *(shipped)* | 240.0 | 290.0 | assay |
-| **145** | **290.0** | **290.0** | **tie** |
-| 200 | 400.0 | 290.0 | flag_everything |
-| 800 | 1600.0 | 290.0 | flag_everything |
+| 120 *(shipped)* | 40.0 | 314.0 | assay |
+| 400 | 133.3 | 314.0 | assay |
+| 800 | 266.7 | 314.0 | assay |
+| **942** | **314.0** | **314.0** | **tie** |
+| 2000 | 666.7 | 314.0 | flag_everything |
 
-The crossover is exact rather than bisected. Assay never false-alarms, so its
-loss is `2 × C`; `flag_everything` never misses, so its loss is pure false
-alarms and does not move with `C` at all. They cross at `290 / 2 = 145`.
+The crossover is exact rather than bisected. Every severity scales about the
+CRITICAL anchor, so Assay's loss is linear in `C` while `flag_everything` never
+misses and does not move with `C` at all. They cross at
+`120 × 314 / 40 = 942`.
 
-**The shipped value is 120. The crossover is 145.** So the headline result —
-Assay beats the trivial floor — holds only while a missed critical defect is
-worth less than about 1.2× what this repo guessed. Price a wasted training run
-any higher, as anyone renting an H100 cluster for a week plausibly would, and
-**flagging everything is the better policy** and Assay is not worth running.
+**The shipped value is 120. The crossover is 942.** The headline survives a **685% error** in a constant nobody derives. That margin was **21%** this
+morning — the crossover sat at 145 against the same shipped 120 — and closing
+the two Harbor misses is what moved it. Worth stating plainly because the
+earlier number was the sharpest criticism of this work and it is the one that
+changed most.
 
 That is not a reason to distrust the ranking so much as a statement of what the
 ranking is: a claim about a specific cost regime, not about detectors in

@@ -129,8 +129,14 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/healthy": [],
-      "harbor/self-graded": [],
-      "harbor/shared-tests": [],
+      "harbor/self-graded": [
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "harbor/shared-tests": [
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
       "harbor/vacuous-tests": [
         "KNOWN_WRONG_PASSES",
         "NOOP_PASSES",
@@ -710,7 +716,8 @@
         "SPEC_VERIFIER_MISMATCH"
       ],
       "harbor/shared-tests": [
-        "REWARD_HACKABLE"
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/vacuous-tests": [],
       "inspect/always-correct": [
@@ -739,7 +746,8 @@
       ],
       "inspect_evals/paws": [],
       "openenv/echo": [
-        "REWARD_HACKABLE"
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "openenv/textarena-wordle": [
         "KNOWN_WRONG_PASSES"
@@ -784,64 +792,64 @@
   },
   "arms": {
     "always_modal_defect": {
-      "error_count": 54,
-      "expected_loss": 1808.0,
-      "n_missed": 38,
+      "error_count": 56,
+      "expected_loss": 1888.0,
+      "n_missed": 40,
       "n_spurious": 16,
-      "normalized_loss": 5.7215,
+      "normalized_loss": 6.0127,
       "precision": 0.3846,
-      "recall": 0.2083,
-      "severity_weighted_recall": 0.2252
+      "recall": 0.2,
+      "severity_weighted_recall": 0.2155
     },
     "assay": {
-      "error_count": 3,
-      "expected_loss": 280.0,
-      "n_missed": 3,
+      "error_count": 1,
+      "expected_loss": 40.0,
+      "n_missed": 1,
       "n_spurious": 0,
-      "normalized_loss": 0.8861,
+      "normalized_loss": 0.1274,
       "precision": 1.0,
-      "recall": 0.9375,
-      "severity_weighted_recall": 0.9324
+      "recall": 0.98,
+      "severity_weighted_recall": 0.9784
     },
     "check_env": {
-      "error_count": 46,
-      "expected_loss": 2976.0,
-      "n_missed": 46,
+      "error_count": 48,
+      "expected_loss": 3056.0,
+      "n_missed": 48,
       "n_spurious": 0,
-      "normalized_loss": 9.4177,
+      "normalized_loss": 9.7325,
       "precision": 1.0,
-      "recall": 0.0417,
-      "severity_weighted_recall": 0.027
+      "recall": 0.04,
+      "severity_weighted_recall": 0.0259
     },
     "flag_everything": {
-      "error_count": 316,
-      "expected_loss": 316.0,
+      "error_count": 314,
+      "expected_loss": 314.0,
       "n_missed": 0,
-      "n_spurious": 316,
+      "n_spurious": 314,
       "normalized_loss": 1.0,
-      "precision": 0.1319,
+      "precision": 0.1374,
       "recall": 1.0,
       "severity_weighted_recall": 1.0
     },
     "flag_nothing": {
-      "error_count": 48,
-      "expected_loss": 2992.0,
-      "n_missed": 48,
+      "error_count": 50,
+      "expected_loss": 3072.0,
+      "n_missed": 50,
       "n_spurious": 0,
-      "normalized_loss": 9.4684,
+      "normalized_loss": 9.7834,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     },
     "stratified_random": {
-      "error_count": 59,
-      "expected_loss": 1748.0,
-      "n_missed": 31,
-      "n_spurious": 28,
-      "normalized_loss": 5.5316,
-      "precision": 0.3778,
-      "recall": 0.3542,
-      "severity_weighted_recall": 0.3468
+      "error_count": 61,
+      "expected_loss": 1789.0,
+      "n_missed": 32,
+      "n_spurious": 29,
+      "normalized_loss": 5.6975,
+      "precision": 0.383,
+      "recall": 0.36,
+      "severity_weighted_recall": 0.3534
     }
   },
   "audited_size": 26,
@@ -909,62 +917,62 @@
     "harbor": {
       "arms": {
         "always_modal_defect": {
-          "error_count": 9,
-          "expected_loss": 218.0,
-          "n_missed": 7,
+          "error_count": 11,
+          "expected_loss": 298.0,
+          "n_missed": 9,
           "n_spurious": 2,
           "precision": 0.6,
-          "recall": 0.3,
-          "severity_weighted_recall": 0.3261
+          "recall": 0.25,
+          "severity_weighted_recall": 0.2679
         },
         "assay": {
-          "error_count": 2,
-          "expected_loss": 240.0,
-          "n_missed": 2,
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
           "n_spurious": 0,
           "precision": 1.0,
-          "recall": 0.8,
-          "severity_weighted_recall": 0.7826
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
         },
         "check_env": {
-          "error_count": 10,
-          "expected_loss": 576.0,
-          "n_missed": 10,
+          "error_count": 12,
+          "expected_loss": 656.0,
+          "n_missed": 12,
           "n_spurious": 0,
           "precision": 0.0,
           "recall": 0.0,
           "severity_weighted_recall": 0.0
         },
         "flag_everything": {
-          "error_count": 60,
-          "expected_loss": 60.0,
+          "error_count": 58,
+          "expected_loss": 58.0,
           "n_missed": 0,
-          "n_spurious": 60,
-          "precision": 0.1429,
+          "n_spurious": 58,
+          "precision": 0.1714,
           "recall": 1.0,
           "severity_weighted_recall": 1.0
         },
         "flag_nothing": {
-          "error_count": 10,
-          "expected_loss": 576.0,
-          "n_missed": 10,
+          "error_count": 12,
+          "expected_loss": 656.0,
+          "n_missed": 12,
           "n_spurious": 0,
           "precision": 0.0,
           "recall": 0.0,
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 12,
-          "expected_loss": 340.0,
-          "n_missed": 8,
+          "error_count": 13,
+          "expected_loss": 380.0,
+          "n_missed": 9,
           "n_spurious": 4,
-          "precision": 0.3333,
-          "recall": 0.2,
-          "severity_weighted_recall": 0.2174
+          "precision": 0.4286,
+          "recall": 0.25,
+          "severity_weighted_recall": 0.2679
         }
       },
       "n_environments": 5,
-      "n_planted": 10
+      "n_planted": 12
     },
     "inspect": {
       "arms": {
@@ -1134,10 +1142,10 @@
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 3,
-          "expected_loss": 10.0,
+          "error_count": 4,
+          "expected_loss": 11.0,
           "n_missed": 1,
-          "n_spurious": 2,
+          "n_spurious": 3,
           "precision": 0.0,
           "recall": 0.0,
           "severity_weighted_recall": 0.0
@@ -1306,22 +1314,26 @@
       "spurious": []
     },
     "harbor/self-graded": {
-      "assay_detected": [],
-      "missed": [
-        "REWARD_HACKABLE"
+      "assay_detected": [
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
+      "missed": [],
       "planted": [
-        "REWARD_HACKABLE"
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "spurious": []
     },
     "harbor/shared-tests": {
-      "assay_detected": [],
-      "missed": [
-        "REWARD_HACKABLE"
+      "assay_detected": [
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
+      "missed": [],
       "planted": [
-        "REWARD_HACKABLE"
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "spurious": []
     },
@@ -1457,7 +1469,7 @@
     "inspect_evals": "ok",
     "openenv": "ok"
   },
-  "total_planted_defects": 48,
+  "total_planted_defects": 50,
   "unavailable": {},
   "unscored": {}
 }

@@ -59,9 +59,13 @@ def test_the_corpus_split_is_published_on_provenance():
     assert "provenance" in d, "the split is only trustworthy if provenance ships with it"
 
     research = splits["third-party-format"]["profiles"]["research-run"]
-    assert research["assay"]["expected_loss"] > research["flag_everything"]["expected_loss"], (
-        "Assay now beats the floor on third-party-format environments -- good, "
-        "but the README says it loses there and must be updated with this."
+    # This assertion was the other way round until the two Harbor misses were
+    # closed: Assay lost this split 240.0 to 114.0 and the README said so. It
+    # now scores 0.0 here. Kept as an assertion rather than deleted, so a
+    # regression is caught and the README is forced to change with it.
+    assert research["assay"]["expected_loss"] < research["flag_everything"]["expected_loss"], (
+        "Assay lost the third-party-format split again; the README claims it "
+        "scores 0.0 there and must be corrected."
     )
     assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 0.0
 
@@ -133,7 +137,10 @@ def test_the_cost_crossover_matches_what_the_readme_claims():
         "README's headline is false"
     )
     margin_pct = round((crossover / shipped - 1) * 100)
-    assert f"survives a {margin_pct}% error" in README, (
+    # Strip markdown emphasis: the README bolds the figure, and a test that
+    # breaks on asterisks tests the formatting rather than the claim.
+    plain = README.replace("*", "")
+    assert f"survives a {margin_pct}% error" in plain, (
         f"computed margin is {margin_pct}% and the README does not say so"
     )
 

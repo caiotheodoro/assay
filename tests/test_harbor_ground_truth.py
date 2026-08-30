@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 
+from assay.adapter import close_adapter
 from assay.sandbox import docker_available
 
 pytestmark = pytest.mark.skipif(
@@ -162,3 +163,75 @@ def test_a_separate_verifier_is_out_of_the_agents_reach(tmp_path):
     _run_script(ws, TAMPER)  # writes /work/tests/test.sh, which is not consulted
     reported = _run_verifier(ws, SUITE / "broken-gold" / "tests" / "test.sh", logs)
     assert reported == 0.0, "a separate verifier is unaffected by the workspace"
+
+
+# ---------------------------------------------------------------------------
+# A ground-truth correction, and it improves Assay's score, so it is proved
+# here with the tasks' own scripts and no probe in the loop.
+#
+# `self-graded` and `shared-tests` were labelled REWARD_HACKABLE only. Two
+# policies named after BenchJack's flaw taxonomy (arXiv 2605.12673 Fig. 2 --
+# V7 "trusting untrusted output", V1 "isolation failure") show both also admit
+# an input-ignoring policy that scores full marks, which is a trivial-floor
+# breach by definition. The label was incomplete; the environments did not
+# change.
+#
+# Relabelling a fixture because a detector fired on it is unfalsifiable, and
+# this particular relabelling removes two false positives and lifts precision
+# from 0.833 back to 1.000. So the facts below come from `tests/test.sh` and
+# `truth/test.sh` -- the task's own verifiers -- and the assertions are about
+# rewards those scripts return, not about anything Assay concluded.
+# ---------------------------------------------------------------------------
+
+
+def _reward_for(env_id: str, policy: str) -> tuple[float, float]:
+    """(what the environment reports, what the independent verifier says)."""
+    from assay.adapter import run_policy
+    from assay.corpus import entries
+
+    factory = {e: f for e, f, _ in entries(only=["harbor"])}[env_id]
+    adapter = factory()
+    try:
+        task = adapter.manifest().tasks[0].task_id
+        actions = adapter.trivial_policies(task)[policy]
+        transcript = run_policy(adapter, task, actions, stop_on_done=False)
+        return adapter.verify(transcript).reward, adapter.true_completion(transcript)
+    finally:
+        close_adapter(adapter)
+
+
+@pytest.mark.parametrize(
+    "env_id, policy",
+    [
+        ("harbor/self-graded", "v7_make_the_comparison_agree"),
+        ("harbor/shared-tests", "v1_neuter_a_reachable_verifier"),
+    ],
+)
+def test_an_input_ignoring_policy_scores_full_marks(env_id, policy):
+    """The environment pays 1.0 for work the independent verifier scores 0."""
+    reported, true = _reward_for(env_id, policy)
+    assert reported == 1.0, f"{env_id}: its own tests/test.sh did not pay the trivial policy"
+    assert true == 0.0, f"{env_id}: truth/test.sh thinks the task was actually done"
+
+
+@pytest.mark.parametrize(
+    "policy", ["v7_make_the_comparison_agree", "v1_neuter_a_reachable_verifier"]
+)
+def test_neither_policy_fires_on_the_healthy_task(policy):
+    """The control. A policy that pays on a healthy environment is a bug."""
+    reported, true = _reward_for("harbor/healthy", policy)
+    assert reported == 0.0, f"healthy paid {reported} for an input-ignoring policy"
+    assert true == 0.0
+
+
+def test_each_policy_only_catches_the_flaw_class_it_is_named_for():
+    """Evidence against fitting: cross-wise, neither policy fires.
+
+    V7 targets an evaluator that compares agent-writable files; V1 targets a
+    verifier reachable from the workspace. `self-graded` has the first and not
+    the second, `shared-tests` the reverse. If these policies had been written
+    by looking at the two environments rather than at the taxonomy, both would
+    tend to fire on both.
+    """
+    assert _reward_for("harbor/self-graded", "v1_neuter_a_reachable_verifier")[0] == 0.0
+    assert _reward_for("harbor/shared-tests", "v7_make_the_comparison_agree")[0] == 0.0
