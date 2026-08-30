@@ -24,7 +24,11 @@ FAMILY = "verifier_integrity"
 class GoldPasses(Probe):
     family = FAMILY
     name = "gold_passes"
-    requires = (Capability.GOLD_TRAJECTORY, Capability.SEPARABLE_VERIFIER)
+    requires = (
+        Capability.GOLD_TRAJECTORY,
+        Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
+    )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         findings, detail = [], {}
@@ -53,7 +57,7 @@ class GoldPasses(Probe):
 class NoopFails(Probe):
     family = FAMILY
     name = "noop_fails"
-    requires = (Capability.SEPARABLE_VERIFIER,)
+    requires = (Capability.SEPARABLE_VERIFIER, Capability.LIVE_STEPPING)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         findings, detail = [], {}
@@ -85,6 +89,7 @@ class InvertedFails(Probe):
         Capability.GOLD_TRAJECTORY,
         Capability.INVERTIBLE_SPEC,
         Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
     )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
@@ -117,7 +122,11 @@ class InvertedFails(Probe):
 class KnownWrongFails(Probe):
     family = FAMILY
     name = "known_wrong_fails"
-    requires = (Capability.KNOWN_WRONG, Capability.SEPARABLE_VERIFIER)
+    requires = (
+        Capability.KNOWN_WRONG,
+        Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
+    )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         findings, detail = [], {}

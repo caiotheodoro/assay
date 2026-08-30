@@ -44,6 +44,7 @@ class TrivialFloor(Probe):
         Capability.TRIVIAL_POLICIES,
         Capability.GRADED_POLICIES,
         Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
     )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
@@ -94,7 +95,11 @@ class Separability(Probe):
 
     family = "separability"
     name = "separability"
-    requires = (Capability.GRADED_POLICIES, Capability.SEPARABLE_VERIFIER)
+    requires = (
+        Capability.GRADED_POLICIES,
+        Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
+    )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         tasks = adapter.manifest().tasks

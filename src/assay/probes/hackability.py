@@ -56,7 +56,11 @@ def exploit_gap(adapter: EnvAdapter, transcript: Transcript) -> tuple[float, flo
 class RewardHackability(Probe):
     family = "reward_hackability"
     name = "challenger"
-    requires = (Capability.TRUE_COMPLETION, Capability.SEPARABLE_VERIFIER)
+    requires = (
+        Capability.TRUE_COMPLETION,
+        Capability.SEPARABLE_VERIFIER,
+        Capability.LIVE_STEPPING,
+    )
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         challenger = ctx.get("challenger") or ScriptedChallenger()

@@ -148,6 +148,11 @@ class InspectAdapter(BaseAdapter):
             Capability.TRUE_COMPLETION,
             Capability.TRIVIAL_POLICIES,
             Capability.SEEDED_RESET,
+            # Declared late: `reset` and `step` were always real here, but
+            # LIVE_STEPPING gated nothing, so nobody noticed it was missing.
+            # Wiring the capability to the probes that drive episodes is what
+            # surfaced the under-declaration.
+            Capability.LIVE_STEPPING,
         }
         # Separating a strong from a weak policy needs a plausible wrong answer,
         # which needs at least two distinct targets to draw from.

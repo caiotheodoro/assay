@@ -47,15 +47,23 @@ class NotSupported(Exception):
 
 @runtime_checkable
 class EnvAdapter(Protocol):
-    """Everything a probe is allowed to assume about an environment."""
+    """Everything a probe is allowed to assume about an environment.
+
+    `manifest()` is the only unconditional obligation. Everything else is gated
+    by a declared `Capability`, including the episode loop: an adapter that
+    cannot be driven withholds `LIVE_STEPPING`, and one whose reward is computed
+    inside `step()` withholds `SEPARABLE_VERIFIER`.
+    """
 
     def manifest(self) -> Manifest: ...
 
-    # -- episode -----------------------------------------------------------
+    # -- episode: requires Capability.LIVE_STEPPING ------------------------
 
     def reset(self, task_id: str, seed: int = 0) -> Observation: ...
 
     def step(self, action: Action) -> StepResult: ...
+
+    # -- scoring: requires Capability.SEPARABLE_VERIFIER --------------------
 
     def verify(self, transcript: Transcript, spec: Any | None = None) -> Score:
         """Score a transcript. `spec` overrides the task's own success spec,
@@ -104,7 +112,34 @@ class EnvAdapter(Protocol):
 
 
 class BaseAdapter:
-    """Convenience base: every optional capability refuses by default."""
+    """Convenience base: every optional capability refuses by default.
+
+    `reset`, `step` and `verify` are here too, and that is the whole point of
+    the change that moved them. They used to be required by `EnvAdapter` with no
+    refusal path, while two of six adapters raised on them anyway: OpenEnv
+    computes reward inside `step()` and has no scorer to call on a recorded
+    transcript, and ScienceAgentBench is a static task-definition set with no
+    runnable interface at all. Both were expressing a *static* fact about their
+    ecosystem through a *runtime* exception, which a caller cannot learn from
+    the manifest.
+
+    An adapter that cannot do one of these withholds the matching capability --
+    `LIVE_STEPPING` for reset/step, `SEPARABLE_VERIFIER` for verify -- so the
+    probe declines declaratively, before it runs, naming the capability. The
+    refusals below are the backstop for an adapter that declares a capability it
+    cannot honour, not the intended route.
+    """
+
+    def reset(self, task_id: str, seed: int = 0) -> Observation:
+        raise NotSupported("environment cannot be driven through this adapter")
+
+    def step(self, action: Action) -> StepResult:
+        raise NotSupported("environment cannot be stepped through this adapter")
+
+    def verify(self, transcript: Transcript, spec: Any | None = None) -> Score:
+        raise NotSupported(
+            "environment exposes no verifier separable from its episode loop"
+        )
 
     def gold_actions(self, task_id: str) -> list[Action]:
         raise NotSupported("environment ships no gold trajectory")
