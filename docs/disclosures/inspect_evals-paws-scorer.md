@@ -65,7 +65,7 @@ containing both labels. Happy to open a PR if that direction is welcome.
 ### Reproduction
 
 Both the 8000/8000 result and the `boolq` case are pinned as tests here:
-`tests/test_wild_findings.py` in <REPO_URL>. They call `inspect_evals`'
+`tests/test_wild_findings.py` in https://github.com/caiotheodoro/assay. They call `inspect_evals`'
 own `record_to_sample` and `inspect_ai`'s own `includes()` / `pattern()` — no
 third-party harness in the loop.
 

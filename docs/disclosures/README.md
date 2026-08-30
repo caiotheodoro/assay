@@ -7,21 +7,25 @@ Two drafts, both written to go upstream, **neither filed**:
 | [`inspect_evals-paws-scorer.md`](inspect_evals-paws-scorer.md) | `UKGovernmentBEIS/inspect_evals` | scorer defect found by the wild sweep |
 | [`openenv-textarena-seed.md`](openenv-textarena-seed.md) | `huggingface/OpenEnv` | seed handling, pinned by a test here |
 
-## Before either can be sent
+Both now cite a real repository (`https://github.com/caiotheodoro/assay`), so a
+maintainer can check the tests behind each claim. That was the blocker; it is
+gone.
 
-Both cite `<REPO_URL>` for the tests that back them, and **there is no remote**
-(`git remote -v` is empty). A disclosure that points a maintainer at a
-placeholder is worse than no disclosure: it asks them to trust a claim and
-then gives them nothing to check it against. The substitution list, complete,
-so it is not rediscovered at send time:
+## Still not sent, on purpose
 
-- `<REPO_URL>` → the published repository URL, in **both** files (line 68 of each).
-- Cross-references to `docs/REPRODUCTION.md:51` have drifted; the setup block is
-  now at **`:53`**. Check line numbers against the file at send time rather than
-  trusting these.
-- Neither draft has been reviewed by anyone but its author. A finding sent
-  upstream is a claim about someone else's code, which is the case where the
-  validator-independence rule matters most.
+Filing is the author's decision, not a step this repo takes on its own. Nothing
+has been submitted and no maintainer has been contacted.
 
-Filing is a decision the author makes, not a step this repo takes on its own.
-Nothing here has been submitted, and no maintainer has been contacted.
+Two things to do before either goes out:
+
+- **Check the line references.** Cross-references drift. `docs/REPRODUCTION.md`
+  moved from `:51` to `:53` once already.
+- **Get a second reader.** Neither draft has been reviewed by anyone but its
+  author. A disclosure is a claim about someone else's code, which is the case
+  where an independent check matters most.
+
+Both findings are correctness bugs in public benchmarks — a scorer that accepts
+wrong answers, and seed handling that does not vary the episode. Neither is a
+security issue, and both are already described in `docs/RED-TEAM.md` and the
+wild-sweep results, so publishing this repo does not disclose anything the rest
+of it does not.

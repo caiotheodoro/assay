@@ -50,18 +50,12 @@ daemon; see [Degradation](#degradation-checked-by-turning-things-off).
 ## Setup
 
 ```bash
-git clone <REPO_URL> && cd assay   # see the note below: there is no remote yet
+git clone https://github.com/caiotheodoro/assay.git && cd assay
 uv sync --extra dev --extra adapters --extra sweep --extra openenv
 ```
 
-> **There is no `<REPO_URL>` yet, and that is a real gap rather than an
-> oversight.** `git remote -v` in this tree returns nothing: publishing is
-> deliberately the last step, so that nothing goes out under a claim that is
-> still moving. Everything below this line runs against a local checkout and
-> has been measured that way. Until the push happens, a reader with the tree
-> can reproduce every number here and a reader without it cannot get the tree
-> at all — the second half of that sentence is the cost of the decision, and it
-> is stated rather than buried.
+> The tree is public at [https://github.com/caiotheodoro/assay](https://github.com/caiotheodoro/assay). Every number below was
+> measured on a local checkout of it.
 
 **Measured, cold cache: 52 s, 759 MB downloaded, 566 MB venv, 351 packages.**
 Re-running against a warm cache is 2 s. `uv.lock` is committed, so this installs

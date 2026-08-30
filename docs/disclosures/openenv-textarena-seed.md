@@ -65,6 +65,6 @@ Happy to open a PR either way.
 
 ### Reproduction
 
-Pinned as a test in <REPO_URL> (`tests/test_openenv_ground_truth.py`), which
+Pinned as a test in https://github.com/caiotheodoro/assay (`tests/test_openenv_ground_truth.py`), which
 asserts against TextArena's own game state rather than through any tooling of
 mine.
