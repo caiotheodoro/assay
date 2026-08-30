@@ -1,0 +1,87 @@
+{
+  "measurement": "what a published audit recall implies, swept over the flag count the reporting convention omits",
+  "method": "One-sided hypergeometric. A flagger picking n of N tasks at random recovers K*n/N defects in expectation; the p-value is the chance it matches or beats the reported hit count.",
+  "not_a_criticism_of_care": "BenchGuard states and defends the convention -- recall is primary for triage, and a false positive costs a few seconds of expert review. This is about what the published table supports, not about rigour.",
+  "our_own_number_for_comparison": "results/tau2_recall.json publishes the full confusion matrix, so its floor is computable and it failed: recall 0.339 at p = 0.486, indistinguishable from random. That is the only reason this script can be pointed at anyone else.",
+  "alpha": 0.05,
+  "rows": [
+    {
+      "claim": "BenchGuard / SAB / Opus 4.6, definition-only",
+      "source": "arXiv 2604.24955 Table 2: 12 confirmed defects, 102 tasks, Rec_A 83.3%",
+      "n_tasks": 102,
+      "n_positives": 12,
+      "base_rate": 0.1176,
+      "n_detected": 10,
+      "recall": 0.8333,
+      "n_flagged": null,
+      "n_flagged_is_reported": false,
+      "why_not": "Table 2's precision is flagged-task precision, computed over findings within tasks that contain confirmed defects; findings on the other tasks are outside both columns, so the total number of tasks flagged is not recoverable from the table.",
+      "p_by_n_flagged": {
+        "10": 0.0,
+        "20": 0.0,
+        "30": 0.0001,
+        "40": 0.0013,
+        "50": 0.0116,
+        "60": 0.0597,
+        "70": 0.2048,
+        "80": 0.4967,
+        "90": 0.8518,
+        "102": 1.0
+      },
+      "stops_clearing_the_floor_at_or_above": 59,
+      "reading": "Flagging 59 or more of 102 tasks makes 10 of 12 unremarkable at alpha=0.05; flagging fewer makes it a real result. The published table does not say which."
+    },
+    {
+      "claim": "BenchGuard / SAB / ensemble, Rec_A",
+      "source": "arXiv 2604.24955 Table 2: ensemble Rec_A 91.7%",
+      "n_tasks": 102,
+      "n_positives": 12,
+      "base_rate": 0.1176,
+      "n_detected": 11,
+      "recall": 0.9167,
+      "n_flagged": null,
+      "n_flagged_is_reported": false,
+      "why_not": "Table 2's precision is flagged-task precision, computed over findings within tasks that contain confirmed defects; findings on the other tasks are outside both columns, so the total number of tasks flagged is not recoverable from the table.",
+      "p_by_n_flagged": {
+        "11": 0.0,
+        "20": 0.0,
+        "30": 0.0,
+        "40": 0.0001,
+        "50": 0.0015,
+        "60": 0.0117,
+        "70": 0.0591,
+        "80": 0.2152,
+        "90": 0.5723,
+        "102": 1.0
+      },
+      "stops_clearing_the_floor_at_or_above": 69,
+      "reading": "Flagging 69 or more of 102 tasks makes 11 of 12 unremarkable at alpha=0.05; flagging fewer makes it a real result. The published table does not say which."
+    },
+    {
+      "claim": "BenchGuard / SAB / most single models",
+      "source": "arXiv 2604.24955 Table 2: Rec_A 58.3% for Gemini 3.0 Flash, Gemini 3.1 Pro, GPT-5.4, Sonnet 4.6",
+      "n_tasks": 102,
+      "n_positives": 12,
+      "base_rate": 0.1176,
+      "n_detected": 7,
+      "recall": 0.5833,
+      "n_flagged": null,
+      "n_flagged_is_reported": false,
+      "why_not": "Table 2's precision is flagged-task precision, computed over findings within tasks that contain confirmed defects; findings on the other tasks are outside both columns, so the total number of tasks flagged is not recoverable from the table.",
+      "p_by_n_flagged": {
+        "7": 0.0,
+        "20": 0.0017,
+        "30": 0.0262,
+        "40": 0.13,
+        "50": 0.3523,
+        "60": 0.6405,
+        "70": 0.8735,
+        "80": 0.98,
+        "90": 0.9995,
+        "102": 1.0
+      },
+      "stops_clearing_the_floor_at_or_above": 34,
+      "reading": "Flagging 34 or more of 102 tasks makes 7 of 12 unremarkable at alpha=0.05; flagging fewer makes it a real result. The published table does not say which."
+    }
+  ]
+}

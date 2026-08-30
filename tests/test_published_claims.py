@@ -232,3 +232,18 @@ def test_the_method_protocol_quotes_numbers_that_still_hold():
     saved = iv["arms"]["assay"]["loss_saved_vs"]["flag_everything"]
     assert saved["separated"], "METHOD.md claims the detector separates from its floor"
     assert f"{saved['point']:.1f}" in method
+
+
+def test_the_outward_floor_test_quotes_its_own_artifact():
+    """METHOD.md makes a claim about someone else's paper. Keep it sourced."""
+    d = _load("floor_of_the_field.json")
+    method = (ROOT / "docs" / "METHOD.md").read_text()
+    for row in d["rows"]:
+        knee = row["stops_clearing_the_floor_at_or_above"]
+        assert knee, f"{row['claim']}: no knee computed"
+        assert str(knee) in method, (
+            f"{row['claim']}: knee {knee} not quoted in METHOD.md"
+        )
+        # The claim is about reportability, not about anyone's care. If a flag
+        # count ever becomes recoverable, this stops being the right framing.
+        assert row["n_flagged_is_reported"] is False

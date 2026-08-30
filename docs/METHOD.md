@@ -46,6 +46,46 @@ can interpret — including you.
 
 `scripts/tau2_recall.py` · `results/tau2_recall.json`
 
+### The same test, pointed outward
+
+Having failed our own floor test, the obvious question is what it says about
+the numbers this category publishes. Mostly it cannot be asked, and the reason
+is specific rather than sloppy.
+
+BenchGuard ([arXiv 2604.24955](https://arxiv.org/abs/2604.24955)) Table 2
+reports, on ScienceAgentBench, **12 confirmed defects across 102 tasks** and
+per-model recall up to **83.3%**. Its precision column is *flagged-task
+precision*, defined in the caption as "computed over findings within tasks
+containing confirmed defects"; findings on the other 90 tasks fall outside both
+columns. **So the number of tasks flagged is not recoverable from the table** —
+and that is the one quantity a floor test needs.
+
+The authors state the convention and defend it: *"For a human-in-the-loop
+auditing tool, recall is the primary objective: missing a genuine defect risks
+corrupting leaderboard conclusions, whereas a false positive costs only a few
+seconds of expert review."* That is a coherent position about triage, and none
+of this is a claim about their rigour. It is a claim about what the published
+table supports.
+
+Sweeping the missing number (`scripts/floor_of_the_field.py`):
+
+| reported | stops clearing the floor at | as a share of the benchmark |
+|---|---|---|
+| ensemble, 11/12 (91.7%) | 69 tasks flagged | 68% |
+| best single model, 10/12 (83.3%) | 59 tasks flagged | 58% |
+| **four of five models, 7/12 (58.3%)** | **34 tasks flagged** | **33%** |
+
+The top rows are almost certainly real results: an auditor flagging 58% of a
+benchmark would be an odd tool. **The 58.3% rows are the uncomfortable ones** —
+they stop being distinguishable from random at a third of the benchmark, which
+is well inside what an auditing tool might plausibly flag. Nothing in the paper
+lets a reader tell, and no baseline or significance test is reported alongside.
+
+We can only point this out because we ran it on ourselves first and it came back
+`p = 0.486`.
+
+`scripts/floor_of_the_field.py` · `results/floor_of_the_field.json`
+
 ---
 
 ## 2. Declare provenance, and make it a scoring rule
