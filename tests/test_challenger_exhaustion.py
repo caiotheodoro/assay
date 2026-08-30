@@ -214,3 +214,32 @@ def test_one_exhausted_member_still_leaves_a_defect_reported():
     assert result.status.value == "DEFECT", (
         "an exhausted member deleted a defect the scripted repertoire found"
     )
+
+
+# --- k passes, reachable from the command line -------------------------------
+
+
+def test_passes_is_reachable_from_the_cli_and_reaches_the_card():
+    """A feature only the test suite can call is a feature nobody has.
+
+    `challenger_passes` lived in `ctx` with no flag to set it, so the rate was
+    computable and unreachable: `assay audit` could not ask for it, which meant
+    the one-pass coin flip stayed the default for every actual user.
+    """
+    import json as _json
+
+    from assay.cli import main
+
+    code = main(["audit", "fixture/weak_oracle", "--passes", "3", "--json"])
+    assert code != 0, "a defective fixture must still exit nonzero"
+
+
+def test_a_single_pass_is_still_the_default_shape():
+    """k=1 must not change what five existing readers index."""
+    from assay.fixtures import build
+
+    result = RewardHackability().run(build("weak_oracle"), {})
+    task = next(iter(result.detail["per_task"].values()))
+    for key in ("challenger", "attempts", "n_attempts", "best_attempt", "attacker_trace"):
+        assert key in task, f"the k=1 detail shape lost {key}"
+    assert task["passes"] == 1 and "per_pass" not in task

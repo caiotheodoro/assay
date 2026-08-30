@@ -47,7 +47,7 @@ def _audit(args) -> int:
     env_id, factory, _ = found[0]
     adapter = factory()
     try:
-        report = audit(adapter)
+        report = audit(adapter, {"challenger_passes": args.passes})
     finally:
         close_adapter(adapter)
 
@@ -135,6 +135,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--json", action="store_true")
     p.add_argument("--card", metavar="PATH", help="write an Environment Card (.md or .html)")
     p.add_argument("--signed-by", metavar="NAME", help="record a human reviewer on the card")
+    p.add_argument(
+        "--passes", type=int, default=1, metavar="K",
+        help="attack each task K times and report the hit rate. One pass turns a "
+             "stochastic attacker into a coin flip reported as a measurement: a PASS "
+             "may be a run that happened not to find the exploit. The finding fires "
+             "if any pass crosses the threshold; the rate is reported beside it.",
+    )
     p.set_defaults(func=_audit)
 
     p = sub.add_parser("list", help="list the audited corpus and its planted defects")
