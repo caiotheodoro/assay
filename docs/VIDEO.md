@@ -124,16 +124,22 @@ Show the ablation table.
 
 > Two results this project does not get to leave out.
 >
-> Assay does not separate from flag-everything at this corpus size. Fifty
-> expected loss saved, interval from minus three hundred and nine to two
-> ninety-five. It crosses zero.
+> Assay does not separate from flag-everything at this corpus size. Thirty-six
+> expected loss saved, interval from minus three hundred and twenty-three to
+> three hundred and ten. It crosses zero.
 >
 > Half this corpus is our own test fixtures, and a test asserts perfect
 > detection on every one of them. So that half is a passing build, not a
-> measurement. Split it honestly — by who wrote the environment — and only two
-> of twenty-four are genuinely somebody else's. On the ten we wrote in someone
+> measurement. Split it honestly — by who wrote the environment — and only four
+> of twenty-six are genuinely somebody else's. On the ten we wrote in someone
 > else's format, flagging everything **beats** Assay: two forty to one
 > fourteen.
+>
+> We added two of those four while making this. We wrote down what the
+> arithmetic predicted before we wrote the code, because adding environments
+> moves the trivial baseline and not the detector — that is how a bigger corpus
+> becomes a better headline without anyone lying. Every number came out as
+> predicted, and every one of them made Assay look worse.
 >
 > And the whole result rests on one number nobody derived. We price a missed
 > critical defect at a hundred and twenty engineer-hours. The crossover, where

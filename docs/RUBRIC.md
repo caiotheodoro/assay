@@ -14,6 +14,12 @@ finishing passes.*
 > labelled chance, p = 0.486), and an example card carrying a "signature" (now
 > `content_digest`). Line references into `README.md` no longer resolve.
 >
+> Since it was written the corpus has also grown from 24 environments to 26 and
+> the headline numbers have all moved (assay 240.0 → 280.0, flag_everything
+> 290.0 → 316.0, margin 50.0 → 36.0); several of its deductions have been
+> closed, and `docs/changelog/73-remediation.md`, `74-finishing.md`,
+> `77-external-corpus.md` and `78-determinism-timeout.md` record which.
+>
 > It is kept unedited rather than regenerated, because a rubric rewritten after
 > the fixes it prescribed would no longer be evidence of anything. What it is
 > good for is the **deduction list and the costed fix table** — those are still
