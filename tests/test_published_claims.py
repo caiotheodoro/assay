@@ -176,3 +176,19 @@ def test_the_llm_baseline_arm_survives_an_adapter_that_refuses_verify():
         "number came from -- a silently unscored baseline is the defect this "
         "repository audits environments for"
     )
+
+
+def test_the_llm_baseline_rows_match_the_measured_file():
+    """The brief's own baseline, scored, with the README quoting the artifact."""
+    d = _load("full_run_llm.json")
+    arms = d["arms"]
+    for name in ("direct_prompt", "agent_with_tools"):
+        assert name in arms, f"{name} is not in results/full_run_llm.json"
+        assert f"{arms[name]['expected_loss']:.1f}" in README, (
+            f"{name} scored {arms[name]['expected_loss']} and the README does not say so"
+        )
+    # The claim the rows are there to support.
+    assert arms["direct_prompt"]["expected_loss"] > arms["stratified_random"]["expected_loss"], (
+        "the LLM arm now beats flagging at base rates -- the README says it "
+        "does not, and must be updated with this"
+    )

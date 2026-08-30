@@ -160,8 +160,30 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 | flag_everything | 290.0 | [271, 307] | 1.000 | 0.137 |
 | stratified_random | 1587.0 | [852, 2446] | 0.370 | 0.386 |
 | always_modal_defect | 1767.0 | [1066, 2550] | 0.196 | 0.375 |
+| direct_prompt (`qwen3:8b`) | 2415.0 | — | 0.239 | 0.324 |
+| agent_with_tools (`qwen3:8b`) | 2497.0 | — | 0.196 | 0.265 |
 | **check_env** (incumbent) | **2816.0** | [1728, 4024] | **0.043** | 1.000 |
 | flag_nothing | 2832.0 | [1752, 4032] | 0.000 | 0.000 |
+
+**The two LLM arms are the brief's own simple baseline, and they lose to
+flagging at base rates.** `direct_prompt` reads everything a careful human
+reviewer could read without executing anything — the manifest, the
+instructions, the verifier source where it can be obtained — and names the
+defect classes it thinks are present. `agent_with_tools` gets the same plus a
+tool loop it can drive. They score 2415.0 and 2497.0 against
+`stratified_random`'s 1587.0: better than the incumbent linter, worse than
+guessing at the base rate, and an order of magnitude worse than running the
+probes.
+
+Reading an environment is not auditing it. That is the whole argument for
+executing the thing, and until now it was an argument rather than a row.
+
+These two arms were written, tested, and never scored, because
+`scripts/full_run.py --llm-arms` **crashed**: the arm called `adapter.verify()`
+with no refusal path, and `OpenEnvAdapter` raises there. One adapter of six
+took the whole run down, and the failure sat at the far end of a long command
+where nobody met it. No confidence intervals here yet — `scripts/intervals.py`
+bootstraps `results/full_run.json`, and these live in `results/full_run_llm.json`.
 
 An earlier version of this table gave `check_env` flag_nothing's row —
 **2832.0, [1752, 4032], recall 0.000** — which contradicted both

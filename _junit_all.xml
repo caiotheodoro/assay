@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="2" failures="0" skipped="4" tests="6" time="0.918" timestamp="2026-08-29T21:52:28.755400-04:00" hostname="Caios-MacBook-Pro.local"><testcase classname="" name="tests.test_corpus_ground_truth" time="0.000"><skipped message="collection skipped">('/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_corpus_ground_truth.py', 15, "Skipped: could not import 'inspect_ai': No module named 'inspect_ai'")</skipped></testcase><testcase classname="" name="tests.test_exploit_gap_replay" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_exploit_gap_replay.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_exploit_gap_replay.py:18: in &lt;module&gt;
+    from assay.adapters import HarborAdapter
+src/assay/adapters/__init__.py:12: in __getattr__
+    from .harbor import HarborAdapter
+src/assay/adapters/harbor.py:38: in &lt;module&gt;
+    import tomllib
+E   ModuleNotFoundError: No module named 'tomllib'</error></testcase><testcase classname="" name="tests.test_harbor_adapter" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_harbor_adapter.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_harbor_adapter.py:17: in &lt;module&gt;
+    from assay.adapters import HarborAdapter
+src/assay/adapters/__init__.py:12: in __getattr__
+    from .harbor import HarborAdapter
+src/assay/adapters/harbor.py:38: in &lt;module&gt;
+    import tomllib
+E   ModuleNotFoundError: No module named 'tomllib'</error></testcase><testcase classname="" name="tests.test_inspect_adapter" time="0.000"><skipped message="collection skipped">('/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_inspect_adapter.py', 12, "Skipped: could not import 'inspect_ai': No module named 'inspect_ai'")</skipped></testcase><testcase classname="" name="tests.test_sweep" time="0.000"><skipped message="collection skipped">('/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_sweep.py', 18, "Skipped: could not import 'inspect_ai': No module named 'inspect_ai'")</skipped></testcase><testcase classname="" name="tests.test_wild_findings" time="0.000"><skipped message="collection skipped">('/Users/caiotheodoro/Documents/personal/personal-ml/assay/tests/test_wild_findings.py', 26, "Skipped: could not import 'inspect_ai': No module named 'inspect_ai'")</skipped></testcase></testsuite></testsuites>
