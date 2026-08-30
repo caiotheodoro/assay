@@ -215,12 +215,23 @@ read off a file. Those runs are listed in [What was executed](#what-was-executed
    that was valid then and is not a reason to ship it.
    *To earn it back:* `git rm --cached out.txt expected.txt` and untrack
    `.redteam_scratch/`.
-4. **−1: the usable artefact is a local CLI.** `space/app.py` is written and never
-   deployed; `scripts/publish_hf.py` is 52 KB and no published URL appears anywhere in
-   the tree. Nothing here is wrong, but "a final result the user can use" currently
-   means "clone the repo and run uv".
-   *To earn it back:* deploy the Space and put the URL in the README, or drop the
-   claim to the CLI and say so.
+4. **−1: the usable artefact is a local CLI.** ~~No published URL appears anywhere in
+   the tree.~~ **Partly earned back.** Three artifacts are now published: the
+   [repository](https://github.com/caiotheodoro/assay), the
+   [corpus dataset](https://huggingface.co/datasets/caiotheodoro/assay-corpus) and the
+   [GRPO adapter](https://huggingface.co/caiotheodoro/assay-challenger-grpo).
+
+   **The Space is still not deployed, and will not be.** Hugging Face returns
+   HTTP 402 on repo creation: hosting a Gradio Space on free `cpu-basic` needs a
+   PRO subscription. A static Space is free and cannot serve this app, because the
+   probe battery runs server-side in Python — that is the product, not a detail of
+   the hosting. So the deduction stands in part: there is no click-to-try demo, and
+   "a final result the user can use" means `uv run assay audit`, plus two artifacts
+   anyone can `load_dataset` or `from_pretrained` without cloning anything.
+
+   The app itself is finished rather than abandoned: hardened against HTML
+   injection, covered by 7 tests, gated by 9 pre-publication checks, and it runs
+   with `python space/app.py`.
 
 ---
 

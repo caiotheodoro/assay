@@ -29,6 +29,26 @@ recompute it.
 > are written up with their numbers in
 > [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
 
+### Where it lives
+
+| | |
+|---|---|
+| Code | [`github.com/caiotheodoro/assay`](https://github.com/caiotheodoro/assay) |
+| The corpus, every card and every arm | [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus) |
+| The GRPO Challenger adapter, **a negative result** | [`caiotheodoro/assay-challenger-grpo`](https://huggingface.co/caiotheodoro/assay-challenger-grpo) |
+
+```python
+from datasets import load_dataset
+load_dataset("caiotheodoro/assay-corpus", "corpus", revision="v0.1.0")
+```
+
+**There is no hosted demo.** `space/app.py` is a finished Gradio app — it
+escapes submitted HTML, has 7 tests and passes 9 pre-publication gates — but
+Hugging Face returns HTTP 402 when creating it: a Gradio Space on free
+`cpu-basic` needs a paid plan. A static Space is free and cannot serve it,
+because the probe battery runs server-side in Python. Run it locally with
+`python space/app.py`.
+
 ### Who this is for, concretely
 
 Three people, in the order the tool serves them:
