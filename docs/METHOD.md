@@ -174,8 +174,24 @@ successfully made**. The probe recorded `n_attempts: 0` and reported
 `NOT_APPLICABLE`. A stochastic agent producing an identical result 4 times out
 of 4 is what made it findable.
 
-**The check.** Report the distribution, not a run. And ablate downward — the
-comparison that matters is against the version with the agent removed.
+**Then the check kept paying, in the direction that hurts.** The exploit the
+agent had found was written down as two fixed policies — named after the flaw
+classes in a published taxonomy — and the script now finds both Harbor exploits
+with no model at all, in about two seconds against ~30 minutes. So the honest
+statement got stronger and less flattering at once: the agent demonstrated a
+class existed, and the cheapest possible response captured it permanently.
+
+It also **invalidated the measurement above**. Those four runs compared against
+a four-policy floor that no longer ships; the current floor misses nothing on
+that slice. The conclusion survives *a fortiori* — a higher floor leaves an
+agent less room, not more — but the number behind it is now unmeasured, and this
+paragraph says so rather than letting a superseded comparison stand as evidence.
+
+**The check.** Report the distribution, not a run. Ablate downward — the
+comparison that matters is against the version with the agent removed. And when
+the floor moves, the ablation is stale even though nothing about the agent
+changed: an ablation is a claim about a *pair*, and it expires when either half
+does.
 
 `results/agentic_profile.json` · `src/assay/challenger/composite.py`
 

@@ -40,7 +40,7 @@ Terminal: `uv run --extra adapters python scripts/full_run.py`
 
 Let it run. Cut to the table.
 
-> The incumbent detects 2 of 46 — four percent. Against flagging nothing it
+> The incumbent detects 2 of 50 — four percent. Against flagging nothing it
 > saves 16 expected loss on a corpus where it can only ever return one defect
 > class. And that 16 is not a measurement of the real linter — it is a
 > measurement of our model of it. We ran the real checkers separately, on
@@ -124,16 +124,10 @@ Show the ablation table.
 
 > Two results this project does not get to leave out.
 >
-> Assay does not separate from flag-everything at this corpus size. Thirty-six
-> expected loss saved, interval from minus three hundred and twenty-three to
-> three hundred and ten. It crosses zero.
->
 > Half this corpus is our own test fixtures, and a test asserts perfect
 > detection on every one of them. So that half is a passing build, not a
 > measurement. Split it honestly — by who wrote the environment — and only four
-> of twenty-six are genuinely somebody else's. On the ten we wrote in someone
-> else's format, flagging everything **beats** Assay: two forty to one
-> fourteen.
+> of twenty-six are genuinely somebody else's. Four.
 >
 > We added two of those four while making this. We wrote down what the
 > arithmetic predicted before we wrote the code, because adding environments
@@ -141,10 +135,24 @@ Show the ablation table.
 > becomes a better headline without anyone lying. Every number came out as
 > predicted, and every one of them made Assay look worse.
 >
-> And the whole result rests on one number nobody derived. We price a missed
-> critical defect at a hundred and twenty engineer-hours. The crossover, where
-> flagging everything wins, is a hundred and forty-five. A twenty-one percent
-> error in a guess flips the headline.
+> For most of this project Assay did not separate from flagging everything.
+> Thirty-six expected loss saved, interval crossing zero. It separates now —
+> two seventy-four, interval one eighty-six to three twenty-six — and the thing
+> that changed was not the detector getting cleverer. We read someone else's
+> published taxonomy of benchmark flaws and wrote two of their classes down as
+> four lines of shell.
+>
+> Which is the uncomfortable version. The agent found that exploit first, over
+> ten turns and half an hour. The script now finds it in two seconds, because
+> the agent's discovery was written down. That is a good outcome for the tool
+> and a bad one for the argument that the agent is load-bearing.
+>
+> And the whole result still rests on one number nobody derived. We price a
+> missed critical defect at a hundred and twenty engineer-hours. The crossover,
+> where flagging everything wins, is nine hundred and forty-two. This morning
+> that crossover was a hundred and forty-five, and a twenty-one percent error in
+> a guess would have flipped the headline. It now survives a six hundred percent
+> error. Same guess. Different detector.
 >
 > The GRPO-trained Challenger did not learn either. Two runs on real GPUs.
 > 99.7% of rollout groups had zero reward spread, so there was no gradient. We

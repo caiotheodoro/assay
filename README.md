@@ -156,10 +156,11 @@ exactly the shape it flags in environments.
 
 ## Measured result
 
-24 environments, 46 planted defects. Needs Docker for the Harbor tasks. No GPU
+26 environments, 50 planted defects. Needs Docker for the Harbor tasks. No GPU
 and no API key — `uv run --extra adapters --extra openenv python scripts/full_run.py`,
 22s on a warm Docker image. **Both extras are load-bearing:** `--extra adapters`
-alone omits `openenv` and gives 22 environments and 45 defects, not 24 and 46.
+alone omits `openenv` and `inspect_evals`, so it audits fewer environments than
+the table above reports.
 The run says so when it happens; read the degradation line before the table. Without the daemon the run still completes, on 19
 environments, and says which ecosystem it dropped and why.
 
@@ -186,7 +187,8 @@ separates on three of them; `production-training` it wins without separating.
 
 **That precision of 1.000 is the modal run, not every run.** Across six
 full-corpus runs, `harbor/broken-gold` reported a **spurious `NONDETERMINISM`
-once** (assay 281.0 rather than 280.0); harbor-only runs were clean 4 of 4, so
+once** (one point of loss above the run's true figure); harbor-only runs were
+clean 4 of 4, so
 the flake needs the load of a full run. The determinism probe fingerprints
 `(ok, data, code)` and Harbor's step data is `{stdout, exit_code}`, so a sandbox
 command that times out under load is indistinguishable from an environment that
@@ -220,7 +222,7 @@ An earlier version of this table gave `check_env` flag_nothing's row —
 `results/intervals.json` and the sentence directly beneath it. Corrected above
 from the measured file; the paired differences below were always right.
 
-The incumbent detects **2 of 46 defects — 4.3% recall**, both determinism, at
+The incumbent detects **2 of 50 defects — 4.0% recall**, both determinism, at
 perfect precision. It is silent on the other eight probe families: verifier
 integrity, trivial floor, separability, contamination, shortcut leakage,
 spec/verifier mismatch, difficulty band and reward hackability.
@@ -230,7 +232,7 @@ spec/verifier mismatch, difficulty band and reward hackability.
 `gymnasium.utils.env_checker` and `stable_baselines3.common.env_checker` assert,
 because the real checkers cannot be pointed at a `ToyEnv`, an `inspect_ai` task
 or a Harbor container at all. `NONDETERMINISM` is the only class it can ever
-return, so "2 of 46" is bounded by construction rather than measured. The real
+return, so "2 of 50" is bounded by construction rather than measured. The real
 checkers *were* run, on five purpose-built `gymnasium.Env` shims — 1 of 4
 detected, `results/real_check_env.json` — and that is the honest incumbent
 number. One of the model's two hits is `fixture/flaky`, planted here.
@@ -330,7 +332,7 @@ corpus is too small and too self-authored to support the pooled headline, and
 growing it with environments nobody here wrote is the first thing worth doing
 next — carefully.
 
-### The headline survives a 21% error in one made-up number, and no more
+### The headline survives a 685% error in one made-up number
 
 Every expected-loss figure here is denominated in "engineer-hours-equivalent",
 and `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect
@@ -365,10 +367,10 @@ ranking is: a claim about a specific cost regime, not about detectors in
 general. The one anchor available is that SWE-bench Verified needed **93
 developers** reading tasks by hand — which is the observed price of finding
 these defects the other way, and why a miss is priced far above a false alarm
-rather than near it. It does not pin 120 versus 145.
+rather than near it. It does not pin 120 versus 942.
 
 Reported here rather than left for a reader to derive, because a paragraph
-saying "costs are illustrative" would have hidden that the margin is 21%.
+saying "costs are illustrative" would have hidden that the margin was ever 21%.
 
 `stratified_random` and `always_modal_defect` are the two trivial policies
 `criteria.md` requires that this repo did not implement until
@@ -413,52 +415,76 @@ are paired differences drawn on a shared resample:
 
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
-| assay vs `check_env` | 2576.0 | [1472, 3840] | **separated** |
-| assay vs `stratified_random` | 1347.0 | [455, 2316] | **separated** |
-| assay vs `always_modal_defect` | 1527.0 | [638, 2435] | **separated** |
-| assay vs `flag_everything` | 50.0 | [−309, 295] | **overlaps zero** |
-| `check_env` vs `flag_nothing` | 16.0 | [0, 40] | **overlaps zero** |
+| assay vs `flag_nothing` | 3032.0 | [1928, 4256] | **separated** |
+| assay vs `check_env` | 3016.0 | [1904, 4240] | **separated** |
+| assay vs `always_modal_defect` | 1848.0 | [1145, 2645] | **separated** |
+| assay vs `stratified_random` | 1749.0 | [1000, 2599] | **separated** |
+| **assay vs `flag_everything`** | **274.0** | **[186, 326]** | **separated** |
+| `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
 
-Assay beats the incumbent. **Assay does not beat the trivial floor at n=24.**
-By this project's own rule — a policy that ignores the input must not win —
-that advantage is not established on this corpus, and saying otherwise would
-be the exact failure the tool exists to catch.
+**Assay beats the trivial floor, and for most of this project's life it did
+not.** That row read `50.0, [−309, 295], overlaps zero` at n=24, and the honest
+summary was that the advantage was not established. Two Harbor misses closed it
+— see the taxonomy section above — and the sentence is only worth reading
+because the previous one was published for as long as it was true.
 
-### The profiles where Assay loses
+### Every profile, including the ones that used to lose
 
 Running only the flattering cost model would be its own kind of dishonesty, so
 here is every profile shipped, not the one that reads best.
 
-| profile | assay | flag_everything | |
-|---|---|---|---|
-| `flat` | **2.0** | 290.0 | separated, [269, 305] |
-| `research-run` | **240.0** | 290.0 | overlaps zero, [−309, 295] |
-| `production-training` | 1920.0 | **580.0** | flag_everything wins |
-| `benchmark-publication` | 4000.0 | **2320.0** | flag_everything wins |
+| profile | assay | flag_everything | saved | |
+|---|---|---|---|---|
+| `flat` | **1.0** | 314.0 | 313.0 | separated, [294, 330] |
+| `research-run` | **40.0** | 314.0 | 274.0 | separated, [186, 326] |
+| `production-training` | **240.0** | 628.0 | 388.0 | wins, [−108, 652] — **not separated** |
+| `benchmark-publication` | **600.0** | 2512.0 | 1912.0 | separated, [648, 2608] |
 
-**Assay wins outright on one of four, and loses outright on two.** That is the
-correct answer to the question those profiles ask: when a miss is catastrophic
-and review is nearly free, review everything. Assay's two CRITICAL misses cost
-960 each under `production-training`; 290 false alarms cost 2 each.
+**Assay now wins all four and separates on three.** It previously won one and
+lost two outright, and the reasoning published then still stands as the reason
+those two were the hardest: `production-training` prices a missed CRITICAL at
+960 against a false alarm at 2, and `benchmark-publication` at 2000 against 8.
+At a 480:1 ratio, "flag everything and read the cards" is a genuinely good
+policy, which is why beating it there took closing the misses rather than
+tuning the metric. It is also why `production-training` still does not
+*separate*: winning by 388.0 with an interval crossing zero is a lead, not a
+result.
 
-The pattern is the whole argument for the metric. Assay earns its place exactly
-where false alarms have real cost — where nobody can triage 290 spurious
-findings — and it is the wrong tool where a miss is unaffordable and a human
-will read everything anyway. A single accuracy number would have hidden that,
-and a single cost profile would have let us pick which way it hid.
+The pattern is the whole argument for reporting a profile rather than a number.
+A single accuracy figure would have hidden which regime the tool is for, and a
+single cost profile would have let us choose which way it hid.
 
-Both misses are `REWARD_HACKABLE`, on `harbor/self-graded` and
-`harbor/shared-tests` — the two the scripted Challenger cannot find.
+**One miss remains across 26 environments, and it is external:**
+`inspect_evals/boolq`. The two `harbor/` misses that carried this section for
+weeks are closed.
 
 ## Does an agent find what a script cannot?
 
-`scripts/challenger_ablation.py`, on that same environment:
+**It did. Then a better script found it too, and that is the more useful
+result.**
+
+The ablation below was run when the scripted repertoire held four policies and
+missed `harbor/self-graded`. It has since been given two policies named after
+classes in BenchJack's published taxonomy — V7 *trusting untrusted output* and
+V1 *isolation failure* — and now finds both Harbor exploits with no model in
+the loop at all. **The table is kept as the historical measurement it was, not
+as a current claim**; every number in it describes the old six-candidate-free
+repertoire.
+
+The honest reading: the agentic arm demonstrated an exploit class existed, and
+the cheapest possible response — writing the mechanism down as a fixed policy —
+captured it permanently at zero marginal cost. That is a good outcome for a
+tool and a bad one for the argument that the agent is load-bearing.
+
+*Historical, superseded — `scripts/challenger_ablation.py` against the
+four-policy repertoire:*
 
 | Challenger | Result | Exploit gap | Scored attempts | Wall clock |
 |---|---|---|---|---|
-| scripted | missed | 0.00 | 4 | 2.2s |
+| scripted *(then)* | missed | 0.00 | 4 | 2.2s |
 | prompted, `qwen3:8b` | missed | 0.00 | 10 | 97.0s |
 | prompted, `claude-cli` | **found** | **1.00** | 10 | 261.7s |
+| **scripted *(now)*** | **found** | **1.00** | 6 | **~2s** |
 
 Read from [`results/challenger_ablation.json`](results/challenger_ablation.json).
 An earlier version of this table printed 4/8/8 attempts at 6s/74s/405s, which
@@ -493,8 +519,9 @@ that unverified claims about environments are the problem, was the worst single
 defect the red-team found, and it was found by reading artifacts this README
 told people to read.
 
-The two misses are as much the result as the hit. An ablation showing only the
-arm that worked says nothing about how hard the problem is.
+The misses are as much the result as the hit. An ablation showing only the arm
+that worked says nothing about how hard the problem is — and in this case the
+arm that worked was later matched by four lines of shell.
 
 That row nearly went into this table as a lie. Two earlier runs printed
 `qwen3:8b` as `missed gap=0.00 attempts= 0`, at 186.6s and 188.3s, with an

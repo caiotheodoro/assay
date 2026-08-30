@@ -95,35 +95,47 @@ Re-running these two commands on a clean clone reproduces the committed
 `results/*.json` with no diff at all, which is the check that caught them being
 three environments out of date.
 
-24 environments across four ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
-openenv, 46 planted defects. `intervals.py` adds 95% bootstrap CIs and paired
-differences; read those, not the point estimates.
+26 environments across five ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
+openenv, 2 inspect_evals, **50 planted defects**. `intervals.py` adds 95%
+bootstrap CIs and paired differences; read those, not the point estimates.
 
 Expect exactly this, under `research-run`:
 
 | arm | expected loss | recall | precision |
 |---|---|---|---|
-| assay | 240.0 | 0.957 | 1.000 |
-| flag_everything | 290.0 | 1.000 | 0.137 |
-| check_env | 2816.0 | 0.043 | 1.000 |
-| flag_nothing | 2832.0 | 0.000 | 0.000 |
+| assay | 40.0 | 0.980 | 1.000 |
+| flag_everything | 314.0 | 1.000 | 0.137 |
+| stratified_random | 1789.0 | 0.360 | 0.383 |
+| always_modal_defect | 1888.0 | 0.200 | 0.385 |
+| check_env | 3056.0 | 0.040 | 1.000 |
+| flag_nothing | 3072.0 | 0.000 | 0.000 |
+
+Exactly **one** environment is missed corpus-wide — `inspect_evals/boolq`,
+`SHORTCUT_LEAK` — and there are zero false positives. If you see two Harbor
+misses instead, you are on a revision before the taxonomy-derived policies
+landed; see `docs/changelog/79-taxonomy-policies.md`.
 
 `check_env` — a model of what `gymnasium.utils.env_checker` and
-`stable_baselines3.common.env_checker` actually assert — detects 2 of 46, both
+`stable_baselines3.common.env_checker` actually assert — detects 2 of 50, both
 `NONDETERMINISM`, which is the only class it can return. It does not score
 identically to `flag_nothing`; an earlier revision of this guide said so and
 was wrong, because the model omitted the determinism check that gymnasium
 1.3.0 does perform. One of its two hits is `fixture/flaky`, planted here.
 
-The gap to `flag_nothing` is 16.0 of 2832.0. Whether that counts as
+The gap to `flag_nothing` is 16.0 of 3072.0. Whether that counts as
 "distinguishable" is not settled by the interval the README quotes: `check_env`
 emits no false positives and detects a subset of what is planted, so the paired
 difference is >= 0 by construction and the CI can never exclude zero from
-above. On a one-sided reading it is p ~ 0.12 -- the chance neither
-`NONDETERMINISM` environment is drawn, (22/24)^24. Expect also that Assay
-does **not** separate from `flag_everything` (paired difference 50.0,
-95% CI [−309, 295]), and that under `--profile production-training` it loses to
-it outright, 1920.0 to 580.0. Both are in the README.
+above. On a one-sided reading it is p ~ 0.13 -- the chance neither
+`NONDETERMINISM` environment is drawn, (24/26)^26.
+
+Expect also that Assay **does** separate from `flag_everything` — paired
+difference **274.0, 95% CI [186, 326]** — and that it now wins all four cost
+profiles, separating on three. Under `--profile production-training` it wins
+240.0 to 628.0 but the interval crosses zero, so that one is a lead rather than
+a result. An earlier revision of this guide told you to expect the opposite on
+both counts; it was correct when written, and closing the two Harbor misses is
+what changed it.
 
 ## The agent trajectories
 
@@ -228,17 +240,23 @@ those were observed; treat the collected/skipped counts as needing a re-run.
 | What was stopped | How | Result |
 |---|---|---|
 | Docker daemon | `docker desktop stop` | pytest: **275 collected, 32 skipped, 0 failed, exit 0, 17 s** — count stale (pre-doubling); every skip reads `docker daemon not available`, which is the row's actual claim |
-| Docker daemon | as above | `full_run.py`: **corpus 19 / 36 defects**, `WARNING: harbor unavailable ... docker daemon not running`, `unavailable: {harbor: ...}` in the JSON, exit 0 |
+| Docker daemon | as above | `full_run.py`: **corpus 21 / 38 defects**, `WARNING: harbor unavailable ... docker daemon not running`, `unavailable: {harbor: ...}` in the JSON, exit 0 |
 | Docker daemon | as above | `assay reap --dry-run`: prints `cannot check: docker is not installed or the daemon is not running` and exits 1, rather than reporting a clean nothing |
 | `docker` binary | removed from `PATH` | identical skips, exit 0 — the other branch of the same check |
 | Ollama | `brew services stop ollama` | pytest: **275 collected, 0 skipped, 0 failed, 53 s** — count stale (pre-doubling); the claim that nothing in the suite is model-gated holds |
 | Ollama | as above | `challenger_ablation.py --models qwen3:8b`: `SKIPPING qwen3:8b: ollama daemon unreachable at http://localhost:11434: <urlopen error [Errno 61] Connection refused>`, scripted arm still runs, exit 0 |
 
-The Docker row is the one worth reading twice. With the daemon down, Assay's
-expected loss drops from 240.0 to **0.0** — it looks perfect because the five
-environments it does worst on are gone. That is why the corpus size and the
-reason are printed and stored, and why you should check `corpus:` before
-believing any number under it.
+The Docker row used to be the one worth reading twice, and it is worth reading
+for a different reason now. It once dropped Assay's expected loss from 240.0 to
+**0.0** — a perfect score bought by deleting the five environments it did worst
+on. Measured today: **corpus 21 / 38 defects, expected loss 40.0, unchanged.**
+The degradation no longer flatters, because the one environment Assay misses is
+`inspect_evals/boolq` and Docker has nothing to do with it.
+
+That is a better state and it does not retire the warning. A corpus that shrinks
+for an environmental reason can still make an arm look better than it is; it
+happens not to here, this week, with these misses. Check `corpus:` before
+believing any number printed under it.
 
 ## Auditing a single environment
 
