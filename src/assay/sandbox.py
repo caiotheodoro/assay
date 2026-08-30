@@ -257,14 +257,40 @@ class SandboxSession:
         self.container_id = proc.stdout.strip()
         return self
 
+    #: `docker rm -f` is SIGKILL, not SIGTERM -- there is no grace period to
+    #: wait out. If it has not returned in this long the daemon is wedged, and
+    #: waiting longer converts a leaked container into a hung test run.
+    STOP_TIMEOUT = 15
+
     def stop(self) -> None:
-        if self.container_id:
+        """Remove the container. Never raises, never blocks teardown.
+
+        This used to be a 60-second `subprocess.run(..., capture_output=True)`
+        with `TimeoutExpired` uncaught, which on a slow daemon meant a full
+        minute of total silence and then an exception raised out of a fixture
+        finaliser -- a test suite that finished its last test and never printed
+        a summary line. Teardown that can hang is worse than teardown that can
+        fail, because the failure at least says something.
+
+        `container_id` is cleared *before* the call on purpose. If removal
+        fails the container survives, still carrying its `assay-session` and
+        `assay-pid` labels, so `assay reap` can find it. A leak that is
+        labelled is recoverable; a leak this object still believes it owns is
+        not.
+        """
+        cid, self.container_id = self.container_id, None
+        if not cid:
+            return
+        try:
             subprocess.run(
-                ["docker", "rm", "-f", self.container_id],
+                ["docker", "rm", "-f", "-v", cid],
                 capture_output=True,
-                timeout=60,
+                timeout=self.STOP_TIMEOUT,
             )
-            self.container_id = None
+        except (OSError, subprocess.SubprocessError):
+            # Deliberately swallowed. The container is now a labelled orphan
+            # and `assay reap` is exactly the tool for it.
+            pass
 
     def __enter__(self) -> "SandboxSession":
         return self.start()

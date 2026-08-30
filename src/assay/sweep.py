@@ -978,6 +978,12 @@ def gold_anchor(adapter: WildInspectAdapter) -> Anchor:
 # --------------------------------------------------------------------------
 
 
+#: Ceiling for a single task when the caller asks for no timeout. Generous
+#: enough that a slow dataset download is not mistaken for a hang, finite
+#: enough that a hang is eventually reported as one.
+HARD_TIMEOUT = 1800
+
+
 def sweep_task_isolated(
     ref: TaskRef,
     *,
@@ -1023,7 +1029,12 @@ def sweep_task_isolated(
         env={**os.environ, "HF_HUB_DISABLE_PROGRESS_BARS": "1"},
     )
     try:
-        out, err = proc.communicate(timeout=timeout if timeout > 0 else None)
+        # `timeout <= 0` used to mean `None`, i.e. wait forever. A sweep that
+        # hangs on one task produces no result and no reason, which is the
+        # failure this file exists to report rather than to commit. Nothing in
+        # the tree passes 0 today, so this was latent -- but "no test reaches
+        # it" is not a bound.
+        out, err = proc.communicate(timeout=timeout if timeout > 0 else HARD_TIMEOUT)
     except subprocess.TimeoutExpired:
         try:
             os.killpg(os.getpgid(proc.pid), signal.SIGKILL)

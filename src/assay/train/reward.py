@@ -162,9 +162,19 @@ class EnvPool:
         return sorted(self.factories)
 
     def close(self) -> None:
-        for adapter in self._live.values():
-            close_adapter(adapter)
-        self._live.clear()
+        """Close every adapter, even if one of them refuses to.
+
+        This used to abort on the first exception, which stranded every
+        remaining container in the pool -- the signature is a cluster of
+        orphans all sharing one dead pid. Teardown must never let one failure
+        prevent the rest of teardown.
+        """
+        live, self._live = dict(self._live), {}
+        for adapter in live.values():
+            try:
+                close_adapter(adapter)
+            except Exception:  # noqa: BLE001 - teardown never blocks teardown
+                pass
 
     def __enter__(self) -> "EnvPool":
         return self

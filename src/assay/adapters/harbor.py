@@ -234,13 +234,22 @@ class HarborAdapter(BaseAdapter):
         return self._live
 
     def close(self) -> None:
-        if self._live is not None:
-            self._live.stop()
-            self._live = None
-        for path in (self._work_host, self._logs_host):
-            if path:
-                shutil.rmtree(path, ignore_errors=True)
-        self._work_host = self._logs_host = None
+        """Release the container and the host tmpdirs, in that order, always.
+
+        The tmpdir cleanup used to sit after an unguarded `stop()`, so a
+        failure to remove the container also leaked two directories per
+        adapter. `stop()` no longer raises, but the ordering is made explicit
+        anyway: whatever happens to the container, the disk is reclaimed.
+        """
+        live, self._live = self._live, None
+        try:
+            if live is not None:
+                live.stop()
+        finally:
+            for path in (self._work_host, self._logs_host):
+                if path:
+                    shutil.rmtree(path, ignore_errors=True)
+            self._work_host = self._logs_host = None
 
     def __enter__(self) -> "HarborAdapter":
         return self
