@@ -11,6 +11,7 @@ import json
 import pytest
 
 from assay.adapter import NotSupported
+from assay.challenger import ChallengerExhausted
 from assay.challenger.grpo import GRPOChallenger, TransformersClient, dumps_policy
 from assay.fixtures import build
 from assay.llm import LLMUnavailable
@@ -77,7 +78,7 @@ def test_an_unparseable_sample_costs_a_sample_but_does_not_crash():
 def test_a_model_that_never_answered_is_not_reported_as_finding_nothing():
     """Silence here would put 'no exploit' in the card for a run in which the
     attacker never spoke. The probe turns this into NOT_APPLICABLE."""
-    with pytest.raises(NotSupported, match="produced no policy"):
+    with pytest.raises(ChallengerExhausted, match="produced no policy"):
         GRPOChallenger(client=DeadClient(), samples=4).attack(build("healthy"), "t1")
 
 

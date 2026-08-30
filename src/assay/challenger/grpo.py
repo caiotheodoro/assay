@@ -24,7 +24,7 @@ from typing import Any, Iterable
 from ..adapter import EnvAdapter, NotSupported, run_policy
 from ..llm import LLMClient, LLMUnavailable
 from ..types import Action, digest
-from .base import Attempt, action_vocabulary
+from .base import Attempt, ChallengerExhausted, action_vocabulary
 from .prompted import _extract_json
 
 #: Actions per policy. Short on purpose: the completions are tool calls, not
@@ -146,7 +146,17 @@ class GRPOChallenger:
         self.name = f"{self.label}[{getattr(self.client, 'name', 'client')}]"
 
     def attack(self, adapter: EnvAdapter, task_id: str) -> list[Attempt]:
-        system, user = prompt_for(adapter, task_id, self.max_actions)
+        try:
+            system, user = prompt_for(adapter, task_id, self.max_actions)
+        except NotSupported as exc:
+            # `NotSupported` unwound past CompositeChallenger, which catches
+            # LLMUnavailable and nothing else, and past the per-task handler in
+            # RewardHackability -- so one adapter with no trivial policies
+            # NA'd the probe across every task, deleting findings the scripted
+            # member had already made. That is the exact regression
+            # composite.py exists to prevent, re-entering through a different
+            # exception type.
+            raise ChallengerExhausted(str(exc)) from exc
 
         attempts: list[Attempt] = []
         seen: set[str] = set()
@@ -183,14 +193,35 @@ class GRPOChallenger:
                 )
             )
 
-        if failures and not attempts:
+        if not attempts:
             # Silence here would report "no exploit found" for a run in which
             # the attacker never spoke. The probe turns this into
             # NOT_APPLICABLE with the reason attached, which is the difference
             # between evidence of absence and absence of evidence.
-            raise NotSupported(
-                f"grpo challenger produced no policy: {failures[0]} "
-                f"({len(failures)}/{self.samples} samples failed)"
+            #
+            # The guard used to be `failures and not attempts`, so it only
+            # covered an unreachable backend. A model that answered every
+            # sample and never once emitted parseable JSON produced zero
+            # attempts with zero failures and fell straight through to
+            # `return []` -- scored as a clean PASS.
+            #
+            # Mode collapse does NOT reach here, and an earlier version of this
+            # comment claimed it did: the first of N identical policies is a
+            # real scoreable attempt, so collapse degrades best-of-n to
+            # best-of-one rather than to nothing. Worth stating because 99.7%
+            # of this challenger's training rollout groups had no reward
+            # spread, which makes collapse the expected behaviour -- and the
+            # honest description of it is "a weaker attack", not "no attack".
+            unparseable = sum(1 for entry in log if not entry.get("parsed"))
+            duplicates = sum(1 for entry in log if entry.get("duplicate"))
+            reason = (
+                f"{failures[0]} ({len(failures)}/{self.samples} samples failed)"
+                if failures
+                else f"{unparseable} unparseable, {duplicates} duplicate "
+                f"of {self.samples} samples"
+            )
+            raise ChallengerExhausted(
+                f"grpo challenger produced no policy: {reason}", log
             )
         return attempts
 

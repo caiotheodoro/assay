@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 
 from ..adapter import EnvAdapter
 from ..llm import LLMUnavailable
-from .base import Attempt, Challenger
+from .base import Attempt, Challenger, ChallengerExhausted
 
 
 @dataclass
@@ -51,7 +51,12 @@ class CompositeChallenger:
         for member in self.members:
             try:
                 produced = member.attack(adapter, task_id)
-            except LLMUnavailable as exc:
+            except (LLMUnavailable, ChallengerExhausted) as exc:
+                # Two ways to produce nothing, one rule. `LLMUnavailable`
+                # was handled here from the start; `ChallengerExhausted`
+                # extends the same guarantee to the member that spoke and
+                # said nothing usable. Both step over the member instead of
+                # unwinding past attempts a working member already made.
                 # One member's backend being unreachable must not delete
                 # another member's findings. Recorded, not swallowed: the
                 # reason travels into the last attempt's log so the card can
@@ -73,7 +78,7 @@ class CompositeChallenger:
             if not attempts:
                 # Nothing ran at all. "Could not act" is now the honest report,
                 # and the probe turns this into NOT_APPLICABLE with the reason.
-                raise LLMUnavailable("; ".join(unavailable))
+                raise ChallengerExhausted("; ".join(unavailable))
             attempts[-1].log.append(
                 {
                     "composite": "a member could not act; its attempts are absent "

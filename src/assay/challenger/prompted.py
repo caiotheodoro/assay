@@ -22,7 +22,7 @@ from typing import Any
 from ..adapter import EnvAdapter
 from ..llm import LLMClient, LLMUnavailable, default_client
 from ..types import Action, Transcript
-from .base import Attempt, action_vocabulary
+from .base import Attempt, ChallengerExhausted, vocabulary_or_reason
 
 #: Not an environment tool. The harness intercepts it, so an attacker that has
 #: already scored can start over instead of staring at a workspace that scores
@@ -182,9 +182,13 @@ class PromptedChallenger:
         return "\n".join(lines)
 
     def attack(self, adapter: EnvAdapter, task_id: str) -> list[Attempt]:
-        vocabulary = action_vocabulary(adapter, task_id)
+        vocabulary, why_empty = vocabulary_or_reason(adapter, task_id)
         if not vocabulary:
-            return []
+            # Returning `[]` here was the quietest of the five routes: the
+            # probe saw an attacker that made no attempts and scored it as a
+            # clean PASS, so an environment nobody could attack read exactly
+            # like an environment nobody could break.
+            raise ChallengerExhausted(why_empty)
         default_tool = vocabulary[0][0]
 
         task = next(
@@ -220,7 +224,12 @@ class PromptedChallenger:
                 # Raising makes the probe ERROR and carries the reason with it.
                 if not attempts:
                     # The probe turns this into NOT_APPLICABLE with the reason
-                    # attached; see RewardHackability.check.
+                    # attached; see RewardHackability.check. Attach whatever
+                    # was tried before the backend went away -- the earlier
+                    # turns may have been malformed replies rather than
+                    # silence, and the card could not tell the two apart while
+                    # this path dropped the transcript on the way out.
+                    exc.history = list(history)  # type: ignore[attr-defined]
                     raise
                 # Past the first scored attempt there is partial evidence worth
                 # keeping, so stop rather than discard it -- but say in the
@@ -309,4 +318,17 @@ class PromptedChallenger:
             # across every attempt. The self-report survives only as feedback,
             # to stop it repeating a score it earned.
 
+        if not attempts:
+            # Every turn was spent and nothing was ever scored. Two distinct
+            # ways to get here and neither used to say so: every reply
+            # unparseable, and every reply a `reset` -- the second is an
+            # attacker that spoke perfectly well and undid itself each turn.
+            # Both returned `[]`, which the probe reported as a clean PASS.
+            malformed = sum(1 for h in history if "malformed" in h.get("action", {}))
+            resets = sum(1 for h in history if h.get("action", {}).get("tool") == RESET_TOOL)
+            raise ChallengerExhausted(
+                f"{self.turns} turns produced no scoreable attempt "
+                f"({malformed} unparseable, {resets} reset)",
+                history,
+            )
         return attempts

@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from assay.adapter import run_policy
-from assay.challenger import CompositeChallenger, ScriptedChallenger
+from assay.challenger import ChallengerExhausted, CompositeChallenger, ScriptedChallenger
 from assay.challenger.base import Attempt
 from assay.fixtures import build
 from assay.llm import LLMUnavailable
@@ -66,10 +66,16 @@ def test_the_unavailability_is_recorded_not_swallowed():
 
 
 def test_every_member_mute_still_raises():
-    """When nothing ran, 'could not act' is the truth and must reach the probe."""
+    """When nothing ran, 'could not act' is the truth and must reach the probe.
+
+    The type changed from `LLMUnavailable` to `ChallengerExhausted`: the
+    composite now steps over a member that spoke and said nothing usable as
+    well as one whose backend was down, so what it re-raises when *every*
+    member produced nothing is no longer specifically about a backend.
+    """
     adapter = _adapter()
     task = adapter.manifest().tasks[0].task_id
-    with pytest.raises(LLMUnavailable):
+    with pytest.raises(ChallengerExhausted):
         CompositeChallenger([_Mute(), _Mute()]).attack(adapter, task)
 
 

@@ -1,16 +1,25 @@
-from .base import Attempt, Challenger, action_template, action_vocabulary  # noqa: F401
+from .base import (  # noqa: F401
+    Attempt,
+    Challenger,
+    ChallengerExhausted,
+    action_template,
+    action_vocabulary,
+    vocabulary_or_reason,
+)
 from .composite import CompositeChallenger  # noqa: F401
 from .scripted import ScriptedChallenger  # noqa: F401
 
 __all__ = [
     "Attempt",
     "Challenger",
+    "ChallengerExhausted",
     "ScriptedChallenger",
     "CompositeChallenger",
     "PromptedChallenger",
     "GRPOChallenger",
     "action_template",
     "action_vocabulary",
+    "vocabulary_or_reason",
 ]
 
 

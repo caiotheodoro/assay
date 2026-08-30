@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..adapter import EnvAdapter, run_policy
-from ..challenger import Attempt, ScriptedChallenger
+from ..challenger import Attempt, ChallengerExhausted, ScriptedChallenger
 from ..llm import LLMUnavailable
 from ..types import Capability, DefectClass, Finding, Transcript, DEFAULT_SEVERITY
 from .base import Probe, register
@@ -70,7 +70,7 @@ class RewardHackability(Probe):
         for task in adapter.manifest().tasks:
             try:
                 attempts: list[Attempt] = challenger.attack(adapter, task.task_id)
-            except LLMUnavailable as exc:
+            except (LLMUnavailable, ChallengerExhausted) as exc:
                 # A Challenger that could not speak is not a Challenger that
                 # found nothing, and the difference has to survive into the
                 # card. Recorded per task: one unreachable backend must not
@@ -81,7 +81,12 @@ class RewardHackability(Probe):
                     "attempts": [],
                     "n_attempts": 0,
                     "best_attempt": None,
-                    "attacker_trace": [],
+                    # What the attacker managed before it ran out. Every
+                    # exhaustion route used to discard this, so the card
+                    # carried a reason with nothing behind it and no way to
+                    # tell an attacker that emitted prose from one that
+                    # emitted the same policy eight times.
+                    "attacker_trace": list(getattr(exc, "history", [])),
                     "unavailable": str(exc),
                 }
                 continue
