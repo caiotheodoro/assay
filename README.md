@@ -205,8 +205,8 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 | flag_everything | 314.0 | [295, 331] | 1.000 | 0.137 |
 | stratified_random | 1789.0 | [1050, 2625] | 0.360 | 0.383 |
 | always_modal_defect | 1888.0 | [1196, 2672] | 0.200 | 0.385 |
-| direct_prompt (`qwen3:8b`) | 2415.0 | — | 0.239 | 0.324 |
-| agent_with_tools (`qwen3:8b`) | 2497.0 | — | 0.196 | 0.265 |
+| agent_with_tools (`qwen3:8b`) | 2654.0 | [1643, 3815] | 0.220 | 0.333 |
+| direct_prompt (`qwen3:8b`) | 2658.0 | [1703, 3740] | 0.220 | 0.297 |
 | **check_env** (incumbent) | **3056.0** | [1960, 4272] | **0.040** | 1.000 |
 | flag_nothing | 3072.0 | [1984, 4288] | 0.000 | 0.000 |
 
@@ -225,19 +225,33 @@ the flake needs the load of a full run. The determinism probe fingerprints
 `(ok, data, code)` and Harbor's step data is `{stdout, exit_code}`, so a sandbox
 command that times out under load is indistinguishable from an environment that
 is genuinely nondeterministic — plausible, and **not isolated**, so it is
-reported as a rate rather than a diagnosis. The two LLM arms are from
-`results/full_run_llm.json`, measured on the 24-environment corpus before this
-expansion.
+reported as a rate rather than a diagnosis.
+
+**Every arm in this table is now measured on the same 26 environments**, in the
+same `results/full_run.json`, with intervals from the same bootstrap. The two
+LLM arms used to be quoted from a separate 24-environment file with an em-dash
+where the CI belonged — a comparison printed as one table and measured as two,
+which is the drift this repo keeps catching in other people's numbers. Re-run
+on the current corpus, every deterministic arm came back byte-identical and
+only the two LLM rows moved.
 
 **The two LLM arms are the brief's own simple baseline, and they lose to
 flagging at base rates.** `direct_prompt` reads everything a careful human
 reviewer could read without executing anything — the manifest, the
 instructions, the verifier source where it can be obtained — and names the
 defect classes it thinks are present. `agent_with_tools` gets the same plus a
-tool loop it can drive. They score 2415.0 and 2497.0 against
-`stratified_random`'s 1587.0: better than the incumbent linter, worse than
-guessing at the base rate, and an order of magnitude worse than running the
-probes.
+tool loop it can drive. They score **2658.0 and 2654.0 against
+`stratified_random`'s 1789.0** — and that gap is now separated rather than
+merely observed: stratified random saves **869.0, 95% CI [201, 1627]** over
+`direct_prompt` and **865.0, [178, 1679]** over `agent_with_tools`. Better than
+the incumbent linter, reliably worse than guessing at the base rate, and an
+order of magnitude worse than running the probes.
+
+The two arms are within 4.0 of each other on a 26-environment corpus, which is
+far inside their own intervals: **giving the model a tool loop bought nothing
+measurable**. Recorded that way rather than as a ranking, because reporting
+`agent_with_tools` as "the better LLM arm" on a 4.0 difference would be exactly
+the unfalsifiable claim this project exists to catch.
 
 Reading an environment is not auditing it. That is the whole argument for
 executing the thing, and until now it was an argument rather than a row.

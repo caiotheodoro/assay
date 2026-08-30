@@ -190,14 +190,32 @@ def test_the_llm_baseline_arm_survives_an_adapter_that_refuses_verify():
 
 
 def test_the_llm_baseline_rows_match_the_measured_file():
-    """The brief's own baseline, scored, with the README quoting the artifact."""
-    d = _load("full_run_llm.json")
+    """The brief's own baseline, scored, with the README quoting the artifact.
+
+    Reads `full_run.json`, deliberately -- the SAME file every other arm in
+    that table comes from. The LLM rows used to be quoted from a separate
+    24-environment `full_run_llm.json` while the rest of the table was 26, a
+    comparison printed as one table and measured as two. Pinning both to one
+    file is what stops that recurring, so this test asserts the arms are
+    present there rather than merely present somewhere.
+    """
+    d = _load("full_run.json")
     arms = d["arms"]
     for name in ("direct_prompt", "agent_with_tools"):
-        assert name in arms, f"{name} is not in results/full_run_llm.json"
+        assert name in arms, (
+            f"{name} is not in results/full_run.json -- re-run "
+            f"scripts/full_run.py --llm-arms qwen3:8b so every arm shares a corpus"
+        )
         assert f"{arms[name]['expected_loss']:.1f}" in README, (
             f"{name} scored {arms[name]['expected_loss']} and the README does not say so"
         )
+
+    # Same corpus for every arm, checked rather than assumed.
+    iv = _load("intervals.json")
+    for name in ("direct_prompt", "agent_with_tools"):
+        assert name in iv["arms"], f"{name} has no bootstrap interval"
+        assert iv["arms"][name]["expected_loss"]["ci95"], f"{name} has an empty CI"
+
     # The claim the rows are there to support.
     assert arms["direct_prompt"]["expected_loss"] > arms["stratified_random"]["expected_loss"], (
         "the LLM arm now beats flagging at base rates -- the README says it "
