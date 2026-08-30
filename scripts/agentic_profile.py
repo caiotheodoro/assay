@@ -55,11 +55,18 @@ def _arm(payload: dict, key: str) -> tuple[ArmResult, dict]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", default="results/agentic_runs")
-    ap.add_argument("--scripted", default="results/full_run.json")
+    ap.add_argument("--pattern", default="harbor_[0-9].json",
+                    help="which runs form the distribution; the fixed-composite "
+                         "re-run is excluded by default so it cannot be averaged "
+                         "in with the runs that predate the fix")
+    ap.add_argument("--scripted", default="results/harbor_scripted.json",
+                    help="the deterministic arm on the SAME slice; comparing a "
+                         "harbor-only agentic run against the 24-environment "
+                         "scripted run would be two different corpora")
     ap.add_argument("--out", default="results/agentic_profile.json")
     args = ap.parse_args()
 
-    paths = sorted(Path(args.runs).glob("run_*.json"))
+    paths = sorted(Path(args.runs).glob(args.pattern))
     if not paths:
         print(f"no runs in {args.runs}", file=sys.stderr)
         return 2
@@ -103,6 +110,7 @@ def main() -> int:
 
     body = {
         "measurement": "what the agentic Challenger buys over k independent runs",
+        "slice": f"{runs[0]['n_environments']} environments" if runs else "none",
         "k": k,
         "arm": "assay+scripted+prompted[claude-cli:sonnet]",
         "why_a_distribution": (
@@ -139,7 +147,8 @@ def main() -> int:
     Path(args.out).write_text(json.dumps(body, indent=2) + "\n")
     print(f"wrote {args.out}\n")
 
-    print(f"k = {k} independent full-corpus runs\n")
+    envs = runs[0]["n_environments"] if runs else 0
+    print(f"k = {k} independent runs over {envs} environments\n")
     print(f"{'environment':<28}{'missed':>8}{'found rate':>12}")
     for env, row in body["per_environment_miss_rate"].items():
         print(f"{env:<28}{row['missed_in_runs']:>3}/{k:<4}{row['found_rate']:>12.2f}")
