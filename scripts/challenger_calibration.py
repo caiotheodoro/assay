@@ -37,6 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay.adapters import HarborAdapter  # noqa: E402
+from assay.challenger.prompted import _confidence  # noqa: E402
 from assay.calibration import Pair, report  # noqa: E402
 from assay.challenger.prompted import RESET_TOOL  # noqa: E402
 from assay.probes.hackability import exploit_gap  # noqa: E402
@@ -86,7 +87,11 @@ def prefixes(trace: list[dict]) -> list[dict]:
             {
                 "turn": turn["turn"],
                 "actions": list(actions),
-                "claim": bool(turn.get("solves_the_task", False)),
+                # Read as a probability. Traces recorded before the attacker
+                # emitted one carry a bool, and those map to the endpoints --
+                # which is exactly why this file used to report an ECE over two
+                # distinct forecast values.
+                "claim": _confidence(turn.get("solves_the_task")),
                 "reported_at_the_time": turn.get("reported"),
             }
         )
@@ -182,7 +187,7 @@ def main() -> int:
             pairs = [
                 Pair(
                     label=f"{name}#turn{r['turn']}",
-                    forecast=1.0 if r["claim_solves_the_task"] else 0.0,
+                    forecast=_confidence(r["claim_solves_the_task"]),
                     outcome=float(r["true_completion"]),
                 )
                 for r in rows
@@ -219,7 +224,13 @@ def main() -> int:
     body = {
         "spec": "criteria.md -- Calibration: mean Brier (not sum), ECE, reliability "
                 "diagram, Brier decomposition; plus a false-success rate",
-        "forecast": "the attacker's own `solves_the_task` boolean, per turn",
+        "forecast": (
+            "the attacker's own `solves_the_task` probability, per turn. It was a "
+            "boolean until the calibration file itself reported that two distinct "
+            "forecast values cannot support a reliability diagram; traces recorded "
+            "before that carry bools and are read at the endpoints, so a mixed "
+            "corpus is scored honestly rather than silently rebinned."
+        ),
         "outcome": (
             "adapter.true_completion of the replayed action prefix -- a deterministic "
             "verifier the attacker never had access to"
