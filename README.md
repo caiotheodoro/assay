@@ -29,6 +29,37 @@ recompute it.
 > are written up with their numbers in
 > [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
 
+### Who this is for, concretely
+
+Three people, in the order the tool serves them:
+
+1. **The researcher about to spend a training run.** They have an environment
+   they did not write — pulled from `inspect_evals`, Harbor, OpenEnv or a
+   colleague — and a GPU budget. They cannot read every verifier, and the
+   failure they are exposed to is silent: a policy that learns the verifier
+   instead of the task, discovered after the run rather than before it. They
+   run `assay audit` and read the exit code. This is the user the
+   `research-run` cost profile is written for: a false alarm costs them an hour
+   of reading a card, a missed critical defect costs them the cycle.
+
+2. **The maintainer of an eval suite.** They own tasks other people score
+   against and have no cheap way to know whether a verifier still means what
+   the task says. They run the battery over the suite in CI and get a diff of
+   which environments changed status. `docs/COVERAGE.md` is written for them:
+   it says, in BenchJack's V1–V8 vocabulary rather than ours, which flaw
+   classes this tool sees and which four of eight it does not.
+
+3. **The reviewer deciding whether to trust a reported number.** They are
+   handed a benchmark result and want to know what was checked. The card is
+   the artifact — every claim tied to a probe, and every probe that could not
+   run named with its reason, which is the half that makes the other half
+   worth anything.
+
+The tool is not for someone who wants a score. `flag_everything` gives a score
+and it beats a badly-calibrated auditor; the numbers proving that are published
+in [`results/cost_sensitivity.json`](results/cost_sensitivity.json), including
+the range of cost beliefs where it wins.
+
 ```bash
 uv sync --extra dev && uv run pytest -q               # the demo: every planted defect, caught
 uv run --extra adapters --extra openenv python scripts/full_run.py   # headline, 22s
@@ -39,7 +70,6 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # headline,
 | | |
 |---|---|
 | **The method, written to be reused** | [`docs/METHOD.md`](docs/METHOD.md) |
-| **What the tool cannot see**, in someone else's vocabulary | [`docs/COVERAGE.md`](docs/COVERAGE.md) |
 | **What the tool cannot see**, in someone else's vocabulary | [`docs/COVERAGE.md`](docs/COVERAGE.md) |
 | Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
 | What changed, slice by slice, with evidence | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |

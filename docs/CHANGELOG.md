@@ -3,6 +3,44 @@
 One row per meaningful experiment, including the ones that were removed.
 Evidence is a command anyone can rerun.
 
+## Baseline → Final
+
+Same corpus, same cost profile, both reproducible in one command each:
+`scripts/full_run.py` then `scripts/intervals.py`. 26 environments, 50 planted
+defects, `research-run` profile.
+
+| | Expected loss | Recall | Precision | Normalized loss |
+|---|---|---|---|---|
+| **Baseline** — `check_env`, the incumbent structural linter | 3056 | 0.040 | 1.000 | 9.73 |
+| **Baseline** — `flag_nothing`, the honest null | 3072 | 0.000 | 0.000 | 9.78 |
+| **The floor to beat** — `flag_everything` | 314 | 1.000 | 0.137 | 1.00 |
+| **Final** — Assay | **40.0** | **0.980** | **1.000** | **0.127** |
+
+The incumbent scores within half a percent of doing nothing. It is not a weak
+detector of these defects; it is not a detector of them. That gap is the
+opportunity, and reproducing it needs no LLM.
+
+**The comparison that actually decides it is the third row, not the first.**
+`flag_everything` catches every defect by construction, so an auditor that
+cannot beat it is an expensive way to say "check everything" — and for most of
+this project's life Assay did not beat it. It now does: **274.0 loss saved,
+95% CI [186, 326], separated**, from a paired bootstrap over 10,000 resamples
+of *environments* rather than defects, because a verifier that always passes
+fails six probes at once and resampling defects would report an interval far
+tighter than the data supports. Assay wins all four cost profiles and separates
+on three.
+
+**What it still cannot do**, at the same volume as the wins: one miss remains
+(`inspect_evals/boolq` — structural, no train split, so the contamination probe
+has nothing to compare); four of BenchJack's eight flaw classes are uncovered,
+named in *their* vocabulary in `docs/COVERAGE.md`; the corpus is authored here,
+a lower bar than defects found in the wild; and the cost constant is bounded
+rather than derived — 120 sits inside a 0.04–850 engineer-hour range
+(`results/cost_unit.json`) whose top is still below the 942 crossover, so every
+cost belief the bound supports is one where Assay wins.
+
+## Every slice
+
 | Stage | What was tried and why | Evidence | Decision / learning |
 |---|---|---|---|
 | Slice 1 | Core adapter protocol, 9 probe families, 12 fixture environments with planted defects. Establish that every probe fires on something real before writing any adapter against a real ecosystem. | `uv run pytest -q` → 27 passed | **Kept.** Detection matches ground truth exactly on all 12 fixtures. |
@@ -550,3 +588,20 @@ diagnostic that predicted the result cost nothing and ran on a laptop.
 | Slice 36d | The one Space-specific gate was a substring search. | `_space_behaviour_gates()` | `"NOT_APPLICABLE" in app` — satisfied by a file that only mentions the constant in a comment. It now imports the **staged** copy (the one about to be uploaded, not the one in the repo), renders a thin spec and asserts the skip table appears, then renders a hostile spec and asserts the payload came back escaped. A gate that can only pass if the behaviour it names actually happens. |
 | Slice 36e | No submission could ever reach `VALID` here, and nothing said so. | `_ceiling()` in `space/app.py` | `VALID` requires every probe to have run; `difficulty_band` needs a rollout sampler a Space without Docker cannot provide. So a user whose eval is genuinely fine saw purple `UNVERIFIED` with no explanation and reasonably concluded the tool was broken. The banner now says the ceiling is a limit of the Space rather than a reservation about their environment — **only when the sampler is the sole gap**, and never beside a finding, where reassurance would be the worst of both. |
 | Slice 36f | Two deployment details that would have failed on first boot. | front matter, `space/requirements.txt` | `python_version: "3.11"` — `assay.adapters.harbor` imports `tomllib` at module level and the Spaces gradio image defaults to 3.10. And the page now opens on the substring-verifier example rather than an empty box: that example *is* the argument for the tool — one constant string credited for both labels, so a policy ignoring the input scores 100% — and an empty box asks a visitor to supply the argument before seeing the tool make it. |
+<!-- from 88-passes.md -->
+| Slice 37 | The probe took **one pass per environment**, so a stochastic attacker was reported as a measurement. | `src/assay/probes/hackability.py`, `ctx["challenger_passes"]` | Slice 14a recorded this as a known gap and declined to fix it, because "fixing it changes what every existing number means". It is fixed now. `k` passes per task, `hit_rate` in the finding's evidence and in the per-task detail. The README's own admission — *"a `VALID` verdict may be a run that happened not to find the exploit"*, against a Challenger measured at 3-in-4 — is now a number rather than a caveat. |
+| Slice 37a | The combination rule, and why it is not an average. | `hackability.py` | **The finding fires if ANY pass crosses the threshold**, and the rate is reported beside it rather than gating it. Any other rule contradicts what the gap means: an exploit found once is an exploit, and a threshold applied to a mean would report a reachable exploit as absent because it is not reachable *often*. A 1-in-4 exploit and a 4-in-4 exploit are the same finding and very different problems, so both numbers ship. A 0-of-k miss records `k passes, 0 crossed` — "PASS" with no denominator is exactly the unfalsifiable claim this probe exists to catch. |
+| Slice 37b | Silence is not a miss. | `passes_scored` vs `passes` | A pass in which the attacker produced nothing measured nothing, so the denominator is passes **scored**, not passes attempted, and `passes_silent` is reported separately. Counting a silent pass as a miss would report an unreachable model as an environment that held — the same conflation slice 35 removed from the single-pass path. One silent pass out of four is a smaller denominator; four out of four is a mute task. |
+| Slice 37c | Two implementations of one rate, retired. | `scripts/challenger_reliability.py` | The script ran a full audit k times and counted reports itself, which made it a second implementation of a number the probe is now responsible for — the "scored by a second implementation" failure `intervals.py` names. It now sets `challenger_passes`, reads `hit_rate` back and writes the artifact. What it measures is unchanged; who computes it is not. **Verified end to end**: `--k 2 --turns 3` on `harbor/self-graded` → `2/2 passes found the exploit`, artifact written. |
+| Slice 37d | The script now refuses to overwrite its own artifact. | `--overwrite` | `results/challenger_reliability.json` carries fields no re-run can reconstruct: why a fifth run was stopped, and a `do_not_backfill` note saying the run config was never captured and must not be filled in from today's defaults. A re-run would have silently destroyed exactly the kind of provenance this repo asks other people to keep. It now refuses and names what would be lost. |
+| Slice 37e | **What that verification run does not show.** | the artifact's `policy` field | Both passes were won by `scripted/trivial:v7_make_the_comparison_agree` — the **scripted** taxonomy policy, not the prompted model. So `2/2` is evidence that the plumbing works and that the taxonomy-derived policy is reliable on this environment; it is **not** evidence that the prompted Challenger got more reliable, and reading it that way would be the mistake this repo keeps catching in itself. The committed 3-of-4 (k=4, turns=10) stands as the composite's rate and is not superseded by a k=2, turns=3 run. |
+<!-- from 89-docs.md -->
+| Slice 38 | Everything the external review named, checked against the tree rather than accepted. | 86/100 review; `README.md`, `docs/{RUBRIC,ARCHITECTURE,REPRODUCTION,VIDEO}.md` | **One review claim is wrong and is recorded as wrong**: `tests/test_wild_findings.py` exists and passes, and `docs/VIDEO.md:82` references it correctly. Stating it matters because the whole submission argues claims get checked regardless of who makes them. The rest were real. |
+| Slice 38a | A duplicated row in the first table anyone reads — **my own slip**. | `README.md:42-43`, `tests/test_readme_tables.py` (new) | A shell command errored partway, applied half its edit, and was re-run without checking what the first attempt had already done. That is a process failure rather than a typo, and the same process runs over every document here, so it is now a test: no README table row may appear twice, and every relative doc link must resolve. |
+| Slice 38b | **A scoring deduction that was false on its face.** | `docs/RUBRIC.md` | *"−1: no CI. There is no `.github/` in the tree."* There is: `.github/workflows/ci.yml`, two jobs, one of them a `results-are-reproducible` check that re-runs the corpus and diffs it against the committed arms. The snapshot banner at the top of that file covers measurements that have moved; it does not cover a deduction that is simply wrong, and leaving it standing would be scoring ourselves against a tree that no longer exists. Earned back, with the now-redundant "to earn it back" instructions removed. |
+| Slice 38c | Three live present-tense claims of **513 tests** against a suite of 589. | `ARCHITECTURE.md:12`, `REPRODUCTION.md:39` and `:205`, `RUBRIC.md:12` | Re-measured rather than incremented: **589 passed, 0 skipped, 0 failed, exit 0, 113 s**. `REPRODUCTION.md:205` is the headline reproduction promise, which is the worst place to carry a stale number. Historical changelog and red-team records keep 513 as history. The reward suite's "38 tests" was re-counted and is **correct**. |
+| Slice 38d | My own status report was half-true. | `docs/VIDEO.md` | I described this file as corrected while line 10 still read *"Status: not ready to record"*. The banner now says what is true: the script is complete, every `<>` placeholder is resolved, and **it is not recorded because recording was deferred** — with the scoring cost of that decision stated in the file rather than left for a reader to find. |
+| Slice 38e | The cost constant, bounded instead of asserted. | `scripts/cost_unit.py`, `results/cost_unit.json` (new) | `research-run.yaml` prices a missed CRITICAL at 120 engineer-hours and nothing derived it. This bounds it from both ends and sweeps every input: **floor 0.04–4.43 hours** (GPU alone, at this repo's own measured `g5.xlarge` spot rate of $0.4612/hr — below the shipped value in every cell, which is the honest result: discarded compute is the cheapest part of a broken environment), **ceiling 142–850 hours** (repairing a benchmark after publication, anchored to SWE-bench Verified's 93 developers over 1,699 samples — cited, not measured here). 120 sits inside. |
+| Slice 38f | **And the bound turned out to strengthen the headline, after I first read it backwards.** | `results/cost_sensitivity.json` | My first draft of the reading said 942 was the point where Assay *overtakes* flag-everything, concluded the crossover sat above the ceiling, and therefore that flag-everything wins across the defensible range. **The direction is the opposite**: Assay wins for every missed-CRITICAL cost *below* 942, and the top of the bound is 850. So the entire range a defensible cost belief can occupy — from "a wasted GPU-month is all it costs" to "a full SWE-bench-Verified-scale re-annotation" — lies on the side where Assay wins. Reaching the crossover would mean valuing one missed critical defect above re-annotating an entire published benchmark. Caught by reading the arm table instead of trusting the summary sentence I had written. |
+| Slice 38g | The user, named. | `README.md` | The remaining half of that deduction was that "who this is for" was implied and never stated. Three people, in the order the tool serves them: the researcher about to spend a training run on an environment they did not write; the maintainer of a suite other people score against; the reviewer deciding whether to trust a reported number. With who it is **not** for: someone who wants a score, because `flag_everything` gives a score. |
+| Slice 38h | The disclosure drafts cannot be sent, and now say so in one place. | `docs/disclosures/README.md` (new) | Both drafts cite `<REPO_URL>` for the tests backing them and `git remote -v` is empty. A disclosure that points a maintainer at a placeholder asks them to trust a claim and gives them nothing to check it against. The complete substitution list is written down — both files, line 68 of each, plus the `REPRODUCTION.md:51`→`:53` drift — so it is not rediscovered at send time. Nothing has been filed and no maintainer has been contacted. |

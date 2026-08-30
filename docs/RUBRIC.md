@@ -9,8 +9,9 @@ finishing passes.*
 
 > **This document is a snapshot and is now partly stale.** It was written before
 > `docs/RED-TEAM.md` broke twelve published claims and before those were fixed,
-> so it quotes numbers that have since moved: `493 passed / 18 skipped` (now 513+
-> with the τ² snapshots fetched), `0.339` as the README's τ² headline (now
+> so it quotes numbers that have since moved: `493 passed / 18 skipped` (now 589
+> passed / 0 skipped with the τ² snapshots fetched), `0.339` as the README's τ²
+> headline (now
 > labelled chance, p = 0.486), and an example card carrying a "signature" (now
 > `content_digest`). Line references into `README.md` no longer resolve.
 >
@@ -160,13 +161,13 @@ read off a file. Those runs are listed in [What was executed](#what-was-executed
    survives and both spot instances are gone, so nobody can reproduce or resume it.
    *To earn it back:* push the LoRA adapter and `rewards.jsonl` somewhere fetchable
    and reference it, or state plainly in the README that the artifact does not exist.
-4. **−1: no CI.** There is no `.github/` in the tree. A suite of 493 tests that has
-   only ever been observed passing on the author's laptop is not evidence a judge can
-   lean on.
-   *To earn it back:* one workflow running `uv sync --extra dev && pytest -q`, plus a
-   job that runs `full_run.py` and fails on any diff against the committed
-   `results/full_run.json` — that diff-check is already the repo's own reproducibility
-   argument (`docs/REPRODUCTION.md:90-92`), it is just not automated.
+4. **~~−1: no CI.~~ Earned back.** This deduction said *"there is no `.github/` in
+   the tree"*. There is: `.github/workflows/ci.yml`, with two jobs — the suite, and a
+   `results-are-reproducible` job that re-runs the corpus and diffs it against the
+   committed arms, which is the harder of the two to fake. The snapshot banner at the
+   top of this file covers measurements that have since moved; it does not cover a
+   deduction that is **wrong on its face**, and leaving it standing would be scoring
+   ourselves against a tree that no longer exists.
 
 ---
 

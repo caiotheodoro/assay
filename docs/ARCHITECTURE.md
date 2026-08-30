@@ -9,8 +9,8 @@ Everything below was checked against the code, not against the write-ups.
 `uv run --extra adapters --extra sweep --extra openenv pytest -q` is green before
 and after every change here. At the time of the review that was 493 passed and
 18 skipped; the 18 wanted the pinned tau2 snapshots, and with
-`scripts/tau2_fetch.py` run first the current suite is **513 passed, 0 skipped,
-0 failures, exit 0**.
+`scripts/tau2_fetch.py` run first the current suite is **589 passed, 0 skipped,
+0 failures, exit 0** in 113 s.
 
 ---
 

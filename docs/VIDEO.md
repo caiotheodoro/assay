@@ -4,15 +4,20 @@ Five minutes, hard cap. The brief asks for: the problem and the simple baseline,
 one realistic execution start to finish, the final comparison, the changelog,
 the change that contributed most, and one experiment that was removed.
 
-Numbers are left as `<>` until the final run freezes them. Nothing is recorded
-against numbers that can still move.
+**Status: written, not recorded — by decision.** Every `<>` placeholder is gone:
+the two figures that were in flight when this script was drafted are measured
+and named below, the full-corpus expected loss with the agentic Challenger
+(`results/agentic_profile.json`) and its per-environment reliability over k
+Harbor runs. The script is recordable as it stands.
 
-**Status: not ready to record.** Everything above the agentic section is final.
-Two figures are still in flight and appear below as `<>`: the full-corpus
-expected loss with the agentic Challenger enabled, and its per-environment
-reliability over k Harbor runs. An earlier revision of this script hardcoded
-every number and then went stale when twelve claims were corrected, which is
-what the two sentences above exist to prevent and did not.
+It is not recorded because recording was deferred in favour of finishing the
+work the script describes. That is a scoring cost and is stated here rather
+than left for a reader to discover: a submission with no video loses the
+points a video is worth, whatever the script says.
+
+An earlier revision hardcoded every number and went stale the moment twelve
+claims were corrected, which is why figures below are cited to the file that
+produces them rather than transcribed.
 
 ---
 

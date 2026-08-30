@@ -36,7 +36,7 @@ than buried:
   the part that matters.
 - **No test needs Ollama.** With `brew services stop ollama` the suite still
   passes with nothing skipped. (The count quoted here was 275 collected, measured
-  before the suite roughly doubled to 513; the *claim* — that nothing is
+  before the suite grew to 589; the *claim* — that nothing is
   model-gated — was re-checked, the number was not.) The model path is exercised by
   `scripts/challenger_ablation.py`, not by pytest, and that is where you see it
   degrade.
@@ -50,9 +50,18 @@ daemon; see [Degradation](#degradation-checked-by-turning-things-off).
 ## Setup
 
 ```bash
-git clone <repo> && cd assay
+git clone <REPO_URL> && cd assay   # see the note below: there is no remote yet
 uv sync --extra dev --extra adapters --extra sweep --extra openenv
 ```
+
+> **There is no `<REPO_URL>` yet, and that is a real gap rather than an
+> oversight.** `git remote -v` in this tree returns nothing: publishing is
+> deliberately the last step, so that nothing goes out under a claim that is
+> still moving. Everything below this line runs against a local checkout and
+> has been measured that way. Until the push happens, a reader with the tree
+> can reproduce every number here and a reader without it cannot get the tree
+> at all — the second half of that sentence is the cost of the decision, and it
+> is stated rather than buried.
 
 **Measured, cold cache: 52 s, 759 MB downloaded, 566 MB venv, 351 packages.**
 Re-running against a warm cache is 2 s. `uv.lock` is committed, so this installs
@@ -202,7 +211,7 @@ on `paws`.
 uv run --extra adapters --extra sweep --extra openenv pytest -q
 ```
 
-**Measured: 513 passed, 0 skipped, 0 failed, exit 0, 71 s** with Docker and
+**Measured: 589 passed, 0 skipped, 0 failed, exit 0, 113 s** with Docker and
 Ollama up *and the tau2 snapshots fetched*. An earlier revision of this guide
 claimed 275 collected; the suite has roughly doubled since and that number was
 never re-measured.
@@ -278,8 +287,20 @@ back `NOT_APPLICABLE` and the verdict is `UNVERIFIED`. Do not wrap these in
 there is not, so it can gate a CI step.
 
 Containers are cleaned up by the run that made them. **Measured:** after
-`scripts/full_run.py` exits, zero containers carry that run's `assay-pid`
-label. `reap` is for the case where a run was killed: killing a process
+`scripts/full_run.py` exits, and after `pytest` exits, zero containers carry
+that run's `assay-pid` label.
+
+That claim used to name `full_run.py` only, and was **false of the test
+suite**, which is where most container-creating code actually runs. It was
+contradicted for thirty-three hours by `docker ps`: fourteen orphans, every
+creating pid dead. The cause was `SandboxSession.stop()` waiting 60 s on
+`docker rm -f` with `TimeoutExpired` uncaught, so teardown could hang and then
+raise out of a fixture finaliser, and `EnvPool.close()` aborting its loop on
+the first exception. Both fixed, and the claim is now **enforced by
+`tests/conftest.py`** rather than asserted: a session fixture removes and warns
+about any orphan the run itself created. Containers that existed before the run
+are reported separately and deliberately not touched — deleting a container a
+live audit still owns would be worse than leaking one. `reap` is for the case where a run was killed: killing a process
 mid-session leaves its container behind, `assay reap --dry-run` lists it as
 `ORPHANED`, `assay reap` removes exactly it, and containers belonging to other
 live pids are left alone.

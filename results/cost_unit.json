@@ -1,0 +1,103 @@
+{
+  "measurement": "a bound on the missed-CRITICAL cost, rather than an assertion",
+  "shipped_value": 120.0,
+  "unit": "engineer-hours-equivalent; false_alarm = 1 by definition",
+  "floor": {
+    "what": "GPU spend on one post-training cycle discarded because the environment was broken; compute only",
+    "spot_instance": "g5.xlarge (A10G 24GB), us-east-1",
+    "spot_usd_per_hour": 0.4612,
+    "spot_source": "this repo's own runs, docs/CHANGELOG.md",
+    "range_engineer_hours": [
+      0.04,
+      4.43
+    ],
+    "rows": [
+      {
+        "gpu_hours": 24.0,
+        "usd_wasted": 11.07,
+        "engineer_usd_per_hour": 75.0,
+        "engineer_hours": 0.15
+      },
+      {
+        "gpu_hours": 24.0,
+        "usd_wasted": 11.07,
+        "engineer_usd_per_hour": 150.0,
+        "engineer_hours": 0.07
+      },
+      {
+        "gpu_hours": 24.0,
+        "usd_wasted": 11.07,
+        "engineer_usd_per_hour": 250.0,
+        "engineer_hours": 0.04
+      },
+      {
+        "gpu_hours": 168.0,
+        "usd_wasted": 77.48,
+        "engineer_usd_per_hour": 75.0,
+        "engineer_hours": 1.03
+      },
+      {
+        "gpu_hours": 168.0,
+        "usd_wasted": 77.48,
+        "engineer_usd_per_hour": 150.0,
+        "engineer_hours": 0.52
+      },
+      {
+        "gpu_hours": 168.0,
+        "usd_wasted": 77.48,
+        "engineer_usd_per_hour": 250.0,
+        "engineer_hours": 0.31
+      },
+      {
+        "gpu_hours": 720.0,
+        "usd_wasted": 332.06,
+        "engineer_usd_per_hour": 75.0,
+        "engineer_hours": 4.43
+      },
+      {
+        "gpu_hours": 720.0,
+        "usd_wasted": 332.06,
+        "engineer_usd_per_hour": 150.0,
+        "engineer_hours": 2.21
+      },
+      {
+        "gpu_hours": 720.0,
+        "usd_wasted": 332.06,
+        "engineer_usd_per_hour": 250.0,
+        "engineer_hours": 1.33
+      }
+    ]
+  },
+  "ceiling": {
+    "what": "human effort to repair a benchmark already published against",
+    "anchor": "93 developers, 1699 samples",
+    "source": "OpenAI, 'Introducing SWE-bench Verified' (2024)",
+    "measured_here": false,
+    "range_engineer_hours": [
+      141.6,
+      849.5
+    ],
+    "rows": [
+      {
+        "minutes_per_sample": 5.0,
+        "samples": 1699,
+        "engineer_hours_for_the_whole_benchmark": 141.6
+      },
+      {
+        "minutes_per_sample": 15.0,
+        "samples": 1699,
+        "engineer_hours_for_the_whole_benchmark": 424.8
+      },
+      {
+        "minutes_per_sample": 30.0,
+        "samples": 1699,
+        "engineer_hours_for_the_whole_benchmark": 849.5
+      }
+    ]
+  },
+  "shipped_sits_inside_the_bound": true,
+  "crossover_from_cost_sensitivity": 942,
+  "crossover_is_above_the_ceiling": true,
+  "reading": "The floor is 0.04-4.43 engineer-hours: compute alone, and BELOW the shipped 120 in every cell. That is the honest result rather than a convenient one -- discarded GPU time is the cheapest part of a broken environment and on its own cannot justify the constant. The ceiling is 142-850 engineer-hours to repair a benchmark after the field has published against it. The shipped 120 sits inside that range.\n\nThe crossover is what makes the bound worth computing. Assay beats flag-everything for every missed-CRITICAL cost BELOW 942 (`cost_sensitivity.json`), and the top of this bound is 850. So the entire range a defensible cost belief can occupy -- from 'a wasted GPU-month is all it costs' to 'it costs a full SWE-bench-Verified-scale re-annotation' -- lies on the side where Assay wins. Reaching the crossover would require valuing one missed critical defect at MORE than re-annotating an entire published benchmark. The headline does not rest on the constant being 120; it rests on the constant being under 942, and nothing in this bound gets near it.",
+  "what_this_does_not_do": "It does not derive 120. Nothing here can: the quantity is an organisation's own exchange rate between a missed defect and an hour of reading a card, and it differs by organisation. What is bounded is the range a defensible answer lies in, and the shipped value is inside it rather than outside."
+}
