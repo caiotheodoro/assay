@@ -67,6 +67,12 @@
       "inspect/leaky-split": [
         "REWARD_HACKABLE"
       ],
+      "inspect_evals/boolq": [
+        "REWARD_HACKABLE"
+      ],
+      "inspect_evals/paws": [
+        "REWARD_HACKABLE"
+      ],
       "openenv/echo": [
         "REWARD_HACKABLE"
       ],
@@ -157,6 +163,10 @@
       "inspect/leaky-split": [
         "CONTAMINATION_EXACT"
       ],
+      "inspect_evals/boolq": [],
+      "inspect_evals/paws": [
+        "REWARD_HACKABLE"
+      ],
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "NONDETERMINISM"
@@ -187,6 +197,8 @@
       "inspect/effort-scorer": [],
       "inspect/healthy": [],
       "inspect/leaky-split": [],
+      "inspect_evals/boolq": [],
+      "inspect_evals/paws": [],
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "NONDETERMINISM"
@@ -545,6 +557,38 @@
         "SPEC_VERIFIER_MISMATCH",
         "TRIVIAL_FLOOR_BREACH"
       ],
+      "inspect_evals/boolq": [
+        "CONTAMINATION_EXACT",
+        "CONTAMINATION_NEARDUP",
+        "DIFFICULTY_IMPOSSIBLE",
+        "DIFFICULTY_SATURATED",
+        "GOLD_FAILS",
+        "INVERT_PASSES",
+        "KNOWN_WRONG_PASSES",
+        "NONDETERMINISM",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "SHORTCUT_LEAK",
+        "SPEC_VERIFIER_MISMATCH",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "inspect_evals/paws": [
+        "CONTAMINATION_EXACT",
+        "CONTAMINATION_NEARDUP",
+        "DIFFICULTY_IMPOSSIBLE",
+        "DIFFICULTY_SATURATED",
+        "GOLD_FAILS",
+        "INVERT_PASSES",
+        "KNOWN_WRONG_PASSES",
+        "NONDETERMINISM",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "SHORTCUT_LEAK",
+        "SPEC_VERIFIER_MISMATCH",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
       "openenv/echo": [
         "CONTAMINATION_EXACT",
         "CONTAMINATION_NEARDUP",
@@ -601,6 +645,8 @@
       "inspect/effort-scorer": [],
       "inspect/healthy": [],
       "inspect/leaky-split": [],
+      "inspect_evals/boolq": [],
+      "inspect_evals/paws": [],
       "openenv/echo": [],
       "openenv/textarena-wordle": []
     },
@@ -633,7 +679,6 @@
         "REWARD_HACKABLE"
       ],
       "fixture/rationale_ignored": [
-        "INVERT_PASSES",
         "SHORTCUT_LEAK"
       ],
       "fixture/solved_at_reset": [
@@ -653,7 +698,9 @@
         "NONDETERMINISM",
         "TRIVIAL_FLOOR_BREACH"
       ],
-      "harbor/broken-gold": [],
+      "harbor/broken-gold": [
+        "REWARD_HACKABLE"
+      ],
       "harbor/healthy": [
         "INVERT_PASSES"
       ],
@@ -667,7 +714,6 @@
       ],
       "harbor/vacuous-tests": [],
       "inspect/always-correct": [
-        "CONTAMINATION_NEARDUP",
         "REWARD_HACKABLE",
         "SEPARABILITY_LOSS",
         "TRIVIAL_FLOOR_BREACH"
@@ -687,11 +733,17 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "inspect/leaky-split": [],
-      "openenv/echo": [
+      "inspect_evals/boolq": [
         "CONTAMINATION_NEARDUP",
         "INVERT_PASSES"
       ],
-      "openenv/textarena-wordle": []
+      "inspect_evals/paws": [],
+      "openenv/echo": [
+        "REWARD_HACKABLE"
+      ],
+      "openenv/textarena-wordle": [
+        "KNOWN_WRONG_PASSES"
+      ]
     }
   },
   "arm_logs": {
@@ -722,6 +774,8 @@
       "inspect/effort-scorer": [],
       "inspect/healthy": [],
       "inspect/leaky-split": [],
+      "inspect_evals/boolq": [],
+      "inspect_evals/paws": [],
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "Wordle-v0: same seed, different observation"
@@ -730,67 +784,370 @@
   },
   "arms": {
     "always_modal_defect": {
-      "error_count": 52,
-      "expected_loss": 1767.0,
-      "n_missed": 37,
-      "n_spurious": 15,
-      "normalized_loss": 6.0931,
-      "precision": 0.375,
-      "recall": 0.1957,
-      "severity_weighted_recall": 0.2123
+      "error_count": 54,
+      "expected_loss": 1808.0,
+      "n_missed": 38,
+      "n_spurious": 16,
+      "normalized_loss": 5.7215,
+      "precision": 0.3846,
+      "recall": 0.2083,
+      "severity_weighted_recall": 0.2252
     },
     "assay": {
-      "error_count": 2,
-      "expected_loss": 240.0,
-      "n_missed": 2,
+      "error_count": 3,
+      "expected_loss": 280.0,
+      "n_missed": 3,
       "n_spurious": 0,
-      "normalized_loss": 0.8276,
+      "normalized_loss": 0.8861,
       "precision": 1.0,
-      "recall": 0.9565,
-      "severity_weighted_recall": 0.9528
+      "recall": 0.9375,
+      "severity_weighted_recall": 0.9324
     },
     "check_env": {
-      "error_count": 44,
-      "expected_loss": 2816.0,
-      "n_missed": 44,
+      "error_count": 46,
+      "expected_loss": 2976.0,
+      "n_missed": 46,
       "n_spurious": 0,
-      "normalized_loss": 9.7103,
+      "normalized_loss": 9.4177,
       "precision": 1.0,
-      "recall": 0.0435,
-      "severity_weighted_recall": 0.0283
+      "recall": 0.0417,
+      "severity_weighted_recall": 0.027
     },
     "flag_everything": {
-      "error_count": 290,
-      "expected_loss": 290.0,
+      "error_count": 316,
+      "expected_loss": 316.0,
       "n_missed": 0,
-      "n_spurious": 290,
+      "n_spurious": 316,
       "normalized_loss": 1.0,
-      "precision": 0.1369,
+      "precision": 0.1319,
       "recall": 1.0,
       "severity_weighted_recall": 1.0
     },
     "flag_nothing": {
-      "error_count": 46,
-      "expected_loss": 2832.0,
-      "n_missed": 46,
+      "error_count": 48,
+      "expected_loss": 2992.0,
+      "n_missed": 48,
       "n_spurious": 0,
-      "normalized_loss": 9.7655,
+      "normalized_loss": 9.4684,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     },
     "stratified_random": {
-      "error_count": 56,
-      "expected_loss": 1587.0,
-      "n_missed": 29,
-      "n_spurious": 27,
-      "normalized_loss": 5.4724,
-      "precision": 0.3864,
-      "recall": 0.3696,
-      "severity_weighted_recall": 0.3632
+      "error_count": 59,
+      "expected_loss": 1748.0,
+      "n_missed": 31,
+      "n_spurious": 28,
+      "normalized_loss": 5.5316,
+      "precision": 0.3778,
+      "recall": 0.3542,
+      "severity_weighted_recall": 0.3468
     }
   },
-  "corpus_size": 24,
+  "audited_size": 26,
+  "by_ecosystem": {
+    "fixture": {
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 25,
+          "expected_loss": 873.0,
+          "n_missed": 16,
+          "n_spurious": 9,
+          "precision": 0.25,
+          "recall": 0.1579,
+          "severity_weighted_recall": 0.1685
+        },
+        "assay": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "check_env": {
+          "error_count": 18,
+          "expected_loss": 1216.0,
+          "n_missed": 18,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 0.0526,
+          "severity_weighted_recall": 0.0337
+        },
+        "flag_everything": {
+          "error_count": 149,
+          "expected_loss": 149.0,
+          "n_missed": 0,
+          "n_spurious": 149,
+          "precision": 0.1131,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 19,
+          "expected_loss": 1224.0,
+          "n_missed": 19,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 29,
+          "expected_loss": 673.0,
+          "n_missed": 12,
+          "n_spurious": 17,
+          "precision": 0.2917,
+          "recall": 0.3684,
+          "severity_weighted_recall": 0.3708
+        }
+      },
+      "n_environments": 12,
+      "n_planted": 19
+    },
+    "harbor": {
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 9,
+          "expected_loss": 218.0,
+          "n_missed": 7,
+          "n_spurious": 2,
+          "precision": 0.6,
+          "recall": 0.3,
+          "severity_weighted_recall": 0.3261
+        },
+        "assay": {
+          "error_count": 2,
+          "expected_loss": 240.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 0.8,
+          "severity_weighted_recall": 0.7826
+        },
+        "check_env": {
+          "error_count": 10,
+          "expected_loss": 576.0,
+          "n_missed": 10,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "flag_everything": {
+          "error_count": 60,
+          "expected_loss": 60.0,
+          "n_missed": 0,
+          "n_spurious": 60,
+          "precision": 0.1429,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 10,
+          "expected_loss": 576.0,
+          "n_missed": 10,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 12,
+          "expected_loss": 340.0,
+          "n_missed": 8,
+          "n_spurious": 4,
+          "precision": 0.3333,
+          "recall": 0.2,
+          "severity_weighted_recall": 0.2174
+        }
+      },
+      "n_environments": 5,
+      "n_planted": 10
+    },
+    "inspect": {
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 15,
+          "expected_loss": 666.0,
+          "n_missed": 13,
+          "n_spurious": 2,
+          "precision": 0.6,
+          "recall": 0.1875,
+          "severity_weighted_recall": 0.2027
+        },
+        "assay": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "check_env": {
+          "error_count": 16,
+          "expected_loss": 1024.0,
+          "n_missed": 16,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "flag_everything": {
+          "error_count": 54,
+          "expected_loss": 54.0,
+          "n_missed": 0,
+          "n_spurious": 54,
+          "precision": 0.2286,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 16,
+          "expected_loss": 1024.0,
+          "n_missed": 16,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 11,
+          "expected_loss": 563.0,
+          "n_missed": 8,
+          "n_spurious": 3,
+          "precision": 0.7273,
+          "recall": 0.5,
+          "severity_weighted_recall": 0.4595
+        }
+      },
+      "n_environments": 5,
+      "n_planted": 16
+    },
+    "inspect_evals": {
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 2,
+          "expected_loss": 41.0,
+          "n_missed": 1,
+          "n_spurious": 1,
+          "precision": 0.5,
+          "recall": 0.5,
+          "severity_weighted_recall": 0.5
+        },
+        "assay": {
+          "error_count": 1,
+          "expected_loss": 40.0,
+          "n_missed": 1,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 0.5,
+          "severity_weighted_recall": 0.5
+        },
+        "check_env": {
+          "error_count": 2,
+          "expected_loss": 160.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "flag_everything": {
+          "error_count": 26,
+          "expected_loss": 26.0,
+          "n_missed": 0,
+          "n_spurious": 26,
+          "precision": 0.0714,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 2,
+          "expected_loss": 160.0,
+          "n_missed": 2,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 4,
+          "expected_loss": 162.0,
+          "n_missed": 2,
+          "n_spurious": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        }
+      },
+      "n_environments": 2,
+      "n_planted": 2
+    },
+    "openenv": {
+      "arms": {
+        "always_modal_defect": {
+          "error_count": 3,
+          "expected_loss": 10.0,
+          "n_missed": 1,
+          "n_spurious": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "assay": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "check_env": {
+          "error_count": 0,
+          "expected_loss": 0.0,
+          "n_missed": 0,
+          "n_spurious": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_everything": {
+          "error_count": 27,
+          "expected_loss": 27.0,
+          "n_missed": 0,
+          "n_spurious": 27,
+          "precision": 0.0357,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 1,
+          "expected_loss": 8.0,
+          "n_missed": 1,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 3,
+          "expected_loss": 10.0,
+          "n_missed": 1,
+          "n_spurious": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        }
+      },
+      "n_environments": 2,
+      "n_planted": 1
+    }
+  },
+  "corpus_size": 26,
   "cost_profile": {
     "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card.",
     "name": "research-run"
@@ -1056,6 +1413,26 @@
       ],
       "spurious": []
     },
+    "inspect_evals/boolq": {
+      "assay_detected": [],
+      "missed": [
+        "SHORTCUT_LEAK"
+      ],
+      "planted": [
+        "SHORTCUT_LEAK"
+      ],
+      "spurious": []
+    },
+    "inspect_evals/paws": {
+      "assay_detected": [
+        "REWARD_HACKABLE"
+      ],
+      "missed": [],
+      "planted": [
+        "REWARD_HACKABLE"
+      ],
+      "spurious": []
+    },
     "openenv/echo": {
       "assay_detected": [],
       "missed": [],
@@ -1077,8 +1454,10 @@
     "fixture": "ok",
     "harbor": "ok",
     "inspect_ai": "ok",
+    "inspect_evals": "ok",
     "openenv": "ok"
   },
-  "total_planted_defects": 46,
-  "unavailable": {}
+  "total_planted_defects": 48,
+  "unavailable": {},
+  "unscored": {}
 }

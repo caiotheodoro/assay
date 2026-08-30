@@ -118,3 +118,52 @@ writing the numbers down first.
 
 Measured results go in `docs/changelog/77-external-corpus.md` next to these numbers,
 whichever way they come out.
+
+---
+
+# Result — measured 2026-08-30
+
+Every prediction above held exactly.
+
+| | baseline | predicted | **measured** |
+|---|---|---|---|
+| corpus size | 24 | 26 | **26** |
+| planted defects | 46 | 48 | **48** |
+| `flag_everything` (research-run) | 290.0 | 316.0 | **316.0** |
+| `assay` (research-run) | 240.0 | 280.0 | **280.0** |
+| margin over floor | 50.0 | 36.0 | **36.0** |
+| `assay` normalised | 0.828 | 0.886 | **0.886** |
+| floor arm | flag_everything | flag_everything | **flag_everything** |
+
+Per environment, both correct including the reason:
+
+- `paws` / `REWARD_HACKABLE` — **detected**, no spurious, cost 0.
+- `boolq` / `SHORTCUT_LEAK` — **missed**, cost 40, and for the predicted reason:
+  `partial_input_baseline: NOT_APPLICABLE (environment does not expose: SPLITS, ITEM_PARTS)`.
+  The verdict is `UNVERIFIED`, not clean.
+
+## One falsification criterion fired, and not the one expected
+
+The list above said that `results/full_run.json` failing to reproduce byte-identically would
+mean the `shuffle=False` pinning did not take. It did fail to reproduce — and the pinning
+was not the cause.
+
+`harbor/broken-gold` reported a **spurious `NONDETERMINISM`** in **1 of 6** full runs
+(assay 281.0 rather than 280.0). Harbor-only runs were clean 4 of 4, so the flake needs the
+load of a full run, which also pulls `inspect_evals` datasets over the network. The
+determinism probe fingerprints `(ok, data, code)` and Harbor's step data is
+`{stdout, exit_code}`, so a sandbox command that times out under load is indistinguishable
+from an environment that is genuinely nondeterministic. That mechanism is plausible and
+**not isolated** — reported as an observed rate, not a diagnosis.
+
+Consequences, both of which belong to Assay rather than to this expansion:
+
+- The README's **precision 1.000 / "zero false positives anywhere"** describes the modal
+  run, not every run.
+- The CI job added in Slice 23e fails on any drift against the committed results and will
+  therefore flake at roughly this rate.
+
+The committed `results/full_run.json` is a single run taken without re-rolling for a
+preferred number. Note the direction: the flaky draw makes Assay look *worse* (281.0), so
+selecting the clean one is the flattering choice, which is why the rate is published here
+rather than the run quietly repeated.

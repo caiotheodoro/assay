@@ -156,14 +156,25 @@ intervals (10,000 resamples, seed 11, resampling over environments):
 
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
-| assay | **240.0** | [0.0, 600.0] | 0.957 | 1.000 |
-| flag_everything | 290.0 | [271, 307] | 1.000 | 0.137 |
-| stratified_random | 1587.0 | [852, 2446] | 0.370 | 0.386 |
-| always_modal_defect | 1767.0 | [1066, 2550] | 0.196 | 0.375 |
+| assay | **280.0** | [0, 640] | 0.938 | 1.000 |
+| flag_everything | 316.0 | [297, 333] | 1.000 | 0.132 |
+| stratified_random | 1748.0 | [999, 2596] | 0.354 | 0.378 |
+| always_modal_defect | 1808.0 | [1091, 2619] | 0.208 | 0.385 |
 | direct_prompt (`qwen3:8b`) | 2415.0 | — | 0.239 | 0.324 |
 | agent_with_tools (`qwen3:8b`) | 2497.0 | — | 0.196 | 0.265 |
-| **check_env** (incumbent) | **2816.0** | [1728, 4024] | **0.043** | 1.000 |
-| flag_nothing | 2832.0 | [1752, 4032] | 0.000 | 0.000 |
+| **check_env** (incumbent) | **2976.0** | [1888, 4184] | **0.042** | 1.000 |
+| flag_nothing | 2992.0 | [1904, 4200] | 0.000 | 0.000 |
+
+**That precision of 1.000 is the modal run, not every run.** Across six
+full-corpus runs, `harbor/broken-gold` reported a **spurious `NONDETERMINISM`
+once** (assay 281.0 rather than 280.0); harbor-only runs were clean 4 of 4, so
+the flake needs the load of a full run. The determinism probe fingerprints
+`(ok, data, code)` and Harbor's step data is `{stdout, exit_code}`, so a sandbox
+command that times out under load is indistinguishable from an environment that
+is genuinely nondeterministic — plausible, and **not isolated**, so it is
+reported as a rate rather than a diagnosis. The two LLM arms are from
+`results/full_run_llm.json`, measured on the 24-environment corpus before this
+expansion.
 
 **The two LLM arms are the brief's own simple baseline, and they lose to
 flagging at base rates.** `direct_prompt` reads everything a careful human
@@ -207,30 +218,46 @@ number. One of the model's two hits is `fixture/flaky`, planted here.
 
 ### This corpus is almost entirely our own work, and the split is unflattering
 
-The 24 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`,
-2 `openenv/`. Split on **who wrote the environment**, not on the id prefix:
+The 26 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`,
+2 `openenv/`, 2 `inspect_evals/`. Split on **who wrote the environment**, not on
+the id prefix:
 
 | provenance | n | what it is |
 |---|---|---|
 | authored here | 12 | our fixtures; `tests/test_probes_fire.py` asserts `detected == planted` on all of them |
 | our content, third-party format | 10 | our datasets and defective scorers on inspect_ai's runtime; our task dirs in Harbor's shape, `authors = ["assay fixtures"]` |
-| **genuinely external** | **2** | `openenv/echo`, `openenv/textarena-wordle`, audited as shipped |
+| **genuinely external** | **4** | `openenv/echo`, `openenv/textarena-wordle`, `inspect_evals/paws`, `inspect_evals/boolq` — audited as shipped |
 
-By ground truth it is worse: **22 planted here, 1 hand-triaged, 1 derived from
-a diff between two pinned upstream revisions.** Provenance is now declared in
-the registry (`src/assay/corpus.py`), and an environment that declares none
-fails a test rather than defaulting to clean.
+By ground truth: **22 planted here, 3 hand-triaged, 1 derived from a diff
+between two pinned upstream revisions.** Provenance is declared in the registry
+(`src/assay/corpus.py`); an environment that declares none fails a test rather
+than defaulting to clean, and — since `scored_entries()` — an environment whose
+labels nobody established is audited and carded but **kept out of every scored
+number**. Without that rule, registering the 32 other swept tasks would have
+paid `flag_everything` 14 points each for work nobody did.
 
 `uv run --extra adapters python scripts/corpus_splits.py`, full table in
 [`results/corpus_splits.json`](results/corpus_splits.json):
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 24 | 240.0 | 290.0 | assay, by 50 |
+| all (published) | 26 | 280.0 | 316.0 | assay, by 36 |
 | **our content, third-party format** | 10 | **240.0** | **114.0** | **flag_everything** |
-| genuinely external | 2 | 0.0 | 27.0 | assay — but n=2 |
+| genuinely external | 4 | 40.0 | 53.0 | assay — but n=4 |
 | in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
-| no-harbor | 19 | 0.0 | 230.0 | assay, perfectly |
+| no-harbor | 21 | 40.0 | 256.0 | assay |
+
+The two `inspect_evals` environments were added under a pre-registration
+committed **before** the code that moved these numbers
+([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md), commit `d3da87c`), because
+`flag_everything`'s loss is `Σ (14 − |planted|)` and a corpus can be grown into a
+better headline without anyone writing a false number. Every prediction held:
+the floor went 290.0 → 316.0, Assay 240.0 → 280.0, and **the margin narrowed
+from 50.0 to 36.0**. `paws` was detected; `boolq` was missed, structurally —
+`WildInspectAdapter` supplies no train split, so the shortcut probe reports
+`NOT_APPLICABLE` before it runs and the verdict is `UNVERIFIED`, not clean.
+Assay had previously called `boolq` clean, and it is in the corpus because of
+that false negative rather than despite it.
 
 `research-run`; the other three profiles are in the file.
 

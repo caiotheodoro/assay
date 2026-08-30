@@ -137,10 +137,21 @@ Use an empty list for a healthy environment. Use only names from the taxonomy.""
 #: Anything matching these is stripped before a bundle is sent. Deliberately
 #: broad: over-redacting costs the rater some context, under-redacting hands it
 #: the answer, and only one of those two errors is recoverable.
-_REDACT = re.compile(
-    r"(DefectClass\.|CATALOG|ground_truth|defects\s*=|planted|_SEVERITY)", re.IGNORECASE
-)
 _CLASS_NAMES = [d.value for d in DefectClass]
+
+#: `assert_blind` refuses a bundle containing any bare class name, but this
+#: pattern only ever matched the ways a *label* is written in code --
+#: `DefectClass.X`, a CATALOG entry, a `planted` set. A file that merely
+#: mentions a class in prose ("this environment is deliberately not labelled
+#: NONDETERMINISM, and here is why") passed redaction and then tripped the
+#: refusal, so the bundle could not be built at all. The redactor now strips
+#: exactly what the refusal looks for, which is what it should always have done.
+_REDACT = re.compile(
+    r"(DefectClass\.|CATALOG|ground_truth|defects\s*=|planted|_SEVERITY|"
+    + "|".join(re.escape(n) for n in _CLASS_NAMES)
+    + r")",
+    re.IGNORECASE,
+)
 
 
 #: Everything that could let the rater reach the repository instead of reading
@@ -240,6 +251,27 @@ def assert_blind(bundle: str, env_id: str) -> None:
         )
 
 
+def _upstream_task_source(name: str) -> Path | None:
+    """Where `inspect_evals` keeps the task, or None if it cannot be found.
+
+    Returns None rather than raising: a bundle that is thinner than intended is
+    a worse label, but a second labelling that cannot run at all produces no
+    agreement number, and the absence of one is what let single-author labels
+    go unchecked in the first place.
+    """
+    try:
+        sys.path.insert(0, str(SRC))
+        from assay.sweep import enumerate_tasks
+
+        ref = next((r for r in enumerate_tasks() if r.name == name), None)
+    except Exception:  # noqa: BLE001 - absence is reported, not raised
+        return None
+    if ref is None or not ref.source_file:
+        return None
+    path = Path(ref.source_file)
+    return path if path.is_file() else None
+
+
 def bundle_for(env_id: str) -> tuple[str, list[str]]:
     """The source a second reader would read, with the labels stripped out."""
     ecosystem, variant = env_id.split("/", 1)
@@ -270,6 +302,27 @@ def bundle_for(env_id: str) -> tuple[str, list[str]]:
             if path.is_file() and path.stat().st_size < 40_000:
                 add(path, str(path.relative_to(root)))
         add(SRC / "adapters" / "harbor.py")
+    elif ecosystem == "inspect_evals":
+        # A published eval. The thing a second reader has to judge is upstream's
+        # scorer, which lives in site-packages rather than in this tree, so the
+        # task module is bundled from wherever inspect_evals is installed. Our
+        # provider goes in too, because it records the deterministic
+        # construction (shuffle=False, fixed subsample) the reader is judging.
+        parts.append(
+            f"This environment is the published `inspect_evals` task '{variant}', "
+            "audited as shipped. The upstream task module below defines both the "
+            "dataset and the scorer; the second file is how this repository "
+            "constructs it.\n"
+        )
+        upstream = _upstream_task_source(variant)
+        if upstream is not None:
+            add(upstream, f"inspect_evals/{upstream.name}")
+        else:
+            parts.append(
+                f"(upstream source for {variant!r} not locatable in this "
+                "environment; judge from the provider below alone)\n"
+            )
+        add(SRC / "_inspect_evals_corpus.py")
     else:
         raise SystemExit(f"no source bundle rule for ecosystem {ecosystem!r}")
 

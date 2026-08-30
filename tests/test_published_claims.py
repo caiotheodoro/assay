@@ -69,7 +69,11 @@ def test_the_corpus_split_is_published_on_provenance():
 def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
     """Only 2 of 24 environments are genuinely external."""
     d = _load("corpus_splits.json")
-    assert d["splits"]["external-envs"]["n_environments"] == 2
+    n = d["splits"]["external-envs"]["n_environments"]
+    assert n == 4, (
+        f"external control is n={n}; it was 2, then paws and boolq were added. "
+        "If this changed again the README's honest-ceiling paragraph must change with it."
+    )
     assert "the twelve environments this repo did not write" not in README
 
 
