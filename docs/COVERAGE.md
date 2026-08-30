@@ -81,6 +81,49 @@ taxonomy does not; BenchJack names V2, V3, V4 and V8 that Assay does not.
 
 ---
 
+## A class of eval where the core assumption fails
+
+Everything above is about mechanisms Assay cannot *reach*. This is worse: a
+family of benchmarks where Assay runs happily, reports a **CRITICAL** defect,
+and is wrong.
+
+`inspect_evals/personality_BFI` is the Big Five Inventory. Audited with the
+standard battery it returns **verdict INVALID, 25 × `INVERT_PASSES`** — the
+class reserved for "the verifier cannot fail", which is CRITICAL because it
+means every number the environment produces is meaningless.
+
+The observation is mechanically correct. Its scorer, `any_choice()`, checks
+`letter in target.text` and its own docstring says it "checks for response
+format rather than factual correctness". `invert_spec` appends a suffix to the
+target, and `"A" in "ABCDE_definitely_not_this"` is still true, so gold passes
+against an inverted spec. The verifier genuinely cannot distinguish targets.
+
+It is also **semantically wrong**, because a personality inventory *has no
+correct answer*. "I see myself as someone who is talkative — strongly agree to
+strongly disagree" has five legitimate responses; the trait score is computed
+from `answer_mapping` metadata, not from the scorer. A format check is the right
+design, and Assay calls it a critical defect.
+
+**The assumption that fails is Assay's, not the benchmark's:** the
+verifier-integrity family takes for granted that a verifier's job is to
+separate correct from incorrect. On preference elicitation, opinion surveys and
+psychometric inventories that is false, and four of the twelve probes become
+actively misleading rather than merely inapplicable.
+
+That distinction matters for anyone reusing this. A probe that reports
+`NOT_APPLICABLE` costs a reader nothing. **A probe that reports CRITICAL on a
+healthy environment costs them the tool's credibility**, and no amount of
+`NOT_APPLICABLE` discipline elsewhere protects against it. The right fix is a
+capability an eval can withhold — "this environment has no correct answer" —
+and it does not exist yet.
+
+Found while triaging candidates for the corpus. `personality_BFI` is
+deliberately **not** added: an environment the tool is wrong about does not
+belong in the set used to measure the tool, and adding it labelled either way
+would corrupt the number rather than test it.
+
+---
+
 ## "No probe" versus "no adapter can feed it"
 
 These are different failures and conflating them would overstate both.
