@@ -2,6 +2,17 @@
 
 **An agentic auditor for RL environments and eval suites.**
 
+> **An auditor is an eval.** If benchmarks ship unchecked because nobody QAs
+> them, nothing makes the QA tool different. So every instrument this tool
+> applies to an environment was turned on the tool: **twelve of this
+> repository's published claims broke**, and the self-audit found three real
+> behavioural bugs. The protocol is written up to be reused, with what each
+> check cost us, in [`docs/METHOD.md`](docs/METHOD.md); the unedited breakage is
+> in [`docs/RED-TEAM.md`](docs/RED-TEAM.md).
+>
+> We do not find more defects than the field and say so. The claim is that a
+> finding is not a result until you know what it is worth.
+
 Point Assay at an environment. It runs a battery of probes and emits an
 **Environment Card**: a validity verdict where every claim is tied to a probe
 result, plus machine-readable JSON and a nonzero exit code that blocks a
@@ -27,6 +38,7 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # headline,
 
 | | |
 |---|---|
+| **The method, written to be reused** | [`docs/METHOD.md`](docs/METHOD.md) |
 | Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
 | What changed, slice by slice, with evidence | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |
 | Read an agent run without executing anything | [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md) |

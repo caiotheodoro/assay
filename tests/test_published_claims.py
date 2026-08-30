@@ -203,3 +203,32 @@ def test_the_llm_baseline_rows_match_the_measured_file():
         "the LLM arm now beats flagging at base rates -- the README says it "
         "does not, and must be updated with this"
     )
+
+
+def test_the_method_protocol_quotes_numbers_that_still_hold():
+    """docs/METHOD.md is the framing artifact; its numbers must stay sourced.
+
+    It is the one document written to be lifted by someone else, so a figure
+    that drifts there is worse than a figure that drifts in the README.
+    """
+    method = (ROOT / "docs" / "METHOD.md").read_text()
+
+    # Prose rounds; the artifacts do not. Compare at the precision a sentence
+    # would actually use, or the test measures formatting rather than truth.
+    tau2 = _load("tau2_recall.json")
+    for row in ("combined", "combined_excluding_advisory_probe"):
+        p_val = tau2[row]["significance"]["p_one_sided"]
+        assert f"{p_val:.3f}" in method, f"{row}: p={p_val} not quoted in METHOD.md"
+
+    cost = _load("cost_sensitivity.json")
+    assert f"{cost['exact_crossover_critical_cost']:.0f}" in method, (
+        "the crossover moved and METHOD.md still quotes the old one"
+    )
+
+    splits = _load("corpus_splits.json")
+    assert str(splits["splits"]["external-envs"]["n_environments"]) in method
+
+    iv = _load("intervals.json")
+    saved = iv["arms"]["assay"]["loss_saved_vs"]["flag_everything"]
+    assert saved["separated"], "METHOD.md claims the detector separates from its floor"
+    assert f"{saved['point']:.1f}" in method
