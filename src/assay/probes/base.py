@@ -57,9 +57,21 @@ class Probe:
 
     # -- result constructors ----------------------------------------------
 
-    def na(self, reason: str) -> ProbeResult:
+    def na(self, reason: str, **detail: Any) -> ProbeResult:
+        """Could not check, and why.
+
+        `detail` is accepted because a probe that ran and then found it could
+        not conclude has a record worth keeping -- what it attempted, on which
+        tasks, and how far it got. Dropping it left the card saying only
+        "NOT_APPLICABLE" for a probe that had done real work, which is thinner
+        than the evidence deserves.
+        """
         return ProbeResult(
-            family=self.family, probe=self.name, status=ProbeStatus.NOT_APPLICABLE, reason=reason
+            family=self.family,
+            probe=self.name,
+            status=ProbeStatus.NOT_APPLICABLE,
+            reason=reason,
+            detail=detail,
         )
 
     def ok(self, **detail: Any) -> ProbeResult:

@@ -24,8 +24,15 @@ jobs:
   results-are-reproducible:
     # The headline table is a committed artifact. If the code no longer produces
     # it, that is a result someone has to look at -- not a number that quietly
-    # drifts. Docker is unavailable here, so this checks the 19-environment
-    # no-Harbor corpus, which is exactly what a reader without Docker gets.
+    # drifts.
+    #
+    # Two ecosystems are absent here and the job compares only the environments
+    # both runs contain. Docker is unavailable, so `harbor/` is skipped -- which
+    # also means the one flake this repo has measured (a sandbox wall-clock
+    # timeout under load, read as NONDETERMINISM until it was fixed) cannot
+    # occur in CI. And `inspect_evals/` is left out deliberately: it needs the
+    # `sweep` extra and pulls datasets over the network, so including it would
+    # trade a reproducibility check for a network-flakiness check.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -11,7 +11,15 @@ from __future__ import annotations
 from typing import Any
 
 from ..adapter import EnvAdapter, NotSupported, run_policy
-from ..types import Action, Capability, DefectClass, Finding, DEFAULT_SEVERITY, digest
+from ..types import (
+    SANDBOX_TIMEOUT,
+    Action,
+    Capability,
+    DefectClass,
+    Finding,
+    DEFAULT_SEVERITY,
+    digest,
+)
 from .base import Probe, register
 
 REPEATS = 3
@@ -60,7 +68,7 @@ class SeedDeterminism(Probe):
         findings, detail = [], {}
         for task in adapter.manifest().tasks:
             actions = self._policy(adapter, task.task_id)
-            fingerprints = []
+            fingerprints, timeouts = [], 0
             clear = getattr(adapter, "clear_cache", None)
             for _ in range(REPEATS):
                 # A cached verification would answer with a memory rather than a
@@ -72,6 +80,8 @@ class SeedDeterminism(Probe):
                 # redraws its hidden state every episode reads as deterministic.
                 opening = adapter.reset(task.task_id, seed=1234)
                 transcript = run_policy(adapter, task.task_id, actions, seed=1234)
+                if any(o.code == SANDBOX_TIMEOUT for o in transcript.observations):
+                    timeouts += 1
                 payload = {
                     "reset": (opening.ok, opening.data),
                     "observations": [
@@ -84,7 +94,26 @@ class SeedDeterminism(Probe):
                     payload["reward"] = score.reward
                 fingerprints.append(digest(payload))
             unique = sorted(set(fingerprints))
-            detail[task.task_id] = {"repeats": REPEATS, "distinct_fingerprints": len(unique)}
+            detail[task.task_id] = {
+                "repeats": REPEATS,
+                "distinct_fingerprints": len(unique),
+                "timed_out_repeats": timeouts,
+            }
+            if timeouts:
+                # A repeat the harness abandoned is not a repeat that came back
+                # different. Comparing it anyway reported NONDETERMINISM on
+                # `harbor/broken-gold` in 1 of 6 full-corpus runs -- only under
+                # the load of a full run, never on the harbor slice alone. An
+                # inconclusive observation must not become a defect: that is the
+                # same "absence of evidence read as evidence" this probe exists
+                # to catch, happening inside it.
+                detail[task.task_id]["inconclusive"] = (
+                    f"{timeouts} of {REPEATS} repeats hit the sandbox wall clock, so "
+                    "the observations cannot be compared. Not reported as "
+                    "nondeterminism; re-run on a less loaded machine or raise the "
+                    "sandbox wall_seconds."
+                )
+                continue
             if len(unique) > 1:
                 findings.append(
                     Finding(
@@ -99,4 +128,15 @@ class SeedDeterminism(Probe):
                         },
                     )
                 )
+        inconclusive = [k for k, v in detail.items() if "inconclusive" in v]
+        if inconclusive and len(inconclusive) == len(detail):
+            # Nothing could be compared on any task. PASS would be a claim this
+            # probe did not earn, and it is the claim the whole project exists
+            # to refuse: a check that could not run reported as a check that
+            # passed.
+            return self.na(
+                "every task's repeats hit the sandbox wall clock, so no two runs "
+                f"could be compared: {', '.join(sorted(inconclusive))}",
+                per_task=detail,
+            )
         return self.defects(findings, per_task=detail)

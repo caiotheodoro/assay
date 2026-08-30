@@ -20,6 +20,13 @@ from typing import Any
 # --------------------------------------------------------------------------
 
 
+#: Observation code for "the harness gave up", as distinct from "the
+#: environment refused". A probe comparing observations across repeats has to
+#: tell them apart, or a slow machine becomes a defect report -- which is how
+#: a sandbox wall-clock timeout was read as NONDETERMINISM.
+SANDBOX_TIMEOUT = "SANDBOX_TIMEOUT"
+
+
 class Severity(str, Enum):
     """How bad it is if this defect ships undetected.
 

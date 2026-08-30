@@ -42,6 +42,7 @@ from typing import Any
 from ..adapter import BaseAdapter, NotSupported
 from ..sandbox import DockerSandbox, Mount, SandboxPolicy, SandboxSession
 from ..types import (
+    SANDBOX_TIMEOUT,
     Action,
     Capability,
     Manifest,
@@ -342,11 +343,26 @@ class HarborAdapter(BaseAdapter):
         script = str(action.args.get("script", ""))
         (self._work_host / ".assay-run.sh").write_text(script)
         result = session.exec(["sh", "/work/.assay-run.sh"], workdir="/work")
+        # `timed_out` used to be dropped here, and dropping it turned a sandbox
+        # that gave up under load into evidence about the environment: the
+        # determinism probe compares observations across repeats, saw exit 124
+        # against exit 0, and reported NONDETERMINISM on an environment that had
+        # not misbehaved. Surfaced with its own code so a caller can tell "the
+        # harness gave up" from "the environment answered differently".
+        code = None
+        if result.timed_out:
+            code = SANDBOX_TIMEOUT
+        elif not result.ok:
+            code = "SCRIPT_FAILED"
         return StepResult(
             Observation(
                 ok=result.ok,
-                data={"stdout": result.stdout[-400:], "exit_code": result.exit_code},
-                code=None if result.ok else "SCRIPT_FAILED",
+                data={
+                    "stdout": result.stdout[-400:],
+                    "exit_code": result.exit_code,
+                    "timed_out": result.timed_out,
+                },
+                code=code,
             ),
             # A shell command does not end the episode. Saying otherwise gave an
             # agent exactly one command per episode and truncated every replay
