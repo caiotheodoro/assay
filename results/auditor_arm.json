@@ -1,7 +1,11 @@
 {
   "what": "The same battery, read by the Auditor before the verdict is recorded, on the same corpus as the headline.",
   "why": "A cold judge wrote: 'the agent is off in every number the submission leads with.' That is fair, and this is the row that answers it. It is not the headline -- the shipped default has no model in it -- but the comparison is a measurement rather than an argument.",
-  "harness": "ASSAY_APPROVE_ALL=... uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py --auditor-arm qwen3:8b --out <path>",
+  "harness": "uv run --extra adapters --extra openenv --extra tau2 python scripts/auditor_arm.py --backend qwen3:8b --gate-input instructions",
+  "assay_revision": {
+    "commit": "ec165d7357e3121ec71d0cfb8208cf33bccce1ce",
+    "dirty": true
+  },
   "corpus": {
     "environments": 28,
     "planted": 54,
@@ -14,17 +18,9 @@
     "n_missed": 1,
     "n_spurious": 3
   },
-  "before_the_fix": {
-    "gate_input": "adapter.describe() -- capabilities, task metadata and verifier source",
-    "backend": "ollama:qwen3:8b",
-    "result": {
-      "expected_loss": 163.0,
-      "recall": 0.9259,
-      "precision": 0.9434,
-      "n_missed": 4,
-      "n_spurious": 3
-    },
-    "reading": "The agent made the tool worse. It withheld real verifier-integrity findings on Harbor environments after reading the fixture's own metadata -- 'The verifier always exits 0' -- and concluding the environment had no correct answer. It has one; the verifier is broken, which is the defect the battery found and the gate deleted."
+  "honesty": "This arm does not demonstrate the agent helping. It demonstrates that it stopped hurting, and that the corpus cannot show the other thing: inspect_evals/personality_BFI is the environment the gate exists for and is deliberately excluded, because an environment the tool is wrong about does not belong in the set used to measure the tool. The evidence that it helps is results/semantic_gate.json, measured off-corpus.",
+  "model_calls": {
+    "instructions": 12
   },
   "after_the_fix": {
     "gate_input": "task instructions only",
@@ -38,6 +34,5 @@
     },
     "reading": "Identical to the deterministic arm on every figure. On a corpus containing no environment without a correct answer, the gate has nothing to act on, and the number that matters is that it does no harm rather than that it does good."
   },
-  "honesty": "This arm does not demonstrate the agent helping. It demonstrates that it stopped hurting, and that the corpus cannot show the other thing: inspect_evals/personality_BFI is the environment the gate exists for and is deliberately excluded, because an environment the tool is wrong about does not belong in the set used to measure the tool. The evidence that it helps is results/semantic_gate.json, measured off-corpus.",
-  "model_calls": 12
+  "withdrawn": "A 'before_the_fix' arm scoring 163.0 stood here and is withdrawn: nothing shipped reproduced it, and this file was written by hand. It is now reproducible on demand -- scripts/auditor_arm.py --gate-input describe -- and re-measuring it reached 26 of 28 environments before being stopped, because the pre-fix gate hands adapter.describe() to the model and the two tau2 environments mean the verifier's source against a 4096-token context. The qualitative finding the surviving 26 do support is kept: reading the fixture's own metadata, the gate concluded environments had no correct answer and withheld real verifier-integrity findings, which is why it now reads task instructions only. See docs/RETRACTIONS.md 20."
 }
