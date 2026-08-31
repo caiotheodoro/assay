@@ -208,7 +208,7 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 | 120 *(shipped)* | 43.0 | 394.0 | assay |
 | 400 | 136.33 | 394.0 | assay |
 | 800 | 269.67 | 394.0 | assay |
-| **1100** | **394.0** | **394.0** | **tie** |
+| **1099.53** | **394.0** | **394.0** | **tie** |
 | 2000 | 669.67 | 394.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
