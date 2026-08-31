@@ -194,6 +194,29 @@ def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
         lines.append("Nothing. Every probe ran.")
     lines.append("")
 
+    if report.auditor_overrides:
+        lines += [
+            "## What the Auditor changed",
+            "",
+            "A model read these results before they were reported. It can only "
+            "narrow a verdict -- withhold a finding, or run a probe that had "
+            "declined -- and never turn a defect into a pass. Drop `--auditor` "
+            "and the rows below revert to what the deterministic battery said.",
+            "",
+            "| Probe | Was | Now | Proposed by | Why |",
+            "|---|---|---|---|---|",
+        ]
+        lines += [
+            f"| `{o['probe']}` | {o['was']} | {o['now']} | `{o['proposed_by']}` "
+            f"| {o['reason']} |"
+            for o in report.auditor_overrides
+        ]
+        lines.append("")
+        for override in report.auditor_overrides:
+            quote = override.get("evidence", {}).get("quote")
+            if quote:
+                lines += [f"> {quote}", ""]
+
     errored = report.by_status(ProbeStatus.ERROR)
     if errored:
         lines += ["## Errors", "", "| Probe | Error |", "|---|---|"]

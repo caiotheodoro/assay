@@ -1,0 +1,41 @@
+{
+  "what": "Can the Auditor resolve a NOT_APPLICABLE by synthesizing the split the suite never shipped?",
+  "env": "inspect_evals/boolq",
+  "probe": "shortcut_leakage/partial_input_baseline",
+  "battery_without_auditor": {
+    "status": "NOT_APPLICABLE",
+    "reason": "suite ships no separate train split to compare against"
+  },
+  "auditor_decomposition": {
+    "parts": [
+      {
+        "name": "passage",
+        "after": "Passage: ",
+        "before": "\n\nQuestion:"
+      },
+      {
+        "name": "question",
+        "after": "Question: ",
+        "before": null
+      }
+    ],
+    "must_not_determine": "question",
+    "confidence": "high"
+  },
+  "both_backends_agree": true,
+  "result": {
+    "status": "PASS",
+    "majority_class_rate": 0.75,
+    "per_part_accuracy": {
+      "passage": 0.75,
+      "question": 0.75
+    },
+    "train_items": 13,
+    "eval_items": 12,
+    "unique_train_part_values": 13,
+    "eval_values_seen_in_train": 0
+  },
+  "finding": "The split can be synthesized and the fields are named correctly by both backends, and the probe still cannot fire. per_part_accuracy equals the majority rate exactly, for both parts, because _part_accuracy is a lookup from an exact part value to a majority label. Every boolq question is unique free text, so no eval value is ever present in the train table, every item takes the fallback, and accuracy is pinned to the majority rate by construction.",
+  "corrects": "docs/PRE-REGISTRATION.md and README attribute this miss to the adapter supplying no train split. That is true and it is not the binding constraint: the partial-input baseline is a dictionary over exact part values and cannot work on free-text fields at any n. Supplying the split changes NOT_APPLICABLE to PASS, which is a more honest verdict and still not a detection.",
+  "kept": "The resolver is kept. It is correct, it is cheap, and it fires wherever part values repeat -- categorical fields, templated prompts, multiple-choice stems. It does not rescue boolq, and the write-up says so."
+}

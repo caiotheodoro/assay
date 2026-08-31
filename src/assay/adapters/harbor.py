@@ -79,13 +79,38 @@ def _mount_dir(prefix: str) -> Path:
     as owned by the container user, so the mode is not consulted. The suite was
     only ever run there, and CI has been red since the day it was added.
 
-    0755 is safe for what goes in here -- benchmark fixtures and their logs,
-    already world-readable in the repo -- and it is the mode the container
-    needs to read a directory this process owns and is about to hand it.
+    Reading is not enough: the task writes its solution into /work and the
+    verifier writes its result into /logs, and root-without-DAC_OVERRIDE cannot
+    write to a directory it does not own whatever the mode says about others.
+    So these two are 0777. The path comes from `mkdtemp`, so it is unguessable
+    and lives for one audit; what goes in it is benchmark fixture content that
+    is already world-readable in the repo.
     """
     path = Path(tempfile.mkdtemp(prefix=prefix))
-    path.chmod(0o755)
+    path.chmod(0o777)
     return path
+
+
+def _make_writable(root: Path) -> None:
+    """Let the container modify its own workspace.
+
+    `shutil.copytree` preserves the repo's modes, so the task files arrive 0644
+    owned by the host user. The sandbox drops `CAP_DAC_OVERRIDE`, so container
+    root cannot write to a file it does not own however permissive the others
+    bits are -- and rewriting a reachable verifier is precisely what the V1 and
+    V7 trivial policies exist to attempt. Without this they fail to write and
+    the probe reads that as an environment that held, which is a false PASS.
+
+    /work is the agent's workspace by design; making it writable is restoring
+    the intended semantics, not loosening them. /suite stays read-only and
+    /logs is separate.
+    """
+    root.chmod(0o777)
+    for path in root.rglob("*"):
+        try:
+            path.chmod(0o777 if path.is_dir() else 0o666)
+        except OSError:
+            pass
 
 
 def _filenames_in(instruction: str) -> list[str]:
@@ -396,6 +421,7 @@ class HarborAdapter(BaseAdapter):
         # read-only /suite mount at verification time.
         if task.environment_mode == "shared" and task.tests.exists():
             shutil.copytree(task.tests, self._work_host / "tests", dirs_exist_ok=True)
+        _make_writable(self._work_host)
         self._current = task_id
         return Observation(ok=True, data={"instruction": task.instruction})
 
