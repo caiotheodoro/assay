@@ -19,21 +19,36 @@ to find more defects than the field; it claims to price them.
 
 | Arm | Expected loss (`research-run`) |
 |---|---|
-| `flag_nothing` | 3072.0 |
-| `check_env` (the incumbent) | 3056.0 |
-| `flag_everything` | 366.0 |
-| **Assay** | **40.0** |
+| `flag_nothing` | 3232.0 |
+| `check_env` (the incumbent) | 3216.0 |
+| `stratified_random` | 2793.0 |
+| `agent_with_tools` | 2736.0 |
+| `direct_prompt` | 2454.0 |
+| `always_modal_defect` | 2050.0 |
+| `flag_everything` | 394.0 |
+| **Assay** | **43.0** |
 
-Assay saves **326.0 against `flag_everything`, 95% CI [238, 378], separated.**
-Wins 4 of 4 cost profiles, separates on 3.
+Assay saves **351.0 against `flag_everything`, 95% CI [263, 404], separated.**
+Wins 4 of 4 cost profiles and separates on all 4.
 
-**Read the arms in the right order.** `check_env` saves 16.0 against `flag_nothing`'s 3072.0 —
-0.52% of it, with a 95% interval of [0, 40] that includes zero, so beating the incumbent proves almost nothing. The arm that had to
+**Seventy-seven of that 351.0 is arithmetic, not detection.** `flag_everything` flags
+every class in the taxonomy on every environment, so its loss gets worse whenever the
+taxonomy or the corpus grows and no detector is involved: two probe families added two
+defect classes (+52) and two τ² environments added 28 more free false alarms while
+costing Assay 3. Against the taxonomy and corpus this was first measured on, the
+comparable margin is **274.0**. `docs/PRE-REGISTRATION-TAU2.md` predicted both figures
+before the corpus grew.
+
+**Read the arms in the right order.** `check_env` saves 16.0 against `flag_nothing`'s 3232.0 —
+0.50% of it, with a 95% interval of [0, 40] that includes zero, so beating the incumbent proves almost nothing. The arm that had to
 be beaten is `flag_everything`, which catches every defect by construction — and for
 most of this project's life, Assay did not beat it. Every headline rests on that
 separation.
 
-Intervals resample **environments** (n=26), not defects — `results/intervals.json`
+Recall is 0.9815 and **precision is 0.9464** — no longer 1.000. Three spurious findings
+remain and all three are on the two τ² environments.
+
+Intervals resample **environments** (n=28), not defects — `results/intervals.json`
 carries a `"why"` field saying so.
 
 ## What is deliberately published as a weakness
@@ -42,8 +57,9 @@ carries a `"why"` field saying so.
   split, so the contamination probe has nothing to compare.
 - Four of BenchJack's eight flaw classes are uncovered (`docs/COVERAGE.md`, written
   in *their* vocabulary, not ours).
-- Only **4 of 26** corpus environments are genuinely third-party. The split is
-  published because it is unflattering.
+- Only **6 of 28** corpus environments are genuinely third-party, and only **3 of those
+  6** carry ground truth this repository did not decide. The split is published because
+  it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative
   result, published as one.
 - The hosted demo runs the battery **in the browser**:
@@ -57,8 +73,8 @@ carries a `"why"` field saying so.
 
 ## Where the agent is
 
-10 of the 11 probe families are deterministic programs. That is the design, and there
-are two agents around them, both opt-in.
+10 of the 11 probe families are deterministic programs — every family except reward
+hackability. That is the design, and there are two agents around them, both opt-in.
 
 The **Challenger** (`--challenger`) found the reward-hack exploit class
 (`claude-cli`, turn 8, 262s) where a scripted attacker and `qwen3:8b` both missed;
@@ -79,7 +95,7 @@ off by default: the headline numbers above are fully deterministic.
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 744 passed, 0 skipped
-ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
