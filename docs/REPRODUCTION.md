@@ -84,7 +84,7 @@ their `importorskip` is at module scope.
 ## The headline comparison
 
 ```bash
-uv run --extra adapters --extra openenv python scripts/full_run.py
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py
 uv run --extra adapters python scripts/intervals.py --resamples 10000 --seed 11
 ```
 
@@ -272,8 +272,9 @@ believing any number printed under it.
 
 ```bash
 uv run --extra adapters --extra sweep --extra openenv assay list
-uv run --extra adapters assay audit inspect/always-correct
-uv run --extra adapters assay audit harbor/self-graded --card card.html
+uv run --extra adapters assay audit inspect/always-correct        # asks before it runs the scorer
+uv run --extra adapters assay audit harbor/self-graded --card card.html   # asks before it starts a container
+uv run --extra adapters assay audit harbor/self-graded --yes              # or say yes up front, unattended
 uv run --extra adapters assay reap --dry-run    # leftover sandbox containers
 ```
 
@@ -283,6 +284,17 @@ in the shipped corpus exits nonzero**, the healthy ones included: with no
 solve-rate estimate and no machine-readable scorer assertions, four probes come
 back `NOT_APPLICABLE` and the verdict is `UNVERIFIED`. Do not wrap these in
 `set -e` expecting a clean run. No defects found is not the same as no defects.
+
+**Exit 3 is different and it is not a verdict.** `assay audit` executes
+third-party code and asks first, showing the image, the command, every mount,
+the network state and every resource cap before it does. With no terminal to
+ask at and no explicit standing approval it refuses, prints how to grant one,
+and exits **3** with nothing run — distinct from 1 so a script can tell "the
+environment is defective" from "the gate held". The escapes are `--yes` on the
+command line and `ASSAY_APPROVE_ALL="<reason>"` in the environment, the latter
+for processes you cannot pass a flag to, such as `scripts/full_run.py` and CI.
+Both are recorded on the Environment Card as an unattended run, carrying the
+reason. Background in `docs/changelog/98-approval-gate.md`.
 
 `assay reap --dry-run` exits **1** when there is something to remove and 0 when
 there is not, so it can gate a CI step.

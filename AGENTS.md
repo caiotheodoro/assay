@@ -66,8 +66,8 @@ the workflow is for. No LLM judges any verdict anywhere in Assay.
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 594 passed, 0 skipped
-uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
-uv run --extra adapters assay audit harbor/self-graded --card /tmp/c.html; head -40 /tmp/c.html
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
+uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and

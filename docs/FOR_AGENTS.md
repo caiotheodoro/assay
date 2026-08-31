@@ -246,7 +246,7 @@ uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   #
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
-uv run --extra adapters assay audit harbor/self-graded --card /tmp/c.html; head -40 /tmp/c.html
+uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and

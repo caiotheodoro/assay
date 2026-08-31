@@ -129,7 +129,7 @@ the range of cost beliefs where it wins.
 
 ```bash
 uv sync --extra dev && uv run pytest -q               # the demo: every planted defect, caught
-uv run --extra adapters --extra openenv python scripts/full_run.py   # headline, 22s
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # headline, 22s
 ```
 
 ### Start here
@@ -258,7 +258,7 @@ exactly the shape it flags in environments.
 ## Measured result
 
 26 environments, 50 planted defects. Needs Docker for the Harbor tasks. No GPU
-and no API key — `uv run --extra adapters --extra openenv python scripts/full_run.py`,
+and no API key — `ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py`,
 22s on a warm Docker image. **Both extras are load-bearing:** `--extra adapters`
 alone omits `openenv` and `inspect_evals`, so it audits fewer environments than
 the table above reports.
