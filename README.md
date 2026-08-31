@@ -50,6 +50,41 @@ ASSAY_APPROVE_ALL="reproduction" \
   uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py   # the headline
 ```
 
+### The agent, in one command each
+
+Both agent results are opt-in and neither touches the headline above.
+
+```bash
+# 1. Precision. The battery calls a correctly-designed eval critically broken.
+#    15 environments, 2 of which have no correct answer, 3 runs each.
+ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
+  python scripts/semantic_gate.py --k 3 --arms claude      # tp 6/6, fp 0/39
+
+# 2. Recall. The scripted Challenger finds 14 of 25 paws items and cannot reach
+#    the constant-string exploit a human found by hand. A synthesising one can.
+ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
+  python scripts/policy_synthesis.py --k 1 --arms claude   # scripted 14/25, synthesis 24/25
+
+# 3. The gate from the CLI, in ten seconds, on a corpus environment: it consults
+#    the model and correctly declines, because this one has a correct answer.
+uv run --extra adapters assay audit fixture/unfalsifiable --auditor \
+  --auditor-model claude --yes                             # -> declined; verdict unchanged
+```
+
+**The positive case is not reachable from `assay audit`, and that is deliberate.**
+`inspect_evals/personality_BFI` is the environment the gate exists for and it is **not in
+the corpus**: [`docs/COVERAGE.md`](docs/COVERAGE.md) argues that an environment the tool is
+wrong about does not belong in the set used to measure the tool, and adding it labelled
+either way would corrupt the number rather than test it. So the CLI shows the gate
+*declining* and the script shows it *firing*. A test now fails if any documented
+`assay audit` command names an environment that is not registered, because the first draft
+of this block shipped one that did not.
+
+Without `--auditor-model` the Auditor takes whatever backend it finds; on a machine with
+ollama that is `qwen3:8b`, which [`results/semantic_gate.json`](results/semantic_gate.json)
+measures at 4 of 6 runs with 2 false overrides in 39. The flag exists because that
+difference is the result.
+
 **Skip the fetch and you get 26 environments, not 28.** Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable, the corpus is two environments smaller
 and every arm's loss falls — `full_run.py` prints the reason rather than shrinking quietly.
@@ -341,9 +376,9 @@ avoid: `inspect_evals/personality_BFI` comes back INVALID with 25 × `INVERT_PAS
 correct and semantically wrong, because a personality inventory *has no correct answer* and a format
 check is the right design. No probe can see that; it is a question about meaning, not mechanism.
 
-`assay audit --auditor` runs a semantic gate that withholds exactly that verdict. On the 13
-environments in [`results/semantic_gate.json`](results/semantic_gate.json) — the 12 that do have a
-correct answer, plus the one that does not:
+`assay audit --auditor` runs a semantic gate that withholds exactly that verdict. On the 15
+environments in [`results/semantic_gate.json`](results/semantic_gate.json) — the 13 that do have a
+correct answer, plus the 2 that do not:
 
 | backend | withheld the false positive | false overrides | wall clock |
 |---|---|---|---|

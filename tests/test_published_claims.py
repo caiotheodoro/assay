@@ -543,3 +543,40 @@ def test_the_results_doc_carries_every_arm_it_claims_to_explain():
         "docs/RESULTS.md does not carry these measured arm values: "
         + ", ".join(missing)
     )
+
+
+def test_every_assay_audit_command_in_a_live_doc_names_a_real_environment():
+    """A command a reader can copy has to be one that runs.
+
+    The README gained an "agent, in one command" block and the first draft of it
+    said `assay audit inspect_evals/personality_BFI --auditor`. That environment
+    is deliberately **not** registered -- `docs/COVERAGE.md` argues at length
+    that an environment the tool is wrong about does not belong in the corpus
+    used to measure the tool -- so the command printed `unknown environment` and
+    a list. Publishing it would have been worse than publishing nothing: a judge
+    running the one command the README offers for its headline agent result and
+    watching it fail reads everything after it differently.
+
+    Historical documents are exempt for the usual reason: they record commands
+    that were true when they were written.
+    """
+    from assay.corpus import entries
+
+    known = {env_id for env_id, _, _ in entries()}
+    pattern = re.compile(r"assay audit\s+([A-Za-z0-9_][\w./-]*)")
+    live = [
+        "README.md", "AGENTS.md", "docs/FOR_AGENTS.md", "docs/REPRODUCTION.md",
+        "docs/RESULTS.md", "docs/METHOD.md",
+    ]
+    bad = []
+    for name in live:
+        path = ROOT / name
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            for env in pattern.findall(line):
+                if env.startswith("-") or env in ("--help",):
+                    continue
+                if env not in known:
+                    bad.append(f"{name}: `assay audit {env}` -- not a registered environment")
+    assert not bad, "commands a reader cannot run:\n  " + "\n  ".join(bad)
