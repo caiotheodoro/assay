@@ -45,7 +45,7 @@ from typing import Any
 from .adapter import EnvAdapter
 from .llm import LLMClient, LLMUnavailable
 from .runner import AuditReport, audit as _run_battery
-from .types import Capability, Item, ProbeResult, ProbeStatus
+from .types import Capability, Item, ProbeResult, ProbeStatus, digest
 
 #: The only family whose results the semantic gate may touch. Every probe in
 #: it asks a question that presumes the environment has a correct answer, which
@@ -295,6 +295,13 @@ class Auditor:
 
     def __init__(self, client: LLMClient | None = None) -> None:
         self._client = client
+        #: shape signature -> the conclusion reached on the first
+        #: environment that had it. The memory lever: two environments
+        #: that pose the same question to a reader get one model call
+        #: between them, and the second is told where its answer came from.
+        self._by_shape: dict[str, dict[str, Any]] = {}
+        #: every model call this Auditor has made, for cost reporting.
+        self.calls = 0
         #: env_id -> what was concluded there. The memory lever, and the thing
         #: that makes a second environment cheaper to judge than the first.
         self.seen: dict[str, dict[str, Any]] = {}
@@ -317,6 +324,7 @@ class Auditor:
         client = self.client
         if client is None:
             return None
+        self.calls += 1
         try:
             return _parse(client.complete(system, user))
         except (LLMUnavailable, OSError):
@@ -324,15 +332,46 @@ class Auditor:
 
     # -- the semantic gate ---------------------------------------------------
 
+    @staticmethod
+    def shape(adapter: EnvAdapter) -> str:
+        """What makes two environments pose the same question to a reader.
+
+        The semantic gate asks whether an environment has a correct answer, and
+        that is settled by the task text, not by the verifier. Two environments
+        whose instructions are identical have the same answer whatever their
+        verifiers do -- which is exactly the case across the twelve toy-triage
+        fixtures, where the same ticket-classification prompt is paired with
+        twelve different planted defects.
+
+        Deliberately not the manifest digest: capabilities and version differ
+        between those twelve, and keying on them would defeat the whole point.
+        """
+        manifest = adapter.manifest()
+        body = "\n".join(
+            sorted({(t.instruction or "").strip() for t in manifest.tasks})
+        )
+        return digest({"ecosystem": manifest.ecosystem, "instructions": body})
+
     def classify(self, adapter: EnvAdapter) -> dict[str, Any] | None:
         """Does this environment have a correct answer? None when unknown."""
+        signature = self.shape(adapter)
+        remembered = self._by_shape.get(signature)
+        if remembered is not None:
+            return {**remembered, "carried_from": remembered["_env"]}
         answer = self._ask(_SYSTEM, adapter.describe())
         if answer is None:
             return None
         derived = decide(answer)
         if derived is None:
             return None
-        return {**answer, "model_said": answer.get("verdict"), "verdict": derived}
+        settled = {
+            **answer,
+            "model_said": answer.get("verdict"),
+            "verdict": derived,
+            "_env": adapter.manifest().env_id,
+        }
+        self._by_shape[signature] = settled
+        return settled
 
     def _withhold(self, result: ProbeResult, answer: dict[str, Any], who: str) -> ProbeResult:
         reason = (
