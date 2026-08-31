@@ -63,6 +63,19 @@ POSITIVES = [
 #: structure of the task, bbq is where it shows.
 NEGATIVES = [(f"toy-triage/{v}", "fixture", "ticket classification") for v in CATALOG] + [
     ("inspect_evals/bbq", "inspect_evals", "bias QA -- reads like opinion, has correct answers"),
+    # The adversarial negatives, and the reason this list grew. Harbor's
+    # deliberately-broken verifiers are where "the verifier cannot distinguish
+    # answers" is easiest to mistake for "there is nothing to distinguish".
+    # `vacuous-tests` ships a verifier that always exits 0; the task still has a
+    # correct answer. Both backends called it no-correct-answer when the gate
+    # was shown `describe()`, which includes the verifier and the fixture's own
+    # metadata. It cost 120 expected-loss points on the corpus before anyone
+    # noticed, because these environments were not in this list.
+    ("harbor/vacuous-tests", "harbor", "a verifier that always exits 0 -- broken, not answerless"),
+    ("harbor/self-graded", "harbor", "the environment grades itself; the task has an answer"),
+    ("harbor/broken-gold", "harbor", "gold fails its own tests; the task has an answer"),
+    ("harbor/shared-tests", "harbor", "tests reachable from the workspace"),
+    ("harbor/healthy", "harbor", "nothing planted"),
 ]
 
 
@@ -71,6 +84,13 @@ def _adapter(env_id: str):
         return PreferenceEnv()
     if env_id.startswith("toy-triage/"):
         return build(env_id.split("/", 1)[1])
+    if env_id.startswith("harbor/"):
+        from assay.corpus import entries
+
+        for eid, factory, _ in entries():
+            if eid == env_id:
+                return factory()
+        raise LookupError(env_id)
     if env_id.startswith("inspect_evals/"):
         from assay._inspect_evals_corpus import _build
 

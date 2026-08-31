@@ -342,6 +342,33 @@ class Auditor:
     # -- the semantic gate ---------------------------------------------------
 
     @staticmethod
+    def task_text(adapter: EnvAdapter) -> str:
+        """Only what a person answering the task would see.
+
+        Deliberately **not** `adapter.describe()`, which is what the baseline
+        arms get and which includes declared capabilities, task metadata and the
+        verifier's source. Handing that to the semantic gate was a bug with a
+        measurement behind it: on `harbor/vacuous-tests` both backends read the
+        fixture's own metadata -- *"The verifier always exits 0. Nothing it
+        reports means anything"* -- and concluded the environment had no correct
+        answer. It has one. The verifier is simply broken, which is the defect
+        the battery correctly found and the gate then withheld.
+
+        "The verifier cannot distinguish answers" and "there is nothing to
+        distinguish" are different claims, and only the second is this gate's
+        business. Reading the verifier is how they got confused, so the gate
+        does not get to read it.
+        """
+        manifest = adapter.manifest()
+        lines = []
+        for task in manifest.tasks:
+            lines.append(f"task {task.task_id}:")
+            lines.append((task.instruction or "").strip() or "(no instruction text)")
+            lines.append("")
+        return "\n".join(lines).strip() or "(this environment declares no task text)"
+
+
+    @staticmethod
     def shape(adapter: EnvAdapter) -> str:
         """What makes two environments pose the same question to a reader.
 
@@ -367,7 +394,7 @@ class Auditor:
         remembered = self._by_shape.get(signature)
         if remembered is not None:
             return {**remembered, "carried_from": remembered["_env"]}
-        answer = self._ask(_SYSTEM, adapter.describe())
+        answer = self._ask(_SYSTEM, self.task_text(adapter))
         if answer is None:
             return None
         derived = decide(answer)

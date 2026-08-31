@@ -352,20 +352,22 @@ Given the job a fixed repertoire structurally cannot have — **proposing** a po
 replaying one — the Challenger closes it. On the same pinned subsample
 ([`results/policy_synthesis.json`](results/policy_synthesis.json)):
 
-| arm | detected | beyond the floor |
+| arm | detected, 3 runs | beyond the floor |
 |---|---|---|
 | scripted floor | 14 / 25 | — |
-| `claude-cli:sonnet`, sees the verifier | **24 / 25** | **+11** |
-| `claude-cli:sonnet`, blind to the verifier | 22 / 25 | +8 |
-| `ollama:qwen3:8b` | 0 / 25 | −14 |
+| `claude-cli:sonnet`, sees the verifier | **25, 24, 25** | **+11, +10, +11** |
+| `claude-cli:sonnet`, blind to the verifier | 23, 24, 24 | +10, +11, +10 |
+| `ollama:qwen3:8b`, sees the verifier | 0, 0, 0 | −14 |
+| `ollama:qwen3:8b`, blind | 1, 3, 1 | −13 |
 
 The policies it proposed are the point, not the count: `'Yes No'`, `'Yes/No'` and their newline
-variants — the both-labels-at-once class, reached from the task text. One run per arm, so
-distrust the exact 24 and not the direction; `qwen3:8b` reaching 0 makes this a capability
-threshold rather than a property of the design. **Nothing here is scored by a model:**
+variants — the both-labels-at-once class, reached from the task text. Three runs per arm,
+because one run of a stochastic attacker reported as a capability is the error this repo is
+about: the spread is 24–25 and the direction is not in doubt. `qwen3:8b` reaching 0 makes
+this a capability threshold rather than a property of the design. **Nothing here is scored by a model:**
 `self_report` records what the challenger claimed and is used for nothing, and it disagreed with
-the deterministic scorer zero times out of 24. The uncomfortable half is that blind scores 22
-against 24 — most of the win is reading the task, not defeating the scorer
+the deterministic scorer zero times out of 24. The uncomfortable half is that blind scores 23–24
+against 24–25 — nearly all of the win is reading the task, not the verifier
 ([`docs/changelog/100-policy-synthesis.md`](docs/changelog/100-policy-synthesis.md)).
 
 ### The other agent, and the one judgement no script can make
