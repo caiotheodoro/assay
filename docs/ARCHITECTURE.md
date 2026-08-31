@@ -204,29 +204,43 @@ on every pure-data adapter to satisfy a type checker, and `clear_cache` really
 is a property of one adapter's implementation strategy rather than of an
 ecosystem.
 
-### 1.7 The corpus registry covers four of seven adapters
+### 1.7 The corpus registry covers six of seven adapters
 
 `corpus.py` is explicit about its purpose:
 
 > adding an ecosystem means adding a file — never editing this one. That matters
 > when several people are adding ecosystems at once.
 
-Four `_*_corpus.py` modules exist: `_fixture_`, `_harbor_`, `_inspect_`,
-`_openenv_`. The three newest adapters — tau2, ScienceAgentBench and the
-submitted-spec adapter — register nothing.
+Six `_*_corpus.py` modules exist: `_fixture_`, `_harbor_`, `_inspect_`,
+`_inspect_evals_`, `_openenv_`, `_tau2_`. **Two adapters still register
+nothing** — ScienceAgentBench and the submitted-spec adapter.
 
 Consequence: everything routed through `corpus.entries()` — `assay list`,
 `assay audit <env>`, `publish.py` — cannot see them. They are reachable only
 through bespoke scripts.
 
-Each case is individually defensible. tau2 and SAB are scored against *other
-people's* confirmed defect lists, so they have no planted `frozenset[DefectClass]`
+Each remaining case is individually defensible. SAB is scored against *other
+people's* confirmed defect lists, so it has no planted `frozenset[DefectClass]`
 to register; the spec adapter is built at runtime from a stranger's submission to
 a Space, so there is nothing to enumerate at import time. But the brief asked for
 this to be said plainly, so: **a registry whose stated purpose was to have no
-special cases has three, and they are the three most recent ecosystems.** The
+special cases has two, and they are among the most recent ecosystems.** The
 registry held for the ecosystems it was designed against and stopped being the
 front door the moment the corpus stopped being planted defects.
+
+**What changed for tau2, and what the objection above was actually about.** This
+section previously listed tau2 alongside SAB, on the grounds that an environment
+scored against somebody else's confirmed defect list "has no planted
+`frozenset[DefectClass]` to register". That was true and it was also the wrong
+conclusion: the missing thing was not a *planted* set, it was a *mapping* from
+task-level "this record differs between two pinned revisions" onto the sixteen
+classes. Deriving that mapping is the whole of
+[`docs/PRE-REGISTRATION-TAU2.md`](PRE-REGISTRATION-TAU2.md) — two rules over the
+changed field paths, fourteen classes excluded with a written reason each, and
+`tests/test_tau2_corpus_ground_truth.py` checking every rule against the two
+snapshots with Assay out of the loop. The registry did not need a special case;
+it needed somebody to do the mapping and argue it in public. SAB still needs the
+same work done for its own ground truth and has not had it.
 
 ### 1.8 Duplication — less than expected, and one helper nobody used
 

@@ -72,12 +72,38 @@ def test_the_corpus_split_is_published_on_provenance():
 
 
 def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
-    """Only 2 of 24 environments are genuinely external."""
+    """6 of 28 environments are genuinely external, and 2 are externally labelled.
+
+    The count has moved three times: 2, then 4 when `inspect_evals/{paws,boolq}`
+    were hand-triaged in, then 6 when `tau2/{retail,airline}` were registered
+    under a mapping derived from a diff of two pinned revisions
+    (`docs/PRE-REGISTRATION-TAU2.md`). Each move forced the README's
+    honest-ceiling paragraph to be rewritten, which is the entire purpose of
+    asserting a literal here rather than a bound.
+
+    The second assertion is the one that matters more. `EXTERNAL` says this repo
+    did not write the environment; it says nothing about who decided what is
+    wrong with it. Only `EXTERNALLY_DERIVED` does, and until tau2 was registered
+    nothing in the corpus carried it -- every "external" label was still a
+    judgement made here, by hand, against somebody else's scorer.
+    """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
-    assert n == 4, (
-        f"external control is n={n}; it was 2, then paws and boolq were added. "
-        "If this changed again the README's honest-ceiling paragraph must change with it."
+    assert n == 6, (
+        f"external control is n={n}; it was 2, then 4 with paws and boolq, then 6 with "
+        "tau2/retail and tau2/airline. If this changed again the README's honest-ceiling "
+        "paragraph must change with it."
+    )
+
+    derived = sorted(
+        env
+        for env, p in d["provenance"].items()
+        if p["label_source"] == "externally_derived"
+    )
+    assert derived == ["tau2/airline", "tau2/retail"], (
+        f"environments whose labels a third party established: {derived}. The README "
+        "distinguishes these from the hand-triaged ones and must be corrected if the "
+        "set changes."
     )
     assert "the twelve environments this repo did not write" not in README
 

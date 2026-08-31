@@ -111,6 +111,30 @@ questions, and the three reasons are distinct:
 The two now overlap on roughly {V1, V3, V5, V6, V7, V8}. Assay names six
 families the taxonomy does not; BenchJack names V2 and V4 that Assay does not.
 
+### A third taxonomy, and the class it has that we do not
+
+BenchJack is not the only outside list this repository has now been held against.
+`tau2-bench-verified` fixed 62 of 164 τ² tasks and grouped the fixes; registering
+those two domains in the corpus meant mapping that grouping onto the sixteen
+(`docs/PRE-REGISTRATION-TAU2.md`, and `tau2_truth.EXCLUDED_DEFECT_CLASSES` for
+the fourteen classes the mapping declines to claim). One τ² category has **no
+home in this taxonomy at all**:
+
+- **`database_accuracy` — 5 of the 62 positives, and there is no word for it
+  here.** The task's fixtures disagree with the domain's own database: a price
+  that is not the price, an item id that is not in the catalogue, a passenger
+  who does not exist. Nothing in the sixteen means "the environment's reference
+  data is wrong". It is not `SPEC_VERIFIER_MISMATCH`, which is about the
+  instruction disagreeing with the verifier, and folding it in there because
+  both words contain "mismatch" would be relabelling somebody else's defect to
+  make our list look complete. It is recorded as a gap and left open.
+
+The direction matters. The nine classes above are ones *this* taxonomy has and
+BenchJack does not — a flattering asymmetry, and one produced partly by writing
+two classes to fit. `database_accuracy` is the asymmetry pointing the other way,
+found by someone else's list, and it is the first one on this page that costs
+something to admit.
+
 ---
 
 ## A class of eval where the core assumption fails
