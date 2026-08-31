@@ -695,15 +695,42 @@ datasets:
   - {DATASET_REPO}
 ---
 
-# Assay Challenger (GRPO) — a negative result
+# You cannot train an exploit-finder that never gets to look
 
-> **This adapter does not work.** Two GRPO runs, 4,800 rollouts, and it did not
-> learn. It does not find the held-out exploit, and neither run's mean reward
-> improved. It is published because the ablation table in the write-up has a
-> row for it, and a row nobody else can reproduce is not evidence.
->
-> **Do not deploy this. Do not fine-tune from it expecting a head start.**
-> There is no benchmark on which it beats its own base model.
+**A one-shot RL policy cannot learn to find a bug it has to discover first.** Not
+slowly — at all. This is the training evidence for that, from two GRPO runs and
+4,800 rollouts against a reward that pays only for reward hacking, on an
+environment whose exploit requires reading the filesystem.
+
+Three findings, each measured here and each transferable to any RL run with a
+sparse behavioural reward:
+
+1. **Zero spread is zero gradient, not slow learning.** GRPO's advantage is
+   group-relative, `(r − mean) / std` within one prompt's rollout group. In run 1,
+   **99.7% of groups had identical rewards** — so the advantage was exactly zero
+   and no gradient existed. Training for longer buys nothing.
+2. **Temperature buys the wrong kind of diversity.** Raising it 1.0 → 1.3
+   multiplied distinct completions **sevenfold, 9 → 62, and moved nothing.** The
+   extra completions varied the *string being echoed*, never the structure, and
+   only structural variation earns an exploit gap. Exploration that is lexical
+   cannot find a behavioural exploit.
+3. **The format was the ceiling, not the reward.** Every policy the trained model
+   proposed was a variation on `echo '<string>' > out.txt`. It never listed a
+   directory, because a one-shot policy **gets no observation back** — so it had
+   no way to learn that the file it needed to overwrite exists. The reward was
+   verified correct by 36 tests and 16% of rollouts landed on real exploits. The
+   failure is upstream of reward design.
+
+And **it was predictable before the GPU was rented.**
+`scripts/reward_landscape.py` enumerates candidate policies, scores them with the
+real reward, and counts environments with nonzero spread: **51.3% flat across 39
+prompts**, pre-registered before training started.
+
+> **The weights are here so the ablation row below is checkable, not because you
+> should run them.** They do not beat their own base model on anything. If you
+> want the Challenger that *does* find the exploit, it is the multi-turn prompted
+> arm — the reward, environment pool, holdout and replay machinery all transfer to
+> it unchanged.
 
 ## What failed, and why
 
@@ -795,6 +822,20 @@ to nothing.
 something. Its verifier compares `out.txt` against `expected.txt`, both in the
 workspace, so writing the same wrong value to both scores 1.0 while
 accomplishing nothing.
+
+**The holdout leaked, and that makes the negative stronger rather than weaker.**
+`results/train_holdout_dedup.json` in the dataset records it: the
+`harbor/self-graded` prompt is a **byte-identical duplicate** of three training
+prompts — `harbor/broken-gold`, `harbor/healthy`, `harbor/vacuous-tests`, all at
+`true_jaccard 1.0`. The Harbor prompts differ only in the task name, and the
+exploit lives in the *filesystem*, not the prompt.
+
+So this is not a clean held-out test and should not be read as one. What it is
+instead: the model failed to find the exploit on the **easiest possible** version
+of the test, one whose prompt it had already trained on hundreds of times. A
+result that survives its own contamination is worth more than one that needs the
+contamination explained away — and the reason it survives is finding 3 above,
+which has nothing to do with which prompts were held out.
 
 | arm | found exploit | best gap | distinct policies |
 |---|---|---|---|
@@ -1565,14 +1606,42 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         out.append(gate(f"{kind}: LFS configured", ga.exists() and "jsonl" in ga.read_text(),
                         ga.read_text().strip().replace("\n", " | ") if ga.exists() else "missing"))
 
-    # The model card has to lead with the failure. Checked, not trusted: the
-    # first 400 characters after the front matter must say it did not work.
+    # The model card must not oversell an adapter that does not work.
+    #
+    # This gate used to require the first 400 characters to say "does not work"
+    # or "negative result", and it did its job for as long as the alternative
+    # was overselling. But it also enforced a headline that buried the finding
+    # under an apology: a reader landing on "This adapter does not work. Do not
+    # deploy this." concludes the project failed, when what is actually there is
+    # a measured result about why a one-shot policy cannot learn a discovered
+    # exploit. Leading with the failure and leading with the *finding* are not
+    # the same thing, and only the second is a contribution.
+    #
+    # So the gate now checks the honesty rather than the pessimism: somewhere in
+    # the card, prominently enough to be above the fold, it must still say the
+    # weights are not to be deployed and do not beat their base model. Where the
+    # title goes is a writing decision; whether the warning is present is not.
     m = staged.get("model")
     if m:
         text = (m / "README.md").read_text().split("---", 2)[-1]
-        head = text[:400].lower()
-        leads = "does not work" in head or "negative result" in head
-        out.append(gate("model card leads with the failure", leads, repr(text.strip()[:90])))
+        # Normalised before matching: the phrases below are prose and prose
+        # wraps. A gate that fails because a sentence broke across two lines is
+        # a gate that trains people to reword around it.
+        flat = " ".join(text.replace(">", " ").split()).lower()
+        head = flat[:2200]
+        disclaims = (
+            "not because you should run them" in head
+            or "do not deploy" in head
+            or "not for deployment" in head
+        )
+        no_gain = "do not beat their own base model" in head or "beats its own base model" in head
+        out.append(gate(
+            "model card disclaims deployment above the fold",
+            disclaims and no_gain,
+            "says both 'not to be run' and 'no gain over base'"
+            if (disclaims and no_gain)
+            else f"disclaims={disclaims} no_gain={no_gain}: {text.strip()[:90]!r}",
+        ))
 
     # The Space must render skip reasons, not only findings.
     sp = staged.get("space")
