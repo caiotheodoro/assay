@@ -28,6 +28,15 @@ class Probe:
     name: ClassVar[str] = "unnamed"
     #: Capabilities without which this probe cannot run at all.
     requires: ClassVar[tuple[Capability, ...]] = ()
+    #: The defect classes this probe is the one that finds.
+    #:
+    #: Without this a NOT_APPLICABLE result is indistinguishable from a clean
+    #: PASS one layer up: both contribute nothing to `report.detected`, so the
+    #: corpus scorer charged `inspect_evals/boolq` a full miss for SHORTCUT_LEAK
+    #: on a probe that had declined for want of a train split. Declaring what a
+    #: probe would have looked for is what lets a caller tell "checked, clean"
+    #: from "could not check".
+    detects: ClassVar[tuple[DefectClass, ...]] = ()
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]) -> ProbeResult:
         raise NotImplementedError

@@ -181,6 +181,7 @@ class DeclaredPermissions(Probe):
 
     family = "sandbox_permissions"
     name = "declared_permissions"
+    detects = (DefectClass.EXCESSIVE_PERMISSIONS,)
     requires = (Capability.SANDBOX_POSTURE,)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):

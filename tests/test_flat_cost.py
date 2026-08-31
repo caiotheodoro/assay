@@ -83,3 +83,133 @@ def test_every_shipped_profile_loads():
     for name, p in profiles.items():
         assert p.description, name
         assert p.false_alarm > 0, name
+
+
+# --- The third state: checked-and-clean is not could-not-check ----------------
+
+
+def _classes():
+    from assay.types import DefectClass
+
+    return DefectClass
+
+
+def test_a_declined_probe_is_not_scored_as_a_failure_to_detect():
+    """Assay's only published miss was a check that could not run.
+
+    `inspect_evals/boolq` plants SHORTCUT_LEAK and ships no train split, so
+    `partial_input_baseline` returns NOT_APPLICABLE with that reason. `Outcome`
+    carried only `planted` and `detected`, so the class landed in `missed` and
+    every run ever published reported recall 0.9815 for a defect the tool had
+    explicitly declined to rule on.
+    """
+    from assay.metrics import ArmResult, Outcome
+
+    D = _classes()
+    declined = Outcome(
+        "inspect_evals/boolq",
+        planted=frozenset({D.SHORTCUT_LEAK}),
+        detected=frozenset(),
+        inconclusive=frozenset({D.SHORTCUT_LEAK}),
+    )
+    assert declined.missed == frozenset()
+    assert declined.unchecked == frozenset({D.SHORTCUT_LEAK})
+
+    arm = ArmResult("assay", [declined])
+    assert arm.n_missed == 0
+    assert arm.n_unchecked == 1
+
+
+def test_declining_to_answer_never_lowers_an_arms_expected_loss():
+    """The one incentive a tool like this must not have.
+
+    If an unchecked defect were cheaper than a missed one, any probe could cut
+    its arm's reported loss by returning NOT_APPLICABLE. The loss is identical;
+    only the account of why changes.
+    """
+    from assay.metrics import ArmResult, Outcome
+
+    D = _classes()
+    profile = load("research-run")
+    planted = frozenset({D.SHORTCUT_LEAK})
+
+    as_miss = ArmResult("m", [Outcome("e", planted, frozenset())])
+    as_unchecked = ArmResult(
+        "u", [Outcome("e", planted, frozenset(), inconclusive=planted)]
+    )
+    assert as_miss.expected_loss(profile) == as_unchecked.expected_loss(profile)
+    assert as_miss.error_count == as_unchecked.error_count
+
+
+def test_recall_keeps_the_full_denominator_and_reports_the_other_beside_it():
+    """Both numbers, never whichever one is kinder."""
+    from assay.metrics import ArmResult, Outcome
+
+    D = _classes()
+    arm = ArmResult(
+        "assay",
+        [
+            Outcome("found", frozenset({D.GOLD_FAILS}), frozenset({D.GOLD_FAILS})),
+            Outcome(
+                "declined",
+                frozenset({D.SHORTCUT_LEAK}),
+                frozenset(),
+                inconclusive=frozenset({D.SHORTCUT_LEAK}),
+            ),
+        ],
+    )
+    assert arm.recall == 0.5, "the headline denominator must stay the full planted set"
+    assert arm.recall_on_checkable == 1.0
+    row = arm.profile_row(load("research-run"))
+    assert "recall" in row and "recall_on_checkable" in row and "n_unchecked" in row
+
+
+def test_every_probe_declares_what_it_would_have_found():
+    """`detects` is what makes NOT_APPLICABLE legible one layer up."""
+    from assay.probes import all_probes
+
+    undeclared = [p.name for p in all_probes() if not p.detects]
+    assert not undeclared, f"probes that declare no defect classes: {undeclared}"
+
+
+def test_the_declared_classes_match_the_ones_each_probe_module_actually_raises():
+    """A probe that starts reporting a new class must say so here too."""
+    import ast
+    import pathlib
+
+    from assay.probes import all_probes
+
+    declared = {d.value for p in all_probes() for d in p.detects}
+    root = pathlib.Path(__file__).resolve().parents[1] / "src/assay/probes"
+    raised = set()
+    for path in root.glob("*.py"):
+        if path.name in {"__init__.py", "base.py"}:
+            continue
+        for node in ast.walk(ast.parse(path.read_text())):
+            if (
+                isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "DefectClass"
+            ):
+                raised.add(node.attr)
+    assert raised <= declared, (
+        "probe modules name defect classes no probe declares in `detects`: "
+        f"{sorted(raised - declared)}"
+    )
+
+
+def test_an_error_is_not_laundered_into_could_not_determine():
+    """A crashed probe is a bug in Assay and must keep costing like one."""
+    from assay.runner import AuditReport
+    from assay.types import ProbeResult, ProbeStatus
+
+    report = AuditReport(env_id="e", ecosystem="x", env_version="1")
+    report.results = [
+        ProbeResult(
+            family="shortcut_leakage",
+            probe="partial_input_baseline",
+            status=ProbeStatus.ERROR,
+            reason="boom",
+        )
+    ]
+    assert report.unchecked == set(), "ERROR must not read as a reasoned decline"

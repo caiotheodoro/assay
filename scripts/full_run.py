@@ -56,7 +56,10 @@ def run_assay(corpus, ctx: dict | None = None, label: str = "assay") -> ArmResul
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
             report = audit(adapter, ctx)
-        arm.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        arm.outcomes.append(
+            Outcome(env_id, planted, frozenset(report.detected),
+                    frozenset(report.unchecked))
+        )
         print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
               flush=True)
     return arm
@@ -83,7 +86,10 @@ def run_auditor_arm(
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
             report = auditor.audit(adapter)
-        result.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        result.outcomes.append(
+            Outcome(env_id, planted, frozenset(report.detected),
+                    frozenset(report.unchecked))
+        )
         print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
               flush=True)
     return result, {

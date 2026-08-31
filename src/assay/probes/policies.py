@@ -40,6 +40,7 @@ class TrivialFloor(Probe):
 
     family = "trivial_floor"
     name = "trivial_floor"
+    detects = (DefectClass.TRIVIAL_FLOOR_BREACH,)
     requires = (
         Capability.TRIVIAL_POLICIES,
         Capability.GRADED_POLICIES,
@@ -95,6 +96,7 @@ class Separability(Probe):
 
     family = "separability"
     name = "separability"
+    detects = (DefectClass.SEPARABILITY_LOSS,)
     requires = (
         Capability.GRADED_POLICIES,
         Capability.SEPARABLE_VERIFIER,
@@ -140,6 +142,7 @@ class DifficultyBand(Probe):
 
     family = "difficulty_band"
     name = "difficulty_band"
+    detects = (DefectClass.DIFFICULTY_IMPOSSIBLE, DefectClass.DIFFICULTY_SATURATED)
     LOW, HIGH = 0.10, 0.80
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):

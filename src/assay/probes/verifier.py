@@ -24,6 +24,7 @@ FAMILY = "verifier_integrity"
 class GoldPasses(Probe):
     family = FAMILY
     name = "gold_passes"
+    detects = (DefectClass.GOLD_FAILS,)
     requires = (
         Capability.GOLD_TRAJECTORY,
         Capability.SEPARABLE_VERIFIER,
@@ -57,6 +58,7 @@ class GoldPasses(Probe):
 class NoopFails(Probe):
     family = FAMILY
     name = "noop_fails"
+    detects = (DefectClass.NOOP_PASSES,)
     requires = (Capability.SEPARABLE_VERIFIER, Capability.LIVE_STEPPING)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
@@ -85,6 +87,7 @@ class NoopFails(Probe):
 class InvertedFails(Probe):
     family = FAMILY
     name = "inverted_fails"
+    detects = (DefectClass.INVERT_PASSES,)
     requires = (
         Capability.GOLD_TRAJECTORY,
         Capability.INVERTIBLE_SPEC,
@@ -122,6 +125,7 @@ class InvertedFails(Probe):
 class KnownWrongFails(Probe):
     family = FAMILY
     name = "known_wrong_fails"
+    detects = (DefectClass.KNOWN_WRONG_PASSES,)
     requires = (
         Capability.KNOWN_WRONG,
         Capability.SEPARABLE_VERIFIER,
