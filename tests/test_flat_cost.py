@@ -213,3 +213,91 @@ def test_an_error_is_not_laundered_into_could_not_determine():
         )
     ]
     assert report.unchecked == set(), "ERROR must not read as a reasoned decline"
+
+
+# --- The third state must not become a place to hide things -------------------
+#
+# An independent review of the change above found four ways a defect could reach
+# `unchecked` without anyone having declined to check it. Each is a way for an
+# arm to move a failure out of `missed` and inflate `recall_on_checkable`, which
+# is the exact self-flattery the third state was added to remove.
+
+
+def test_a_finding_the_auditor_withheld_is_not_laundered_into_unchecked():
+    """`_withhold` rewrites a DEFECT into NOT_APPLICABLE, keeping the probe name.
+
+    That is a probe that ran and found something, and an agent that then deleted
+    it -- the opposite of a probe nobody could run. Counting it as unchecked
+    would let the semantic gate move a real planted defect out of `missed` and
+    report perfect recall on what it could check.
+    """
+    from assay.runner import AuditReport
+    from assay.types import DefectClass, ProbeResult, ProbeStatus
+
+    report = AuditReport(env_id="e", ecosystem="x", env_version="1")
+    report.results = [
+        ProbeResult(
+            family="verifier_integrity",
+            probe="noop_fails",
+            status=ProbeStatus.NOT_APPLICABLE,
+            reason="this environment has no correct answer",
+            detail={"auditor_override": True},
+        )
+    ]
+    assert DefectClass.NOOP_PASSES not in report.unchecked, (
+        "a withheld finding must stay a miss; the agent deleting it is not the "
+        "same fact as nobody being able to look"
+    )
+
+
+def test_a_check_the_caller_declined_to_supply_input_for_is_not_unchecked():
+    """`difficulty_band` declines on every default run, and could be run.
+
+    Every other NOT_APPLICABLE means the environment cannot support the check.
+    This one means the harness did not pass `solve_rates`, which it never does.
+    Treating the two alike would exempt DIFFICULTY_* from `missed` on every run
+    ever published.
+    """
+    from assay.runner import AuditReport
+    from assay.types import DefectClass, ProbeResult, ProbeStatus
+
+    report = AuditReport(env_id="e", ecosystem="x", env_version="1")
+    report.results = [
+        ProbeResult(
+            family="difficulty_band",
+            probe="difficulty_band",
+            status=ProbeStatus.NOT_APPLICABLE,
+            reason="no solve-rate estimate supplied",
+            detail={"caller_input_missing": True},
+        )
+    ]
+    assert not (report.unchecked & {
+        DefectClass.DIFFICULTY_IMPOSSIBLE, DefectClass.DIFFICULTY_SATURATED
+    }), "a check we chose not to run is not a check that could not run"
+
+
+def test_an_undefined_rate_is_none_rather_than_zero():
+    """0.0 would read as "checked everything, found nothing"."""
+    from assay.metrics import ArmResult, Outcome
+
+    D = _classes()
+    planted = frozenset({D.SHORTCUT_LEAK})
+    arm = ArmResult("x", [Outcome("e", planted, frozenset(), inconclusive=planted)])
+    assert arm.recall_on_checkable is None
+    assert arm.profile_row(load("research-run"))["recall_on_checkable"] is None
+
+
+def test_the_gated_challenger_arm_cannot_collide_with_the_ungated_one():
+    """`--challenger X --challenger-arm X` produced the same label twice.
+
+    CompositeChallenger.name depends on neither turns nor the escalation policy,
+    so the gated arm overwrote the ungated one in `arms` and the escalation-gated
+    run was published as the headline.
+    """
+    import pathlib
+
+    src = pathlib.Path(__file__).resolve().parents[1] / "scripts/full_run.py"
+    text = src.read_text()
+    assert 'f"assay+{composite.name}+gated"' in text, (
+        "the gated arm needs a label the ungated arm cannot produce"
+    )

@@ -148,8 +148,18 @@ class DifficultyBand(Probe):
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         rates: dict[str, float] | None = ctx.get("solve_rates")
         if not rates:
+            # `caller_input_missing` separates this from every other decline in
+            # the battery. Elsewhere NOT_APPLICABLE means the *environment*
+            # cannot support the check -- boolq ships no train split, and no
+            # caller can conjure one. Here the check is perfectly possible and
+            # the harness simply did not pass the input, which the default
+            # `full_run.py` never does. Without the distinction, DIFFICULTY_*
+            # would be permanently exempt from `missed` on every run, so a
+            # planted DIFFICULTY_SATURATED would read as "nobody could check"
+            # rather than "we did not look".
             return self.na(
-                "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler"
+                "no solve-rate estimate supplied; pass ctx['solve_rates'] from a rollout sampler",
+                caller_input_missing=True,
             )
         source = ctx.get("solve_rate_source", "unspecified policy")
         findings = []

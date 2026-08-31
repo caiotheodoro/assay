@@ -157,18 +157,18 @@ def load_arms(
     # `--challenger` the assay arm *is* the composite under another name, and
     # bootstrapping a set against itself reports a 0.0 difference that means
     # nothing.
-    assay_outcomes = {o.env_id: o.detected for o in arms["assay"].outcomes}
+    # The arm rebuilt above from `per_env` is whichever one the run labelled
+    # `assay`. With `--challenger` that is the composite under another name, so
+    # the payload says which label it carried rather than leaving this to guess.
+    #
+    # This used to skip any arm whose detections matched assay's. That is right
+    # for the renamed arm and wrong for `--challenger-arm`, which adds a genuinely
+    # separate row: it was dropped from the bootstrap exactly when its result was
+    # "identical to assay", which is the finding the flag exists to publish.
+    assay_label = payload.get("assay_arm_label", "assay")
     for name in sorted(set(recorded) | set(fallbacks)):
-        if name in arms:
+        if name in arms or name == assay_label:
             continue
-        if name != "assay" and recorded.get(name) is not None:
-            same = {
-                env: frozenset(DefectClass(d) for d in per_env_row)
-                for env, per_env_row in recorded[name].items()
-                if env in truth
-            }
-            if same == assay_outcomes:
-                continue
         per_env = recorded.get(name)
         if per_env is None and name not in fallbacks:
             continue

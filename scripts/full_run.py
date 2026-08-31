@@ -127,7 +127,12 @@ def run_challenger_arm(
         [ScriptedChallenger(), PromptedChallenger(client=client, turns=turns)]
     )
     policy = Auditor(client)
-    label = label or f"assay+{composite.name}"
+    # `+gated` is load-bearing. CompositeChallenger.name does not depend on
+    # turns or on the escalation policy, so `--challenger ollama --challenger-arm
+    # qwen3:8b` produced the identical label twice and this arm silently
+    # overwrote the ungated one in `arms`, publishing the escalation-gated run as
+    # the headline.
+    label = label or f"assay+{composite.name}+gated"
     result = ArmResult(label)
     decisions = []
 
@@ -367,6 +372,10 @@ def main() -> int:
             arms[result.arm] = result
             arm_logs[result.arm] = logs
 
+    # Which label the assay arm carried. `--challenger` renames it rather than
+    # adding one, so downstream cannot recover it by guessing at the string.
+    assay_arm_label = label
+
     rows = {}
     for name, arm in arms.items():
         row = arm.profile_row(profile)
@@ -392,6 +401,7 @@ def main() -> int:
         # exactly as much as one that silently shrank.
         "unscored": held_out,
         "total_planted_defects": sum(len(v) for v in truth.values()),
+        "assay_arm_label": assay_arm_label,
         "cost_profile": {"name": profile.name, "description": profile.description},
         "arms": rows,
         "per_env": {
@@ -399,6 +409,7 @@ def main() -> int:
                 "planted": sorted(d.value for d in o.planted),
                 "assay_detected": sorted(d.value for d in o.detected),
                 "missed": sorted(d.value for d in o.missed),
+                "unchecked": sorted(d.value for d in o.unchecked),
                 "spurious": sorted(d.value for d in o.spurious),
             }
             for o in arms[label].outcomes

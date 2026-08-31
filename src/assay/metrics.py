@@ -117,7 +117,7 @@ class ArmResult:
         return self.n_caught / self.n_planted if self.n_planted else 0.0
 
     @property
-    def recall_on_checkable(self) -> float:
+    def recall_on_checkable(self) -> float | None:
         """Of what a probe was in a position to check, what was found.
 
         Published beside `recall`, never instead of it. The gap between the two
@@ -125,7 +125,12 @@ class ArmResult:
         owed both numbers rather than whichever one is kinder.
         """
         den = self.n_planted - self.n_unchecked
-        return self.n_caught / den if den else 0.0
+        if not den:
+            # Nothing was checkable, so the rate is undefined rather than zero.
+            # Returning 0.0 here would say "checked everything, found nothing",
+            # which is the conflation this whole property exists to remove.
+            return None
+        return self.n_caught / den
 
     @property
     def precision(self) -> float:
@@ -161,7 +166,10 @@ class ArmResult:
             "recall": round(self.recall, 4),
             "precision": round(self.precision, 4),
             "severity_weighted_recall": round(self.severity_weighted_recall(), 4),
-            "recall_on_checkable": round(self.recall_on_checkable, 4),
+            "recall_on_checkable": (
+                None if self.recall_on_checkable is None
+                else round(self.recall_on_checkable, 4)
+            ),
             "n_missed": self.n_missed,
             "n_unchecked": self.n_unchecked,
             "n_spurious": self.n_spurious,

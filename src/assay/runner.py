@@ -87,6 +87,21 @@ class AuditReport:
         by_name = {p.name: p for p in all_probes()}
         out: set[DefectClass] = set()
         for result in self.by_status(ProbeStatus.NOT_APPLICABLE):
+            # An Auditor withhold rewrites a DEFECT into NOT_APPLICABLE
+            # (`auditor.py:_withhold`), keeping the family and probe name. That
+            # is a probe that ran and found something, and an agent that then
+            # deleted it -- the opposite of a probe nobody could run. Counting
+            # it here would let the gate move a real finding out of `missed` and
+            # inflate `recall_on_checkable`, which is precisely the self-flattery
+            # the third state exists to prevent.
+            if result.detail.get("auditor_override"):
+                continue
+            # A probe the caller could have run and did not is not a probe that
+            # could not run. Leaving it in would exempt its classes from
+            # `missed` on every default run, which is the same flattery in a
+            # slower form.
+            if result.detail.get("caller_input_missing"):
+                continue
             probe = by_name.get(result.probe)
             if probe is not None:
                 out.update(probe.detects)
