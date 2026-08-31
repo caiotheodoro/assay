@@ -50,7 +50,9 @@ textarea { width:100%; min-height:24rem; padding:.7rem .8rem; margin-top:.8rem;
 button.go { background:var(--accent); color:#fff; border-color:transparent;
   font-weight:600; padding:.55rem 1.3rem; cursor:pointer; }
 button.go[disabled] { opacity:.5; cursor:progress; }
-button.ghost { padding:.3rem .6rem; font-size:.8rem; cursor:pointer; }
+.ghost { display:inline-block; padding:.3rem .6rem; font-size:.8rem; cursor:pointer;
+  border:1px solid var(--line); border-radius:.4rem; background:var(--bg);
+  color:var(--fg); text-decoration:none; font-family:inherit; }
 .status { font-size:.85rem; color:var(--muted); }
 .status.ready::before { content:"\25CF"; color:#1a7f37; margin-right:.4rem; }
 .status.boot::before  { content:"\25CB"; margin-right:.4rem; }
@@ -71,8 +73,10 @@ details pre { margin-top:.7rem; padding:.8rem; background:var(--panel);
 .example .body { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1fr);
   gap:0; }
 @media (max-width:840px) { .example .body { grid-template-columns:1fr; } }
+/* Capped rather than free-running: a 200-task spec is allowed by the format,
+   and one example three screens tall would bury the six under it. */
 .example .spec { padding:1rem; border-right:1px solid var(--line);
-  background:var(--bg); overflow-x:auto; }
+  background:var(--bg); overflow:auto; max-height:30rem; }
 @media (max-width:840px) { .example .spec { border-right:0;
   border-bottom:1px solid var(--line); } }
 .example .spec pre { font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
