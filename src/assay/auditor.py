@@ -531,4 +531,6 @@ class Auditor:
         reproduces the deterministic numbers exactly.
         """
         report = _run_battery(adapter, ctx)
-        return self.review(adapter, self.resolve(adapter, report))
+        report = self.review(adapter, self.resolve(adapter, report))
+        report.auditor_overrides = [o.to_dict() for o in self.overrides]
+        return report
