@@ -207,9 +207,9 @@ A claim about a specific cost regime, not about detectors in general.
 
 **It did. Then a better script found it too, and that is the more useful result.**
 
-Eight of the nine probe families are deterministic programs; only the Challenger is an agent, and
-the history is the argument for that design. The `claude-cli` Challenger found a reward-hack exploit
-class at turn 8 in 262s that a scripted attacker and `qwen3:8b` both missed:
+Eight of the nine probe families are deterministic programs, and the history is the argument for
+that design. The `claude-cli` Challenger found a reward-hack exploit class at turn 8 in 262s that a
+scripted attacker and `qwen3:8b` both missed:
 
 ```sh
 echo -n 'banana' > expected.txt; echo -n 'banana' > out.txt
@@ -230,12 +230,48 @@ same environment four independent times and found the exploit in **3 of 4**
 ([`results/challenger_reliability.json`](results/challenger_reliability.json)) — so the number
 reported is a rate, and a real audit should run the Challenger more than once. The ablation table,
 the reliability run and the GRPO Challenger that **did not beat the scripted floor** are in
-[`docs/RESULTS.md`](docs/RESULTS.md); the training post-mortem, including the 20% holdout
-contamination that makes it weaker than it reads, is
-[`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md). And
+[`docs/RESULTS.md`](docs/RESULTS.md); the post-mortem, including the 20% holdout contamination that
+makes it weaker than it reads, is
+[`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
 [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md) has one representative run per
-agent, readable end to end without executing anything — failed turns kept, three of the eight
-Challenger misses, one the sandbox approval gate **refusing**.
+agent, readable end to end — failed turns kept, three of the eight Challenger misses, one the
+sandbox approval gate **refusing**.
+
+### The other agent, and the one judgement no script can make
+
+The Challenger story ends with the script winning. **This one cannot end that way**, and it is the
+better answer to the section's question. `docs/COVERAGE.md` records a CRITICAL false positive the
+battery cannot avoid: `inspect_evals/personality_BFI` comes back INVALID with 25 × `INVERT_PASSES`,
+which is mechanically correct and semantically wrong, because a personality inventory *has no
+correct answer* and a format check is the right design. No probe can see that — it is a question
+about meaning, not mechanism.
+
+`assay audit --auditor` runs a semantic gate that can withhold exactly that verdict. On the
+13-environment set in [`results/semantic_gate.json`](results/semantic_gate.json) — the 12 fixtures
+that do have a correct answer, plus the one that does not:
+
+| backend | withheld the false positive | false overrides | wall clock |
+|---|---|---|---|
+| `claude-cli:sonnet` | **1 of 1** | **0 of 12** | 136.6s |
+| `ollama:qwen3:8b` | 0 of 1 | 0 of 12 | 58.5s |
+
+**The interesting half is that the small model could make the observation and could not make the
+decision.** The gate is the conjunction of the model's label and the model's own quoted evidence,
+because each alone fails: `qwen3:8b` labels `personality_BFI` as *having* a correct answer in 3 of
+3 runs, immediately after writing a valid contradicting pair into the evidence field; and deriving
+the verdict from the evidence alone turns **10 of the 12** healthy fixtures into `no_correct_answer`,
+since a model asked whether two answers could both be fair will invent a pair rather than say none.
+So the script owns mechanism and the model owns meaning — the same split this repo argues for
+everywhere, one level down.
+
+It is **off by default and changes none of the numbers above.** The override can only move a
+`verifier_integrity` DEFECT to `NOT_APPLICABLE` — never to PASS, never into another family — and
+each one prints the model that proposed it, the text it quoted, and the verdict it replaced. The
+two designs measured and rejected first are in
+[`docs/changelog/99-semantic-gate.md`](docs/changelog/99-semantic-gate.md); a second Auditor job,
+synthesizing a train split for a probe that declined, **works and still does not rescue
+`inspect_evals/boolq`** ([`docs/changelog/102-na-resolution.md`](docs/changelog/102-na-resolution.md)
+corrects the pre-registered reason for that miss rather than the result).
 
 ## Where Assay sits in the field
 
@@ -287,12 +323,15 @@ limitation before it was measured; now a number.
 | Reward hackability | Can a policy score well without doing the job? | training on it teaches the exploit |
 
 Families 1–8 are deterministic programs. Family 9 is the adversarial **Challenger** — scripted,
-prompted, or GRPO-trained. **No LLM judge scores anything inside Assay:** the Challenger only
-proposes actions, every one is scored by a program, and the ground truth is held by the probe and
-never shown to the attacker. Note the scope — the rule is about what Assay *asserts*, and two things
-it touches do use a judge: τ²-bench's `nl_assertions` (which is why they are excluded from the τ²
-measurement) and BenchGuard's `match.py`. Stated as an absolute the rule was false —
-[`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) §19.
+prompted, or GRPO-trained. **No model ever scores a probe:** the Challenger only proposes actions,
+every one is scored by a program, and the ground truth is held by the probe and never shown to the
+attacker. A model can *withhold* a verdict — that is the `--auditor` gate above, off by default,
+and it can only turn a DEFECT into `NOT_APPLICABLE`. It can never assert one.
+
+Note the scope on the rest. This is a claim about what Assay *asserts*, not about what exists in
+the room: two things it touches do use a judge — τ²-bench's `nl_assertions` (which is why they are
+excluded from the τ² measurement) and BenchGuard's `match.py`. Stated as an absolute, "no LLM judge
+scores anything, anywhere" was false — [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) §19.
 
 ## Prior art
 

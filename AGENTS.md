@@ -55,12 +55,22 @@ carries a `"why"` field saying so.
 
 ## Where the agent is
 
-8 of the 9 probe families are deterministic programs; only the Challenger is an
-agent. That is the design. The agent found the reward-hack exploit class
+8 of the 9 probe families are deterministic programs. That is the design, and there
+are two agents around them, both opt-in.
+
+The **Challenger** (`--challenger`) found the reward-hack exploit class
 (`claude-cli`, turn 8, 262s) where a scripted attacker and `qwen3:8b` both missed;
 that class was then written down as a policy, and the scripted Challenger now finds
 the same gap in ~2s. Compiling a discovery into a cheap deterministic check is what
-the workflow is for. No LLM judges any verdict anywhere in Assay.
+the workflow is for — and it means the agent is not load-bearing here.
+
+The **Auditor** (`--auditor`) is the case where no script can take over. It withholds
+the CRITICAL false positive on `inspect_evals/personality_BFI` — an inventory with no
+correct answer, where a format check is the right design — 1 of 1 with 0 false
+overrides on the 12 environments that do have one (`results/semantic_gate.json`,
+`claude-cli:sonnet`). **No model ever scores a probe.** It can only move a
+`verifier_integrity` DEFECT to `NOT_APPLICABLE`, never assert a verdict, and it is
+off by default: the headline numbers above are fully deterministic.
 
 ## Verify in 60 seconds (no GPU, no API key)
 
