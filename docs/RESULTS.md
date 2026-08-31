@@ -102,10 +102,9 @@ difference that small would be exactly the unfalsifiable claim this project exis
 to catch.
 
 Reading an environment is not auditing it. That is the whole argument for executing
-the thing, and the row that carries it is no longer the comparison against random —
-it is the comparison against the probes: Assay saves **2411.0, [1587, 3343]** over
-`direct_prompt` and **2693.0, [1711, 3799]** over `agent_with_tools`, both
-separated.
+the thing, and the row that carries it is no longer the comparison against random.
+It is the comparison against the probes, in §What holds, and what does not below:
+two separated paired differences of 2411.0 and 2693.0.
 
 ### Read the incumbent's row as a property of a model, not of the tool
 
@@ -298,8 +297,13 @@ differences drawn on a shared resample:
 | assay vs `check_env` | 3173.0 | [2055, 4415] | **separated** |
 | assay vs `always_modal_defect` | 2007.0 | [1291, 2778] | **separated** |
 | assay vs `stratified_random` | 2750.0 | [1716, 3926] | **separated** |
+| assay vs `direct_prompt` | 2411.0 | [1587, 3343] | **separated** |
+| assay vs `agent_with_tools` | 2693.0 | [1711, 3799] | **separated** |
 | **assay vs `flag_everything`** | **351.0** | **[263, 404]** | **separated** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
+
+The two LLM rows are the ones that carry "reading an environment is not auditing
+it" now that the comparison against `stratified_random` no longer does.
 
 **Assay beats the trivial floor, and for most of this project's life it did not.** That
 row read `50.0, [−309, 295], overlaps zero` at n=24, and the honest summary was that the
