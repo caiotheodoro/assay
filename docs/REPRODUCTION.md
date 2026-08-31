@@ -107,8 +107,16 @@ re-run writes a `full_run.json` with those two arms absent rather than an identi
 file. That is the check that caught them being
 three environments out of date.
 
-32 environments across seven ecosystems: 12 fixture, 3 no-answer, 5 harbor, 5 inspect, 3
-openenv, 2 inspect_evals, 2 tau2, **54 planted defects**. Skip
+**Nor are those two arms byte-identical when you do supply Ollama.** They ask a model
+what it thinks is wrong with an environment, and a model asked twice does not answer
+twice the same. Their point estimates move between runs on an unchanged corpus, which
+is why they are reported with bootstrap intervals and why no claim in this repository
+rests on a difference between them smaller than one. The six deterministic arms are the
+ones the byte-identical claim is about, and `scripts/repeat_check.py` is what checks it.
+
+33 environments across eight ecosystems: 12 fixture, 5 harbor, 5 inspect,
+4 inspect_evals, 2 noanswer, 2 openenv, 2 tau2, 1 toy-triage, **54 planted
+defects**. Skip
 `scripts/tau2_fetch.py` and you get 26 and 50 instead, because neither τ²
 snapshot is redistributed here — `full_run.py` prints the reason rather than
 shrinking quietly. `intervals.py` adds 95% bootstrap CIs and paired
