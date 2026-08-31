@@ -59,39 +59,58 @@ indistinguishable from an environment that is genuinely nondeterministic —
 plausible, and **not isolated**, so it is reported as a rate rather than a
 diagnosis.
 
-### The two LLM arms are the brief's own simple baseline, and they lose to flagging at base rates
+### The two LLM arms are the brief's own simple baseline, and they are now indistinguishable from flagging at base rates
 
 `direct_prompt` reads everything a careful human reviewer could read without
 executing anything — the manifest, the instructions, the verifier source where it
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
-**2454.0 and 2736.0 against `stratified_random`'s 2793.0** — and that gap is now
-separated rather than merely observed: stratified random saves **869.0, 95% CI
-[201, 1627]** over `direct_prompt` and **865.0, [178, 1679]** over
-`agent_with_tools`. Better than the incumbent linter, reliably worse than guessing
-at the base rate, and an order of magnitude worse than running the probes.
+**2454.0 and 2736.0 against `stratified_random`'s 2793.0** — both now *ahead* of
+the random arm on the point estimate, and neither separated from it: the paired
+bootstrap gives `direct_prompt` **339.0, 95% CI [−244, 942], not separated** and
+`agent_with_tools` **57.0, [−452, 502], not separated**
+([`results/intervals.json`](../results/intervals.json)).
 
-The two arms are 282.0 apart on a 28-environment corpus, which is far
-inside their own intervals: **giving the model a tool loop bought nothing
+**That is a reversal from what this section used to report, and it is mostly not
+the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0
+against 1789.0, separated. What moved is the baseline. `stratified_random` flags
+each class independently at that class's corpus base rate, drawing one
+`rng.random()` per class per environment in enum order, so adding two defect
+classes to the taxonomy reshuffled its whole seeded sequence and cost it **+878
+with no change to the corpus, the policy or the detector**. Against the policy's
+closed-form expectation rather than one draw of it — **2474.3** — `direct_prompt`
+at 2454.0 is a tie, which is the same answer the bootstrap gives. The arithmetic
+and the prediction that preceded it are in
+[`docs/PRE-REGISTRATION-TAU2.md`](PRE-REGISTRATION-TAU2.md).
+
+So the honest reading is narrower than either the old one or its mirror image:
+**reading an environment is indistinguishable from guessing at the base rate**,
+better than the incumbent linter, and an order of magnitude worse than running the
+probes. Neither LLM arm has been shown to beat the random policy, and the random
+policy has not been shown to beat them.
+
+The two arms are 282.0 apart on a 28-environment corpus, on a paired interval of
+**[−649, 39] that crosses zero**: **giving the model a tool loop bought nothing
 measurable**. Recorded that way rather than as a ranking, because reporting
-`agent_with_tools` as "the better LLM arm" on a 4.0 difference would be exactly the
-unfalsifiable claim this project exists to catch.
+`agent_with_tools` as "the better LLM arm" on a difference that small would be
+exactly the unfalsifiable claim this project exists to catch.
 
 Reading an environment is not auditing it. That is the whole argument for executing
 the thing, and until now it was an argument rather than a row.
 
 ### Read the incumbent's row as a property of a model, not of the tool
 
-The incumbent detects **2 of 50 defects — 4.0% recall**, both determinism, at
-perfect precision. It is silent on the other eight probe families: verifier
+The incumbent detects **2 of 54 defects — 3.7% recall**, both determinism, at
+perfect precision. It is silent on the other ten probe families: verifier
 integrity, trivial floor, separability, contamination, shortcut leakage,
-spec/verifier mismatch, difficulty band and reward hackability.
+spec/verifier mismatch, difficulty band, reward hackability, sandbox permissions
+and evaluator code execution.
 
 `src/assay/baselines/structural.py` is Assay's *reimplementation* of what
 `gymnasium.utils.env_checker` and `stable_baselines3.common.env_checker` assert,
 because the real checkers cannot be pointed at a `ToyEnv`, an `inspect_ai` task or
 a Harbor container at all. `NONDETERMINISM` is the only class it can ever return,
-so "2 of 50" is bounded by construction rather than measured. The real checkers
+so "2 of 54" is bounded by construction rather than measured. The real checkers
 *were* run, on five purpose-built `gymnasium.Env` shims — 1 of 4 detected,
 `results/real_check_env.json` — and that is the honest incumbent number. One of the
 model's two hits is `fixture/flaky`, planted here.
@@ -119,8 +138,9 @@ labels nobody established is audited and carded but **kept out of every scored n
 Without that rule, registering the 32 other swept tasks would have paid `flag_everything`
 16 points each for work nobody did.
 
-`uv run --extra adapters python scripts/corpus_splits.py`, full table in
-`results/corpus_splits.json`:
+`uv run --extra adapters --extra tau2 python scripts/corpus_splits.py`, full table
+in `results/corpus_splits.json`. **`--extra tau2` is load-bearing**: without it the
+two τ² environments drop out and the script recomputes every split on 26.
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
@@ -171,20 +191,43 @@ does not depend on the relabelling, which is why the relabelling is defensible.
 
 The single remaining miss is `inspect_evals/boolq`, and it is external.
 
-### The mirror image, equally under-reported
+### The mirror image, and it no longer flatters us
 
-Drop Docker and the corpus loses every environment Assay gets wrong, so it scores
-**0.0 on all four profiles** and separates cleanly from the floor (saved 230.0, CI
-[213, 245]).
+Dropping Docker used to delete every environment Assay gets wrong along with the
+Harbor tasks, and this section reported the 0.0 that fell out of that. **It does
+not any more.** Assay's four errors are now `inspect_evals/boolq` (the one miss)
+and three spurious findings on the two τ² environments, and none of those four is
+a Harbor task. So the `no-harbor` split keeps all of them: on its 23 environments
+and 42 planted defects Assay scores **43.0 / 246.0 / 624.0 / 4.0** across
+`research-run`, `production-training`, `benchmark-publication` and `flat` — the
+same numbers as the full corpus — and saves **283.0, CI [197, 335], separated**
+over `flag_everything`'s 326.0
+([`results/corpus_splits.json`](../results/corpus_splits.json), split
+`no-harbor`). The split that used to be a flattering one is now simply a smaller
+one.
 
 ### And note what the arithmetic does here
 
-`flag_everything`'s loss is exactly `Σ_env (14 − |planted_env|)`, so **every clean
-environment added moves the floor by +14 and Assay by 0**. Roughly eight clean
+`flag_everything`'s loss is exactly `Σ_env (16 − |planted_env|)`, so **every clean
+environment added moves the floor by +16 and Assay by 0**. Roughly seven clean
 third-party environments would flip the headline without the detector changing at
 all. That is why provenance is declared before the corpus grows, and why any
 expansion has to pre-register the expected mechanical shift — otherwise a bigger
 corpus is a manufactured win.
+
+**The same arithmetic runs the other way, and it has never been stated in full.**
+Four of the sixteen classes in the taxonomy — `DIFFICULTY_SATURATED`,
+`DIFFICULTY_IMPOSSIBLE`, `EXCESSIVE_PERMISSIONS` and `EVALUATOR_RCE` — occur
+**nowhere in the corpus**: zero planted across all 28 environments. `flag_everything`
+names each of them on every environment anyway, which is `4 × 28 = 112` false
+alarms, **28.4% of its 394.0**, on classes no other arm in the table ever names
+and no environment in the corpus can carry. Nothing is being detected on either
+side of that 112: it
+is not evidence Assay is better, it is the floor paying for a taxonomy the corpus
+does not exercise. Verify it from `results/full_run.json` — `per_env[*].planted`
+never contains those four classes, and `arm_detections` gives `flag_everything`
+28 of each and every other arm zero. The **+52** from the two newest classes,
+decomposed in `README.md`, is the *increment*; 112 is the standing total.
 
 The honest summary: **n=6 is the size of the third-party control, and only 3 of those carry a label we did not decide**, the corpus
 is too small and too self-authored to support the pooled headline, and growing it
@@ -308,8 +351,10 @@ outright, and the reasoning published then still stands as the reason those two 
 hardest: `production-training` prices a missed CRITICAL at 960 against a false alarm at
 2, and `benchmark-publication` at 2000 against 8. At a 480:1 ratio, "flag everything and
 read the cards" is a genuinely good policy, which is why beating it there took closing
-the misses rather than tuning the metric. It is also why `production-training` still does
-not *separate*: winning by 388.0 with an interval crossing zero is a lead, not a result.
+the misses rather than tuning the metric — and why the separation it now shows,
+**542.0 on [46, 808]**, is worth less than the three above it. The 388.0 on an
+interval crossing zero that this paragraph used to report was the figure at 14
+classes and 26 environments; the number moved, the caution did not.
 
 The pattern is the whole argument for reporting a profile rather than a number. A single
 accuracy figure would have hidden which regime the tool is for, and a single cost profile
