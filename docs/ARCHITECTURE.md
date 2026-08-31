@@ -98,8 +98,10 @@ compared:
   two `NONDETERMINISM` environments, whose digests differ **between two runs on
   the same revision** (checked: three consecutive audits of `fixture/flaky`
   give three digests). Their probe statuses and reasons are identical.
-- Every arm's expected loss is unchanged: assay 240.0, flag_everything 290.0,
-  check_env 2816.0, flag_nothing 2832.0, and both trivial arms.
+- Every arm's expected loss was unchanged at that revision: assay 240.0,
+  flag_everything 290.0, check_env 2816.0, flag_nothing 2832.0, and both trivial
+  arms. Those are the 24-environment figures this pass ran against, not current
+  ones.
 
 The blast radius was zero because the declarative capability gate was **already
 doing the work the required-method contract claimed to do**. OpenEnv withholds
