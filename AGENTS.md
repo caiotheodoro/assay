@@ -5,7 +5,7 @@ environment; it runs a battery of probes and emits an **Environment Card** — a
 validity verdict where every claim is tied to a probe result, plus machine-readable
 JSON and a nonzero exit code that blocks a training run.
 
-`README.md` is ~360 lines: the argument and the headline numbers, with the detail
+`README.md` is ~560 lines: the argument and the headline numbers, with the detail
 moved into `docs/RESULTS.md` and every retraction collected in
 `docs/RETRACTIONS.md`. This file is the shorter path. **`docs/FOR_AGENTS.md` is the
 next stop** — the same claims with a citation on each.
@@ -84,9 +84,12 @@ the workflow is for — and it means the agent is not load-bearing here.
 
 The **Auditor** (`--auditor`) is the case where no script can take over. It withholds
 the CRITICAL false positive on `inspect_evals/personality_BFI` — an inventory with no
-correct answer, where a format check is the right design — 1 of 1 with 0 false
-overrides on the 12 environments that do have one (`results/semantic_gate.json`,
-`claude-cli:sonnet`). **No model ever scores a probe.** It can only move a
+correct answer, where a format check is the right design — **6 of 6 runs with 0 false
+overrides in 54** across the 18 environments that do have a correct answer
+(`results/semantic_gate.json`, `claude-cli:sonnet`, 20 environments at k=3).
+`qwen3:8b` matches it on the positives and pays **6 false overrides in 54**, which is
+the column that matters, because a false override hides a real defect.
+**No model ever scores a probe.** It can only move a
 `verifier_integrity` DEFECT to `NOT_APPLICABLE`, never assert a verdict, and it is
 off by default: the headline numbers above are fully deterministic.
 

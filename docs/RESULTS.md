@@ -66,10 +66,10 @@ executing anything — the manifest, the instructions, the verifier source where
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
 **2454.0 and 2736.0 against `stratified_random`'s 2793.0** — both now *ahead* of
-the random arm on the point estimate, and neither separated from it: the paired
-bootstrap gives `direct_prompt` **339.0, 95% CI [−244, 942], not separated** and
-`agent_with_tools` **57.0, [−452, 502], not separated**
-([`results/intervals.json`](../results/intervals.json)).
+the random arm on the point estimate, and neither separated from it. On the paired
+bootstrap `direct_prompt` saves **339.0, 95% CI [−244, 942], not separated** over
+`stratified_random`, and `agent_with_tools` saves **57.0, [−452, 502], not
+separated** ([`results/intervals.json`](../results/intervals.json)).
 
 **That is a reversal from what this section used to report, and it is mostly not
 the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0
@@ -300,8 +300,8 @@ worth reading because the previous one was published for as long as it was true.
 
 `stratified_random` and `always_modal_defect` are the two trivial policies `criteria.md`
 requires that this repo did not implement until `docs/changelog/62-rigour.md`. Neither
-becomes the floor: on an imbalanced 14-class multilabel problem, flagging at base rates
-buys recall 0.370 at the cost of 27 false alarms and 29 misses, which is worse than
+becomes the floor: on an imbalanced 16-class multilabel problem, flagging at base rates
+buys recall 0.111 at the cost of 41 false alarms and 48 misses, which is worse than
 flagging everything under every cost-asymmetric profile and worse than flagging nothing
 under `flat`. Adding a harder-sounding baseline did not make the floor harder, and that
 is published as the result rather than as a reason not to have run it. Full table, per

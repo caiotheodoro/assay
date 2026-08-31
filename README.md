@@ -55,6 +55,20 @@ The taxonomy went from 14 defect classes to 16 in
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md), worth another **+28** to the floor
 against **+3** to Assay. Of the 351.0, **77.0 is arithmetic and 274.0 is the detector.**
 
+**And the +52 is an increment on a larger standing figure that has never been stated here.**
+Four of the sixteen defect classes — `DIFFICULTY_SATURATED`, `DIFFICULTY_IMPOSSIBLE`,
+`EXCESSIVE_PERMISSIONS`, `EVALUATOR_RCE` — are planted **nowhere in the corpus**, on any of the 28
+environments. `flag_everything` names each of them everywhere regardless, which is `4 × 28 = 112`
+false alarms: **28.4% of its 394.0, on classes no environment can carry and no other arm in the
+table ever names.** Nothing is detected on either side of that 112 — it is not evidence Assay is
+better, it is the floor paying for a taxonomy the corpus does not exercise, and it is a larger
+share of the margin than either number decomposed above. Check it in
+[`results/full_run.json`](results/full_run.json): those four classes never appear in
+`per_env[*].planted`, and `arm_detections` gives `flag_everything` 28 of each against zero for
+every other arm. The fix is corpus, not arithmetic — environments that actually carry a saturated
+difficulty band, an over-permissioned sandbox or an exploitable evaluator — and until that exists
+this is disclosed rather than netted out.
+
 ```bash
 uv sync --extra dev && uv run pytest -q                              # the demo: every planted defect, caught
 uv run --extra tau2 python scripts/tau2_fetch.py                     # the two pinned tau2 snapshots, ~1 min
@@ -94,8 +108,8 @@ of this block shipped one that did not.
 
 Without `--auditor-model` the Auditor takes whatever backend it finds; on a machine with
 ollama that is `qwen3:8b`, which [`results/semantic_gate.json`](results/semantic_gate.json)
-measures at 4 of 6 runs with 2 false overrides in 39. The flag exists because that
-difference is the result.
+measures at **6 of 6 runs with 6 false overrides in 54**, against claude-cli's 6 of 6 with
+**0 in 54**. The flag exists because that second column is the result.
 
 **Skip the fetch and you get 26 environments, not 28.** Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable, the corpus is two environments smaller
