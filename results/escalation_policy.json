@@ -4,12 +4,12 @@
   "policy": "Escalate only where the scripted attacker returned PASS and the environment declares fewer than 5 trivial policies, so the silence is thin evidence rather than a saturated floor.",
   "harness": "uv run --extra adapters --extra openenv --extra tau2 python scripts/escalation_policy.py",
   "assay_revision": {
-    "commit": "79e75fc1f84699be56b5c7c6597492ca38fd0e4a",
-    "dirty": false
+    "commit": "24d6dcc09d54dd44be9a00d5218b69d98348a16e",
+    "dirty": true
   },
   "model_calls": 0,
-  "n_environments": 28,
-  "escalates": 12,
+  "n_environments": 33,
+  "escalates": 17,
   "refuses": 16,
   "refusal_reasons": {
     "already found an exploit": 10,
@@ -133,7 +133,32 @@
       "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
     },
     {
+      "env": "inspect_evals/stereoset",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "inspect_evals/personality_BFI",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
       "env": "inspect_evals/boolq",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "toy-triage/preference",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "noanswer/ranking",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "noanswer/openended",
       "escalate": true,
       "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
     },

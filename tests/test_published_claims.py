@@ -1204,7 +1204,25 @@ def test_every_published_artifact_agrees_on_the_size_of_the_corpus():
         "n_defect_classes": len(DefectClass),
     }
     wrong = []
-    for name in ("baselines.json",):
+    # Widened from ("baselines.json",). Four intervals-*.json files and
+    # escalation_policy.json sat at 28 while the corpus was 33, and nothing
+    # noticed, because this gate only ever looked at one artifact. An artifact
+    # that claims to describe the whole corpus must agree with the corpus.
+    #
+    # Deliberately scoped artifacts are exempt by name and say what they are:
+    # a harbor-only slice is not wrong for having five environments.
+    scoped = {
+        "harbor_composite.json": "the harbor slice only",
+        "harbor_scripted.json": "the harbor slice only",
+        "full_run_llm.json": "a superseded run kept as a record",
+        "second_labelling.json": "the subset a second labeller was given",
+    }
+    whole_corpus = sorted(
+        f.name
+        for f in (ROOT / "results").glob("*.json")
+        if f.name not in scoped and f.name != "full_run.json"
+    )
+    for name in whole_corpus:
         path = ROOT / "results" / name
         if not path.exists():
             continue
