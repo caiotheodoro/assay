@@ -66,10 +66,15 @@ executing anything — the manifest, the instructions, the verifier source where
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
 **2454.0 and 2736.0 against `stratified_random`'s 2793.0** — both now *ahead* of
-the random arm on the point estimate, and neither separated from it. On the paired
-bootstrap `direct_prompt` saves **339.0, 95% CI [−244, 942], not separated** over
-`stratified_random`, and `agent_with_tools` saves **57.0, [−452, 502], not
-separated** ([`results/intervals.json`](../results/intervals.json)).
+the random arm on the point estimate, and neither of them separated from it. The
+three paired differences, on the same shared resample as every other comparison in
+this file:
+
+| Comparison | Loss saved | 95% CI | |
+|---|---|---|---|
+| `direct_prompt` vs `stratified_random` | 339.0 | [−244, 942] | **not separated** |
+| `agent_with_tools` vs `stratified_random` | 57.0 | [−452, 502] | **not separated** |
+| `agent_with_tools` vs `direct_prompt` | −282.0 | [−649, 39] | **not separated** |
 
 **That is a reversal from what this section used to report, and it is mostly not
 the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0
@@ -89,9 +94,10 @@ better than the incumbent linter, and an order of magnitude worse than running t
 probes. Neither LLM arm has been shown to beat the random policy, and the random
 policy has not been shown to beat them.
 
-The two arms are 282.0 apart on a 28-environment corpus, on a paired interval of
-**[−649, 39] that crosses zero**: **giving the model a tool loop bought nothing
-measurable**. Recorded that way rather than as a ranking, because reporting
+The third row of that table is the one worth reading twice. The two arms are 282.0
+apart on a 28-environment corpus, on an interval that crosses zero: **giving the
+model a tool loop bought nothing measurable**. Recorded that way rather than as a
+ranking, because reporting
 `agent_with_tools` as "the better LLM arm" on a difference that small would be
 exactly the unfalsifiable claim this project exists to catch.
 

@@ -8,6 +8,8 @@ project exists to catch and did not catch in itself.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import re
 from pathlib import Path
@@ -879,4 +881,203 @@ def test_every_documented_headline_command_carries_the_extras_it_needs():
     assert not bad, (
         "documented commands that do not produce the documented corpus:\n  "
         + "\n  ".join(bad)
+    )
+
+
+# The words a separation can be pronounced in, and which way each one reads.
+# `separated` is the artifact's own field: the paired interval excludes zero.
+_SEPARATED = re.compile(r"\bseparated\b|\bseparates\b|\bseparating\b", re.I)
+#: How far from a separation word an arm name may sit and still be what the
+#: word is about. Wide enough for "`stratified_random`'s 2793.0 -- and that gap
+#: is now separated ... over `direct_prompt`", which is the sentence this gate
+#: was written for; narrow enough that the next sentence along cannot supply
+#: the second arm.
+_REACH = 120
+_NOT_SEPARATED = re.compile(
+    r"\bnot separated\b|\bnot separate\b|\bdoes not separate\b"
+    r"|\bdid not separate\b|\bnever separated\b|\boverlaps zero\b"
+    r"|\bcross(?:es|ing)? zero\b|\bincludes? zero\b|\bincluding zero\b"
+    r"|\bindistinguishable\b",
+    re.I,
+)
+
+
+def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
+    """The sign was right and the verdict was backwards, in the file judges read.
+
+    `docs/RESULTS.md` said stratified random *saves* 869.0 over `direct_prompt`
+    and that the pair was separated. `results/intervals.json` says the opposite
+    on both counts: `direct_prompt` saves 339.0 on [-244, 942] with
+    `separated: false`. Every arm value on that page was gated, and the word
+    that decides what those values *mean* was not, so a document could invert a
+    published result with every number in it still sourced.
+
+    The rule: prose naming exactly two arms and pronouncing on separation must
+    pronounce what `loss_saved_vs[...]["separated"]` says. Exactly two, because
+    a sentence sweeping over several arms at once is not making a pairwise
+    claim -- "wins all four and separates on all four" names one arm and a
+    count of profiles, and belongs to the per-profile gate, not this one. The
+    marker list and heading rule retire a line that says when it was true.
+
+    Two scopes, because prose and tables put the claim together differently.
+
+    A paired-difference table row carries the whole comparison on one line, so
+    a row naming two arms and a verdict is read on its own and nothing outside
+    it can bleed in. Wrapped prose does not: the sentence this test exists for
+    put "separated" on one line, `direct_prompt` on the next and
+    `agent_with_tools` on the one after, so a line-only reading walks straight
+    past the bug it was written to catch. For prose the paragraph is flattened
+    and each separation word is attached to the two arm names *nearest to it*,
+    within `_REACH` characters -- which is also what stops a paragraph's
+    unrelated neighbouring sentence supplying the second arm. A paragraph where
+    any line resolves on its own is treated as a table and never window-read.
+    """
+    intervals = json.loads((ROOT / "results" / "intervals.json").read_text())
+    arms = intervals["arms"]
+    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in arms}
+    arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
+
+    def pair_on(scope: str) -> tuple[list[str], bool] | None:
+        """`([arm, arm], separation was claimed)` for a line that self-resolves."""
+        low = scope.lower()
+        if any(marker in low for marker in RETIRED):
+            return None
+        claims_not = bool(_NOT_SEPARATED.search(low))
+        if not claims_not and not _SEPARATED.search(low):
+            return None
+        named = sorted(a for a, rx in arm_res.items() if rx.search(low))
+        return (named, not claims_not) if len(named) == 2 else None
+
+    def pairs_near(flat: str):
+        """Each verdict in a paragraph, with the two arm names closest to it."""
+        low = flat.lower()
+        at = [(m.start(), a) for a, rx in arm_res.items() for m in rx.finditer(low)]
+        for m in re.finditer(
+            rf"{_NOT_SEPARATED.pattern}|{_SEPARATED.pattern}", low, re.I
+        ):
+            window = low[max(0, m.start() - _REACH) : m.end() + _REACH]
+            if any(marker in window for marker in RETIRED):
+                continue
+            near = sorted(
+                {a for where, a in at if abs(where - m.start()) <= _REACH},
+                key=lambda a: min(
+                    abs(w - m.start()) for w, name in at if name == a
+                ),
+            )
+            if len(near) != 2:
+                continue
+            yield sorted(near), not _NOT_SEPARATED.search(m.group(0))
+
+    wrong: list[str] = []
+    for doc in LIVE_DOCS:
+        path = ROOT / doc
+        if not path.exists():
+            continue
+        body = path.read_text()
+        cut = re.search(r"(?im)^#+ .*(historical|superseded).*$", body)
+        if cut:
+            body = body[: cut.start()]
+        for paragraph in body.split("\n\n"):
+            lines = paragraph.splitlines()
+            resolved = [(n, ln, pair_on(ln)) for n, ln in enumerate(lines)]
+            rows = [(n, ln, r) for n, ln, r in resolved if r]
+            claims = (
+                [(ln, r) for _, ln, r in rows]
+                if rows
+                else [(paragraph, r) for r in pairs_near(" ".join(lines))]
+            )
+            for shown, ((first, second), claimed) in claims:
+                measured = arms[first]["loss_saved_vs"][second]["separated"]
+                if measured is claimed:
+                    continue
+                where = body[: body.index(paragraph)].count("\n") + 1
+                wrong.append(
+                    f"{doc}:~{where}: calls {first} vs {second} "
+                    f"{'separated' if claimed else 'not separated'}; "
+                    f"results/intervals.json records separated={measured}"
+                    f"  --  {' '.join(shown.split())[:100]}"
+                )
+    assert not wrong, (
+        "live documents pronouncing a separation the bootstrap does not:\n  "
+        + "\n  ".join(wrong)
+    )
+
+
+# The k=1 semantic-gate figures, retracted in `README.md` as "wrong in both
+# directions" and re-measured at k=3 in `docs/changelog/107-semantic-gate-
+# remeasured.md`. Written the several ways this sweep found them still in use,
+# including the two argparse `help=` strings.
+_RETRACTED_K1 = re.compile(
+    r"\b[01][- ]of[- ]1\b|\b13[- ]environment|\bin 39\b"
+    r"|\b4 of 6 runs\b|\b2 false overrides\b",
+    re.I,
+)
+# Only lines that are talking about the gate: "1 of 1" is an ordinary phrase.
+_ABOUT_THE_GATE = re.compile(
+    r"semantic[_ ]gate|auditor|personality_bfi|override", re.I
+)
+
+
+def _k1_offences(text: str, where: str) -> list[str]:
+    """Retracted figures on a line, in text that is talking about the gate.
+
+    The topic is read over three lines either side and the figure over one.
+    `AGENTS.md` wrapped "1 of 1 with 0 false / overrides" across a line break,
+    so a line-scoped topic test walked past the very instance this was written
+    for; a line-scoped *figure* test is what keeps "1 of 1" from being an
+    ordinary phrase anywhere else. A retired marker on the line retires it --
+    the README's own retraction of these numbers has to survive this gate.
+    """
+    lines = text.splitlines()
+    found = []
+    for index, line in enumerate(lines):
+        low = line.lower()
+        if any(marker in low for marker in RETIRED):
+            continue
+        if not _RETRACTED_K1.search(low):
+            continue
+        about = " ".join(lines[max(0, index - 3) : index + 4]).lower()
+        if _ABOUT_THE_GATE.search(about):
+            found.append(f"{where}:{index + 1}: {line.strip()[:100]}")
+    return found
+
+
+def test_the_retracted_k1_semantic_gate_figures_are_gone_including_from_help():
+    """A retraction that does not reach the CLI has not landed.
+
+    `README.md` retracts the 1-of-1 / 0-of-1 gate numbers as a single draw over
+    13 environments and "wrong in both directions". They kept shipping in
+    `src/assay/cli.py` twice -- the second printed by `assay audit --help`,
+    where a user meets it -- and in `AGENTS.md` and `docs/COVERAGE.md`, while
+    the README carried a third unretracted variant of its own. Every other gate
+    in this file reads documents. A string a program prints is a published
+    claim too, and nothing was reading those.
+
+    Checked against the source and against the help text argparse actually
+    renders, so a figure cannot survive by hiding in a `help=` kwarg.
+    """
+    gate = json.loads((ROOT / "results" / "semantic_gate.json").read_text())
+    backends = [b for b in gate["backends"].values() if "rows" in b]
+    assert backends, "semantic_gate.json carries no measured backend"
+    assert gate["k"] == 3, "the gate is no longer measured at k=3; re-read this test"
+    sized = backends[0]["n_positive"] + backends[0]["n_negative"]
+
+    offences: list[str] = []
+    for doc in (*LIVE_DOCS, "src/assay/cli.py", "src/assay/auditor.py"):
+        path = ROOT / doc
+        if path.exists():
+            offences += _k1_offences(path.read_text(), doc)
+
+    from assay.cli import main as cli_main
+
+    for argv in (["--help"], ["audit", "--help"]):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), pytest.raises(SystemExit):
+            cli_main(argv)
+        offences += _k1_offences(buf.getvalue(), f"assay {' '.join(argv)}")
+
+    assert not offences, (
+        "the retracted k=1 semantic-gate figures are still published; "
+        f"results/semantic_gate.json measures k={gate['k']} over {sized} "
+        "environments:\n  " + "\n  ".join(offences)
     )
