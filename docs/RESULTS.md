@@ -97,12 +97,15 @@ policy has not been shown to beat them.
 The third row of that table is the one worth reading twice. The two arms are 282.0
 apart on a 28-environment corpus, on an interval that crosses zero: **giving the
 model a tool loop bought nothing measurable**. Recorded that way rather than as a
-ranking, because reporting
-`agent_with_tools` as "the better LLM arm" on a difference that small would be
-exactly the unfalsifiable claim this project exists to catch.
+ranking, because reporting `agent_with_tools` as "the better LLM arm" on a
+difference that small would be exactly the unfalsifiable claim this project exists
+to catch.
 
 Reading an environment is not auditing it. That is the whole argument for executing
-the thing, and until now it was an argument rather than a row.
+the thing, and the row that carries it is no longer the comparison against random —
+it is the comparison against the probes: Assay saves **2411.0, [1587, 3343]** over
+`direct_prompt` and **2693.0, [1711, 3799]** over `agent_with_tools`, both
+separated.
 
 ### Read the incumbent's row as a property of a model, not of the tool
 
