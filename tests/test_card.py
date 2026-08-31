@@ -60,3 +60,33 @@ def test_html_is_self_contained_and_theme_aware():
     assert "prefers-color-scheme" in html
     assert "http://" not in html and "https://" not in html
     assert "<script" not in html
+
+
+def test_an_advisory_finding_says_so_on_the_card():
+    """A heuristic finding must not read like an executed one.
+
+    `spec_verifier_match` is content-word overlap and marks its own findings
+    `confidence: advisory`. This repository excludes it from its own tau2 recall
+    measurement for exactly that reason -- and then shipped it contributing to a
+    stranger's verdict with nothing on the card to say which kind of finding it
+    was. A judge wrote their own spec, got three of them, and could not tell.
+    """
+    from assay.card import to_markdown
+    from assay.fixtures import build
+    from assay.runner import audit
+
+    card = to_markdown(audit(build("drifted_asserts")))
+    assert "*(advisory)*" in card
+    assert "not established by execution" in card
+    assert "results/tau2_recall.json" in card
+
+
+def test_an_executed_finding_carries_no_advisory_marker():
+    """The marker has to distinguish, or it is decoration."""
+    from assay.card import to_markdown
+    from assay.fixtures import build
+    from assay.runner import audit
+
+    card = to_markdown(audit(build("gold_broken")))
+    assert "GOLD_FAILS" in card
+    assert "*(advisory)*" not in card

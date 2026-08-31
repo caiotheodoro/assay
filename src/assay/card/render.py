@@ -165,7 +165,24 @@ def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
             lines.append("")
             for finding in group:
                 where = f" — `{finding.task_id}`" if finding.task_id else ""
-                lines.append(f"**{finding.defect.value}**{where}")
+                # A finding the probe itself calls advisory has to say so on the
+                # card. `spec_verifier_match` is a content-word overlap
+                # heuristic, and this repository excludes it from its own tau2
+                # measurement for exactly that reason -- then shipped it
+                # contributing to a stranger's verdict with nothing on the card
+                # to say which kind of finding it was. A judge wrote their own
+                # spec and got three of them, and could not tell.
+                confidence = str(finding.evidence.get("confidence", ""))
+                mark = " *(advisory)*" if confidence.startswith("advisory") else ""
+                lines.append(f"**{finding.defect.value}**{where}{mark}")
+                if mark:
+                    lines.append("")
+                    lines.append(
+                        "> Advisory: surfaced by a heuristic for a human to check, not "
+                        "established by execution. This repo excludes this probe from "
+                        "its own external recall measurement "
+                        "(`results/tau2_recall.json`), so weigh it accordingly."
+                    )
                 if finding.evidence.get("note"):
                     lines.append("")
                     lines.append(f"> {finding.evidence['note']}")
