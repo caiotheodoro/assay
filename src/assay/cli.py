@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import audit
 from .adapter import close_adapter
@@ -151,15 +152,45 @@ def _audit(args) -> int:
         print(NO_APPROVER.format(env=args.env), file=sys.stderr)
         return 3
 
-    found = [e for e in entries() if e[0] == args.env]
-    if not found:
-        print(f"unknown environment: {args.env}", file=sys.stderr)
-        print("available:", file=sys.stderr)
-        for env_id, _, _ in entries():
-            print(f"  {env_id}", file=sys.stderr)
-        return 2
-    env_id, factory, _ = found[0]
-    adapter = factory()
+    # An environment the reader wrote, audited by path. The README's lead user
+    # is "a researcher about to spend a training run on an environment they did
+    # not write" -- and until this existed, `assay audit` took only corpus ids,
+    # so the one thing that user actually wants to do was reachable from the
+    # hosted Space and from Python and not from the tool.
+    submitted = Path(args.env)
+    if submitted.suffix in {".json", ".yaml", ".yml"} or submitted.exists():
+        if not submitted.exists():
+            print(f"no such spec file: {submitted}", file=sys.stderr)
+            return 2
+        from .adapters.spec import build as build_spec
+
+        try:
+            adapter = build_spec(submitted.read_text())
+        except Exception as exc:  # noqa: BLE001 -- a bad spec is a user error
+            print(f"could not read {submitted} as an environment spec:", file=sys.stderr)
+            print(f"  {type(exc).__name__}: {exc}", file=sys.stderr)
+            print(
+                "\nA spec is JSON or YAML with `env_id` and a non-empty `tasks` list; "
+                "see docs/REPRODUCTION.md and space/examples.json for seven worked ones.",
+                file=sys.stderr,
+            )
+            return 2
+        factory = None
+    else:
+        found = [e for e in entries() if e[0] == args.env]
+        if not found:
+            print(f"unknown environment: {args.env}", file=sys.stderr)
+            print(
+                "pass a corpus id, or a path to your own environment spec "
+                "(.json/.yaml).",
+                file=sys.stderr,
+            )
+            print("available:", file=sys.stderr)
+            for env_id, _, _ in entries():
+                print(f"  {env_id}", file=sys.stderr)
+            return 2
+        env_id, factory, _ = found[0]
+        adapter = factory()
     ctx = {"challenger_passes": args.passes}
     auditor = None
     try:
@@ -210,7 +241,6 @@ def _audit(args) -> int:
 
     if args.card:
         from .card import to_html, to_markdown
-        from pathlib import Path
 
         path = Path(args.card)
         render = to_html if path.suffix == ".html" else to_markdown

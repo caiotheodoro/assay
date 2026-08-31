@@ -52,6 +52,11 @@ class SpecError(ValueError):
 #: tool exists to show what they cost.
 MATCHERS = ("exact", "exact_ci", "includes", "regex", "always_pass", "always_fail")
 
+#: Matchers that ask whether the target *occurs in* the answer rather than
+#: whether it equals it. Every one of these is satisfied by a constant
+#: string naming all the targets at once.
+_SUBSTRING_MATCHERS = ("includes",)
+
 MAX_TASKS = 200
 MAX_ITEMS = 2000
 MAX_TEXT = 20_000
@@ -377,6 +382,23 @@ class SpecAdapter(BaseAdapter):
         targets = [t.target for t in self.spec.tasks]
         if targets:
             answers["majority_class"] = max(set(targets), key=targets.count)
+
+        # Under a substring matcher, one constant string containing every
+        # declared target answers every task. This is not a heuristic and it is
+        # not a guess about the data: `includes` asks whether the target occurs
+        # in the answer, so an answer that contains all of them satisfies all of
+        # them. It is the `paws` defect this project leads with -- `includes()`
+        # against `Yes` and `No`, and the constant `"yesno"` scoring 8000/8000 --
+        # and until now Assay could find it in a published eval and not in a
+        # spec a reader submitted, which is the one thing this adapter is for.
+        #
+        # Declared as a policy rather than a new probe so the existing
+        # reward-hackability machinery decides whether it actually pays. The
+        # adapter proposes; the verifier scores.
+        distinct = sorted({t for t in targets if t})
+        if self.spec.verifier in _SUBSTRING_MATCHERS and len(distinct) > 1:
+            answers["every_target_at_once"] = " ".join(distinct)
+
         for i, answer in enumerate(self.spec.trivial_answers):
             answers[f"submitted_{i + 1}"] = answer
         return {name: [Action(SUBMIT, {"answer": a})] for name, a in answers.items()}

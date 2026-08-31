@@ -303,3 +303,74 @@ def test_an_uncompilable_target_is_a_spec_error_not_a_hang():
 
     with pytest.raises(SpecError, match="not a regex"):
         _matches("regex", "text", "(unclosed")
+
+
+# -- the paws defect, on a spec a stranger wrote ----------------------------
+
+
+def test_a_substring_verifier_yields_the_both_targets_policy():
+    """The defect this project leads with, findable on submitted specs.
+
+    `paws` is scored by `includes()` against `Yes` and `No`, and the constant
+    string `"yesno"` takes 8000 of 8000. Until this existed, Assay could find
+    that in a published eval and **not** in a spec a reader submitted -- the one
+    thing this adapter is for. A judge wrote their own eval with a substring
+    verifier, watched Assay report nothing about it, and said so.
+
+    It is not a heuristic. `includes` asks whether the target occurs in the
+    answer, so an answer containing every target satisfies every task. The
+    adapter proposes the policy; the reward-hackability probe decides whether it
+    actually pays.
+    """
+    from assay.adapters.spec import build
+
+    spec = {
+        "env_id": "t/yesno",
+        "verifier": "includes",
+        "tasks": [
+            {"task_id": "q1", "instruction": "Answer Yes or No: is 2 > 1?",
+             "target": "Yes", "gold": "Yes", "known_wrong": "No"},
+            {"task_id": "q2", "instruction": "Answer Yes or No: is 1 > 2?",
+             "target": "No", "gold": "No", "known_wrong": "Yes"},
+        ],
+    }
+    adapter = build(spec)
+    policies = adapter.trivial_policies("q1")
+    assert "every_target_at_once" in policies
+
+    from assay.runner import audit
+    from assay.types import DefectClass
+
+    report = audit(adapter)
+    assert DefectClass.REWARD_HACKABLE in report.detected
+    assert report.verdict == "INVALID"
+
+
+def test_an_exact_verifier_gets_no_such_policy():
+    """Only substring matchers are satisfied by naming every target."""
+    from assay.adapters.spec import build
+
+    spec = {
+        "env_id": "t/exact",
+        "verifier": "exact",
+        "tasks": [
+            {"task_id": "q1", "instruction": "2+2?", "target": "4"},
+            {"task_id": "q2", "instruction": "1+1?", "target": "2"},
+        ],
+    }
+    assert "every_target_at_once" not in build(spec).trivial_policies("q1")
+
+
+def test_one_distinct_target_is_not_an_exploit():
+    """With a single target the policy is just the majority class."""
+    from assay.adapters.spec import build
+
+    spec = {
+        "env_id": "t/one",
+        "verifier": "includes",
+        "tasks": [
+            {"task_id": "q1", "instruction": "say yes", "target": "Yes"},
+            {"task_id": "q2", "instruction": "say yes again", "target": "Yes"},
+        ],
+    }
+    assert "every_target_at_once" not in build(spec).trivial_policies("q1")
