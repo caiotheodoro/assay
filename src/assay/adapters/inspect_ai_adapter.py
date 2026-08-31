@@ -90,6 +90,27 @@ class InspectAdapter(BaseAdapter):
         except KeyError as exc:
             raise KeyError(f"unknown sample id: {task_id}") from exc
 
+    def items(self) -> list[Item]:
+        """Every datum this suite ships, with no split declared.
+
+        Distinct from `train_items` / `eval_items`, which stay unsupported and
+        should: this suite ships no separate train split, and inventing one
+        silently would let family 4 and family 5 report on a division the
+        environment never made.
+
+        What it *can* honestly say is what data exists. Anything that wants to
+        cross-fit on it has to declare that it synthesized the split -- see
+        `assay.auditor`, which does exactly that and says so on the card.
+        """
+        return [
+            Item(
+                item_id=str(sample.id or index),
+                text=str(sample.input),
+                label=self._target_text(sample),
+            )
+            for index, sample in enumerate(self._samples)
+        ]
+
     @staticmethod
     def _target_text(sample) -> str:
         target = sample.target

@@ -39,13 +39,13 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from .adapter import EnvAdapter
 from .llm import LLMClient, LLMUnavailable
 from .runner import AuditReport, audit as _run_battery
-from .types import ProbeResult, ProbeStatus
+from .types import Capability, Item, ProbeResult, ProbeStatus, digest
 
 #: The only family whose results the semantic gate may touch. Every probe in
 #: it asks a question that presumes the environment has a correct answer, which
@@ -163,6 +163,125 @@ def decide(answer: dict[str, Any]) -> str | None:
     return "has_correct_answer"
 
 
+# --------------------------------------------------------------------------
+# NOT_APPLICABLE resolution
+#
+# `Probe.na(reason, **detail)` already records what a probe attempted before it
+# gave up, and until now nothing read it. A probe that declines is honest and
+# useless; the question is whether the thing it needed can be supplied.
+# --------------------------------------------------------------------------
+
+_PARTS_SYSTEM = """\
+An evaluation item is a block of text with a label. Many are built from several
+fields glued together in a fixed layout -- a passage and a question, a premise
+and a hypothesis, a context and a query.
+
+You are shown a few items that all share ONE layout. Describe that layout ONCE.
+Do not answer per item and do not key your reply by item id: every item is cut
+the same way, and one object describes all of them.
+
+Give each field the LITERAL text it starts after and the LITERAL text it ends
+before, copied exactly from the item, including punctuation and newlines. Use
+null when a field runs to the end. `after` is what precedes the field; `before`
+is what follows it. Getting these backwards makes every field empty.
+
+Then name the ONE field that, on its own, should NOT be enough to determine the
+label -- the field a shortcut would live in. If a model can answer from the
+question alone without reading the passage, the benchmark is measuring the
+wrong thing.
+
+Worked example. For items laid out like:
+
+    Answer the question about the passage.
+
+    Passage: Water boils at 100C at sea level.
+
+    Question: does water boil at 100C
+
+the correct reply is exactly:
+
+{"parts": [{"name": "passage", "after": "Passage: ", "before": "\\n\\nQuestion:"},
+           {"name": "question", "after": "Question: ", "before": null}],
+ "must_not_determine": "question",
+ "confidence": "high"}
+
+Reply with one JSON object in that shape and nothing else. Use only literal
+substrings copied from the items; never write a regular expression. If the
+items have no internal structure, reply with an empty `parts` list -- that is a
+normal answer and it changes nothing.\
+"""
+
+
+def _slice(text: str, after: str | None, before: str | None) -> str:
+    """One field, cut with literal delimiters. No regex, by construction.
+
+    The submitted-spec adapter shipped a ReDoS once already
+    (`docs/review/spec-adapter-redos.md`); a model-authored pattern compiled and
+    run over every item is the same hazard with a worse author. Literal `find`
+    cannot backtrack.
+    """
+    start = 0
+    if after:
+        found = text.find(after)
+        if found == -1:
+            return ""
+        start = found + len(after)
+    end = len(text)
+    if before:
+        found = text.find(before, start)
+        if found != -1:
+            end = found
+    return text[start:end].strip()
+
+
+class _Resolved:
+    """An adapter with a split the environment never declared, and says so.
+
+    Proxies everything to the real adapter except the two capabilities it adds.
+    The split is a deterministic alternation over items sorted by id -- fitting
+    a part-to-label map on one half and scoring it on the other is the standard
+    way to run a partial-input baseline when a suite ships one split, and it is
+    only sound because the finding carries `synthesized_split: True` so nobody
+    reads it as the suite's own division.
+    """
+
+    def __init__(self, adapter: Any, spec: dict[str, Any], items: list[Item]) -> None:
+        self._adapter = adapter
+        self._spec = spec
+        parts = [p for p in spec.get("parts", []) if isinstance(p, dict) and p.get("name")]
+        rebuilt = [
+            Item(
+                item_id=item.item_id,
+                text=item.text,
+                label=item.label,
+                parts={
+                    str(p["name"]): _slice(item.text, p.get("after"), p.get("before"))
+                    for p in parts
+                },
+            )
+            for item in sorted(items, key=lambda i: i.item_id)
+        ]
+        self._train = rebuilt[0::2]
+        self._eval = rebuilt[1::2]
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._adapter, name)
+
+    def manifest(self):
+        base = self._adapter.manifest()
+        return replace(
+            base,
+            capabilities=frozenset(base.capabilities)
+            | {Capability.SPLITS, Capability.ITEM_PARTS},
+        )
+
+    def train_items(self) -> list[Item]:
+        return self._train
+
+    def eval_items(self) -> list[Item]:
+        return self._eval
+
+
 class Auditor:
     """Reads an environment and the battery's results, and applies judgement.
 
@@ -176,6 +295,13 @@ class Auditor:
 
     def __init__(self, client: LLMClient | None = None) -> None:
         self._client = client
+        #: shape signature -> the conclusion reached on the first
+        #: environment that had it. The memory lever: two environments
+        #: that pose the same question to a reader get one model call
+        #: between them, and the second is told where its answer came from.
+        self._by_shape: dict[str, dict[str, Any]] = {}
+        #: every model call this Auditor has made, for cost reporting.
+        self.calls = 0
         #: env_id -> what was concluded there. The memory lever, and the thing
         #: that makes a second environment cheaper to judge than the first.
         self.seen: dict[str, dict[str, Any]] = {}
@@ -198,6 +324,7 @@ class Auditor:
         client = self.client
         if client is None:
             return None
+        self.calls += 1
         try:
             return _parse(client.complete(system, user))
         except (LLMUnavailable, OSError):
@@ -205,15 +332,46 @@ class Auditor:
 
     # -- the semantic gate ---------------------------------------------------
 
+    @staticmethod
+    def shape(adapter: EnvAdapter) -> str:
+        """What makes two environments pose the same question to a reader.
+
+        The semantic gate asks whether an environment has a correct answer, and
+        that is settled by the task text, not by the verifier. Two environments
+        whose instructions are identical have the same answer whatever their
+        verifiers do -- which is exactly the case across the twelve toy-triage
+        fixtures, where the same ticket-classification prompt is paired with
+        twelve different planted defects.
+
+        Deliberately not the manifest digest: capabilities and version differ
+        between those twelve, and keying on them would defeat the whole point.
+        """
+        manifest = adapter.manifest()
+        body = "\n".join(
+            sorted({(t.instruction or "").strip() for t in manifest.tasks})
+        )
+        return digest({"ecosystem": manifest.ecosystem, "instructions": body})
+
     def classify(self, adapter: EnvAdapter) -> dict[str, Any] | None:
         """Does this environment have a correct answer? None when unknown."""
+        signature = self.shape(adapter)
+        remembered = self._by_shape.get(signature)
+        if remembered is not None:
+            return {**remembered, "carried_from": remembered["_env"]}
         answer = self._ask(_SYSTEM, adapter.describe())
         if answer is None:
             return None
         derived = decide(answer)
         if derived is None:
             return None
-        return {**answer, "model_said": answer.get("verdict"), "verdict": derived}
+        settled = {
+            **answer,
+            "model_said": answer.get("verdict"),
+            "verdict": derived,
+            "_env": adapter.manifest().env_id,
+        }
+        self._by_shape[signature] = settled
+        return settled
 
     def _withhold(self, result: ProbeResult, answer: dict[str, Any], who: str) -> ProbeResult:
         reason = (
@@ -270,6 +428,99 @@ class Auditor:
         ]
         return report
 
+    # -- resolving what the battery could not run ----------------------------
+
+    def decompose(self, adapter: EnvAdapter) -> dict[str, Any] | None:
+        """How an item splits into fields, and which one must not decide it."""
+        try:
+            items = adapter.items()
+        except (AttributeError, NotImplementedError):
+            return None
+        if not items:
+            return None
+        sample = "\n\n".join(f"ITEM {i.item_id}:\n{i.text[:1200]}" for i in items[:3])
+        spec = self._ask(_PARTS_SYSTEM, sample)
+        if spec is None or not isinstance(spec.get("parts"), list) or not spec["parts"]:
+            return None
+        return spec
+
+    def resolve(self, adapter: EnvAdapter, report: AuditReport) -> AuditReport:
+        """Try to run the probes that declined for want of a split.
+
+        Only `shortcut_leakage` for now, and only when the environment can
+        enumerate its data. The probe is untouched -- it is handed an adapter
+        that declares what it needs, and it decides. Anything it finds is
+        marked as resting on a split the Auditor invented, because a reader who
+        does not know that would over-read the result.
+        """
+        declined = [
+            r
+            for r in report.results
+            if r.family == "shortcut_leakage" and r.status is ProbeStatus.NOT_APPLICABLE
+        ]
+        if not declined:
+            return report
+
+        spec = self.decompose(adapter)
+        if spec is None:
+            return report
+        try:
+            resolved = _Resolved(adapter, spec, adapter.items())
+        except (AttributeError, NotImplementedError, TypeError):
+            return report
+        if not resolved.train_items() or not resolved.eval_items():
+            return report
+
+        from .probes import all_probes
+
+        probes = [p for p in all_probes() if p.family == "shortcut_leakage"]
+        rerun = [p.run(resolved, {}) for p in probes]
+        who = getattr(self.client, "name", "unknown")
+
+        by_probe = {r.probe: r for r in rerun}
+        out = []
+        for result in report.results:
+            fresh = by_probe.get(result.probe)
+            if result not in declined or fresh is None:
+                out.append(result)
+                continue
+            if fresh.status is ProbeStatus.NOT_APPLICABLE:
+                out.append(result)
+                continue
+            for finding in fresh.findings:
+                finding.evidence["synthesized_split"] = True
+                finding.evidence["split_proposed_by"] = who
+                finding.evidence["parts"] = [p.get("name") for p in spec["parts"]]
+            fresh.detail = {
+                **fresh.detail,
+                "auditor_resolved": True,
+                "was": result.reason,
+                "must_not_determine": spec.get("must_not_determine"),
+            }
+            self.overrides.append(
+                Override(
+                    probe=result.probe,
+                    family=result.family,
+                    was=result.status.value,
+                    now=fresh.status.value,
+                    reason=(
+                        "the suite ships one split, so the probe declined; the "
+                        "Auditor named the item's fields and cross-fit over a "
+                        "split it synthesized"
+                    ),
+                    proposed_by=who,
+                    evidence={
+                        "parts": [p.get("name") for p in spec["parts"]],
+                        "must_not_determine": spec.get("must_not_determine"),
+                        "n_train": len(resolved.train_items()),
+                        "n_eval": len(resolved.eval_items()),
+                    },
+                )
+            )
+            out.append(fresh)
+        report.results = out
+        return report
+
     # -- the whole pass ------------------------------------------------------
 
     def audit(self, adapter: EnvAdapter, ctx: dict[str, Any] | None = None) -> AuditReport:
@@ -279,4 +530,7 @@ class Auditor:
         judgement happens around it, not inside it. Dropping the Auditor
         reproduces the deterministic numbers exactly.
         """
-        return self.review(adapter, _run_battery(adapter, ctx))
+        report = _run_battery(adapter, ctx)
+        report = self.review(adapter, self.resolve(adapter, report))
+        report.auditor_overrides = [o.to_dict() for o in self.overrides]
+        return report

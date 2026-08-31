@@ -31,6 +31,10 @@ class AuditReport:
     ecosystem: str
     env_version: str
     results: list[ProbeResult] = field(default_factory=list)
+    #: Judgements the Auditor applied, if one ran. Empty for every
+    #: deterministic audit, and omitted from the card body when empty so
+    #: that adding this field did not move a single existing digest.
+    auditor_overrides: list[dict[str, Any]] = field(default_factory=list)
 
     # -- views -------------------------------------------------------------
 
@@ -102,6 +106,8 @@ class AuditReport:
                 for r in self.results
             ],
         }
+        if self.auditor_overrides:
+            body["auditor_overrides"] = self.auditor_overrides
         # A content digest identifies this card and catches corruption. It is
         # not tamper-evidence: anyone editing the body can recompute it. When
         # ASSAY_CARD_KEY is set the card also carries a keyed HMAC, which is.

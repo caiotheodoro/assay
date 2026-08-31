@@ -1,0 +1,17 @@
+{
+  "without_memory": {
+    "model_calls": 4,
+    "seconds": 31.4
+  },
+  "with_memory": {
+    "model_calls": 1,
+    "seconds": 2.9
+  },
+  "verdicts_identical": true,
+  "corpus": "the 12 toy-triage fixtures, which share one instruction shape",
+  "backend": "ollama:qwen3:8b",
+  "what": "Does carrying state across environments buy anything measurable?",
+  "design": "The semantic gate is settled by the task text, not the verifier. Auditor.shape() keys on ecosystem plus the sorted instruction set and deliberately NOT on the manifest digest: the twelve toy-triage fixtures pair one ticket-classification prompt with twelve different planted defects, so keying on capabilities or version would defeat the point.",
+  "reading": "4 model calls become 1 and 31.4s becomes 2.9s, with every verdict identical. Only 4 of the 12 reach the gate at all -- it is consulted only when the battery flagged something in verifier_integrity, so a healthy environment costs nothing.",
+  "honesty": "This is a cost result, not a capability result. Memory makes the same answer cheaper; it does not make a better one. A cached conclusion is reported with carried_from naming the environment it was reached on, so no card claims a judgement it did not get."
+}

@@ -8,6 +8,7 @@ pinned here.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 
 import pytest
@@ -234,3 +235,93 @@ def test_the_model_label_is_recorded_even_when_it_is_not_believed():
     answer = auditor.classify(_defective())
     assert answer["model_said"] == "has_correct_answer"
     assert answer["verdict"] == "has_correct_answer"
+
+
+# -- resolving a NOT_APPLICABLE ---------------------------------------------
+
+from assay.auditor import _Resolved, _slice  # noqa: E402
+from assay.types import Capability, Item  # noqa: E402
+
+PARTS = (
+    '{"parts": [{"name": "passage", "after": "Passage: ", "before": "\\n\\nQuestion:"}, '
+    '{"name": "question", "after": "Question: ", "before": null}], '
+    '"must_not_determine": "question", "confidence": "high"}'
+)
+
+
+def test_slice_uses_literal_delimiters_and_cannot_backtrack():
+    text = "Passage: water boils\n\nQuestion: does it"
+    assert _slice(text, "Passage: ", "\n\nQuestion:") == "water boils"
+    assert _slice(text, "Question: ", None) == "does it"
+    # A delimiter that is not there yields nothing rather than a wrong field.
+    assert _slice(text, "Premise: ", None) == ""
+    # Regex metacharacters are literal, so a pathological "pattern" is inert.
+    assert _slice("a(a+)+b", "(a+)+", None) == "b"
+
+
+class _Stub:
+    """Minimal adapter exposing items(); everything else proxies to nothing."""
+
+    def __init__(self, items):
+        self._items = items
+
+    def manifest(self):
+        from assay.types import Manifest
+
+        return Manifest(
+            env_id="stub/env", ecosystem="stub", version="1", tasks=[],
+            capabilities=frozenset(),
+        )
+
+    def items(self):
+        return self._items
+
+
+def _item(n, passage, question, label):
+    return Item(
+        item_id=f"i{n:02d}",
+        text=f"Passage: {passage}\n\nQuestion: {question}",
+        label=label,
+    )
+
+
+def test_the_synthesized_split_is_deterministic_and_declares_what_it_added():
+    items = [_item(n, f"p{n}", f"q{n % 3}", "Yes" if n % 2 else "No") for n in range(10)]
+    a, b = _Resolved(_Stub(items), json.loads(PARTS), items), _Resolved(
+        _Stub(items), json.loads(PARTS), items
+    )
+    assert [i.item_id for i in a.train_items()] == [i.item_id for i in b.train_items()]
+    assert not set(i.item_id for i in a.train_items()) & set(
+        i.item_id for i in a.eval_items()
+    )
+    caps = a.manifest().capabilities
+    assert Capability.SPLITS in caps and Capability.ITEM_PARTS in caps
+
+
+def test_parts_are_cut_from_the_item_text():
+    items = [_item(0, "water boils", "is it hot", "Yes")]
+    resolved = _Resolved(_Stub(items), json.loads(PARTS), items)
+    only = (resolved.train_items() + resolved.eval_items())[0]
+    assert only.parts == {"passage": "water boils", "question": "is it hot"}
+
+
+def test_the_resolver_fires_when_part_values_repeat():
+    """The machinery works; boolq's free-text questions are what defeat it.
+
+    Here `question` takes three repeated values and predicts the label exactly,
+    which is the artifact the probe exists to catch.
+    """
+    from assay.probes import all_probes
+
+    items = [
+        _item(n, f"passage {n}", ["qa", "qb", "qc"][n % 3], ["Yes", "No", "No"][n % 3])
+        for n in range(24)
+    ]
+    resolved = _Resolved(_Stub(items), json.loads(PARTS), items)
+    probe = [p for p in all_probes() if p.family == "shortcut_leakage"][0]
+    result = probe.run(resolved, {})
+    assert result.status is ProbeStatus.DEFECT
+    assert result.detail["per_part_accuracy"]["question"] > result.detail[
+        "majority_class_rate"
+    ]
+
