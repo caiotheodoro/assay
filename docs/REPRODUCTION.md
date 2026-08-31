@@ -222,7 +222,7 @@ committed, and `uv sync` will not put it there:
 
 ```bash
 uv run --extra tau2 python scripts/tau2_fetch.py
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q
 ```
 
 **Measured: 765 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.

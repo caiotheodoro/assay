@@ -98,7 +98,7 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 765 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 765 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
