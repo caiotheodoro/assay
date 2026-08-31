@@ -46,15 +46,26 @@ def _build_challenger(args):
     choice = getattr(args, "challenger", "scripted")
     if choice == "scripted":
         return None
-    from .challenger import PromptedChallenger
+    from .challenger import PolicySynthesisChallenger, PromptedChallenger
     from .challenger.scripted import ScriptedChallenger
     from .challenger.composite import CompositeChallenger
     from .llm import ClaudeCLIClient, OllamaClient
 
+    kind, _, backend = choice.partition("-")
+    if not backend:  # `ollama` / `claude` keep their original meaning
+        kind, backend = "prompted", choice
     client = (
-        ClaudeCLIClient() if choice == "claude" else OllamaClient(args.challenger_model)
+        ClaudeCLIClient() if backend == "claude" else OllamaClient(args.challenger_model)
     )
-    return CompositeChallenger([ScriptedChallenger(), PromptedChallenger(client)])
+    # Scripted always runs first. A better attacker is not a superset of a
+    # worse one -- see `challenger/composite.py` -- so the model arm is added
+    # to the fixed repertoire rather than swapped in for it.
+    model_arm = (
+        PolicySynthesisChallenger(client)
+        if kind == "synthesis"
+        else PromptedChallenger(client)
+    )
+    return CompositeChallenger([ScriptedChallenger(), model_arm])
 
 
 def _audit(args) -> int:
@@ -182,10 +193,22 @@ def main(argv: list[str] | None = None) -> int:
              "if any pass crosses the threshold; the rate is reported beside it.",
     )
     p.add_argument(
-        "--challenger", choices=["scripted", "ollama", "claude"], default="scripted",
+        "--challenger",
+        choices=[
+            "scripted",
+            "ollama",
+            "claude",
+            "synthesis-ollama",
+            "synthesis-claude",
+        ],
+        default="scripted",
         help="which Challenger looks for reward hacks. Scripted is the default and "
              "needs no model, so the shipped verdict stays deterministic; the model "
-             "arms propose policies the adapter never declared.",
+             "arms propose policies the adapter never declared. `ollama`/`claude` "
+             "add the turn-taking attacker, which acts in the environment and reads "
+             "back its score; `synthesis-*` add the one that reads the verifier once "
+             "and proposes answer strings. Both are composed with scripted, never "
+             "substituted for it.",
     )
     p.add_argument("--challenger-model", default="qwen3:8b", metavar="NAME")
     p.add_argument(

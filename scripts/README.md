@@ -41,6 +41,9 @@ Implementation details of one section of the README, or of one document in
   collection. Dry run by default; every figure in the blurb is re-derived from
   `results/` and both Hub length limits are gated rather than discovered on upload.
 - `challenger_calibration.py` — whether the Challenger's own `solves_the_task` self-report can be trusted.
+- `policy_synthesis.py` — whether a Challenger that *proposes* answer strings finds
+  the `inspect_evals/paws` constant-string exploit the scripted repertoire cannot
+  name. Writes `results/policy_synthesis.json`; needs `--extra sweep` and a model.
 
 **Against defects this repo did not plant** (README § *Where Assay sits in the field*)
 
