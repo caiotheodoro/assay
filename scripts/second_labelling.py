@@ -113,6 +113,16 @@ DEFINITIONS: dict[DefectClass, str] = {
         "a policy can score highly WITHOUT doing the job -- the reported score and "
         "genuine task completion come apart"
     ),
+    DefectClass.EXCESSIVE_PERMISSIONS: (
+        "the deployment grants the agent more than the task needs -- network access "
+        "for a task with no network step, write access to the verifier grading it, "
+        "a writable root filesystem, root for a task that does not need it"
+    ),
+    DefectClass.EVALUATOR_RCE: (
+        "the verifier can be made to execute content it is grading -- eval, exec, "
+        "unpickling, yaml.load without a safe loader, or a shell invocation built "
+        "from the submission"
+    ),
 }
 
 SYSTEM = """You are labelling environments for a defect corpus.

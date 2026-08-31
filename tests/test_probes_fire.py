@@ -10,7 +10,7 @@ import pytest
 
 from assay import audit
 from assay.fixtures import CATALOG, build
-from assay.probes import families
+from assay.probes import FAMILIES_NOT_PLANTED_IN_FIXTURES, families
 from assay.types import DefectClass, ProbeStatus
 
 
@@ -47,7 +47,11 @@ def test_every_family_fires_on_at_least_one_fixture():
         for result in audit(build(variant)).results:
             if result.status is ProbeStatus.DEFECT:
                 fired.add(result.family)
-    expected = set(families()) - {"difficulty_band"}  # needs a rollout sampler
+    # The exclusions and their reasons live in `probes.base`, because two
+    # callers assert this and a literal spelled out in both drifts. Each excluded
+    # family still has to fire against a planted instance -- see
+    # `tests/test_dead_zone_probes.py`.
+    expected = set(families()) - set(FAMILIES_NOT_PLANTED_IN_FIXTURES)
     assert expected <= fired, f"never fired: {sorted(expected - fired)}"
 
 

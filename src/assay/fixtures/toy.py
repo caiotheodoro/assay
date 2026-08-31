@@ -23,11 +23,43 @@ from ..types import (
     DefectClass,
     Item,
     Manifest,
+    MountSpec,
     Observation,
+    SandboxPosture,
     Score,
     StepResult,
     Task,
     Transcript,
+)
+
+#: The deployment this fixture models, declared the way a real one would be.
+#:
+#: The fixture is an in-process object, so this is modelled rather than
+#: measured -- the same status as its splits and its gold trajectory, which are
+#: also written here rather than read off a running system. What it must be is
+#: *minimal*: no network for a task with no network step, a read-only root, a
+#: workspace the policy can write, and the verifier mounted outside it. That
+#: keeps family 10 applicable on `healthy` without planting anything, which is
+#: the whole point -- `tests/test_report.py` requires an environment on which
+#: every probe in the battery can actually run, and a battery with a probe that
+#: no fixture can feed has no such environment left.
+#:
+#: Deliberately NOT parameterised into a defective variant. A defective variant
+#: is a new entry in `CATALOG`, `CATALOG` is the scored fixture corpus, and an
+#: environment added to a scored corpus moves a published number. The planted
+#: postures live in `tests/test_dead_zone_probes.py` instead.
+TOY_POSTURE = SandboxPosture(
+    network_enabled=False,
+    network_required=False,
+    read_only_root=True,
+    user="1000",
+    root_required=False,
+    mounts=(
+        MountSpec("toy-workspace", "/work", read_only=False),
+        MountSpec("toy-verifier", "/verifier", read_only=True),
+    ),
+    verifier_paths=("/verifier",),
+    declared_by="assay.fixtures.toy.TOY_POSTURE",
 )
 
 CATEGORIES = ["billing", "technical", "spam"]
@@ -139,6 +171,8 @@ class ToyEnv(BaseAdapter):
             Capability.TRUE_COMPLETION,
             Capability.TRIVIAL_POLICIES,
             Capability.GRADED_POLICIES,
+            Capability.SANDBOX_POSTURE,
+            Capability.VERIFIER_SOURCE,
         }
         return Manifest(
             env_id=f"toy-triage/{self.variant}",
@@ -248,6 +282,20 @@ class ToyEnv(BaseAdapter):
             "strong": [Action("submit", {"label": target, "rationale": "cites the ticket"})],
             "weak": [Action("submit", {"label": target})],
         }
+
+    def sandbox_posture(self, task_id: str) -> SandboxPosture:
+        return TOY_POSTURE
+
+    def verifier_source(self, task_id: str) -> str:
+        """`verify` is the verifier, so its own source is what family 11 reads.
+
+        Handed over as source rather than described, because a description of
+        what a verifier is believed to do would make the static analysis a
+        statement about this docstring.
+        """
+        import inspect as pyinspect
+
+        return pyinspect.getsource(type(self).verify)
 
     def verifier_asserts(self, task_id: str) -> list[str]:
         base = ["submitted category equals the ticket category", "a rationale is present"]

@@ -41,7 +41,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   reviewer-facing docs resolves, and that the suite size those docs advertise is the
   suite size that ran. Scored **12**, not 13, because the full headline still wants
   Docker and Ollama up, and there is no hosted demo to fall back on.
-- **End to End Quality, 15 → 16.** The suite is now **594 passed / 0 skipped**
+- **End to End Quality, 15 → 16.** The suite is now **650 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
   by the two things below.
@@ -66,7 +66,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
    which is the same class of gap as a correction landing one document downstream of
    the one people read.
 
-2. **The agentic surface is small, at an agentic-workflows hackathon.** 8 of the 9
+2. **The agentic surface is small, at an agentic-workflows hackathon.** 10 of the 11
    probe families are deterministic programs. The Challenger found the reward-hack
    exploit class that a scripted attacker and `qwen3:8b` both missed, and that class
    was then compiled into a scripted policy that finds the same gap in ~2s instead of
@@ -98,7 +98,7 @@ here down was written before `docs/RED-TEAM.md` broke twelve published claims an
 before those were fixed.*
 
 Numbers it quotes that have since moved: at the time it was `493 passed / 18 skipped`
-(now 594 passed / 0 skipped with the τ² snapshots fetched); `0.339` was the README's
+(now 650 passed / 0 skipped with the τ² snapshots fetched); `0.339` was the README's
 τ²-bench headline (now labelled chance, p = 0.486); the example card carried a
 "signature" (now `content_digest`). Its line references into `README.md` no longer
 resolve. Since it was written the corpus grew from 24 environments to 26 and the two
@@ -182,7 +182,7 @@ read off a file. Those runs are listed in [What was executed](#what-was-executed
 
 **Evidence for.**
 
-- Nine probe families (`README.md:368-386`), eight deterministic and one agentic. The
+- Eleven probe families (`README.md` § *The probes*), ten deterministic and one agentic. The
   boundary is a design choice and it is argued: no LLM judge scores anything, the
   Challenger only proposes actions, and the ground truth it is scored against is held
   by the probe and never shown to the attacker.

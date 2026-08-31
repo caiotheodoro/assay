@@ -236,12 +236,14 @@ Every check above is inward. This one is the boundary of the tool, and stating i
 in your own vocabulary is worthless — the categories get drawn around whatever
 you happen to do.
 
-[`docs/COVERAGE.md`](COVERAGE.md) maps Assay's nine probe families onto
-BenchJack's eight published flaw classes, in both directions. **Four of eight are
-detected**, and two of those on one ecosystem only. V2, V3 and V8 have no probe
-at all; V4 is excluded by an architectural rule rather than a missing feature, so
-the honest form is that Assay *declines* a judge-scored environment rather than
-falsely clearing it. In the other direction, nine of fourteen `DefectClass`
+[`docs/COVERAGE.md`](COVERAGE.md) maps Assay's eleven probe families onto
+BenchJack's eight published flaw classes, in both directions. **Five of eight are
+reached and four are fed**, and two of the four on one ecosystem only. V2 has no
+probe at all; V3 and V8 have one each and are new, so V8 is `NOT_APPLICABLE` on
+every corpus environment and V3 runs only where the verifier is Python. V4 is
+excluded by an architectural rule rather than a missing feature, so the honest
+form is that Assay *declines* a judge-scored environment rather than falsely
+clearing it. In the other direction, nine of sixteen `DefectClass`
 members have no counterpart in the taxonomy — for three distinct reasons, none of
 which is that the taxonomy is deficient.
 
