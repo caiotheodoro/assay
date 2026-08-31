@@ -36,6 +36,27 @@ def _selftest(args) -> int:
     return 0
 
 
+def _build_challenger(args):
+    """The Challenger the audit runs with, or None for the scripted default.
+
+    Kept out of `_audit` so the import of a model backend only happens when a
+    model was actually asked for -- `assay audit` with no flags must not need
+    ollama installed, or reachable, or anything at all beyond python.
+    """
+    choice = getattr(args, "challenger", "scripted")
+    if choice == "scripted":
+        return None
+    from .challenger import PromptedChallenger
+    from .challenger.scripted import ScriptedChallenger
+    from .challenger.composite import CompositeChallenger
+    from .llm import ClaudeCLIClient, OllamaClient
+
+    client = (
+        ClaudeCLIClient() if choice == "claude" else OllamaClient(args.challenger_model)
+    )
+    return CompositeChallenger([ScriptedChallenger(), PromptedChallenger(client)])
+
+
 def _audit(args) -> int:
     found = [e for e in entries() if e[0] == args.env]
     if not found:
@@ -46,10 +67,28 @@ def _audit(args) -> int:
         return 2
     env_id, factory, _ = found[0]
     adapter = factory()
+    ctx = {"challenger_passes": args.passes}
+    auditor = None
     try:
-        report = audit(adapter, {"challenger_passes": args.passes})
+        challenger = _build_challenger(args)
+        if challenger is not None:
+            ctx["challenger"] = challenger
+        if args.auditor:
+            from .auditor import Auditor
+
+            auditor = Auditor()
+            report = auditor.audit(adapter, ctx)
+        else:
+            report = audit(adapter, ctx)
     finally:
         close_adapter(adapter)
+
+    for override in auditor.overrides if auditor else []:
+        print(
+            f"auditor: {override.probe} {override.was} -> {override.now} "
+            f"({override.proposed_by}): {override.reason}",
+            file=sys.stderr,
+        )
 
     if args.card:
         from .card import to_html, to_markdown
@@ -141,6 +180,21 @@ def main(argv: list[str] | None = None) -> int:
              "stochastic attacker into a coin flip reported as a measurement: a PASS "
              "may be a run that happened not to find the exploit. The finding fires "
              "if any pass crosses the threshold; the rate is reported beside it.",
+    )
+    p.add_argument(
+        "--challenger", choices=["scripted", "ollama", "claude"], default="scripted",
+        help="which Challenger looks for reward hacks. Scripted is the default and "
+             "needs no model, so the shipped verdict stays deterministic; the model "
+             "arms propose policies the adapter never declared.",
+    )
+    p.add_argument("--challenger-model", default="qwen3:8b", metavar="NAME")
+    p.add_argument(
+        "--auditor", action="store_true",
+        help="read the battery's results with a model before reporting them. It may "
+             "only withhold a verifier-integrity defect on an environment that has no "
+             "correct answer, never turn one into a pass; every override is printed "
+             "with the model that proposed it. Off by default: the headline numbers "
+             "are the deterministic ones.",
     )
     p.set_defaults(func=_audit)
 
