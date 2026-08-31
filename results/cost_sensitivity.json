@@ -4,19 +4,19 @@
   "shipped_value": 120.0,
   "false_alarm": 1.0,
   "method": "The severity shape (CRITICAL:HIGH:MEDIUM:LOW) is held fixed and scaled about the CRITICAL anchor, so only the miss/false-alarm exchange rate moves.",
-  "n_environments": 28,
+  "n_environments": 32,
   "winner_flips_between": [
     [
       800,
       2000
     ]
   ],
-  "exact_crossover_critical_cost": 1173.0,
+  "exact_crossover_critical_cost": 1326.0,
   "margin": {
     "shipped": 120.0,
-    "crossover": 1173.0,
-    "ratio": 9.775,
-    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 1173.0. The shipped profile says 120. The headline therefore survives a 878% error in a constant nothing derives, and no more."
+    "crossover": 1326.0,
+    "ratio": 11.05,
+    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 1326.0. The shipped profile says 120. The headline therefore survives a 1005% error in a constant nothing derives, and no more."
   },
   "assay_beats_flag_everything_when_critical_at_least": 1,
   "rows": [
@@ -25,16 +25,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 1.0,
       "loss": {
-        "agent_with_tools": 46.6,
-        "always_modal_defect": 34.93,
-        "assay": 3.33,
-        "check_env": 26.8,
-        "direct_prompt": 42.27,
-        "flag_everything": 394.0,
+        "agent_with_tools": 57.27,
+        "always_modal_defect": 38.93,
+        "assay": 16.33,
+        "assay+auditor": 3.33,
+        "check_env": 26.87,
+        "direct_prompt": 45.93,
+        "flag_everything": 458.0,
         "flag_nothing": 26.93,
-        "stratified_random": 63.93
+        "stratified_random": 64.93
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -42,16 +43,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 2.0,
       "loss": {
-        "agent_with_tools": 69.2,
-        "always_modal_defect": 51.87,
-        "assay": 3.67,
-        "check_env": 53.6,
-        "direct_prompt": 62.53,
-        "flag_everything": 394.0,
+        "agent_with_tools": 80.53,
+        "always_modal_defect": 55.87,
+        "assay": 16.67,
+        "assay+auditor": 3.67,
+        "check_env": 53.73,
+        "direct_prompt": 64.87,
+        "flag_everything": 458.0,
         "flag_nothing": 53.87,
-        "stratified_random": 86.87
+        "stratified_random": 87.87
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -59,16 +61,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 5.0,
       "loss": {
-        "agent_with_tools": 137.0,
-        "always_modal_defect": 102.67,
-        "assay": 4.67,
-        "check_env": 134.0,
-        "direct_prompt": 123.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 150.33,
+        "always_modal_defect": 106.67,
+        "assay": 17.67,
+        "assay+auditor": 4.67,
+        "check_env": 134.33,
+        "direct_prompt": 121.67,
+        "flag_everything": 458.0,
         "flag_nothing": 134.67,
-        "stratified_random": 155.67
+        "stratified_random": 156.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -76,16 +79,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 10.0,
       "loss": {
-        "agent_with_tools": 250.0,
-        "always_modal_defect": 187.33,
-        "assay": 6.33,
-        "check_env": 268.0,
-        "direct_prompt": 224.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 266.67,
+        "always_modal_defect": 191.33,
+        "assay": 19.33,
+        "assay+auditor": 6.33,
+        "check_env": 268.67,
+        "direct_prompt": 216.33,
+        "flag_everything": 458.0,
         "flag_nothing": 269.33,
-        "stratified_random": 270.33
+        "stratified_random": 271.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -93,16 +97,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 20.0,
       "loss": {
-        "agent_with_tools": 476.0,
-        "always_modal_defect": 356.67,
-        "assay": 9.67,
-        "check_env": 536.0,
-        "direct_prompt": 427.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 499.33,
+        "always_modal_defect": 360.67,
+        "assay": 22.67,
+        "assay+auditor": 9.67,
+        "check_env": 537.33,
+        "direct_prompt": 405.67,
+        "flag_everything": 458.0,
         "flag_nothing": 538.67,
-        "stratified_random": 499.67
+        "stratified_random": 500.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -110,16 +115,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 40.0,
       "loss": {
-        "agent_with_tools": 928.0,
-        "always_modal_defect": 695.33,
-        "assay": 16.33,
-        "check_env": 1072.0,
-        "direct_prompt": 832.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 964.67,
+        "always_modal_defect": 699.33,
+        "assay": 29.33,
+        "assay+auditor": 16.33,
+        "check_env": 1074.67,
+        "direct_prompt": 784.33,
+        "flag_everything": 458.0,
         "flag_nothing": 1077.33,
-        "stratified_random": 958.33
+        "stratified_random": 959.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -127,16 +133,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 80.0,
       "loss": {
-        "agent_with_tools": 1832.0,
-        "always_modal_defect": 1372.67,
-        "assay": 29.67,
-        "check_env": 2144.0,
-        "direct_prompt": 1643.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 1895.33,
+        "always_modal_defect": 1376.67,
+        "assay": 42.67,
+        "assay+auditor": 29.67,
+        "check_env": 2149.33,
+        "direct_prompt": 1541.67,
+        "flag_everything": 458.0,
         "flag_nothing": 2154.67,
-        "stratified_random": 1875.67
+        "stratified_random": 1876.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -144,16 +151,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 120.0,
       "loss": {
-        "agent_with_tools": 2736.0,
-        "always_modal_defect": 2050.0,
-        "assay": 43.0,
-        "check_env": 3216.0,
-        "direct_prompt": 2454.0,
-        "flag_everything": 394.0,
+        "agent_with_tools": 2826.0,
+        "always_modal_defect": 2054.0,
+        "assay": 56.0,
+        "assay+auditor": 43.0,
+        "check_env": 3224.0,
+        "direct_prompt": 2299.0,
+        "flag_everything": 458.0,
         "flag_nothing": 3232.0,
-        "stratified_random": 2793.0
+        "stratified_random": 2794.0
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -161,16 +169,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 130.0,
       "loss": {
-        "agent_with_tools": 2962.0,
-        "always_modal_defect": 2219.33,
-        "assay": 46.33,
-        "check_env": 3484.0,
-        "direct_prompt": 2656.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 3058.67,
+        "always_modal_defect": 2223.33,
+        "assay": 59.33,
+        "assay+auditor": 46.33,
+        "check_env": 3492.67,
+        "direct_prompt": 2488.33,
+        "flag_everything": 458.0,
         "flag_nothing": 3501.33,
-        "stratified_random": 3022.33
+        "stratified_random": 3023.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -178,16 +187,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 140.0,
       "loss": {
-        "agent_with_tools": 3188.0,
-        "always_modal_defect": 2388.67,
-        "assay": 49.67,
-        "check_env": 3752.0,
-        "direct_prompt": 2859.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 3291.33,
+        "always_modal_defect": 2392.67,
+        "assay": 62.67,
+        "assay+auditor": 49.67,
+        "check_env": 3761.33,
+        "direct_prompt": 2677.67,
+        "flag_everything": 458.0,
         "flag_nothing": 3770.67,
-        "stratified_random": 3251.67
+        "stratified_random": 3252.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -195,16 +205,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 145.0,
       "loss": {
-        "agent_with_tools": 3301.0,
-        "always_modal_defect": 2473.33,
-        "assay": 51.33,
-        "check_env": 3886.0,
-        "direct_prompt": 2960.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 3407.67,
+        "always_modal_defect": 2477.33,
+        "assay": 64.33,
+        "assay+auditor": 51.33,
+        "check_env": 3895.67,
+        "direct_prompt": 2772.33,
+        "flag_everything": 458.0,
         "flag_nothing": 3905.33,
-        "stratified_random": 3366.33
+        "stratified_random": 3367.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -212,16 +223,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 150.0,
       "loss": {
-        "agent_with_tools": 3414.0,
-        "always_modal_defect": 2558.0,
-        "assay": 53.0,
-        "check_env": 4020.0,
-        "direct_prompt": 3062.0,
-        "flag_everything": 394.0,
+        "agent_with_tools": 3524.0,
+        "always_modal_defect": 2562.0,
+        "assay": 66.0,
+        "assay+auditor": 53.0,
+        "check_env": 4030.0,
+        "direct_prompt": 2867.0,
+        "flag_everything": 458.0,
         "flag_nothing": 4040.0,
-        "stratified_random": 3481.0
+        "stratified_random": 3482.0
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -229,16 +241,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 160.0,
       "loss": {
-        "agent_with_tools": 3640.0,
-        "always_modal_defect": 2727.33,
-        "assay": 56.33,
-        "check_env": 4288.0,
-        "direct_prompt": 3264.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 3756.67,
+        "always_modal_defect": 2731.33,
+        "assay": 69.33,
+        "assay+auditor": 56.33,
+        "check_env": 4298.67,
+        "direct_prompt": 3056.33,
+        "flag_everything": 458.0,
         "flag_nothing": 4309.33,
-        "stratified_random": 3710.33
+        "stratified_random": 3711.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -246,16 +259,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 200.0,
       "loss": {
-        "agent_with_tools": 4544.0,
-        "always_modal_defect": 3404.67,
-        "assay": 69.67,
-        "check_env": 5360.0,
-        "direct_prompt": 4075.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 4687.33,
+        "always_modal_defect": 3408.67,
+        "assay": 82.67,
+        "assay+auditor": 69.67,
+        "check_env": 5373.33,
+        "direct_prompt": 3813.67,
+        "flag_everything": 458.0,
         "flag_nothing": 5386.67,
-        "stratified_random": 4627.67
+        "stratified_random": 4628.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -263,16 +277,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 400.0,
       "loss": {
-        "agent_with_tools": 9064.0,
-        "always_modal_defect": 6791.33,
-        "assay": 136.33,
-        "check_env": 10720.0,
-        "direct_prompt": 8128.67,
-        "flag_everything": 394.0,
+        "agent_with_tools": 9340.67,
+        "always_modal_defect": 6795.33,
+        "assay": 149.33,
+        "assay+auditor": 136.33,
+        "check_env": 10746.67,
+        "direct_prompt": 7600.33,
+        "flag_everything": 458.0,
         "flag_nothing": 10773.33,
-        "stratified_random": 9214.33
+        "stratified_random": 9215.33
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -280,16 +295,17 @@
       "false_alarm_cost": 1.0,
       "ratio": 800.0,
       "loss": {
-        "agent_with_tools": 18104.0,
-        "always_modal_defect": 13564.67,
-        "assay": 269.67,
-        "check_env": 21440.0,
-        "direct_prompt": 16235.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 18647.33,
+        "always_modal_defect": 13568.67,
+        "assay": 282.67,
+        "assay+auditor": 269.67,
+        "check_env": 21493.33,
+        "direct_prompt": 15173.67,
+        "flag_everything": 458.0,
         "flag_nothing": 21546.67,
-        "stratified_random": 18387.67
+        "stratified_random": 18388.67
       },
-      "winner": "assay",
+      "winner": "assay+auditor",
       "assay_beats_flag_everything": true
     },
     {
@@ -297,14 +313,15 @@
       "false_alarm_cost": 1.0,
       "ratio": 2000.0,
       "loss": {
-        "agent_with_tools": 45224.0,
-        "always_modal_defect": 33884.67,
-        "assay": 669.67,
-        "check_env": 53600.0,
-        "direct_prompt": 40555.33,
-        "flag_everything": 394.0,
+        "agent_with_tools": 46567.33,
+        "always_modal_defect": 33888.67,
+        "assay": 682.67,
+        "assay+auditor": 669.67,
+        "check_env": 53733.33,
+        "direct_prompt": 37893.67,
+        "flag_everything": 458.0,
         "flag_nothing": 53866.67,
-        "stratified_random": 45907.67
+        "stratified_random": 45908.67
       },
       "winner": "flag_everything",
       "assay_beats_flag_everything": false

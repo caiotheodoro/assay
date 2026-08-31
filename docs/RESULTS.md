@@ -42,18 +42,27 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
-| assay | **43.0** | [0, 125] | 0.982 | 0.946 |
-| flag_everything | 394.0 | [375, 411] | 1.000 | 0.120 |
-| stratified_random | 2793.0 | [1763, 3963] | 0.111 | 0.128 |
-| always_modal_defect | 2050.0 | [1351, 2821] | 0.185 | 0.357 |
-| agent_with_tools (`qwen3:8b`) | 2736.0 | [1762, 3825] | 0.241 | 0.351 |
-| direct_prompt (`qwen3:8b`) | 2454.0 | [1644, 3373] | 0.222 | 0.353 |
-| **check_env** (incumbent) | **3216.0** | [2104, 4448] | **0.037** | 1.000 |
-| flag_nothing | 3232.0 | [2128, 4456] | 0.000 | 0.000 |
+| **assay+auditor** | **43.0** | [0, 125] | 0.982 | 0.946 |
+| assay | **56.0** | [7, 141] | 0.982 | 0.768 |
+| flag_everything | 458.0 | [438, 476] | 1.000 | 0.105 |
+| always_modal_defect | 2054.0 | [1300, 2891] | 0.185 | 0.313 |
+| direct_prompt (`qwen3:8b`) | 2299.0 | [1388, 3341] | 0.259 | 0.341 |
+| stratified_random | 2794.0 | [1702, 4030] | 0.111 | 0.125 |
+| agent_with_tools (`qwen3:8b`) | 2826.0 | [1761, 4029] | 0.204 | 0.244 |
+| **check_env** (incumbent) | **3224.0** | [2040, 4528] | **0.019** | 1.000 |
+| flag_nothing | 3232.0 | [2056, 4536] | 0.000 | 0.000 |
 
-**Every arm is measured on the same 28 environments**, in the same
+**Every arm is measured on the same 32 environments**, in the same
 `results/full_run.json`, with intervals from the same bootstrap. That was not
 always true — see `docs/RETRACTIONS.md` §3.
+
+The deterministic arm is **worse than it used to be**, and that is the point of
+the four environments added to the corpus. They have no correct answer, so every
+finding the battery reports on them is a false positive: 16 spurious where there
+were 3, precision 0.768 where it was 0.946. `assay+auditor` is the same battery
+with the semantic gate reading it, and it recovers all 13 —
+**13.0 saved, 95% CI [1, 28], separated.** Predicted before the environments
+existed, in `docs/PRE-REGISTRATION-NOANSWER.md`.
 
 ### That precision of 1.000 is the modal run, not every run
 
@@ -72,16 +81,22 @@ diagnosis.
 executing anything — the manifest, the instructions, the verifier source where it
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
-**2454.0 and 2736.0 against `stratified_random`'s 2793.0** — both now *ahead* of
-the random arm on the point estimate, and neither of them separated from it. The
-three paired differences, on the same shared resample as every other comparison in
-this file:
+**2299.0 and 2826.0 against `stratified_random`'s 2794.0** — the plain prompt is
+ahead of the random arm and the tool-using agent is behind it, and neither is
+separated from it. The three paired differences, on the same shared resample as every
+other comparison in this file:
 
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
-| `direct_prompt` vs `stratified_random` | 339.0 | [−244, 942] | **not separated** |
-| `agent_with_tools` vs `stratified_random` | 57.0 | [−452, 502] | **not separated** |
-| `agent_with_tools` vs `direct_prompt` | −282.0 | [−649, 39] | **not separated** |
+| `direct_prompt` vs `stratified_random` | 495.0 | [−93, 1123] | **not separated** |
+| `stratified_random` vs `agent_with_tools` | 32.0 | [−396, 513] | **not separated** |
+| `direct_prompt` vs `agent_with_tools` | **527.0** | **[167, 931]** | **separated** |
+
+**The one comparison among these that now separates says the tool loop hurt.** This
+pair used to sit at −282.0 on an interval crossing zero; it is now a 527.0 advantage to
+the *plain prompt*, and the interval clears zero. Giving the model a tool loop did not
+buy accuracy — it bought 34 spurious findings against `direct_prompt`'s 27, on the same
+corpus.
 
 **That is a reversal from what this section used to report, and it is mostly not
 the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0
@@ -257,7 +272,7 @@ with environments nobody here wrote is the first thing worth doing next — care
 
 ---
 
-## The headline survives an 878% error in one made-up number
+## The headline survives a 1005% error in one made-up number
 
 Every expected-loss figure is denominated in "engineer-hours-equivalent", and
 `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect at
@@ -268,24 +283,26 @@ So: sweep it. `uv run --extra adapters python scripts/cost_sensitivity.py`, hold
 the severity shape fixed and moving only the miss/false-alarm exchange rate
 (`results/cost_sensitivity.json`):
 
-| CRITICAL miss cost | assay | flag_everything | winner |
-|---|---|---|---|
-| 120 *(shipped)* | 43.0 | 394.0 | assay |
-| 400 | 136.33 | 394.0 | assay |
-| 800 | 269.67 | 394.0 | assay |
-| **1173.0** | **394.0** | **394.0** | **tie** |
-| 2000 | 669.67 | 394.0 | flag_everything |
+| CRITICAL miss cost | assay | assay+auditor | flag_everything | winner |
+|---|---|---|---|---|
+| 120 *(shipped)* | 56.0 | 43.0 | 458.0 | assay+auditor |
+| 400 | 149.33 | 136.33 | 458.0 | assay+auditor |
+| 800 | 282.67 | 269.67 | 458.0 | assay+auditor |
+| **1326.0** | **458.0** | **445.0** | **458.0** | **tie** (deterministic arm) |
+| 2000 | 682.67 | 669.67 | 458.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
-anchor, so Assay's loss is **affine** in `C` — the single miss scales with it and the
-three false alarms do not, giving `assay(C) = C/3 + 3` — while `flag_everything` never
-misses and does not move with `C` at all. They cross at `3 × (394 − 3) = 1173.0`, which
-is `results/cost_sensitivity.json`'s `exact_crossover_critical_cost`. **The ratio
-`120 × 394 / 43` stood here and it is not the solve**: it gives 1099.53, because it
-prices Assay's three constant false alarms as though they scaled too. The affine form
-is why the sweep table's rows read 136.33 and 269.67 rather than 143.33 and 286.67.
+anchor, so each arm's loss is **affine** in `C` — the single unchecked HIGH scales with
+it and the constant false alarms do not, giving `assay(C) = C/3 + 16` and
+`assay+auditor(C) = C/3 + 3` — while `flag_everything` never misses and does not move
+with `C` at all. The agent arm crosses at `3 × (458 − 3) = 1365.0` and the deterministic
+one at `3 × (458 − 16) = 1326.0`, and `results/cost_sensitivity.json` reports the
+tighter of the two as `exact_crossover_critical_cost`. **A ratio stood here and it is
+not the solve**: `120 × 458 / 56` prices the constant false alarms as though they scaled
+too. The affine form is why the sweep's rows read 149.33 and 282.67 rather than 163.33
+and 306.67.
 
-**The shipped value is 120. The crossover is 1173.0.** That margin was **21%** before
+**The shipped value is 120. The crossover is 1326.0.** That margin was **21%** before
 the two Harbor misses were closed — the crossover sat at 145 against the same shipped
 120 — and **685%** before the taxonomy grew from 14 defect classes to 16. Worth stating
 plainly because the earliest number was the sharpest criticism of this work and it is
@@ -297,7 +314,7 @@ That is not a reason to distrust the ranking so much as a statement of what the 
 is: a claim about a specific cost regime, not about detectors in general. The one anchor
 available is that SWE-bench Verified needed **93 developers** reading tasks by hand —
 the observed price of finding these defects the other way, and why a miss is priced far
-above a false alarm rather than near it. It does not pin 120 versus 1173.0.
+above a false alarm rather than near it. It does not pin 120 versus 1326.0.
 
 Reported here rather than left for a reader to derive, because a paragraph saying "costs
 are illustrative" would have hidden that the margin was ever 21%.

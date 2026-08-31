@@ -35,13 +35,15 @@ resampled over environments.
 
 | arm | expected loss | 95% CI |
 |---|---|---|
-| **assay** | 43 | [0, 125] |
-| flag everything | 394 | [375, 411] |
-| `check_env` (the incumbent) | 3216 | [2104, 4448] |
+| **assay+auditor** | 43 | [0, 125] |
+| **assay** | 56 | [7, 141] |
+| flag everything | 458 | [438, 476] |
+| `check_env` (the incumbent) | 3224 | [2040, 4528] |
 
 The comparison that decides it is not the incumbent — it is flagging everything, which catches
-every defect by construction. **351 saved, 95% CI
-[263, 404], separated.**
+every defect by construction. **402 saved, 95% CI
+[315, 456], separated.** Turning the agent on saves a further **13, 95% CI [1, 28],
+separated** — pre-registered before the environments it acts on existed.
 `production-training` does not separate and is shown crossing zero rather than omitted.
 
 Every figure above is read from `results/intervals.json` by the script that generates this

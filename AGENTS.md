@@ -20,16 +20,22 @@ to find more defects than the field; it claims to price them.
 | Arm | Expected loss (`research-run`) |
 |---|---|
 | `flag_nothing` | 3232.0 |
-| `check_env` (the incumbent) | 3216.0 |
-| `stratified_random` | 2793.0 |
-| `agent_with_tools` | 2736.0 |
-| `direct_prompt` | 2454.0 |
-| `always_modal_defect` | 2050.0 |
-| `flag_everything` | 394.0 |
-| **Assay** | **43.0** |
+| `check_env` (the incumbent) | 3224.0 |
+| `agent_with_tools` | 2826.0 |
+| `stratified_random` | 2794.0 |
+| `direct_prompt` | 2299.0 |
+| `always_modal_defect` | 2054.0 |
+| `flag_everything` | 458.0 |
+| **Assay** | **56.0** |
+| **`assay+auditor`** | **43.0** |
 
-Assay saves **351.0 against `flag_everything`, 95% CI [263, 404], separated.**
+Assay saves **402.0 against `flag_everything`, 95% CI [315, 456], separated.**
 Wins 4 of 4 cost profiles and separates on all 4.
+
+**Turning the agent on saves a further 13.0, 95% CI [1, 28], separated.** Four
+environments with no correct answer now sit in the corpus, so the deterministic battery
+pays 16 false positives where it used to pay 3, and the semantic gate recovers 13 of
+them while leaving the 3 τ² findings standing — the right answer on all 16.
 
 **Seventy-seven of that 351.0 is arithmetic, not detection.** `flag_everything` flags
 every class in the taxonomy on every environment, so its loss gets worse whenever the

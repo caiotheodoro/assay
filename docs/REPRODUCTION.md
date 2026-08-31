@@ -118,13 +118,14 @@ Expect exactly this, under `research-run`:
 
 | arm | expected loss | recall | precision |
 |---|---|---|---|
-| assay | 43.0 | 0.982 | 0.946 |
-| flag_everything | 394.0 | 1.000 | 0.120 |
-| always_modal_defect | 2050.0 | 0.185 | 0.357 |
-| direct_prompt | 2454.0 | 0.222 | 0.353 |
-| agent_with_tools | 2736.0 | 0.241 | 0.351 |
-| stratified_random | 2793.0 | 0.111 | 0.128 |
-| check_env | 3216.0 | 0.037 | 1.000 |
+| assay | 56.0 | 0.982 | 0.768 |
+| assay+auditor | 43.0 | 0.982 | 0.946 |
+| flag_everything | 458.0 | 1.000 | 0.105 |
+| always_modal_defect | 2054.0 | 0.185 | 0.313 |
+| direct_prompt | 2299.0 | 0.259 | 0.341 |
+| stratified_random | 2794.0 | 0.111 | 0.125 |
+| agent_with_tools | 2826.0 | 0.204 | 0.244 |
+| check_env | 3224.0 | 0.019 | 1.000 |
 | flag_nothing | 3232.0 | 0.000 | 0.000 |
 
 Exactly **one** environment is missed corpus-wide — `inspect_evals/boolq`,

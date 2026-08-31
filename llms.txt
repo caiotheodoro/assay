@@ -6,10 +6,11 @@
 > code that blocks a training run.
 
 The claim is not that Assay finds more defects than the field. It is that a finding is
-not a result until you know what it is worth. Assay scores an expected loss of 43.0
-against 394.0 for flagging everything — a saving of 351.0, 95% CI [263, 404],
-separated, resampling environments (n=28) rather than defects. Seventy-seven of that
-351.0 is arithmetic and not detection: two defect classes and two environments were
+not a result until you know what it is worth. Assay scores an expected loss of 56.0
+against 458.0 for flagging everything — a saving of 402.0, 95% CI [315, 456],
+separated, resampling environments (n=32) rather than defects. With the agent's semantic
+gate on, `assay+auditor` scores 43.0: a further 13.0, 95% CI [1, 28], separated. Part of
+the 402.0 is arithmetic and not detection: defect classes and environments were
 added, and flagging everything pays for both while a truthful detector does not.
 
 Read in this order: AGENTS.md for orientation, FOR_AGENTS.md for the same claims with a

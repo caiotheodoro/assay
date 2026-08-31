@@ -70,16 +70,22 @@ def test_the_corpus_split_is_published_on_provenance():
         "Assay lost the third-party-format split again; the README claims it "
         "scores 0.0 there and must be corrected."
     )
-    assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 0.0
+    # 0.0 until the three authored no-answer environments joined this split.
+    # They plant nothing and the battery reports four spurious classes on each
+    # of the two that trip four, so the deterministic arm now pays 12.0 here --
+    # deliberately, and the semantic gate is what recovers it. If this moves
+    # again the README's split table must move with it.
+    assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 12.0
 
 
 def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
-    """6 of 28 environments are genuinely external, and 2 are externally labelled.
+    """7 of 32 environments are genuinely external, and 3 are externally labelled.
 
-    The count has moved three times: 2, then 4 when `inspect_evals/{paws,boolq}`
+    The count has moved four times: 2, then 4 when `inspect_evals/{paws,boolq}`
     were hand-triaged in, then 6 when `tau2/{retail,airline}` were registered
     under a mapping derived from a diff of two pinned revisions
-    (`docs/PRE-REGISTRATION-TAU2.md`). Each move forced the README's
+    (`docs/PRE-REGISTRATION-TAU2.md`), then 7 with `inspect_evals/personality_BFI`
+    (`docs/PRE-REGISTRATION-NOANSWER.md`). Each move forced the README's
     honest-ceiling paragraph to be rewritten, which is the entire purpose of
     asserting a literal here rather than a bound.
 
@@ -95,10 +101,10 @@ def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
     """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
-    assert n == 6, (
+    assert n == 7, (
         f"external control is n={n}; it was 2, then 4 with paws and boolq, then 6 with "
-        "tau2/retail and tau2/airline. If this changed again the README's honest-ceiling "
-        "paragraph must change with it."
+        "tau2/retail and tau2/airline, then 7 with personality_BFI. If this changed "
+        "again the README's honest-ceiling paragraph must change with it."
     )
 
     derived = sorted(
@@ -361,14 +367,29 @@ def test_the_coverage_matrix_names_every_defect_class_and_flaw_class():
 
 
 def test_the_coverage_matrix_agrees_with_the_shipped_miss():
-    """Its central example must stay the environment actually missed."""
+    """Its central example must stay the environment actually not covered.
+
+    This asserted a *miss* set of exactly `{boolq: [SHORTCUT_LEAK]}` until the
+    scorer learned to tell a declined check from a failed one. boolq ships no
+    train split, so `partial_input_baseline` returns NOT_APPLICABLE and says so;
+    charging that as a failure to detect was the tool committing the defect
+    class it sells. The deterministic arm now has **no true misses on this
+    corpus**, and the same environment is the one thing it could not check.
+    """
     fr = _load("full_run.json")
     missed = {e: r["missed"] for e, r in fr["per_env"].items() if r["missed"]}
     coverage = (ROOT / "docs" / "COVERAGE.md").read_text()
-    assert missed == {"inspect_evals/boolq": ["SHORTCUT_LEAK"]}, (
-        f"the corpus miss set changed to {missed}; COVERAGE.md's closing "
-        "example and the README both describe the old one"
+    assert missed == {}, (
+        f"the corpus miss set changed to {missed}; it has been empty since the "
+        "scorer gained a third state, and COVERAGE.md and the README both "
+        "describe that. A real miss appearing here must be published."
     )
+    assay = fr["arms"]["assay"]
+    assert assay["n_missed"] == 0 and assay["n_unchecked"] == 1, (
+        f"expected 0 missed and 1 unchecked, got {assay['n_missed']} and "
+        f"{assay['n_unchecked']}"
+    )
+    assert assay["recall_on_checkable"] == 1.0
     assert "inspect_evals/boolq" in coverage
 
 
@@ -724,6 +745,14 @@ def _arms_priced_on(line: str, context: str, arm_res: dict) -> set[str]:
         for arm, rx in arm_res.items():
             if any(its_own(m) for m in rx.finditer(low)):
                 priced.add(arm)
+    # `assay` is a prefix of `assay+auditor`, so a correct row for the agent arm
+    # credited the deterministic arm with the agent's number and read as stale.
+    # When a line names a longer arm that contains a shorter one, the longer name
+    # is the arm being priced -- `| assay+auditor | 43.0 |` is not a claim about
+    # `assay`.
+    for arm in list(priced):
+        if any(other != arm and arm in other and other in priced for other in priced):
+            priced.discard(arm)
     return priced
 
 
@@ -749,7 +778,11 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
     """
     run = json.loads((ROOT / "results" / "full_run.json").read_text())
     current = {name: arm["expected_loss"] for name, arm in run["arms"].items()}
-    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in current}
+    # re.escape: the arm name goes into a pattern, and `assay+auditor`
+    # unescaped compiles to "assa" + one-or-more "y" + "auditor", which
+    # matches nothing -- so the agent arm was invisible to this gate while
+    # `assay` matched inside its name and read a correct row as stale.
+    arm_res = {a: re.compile(rf"(?<![a-z_]){re.escape(a)}(?![a-z_])") for a in current}
     # Prose calls the arm under test "Assay", which is also the tool's own name.
     arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
 
@@ -986,7 +1019,7 @@ def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
     """
     intervals = json.loads((ROOT / "results" / "intervals.json").read_text())
     arms = intervals["arms"]
-    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in arms}
+    arm_res = {a: re.compile(rf"(?<![a-z_]){re.escape(a)}(?![a-z_])") for a in arms}
     arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
 
     def pair_on(scope: str) -> tuple[list[str], bool] | None:
@@ -1287,6 +1320,7 @@ HISTORICAL_DOCS = {
     "docs/PRE-REGISTRATION.md": "a prediction, fixed at the moment it was committed",
     "docs/PRE-REGISTRATION-TAU2.md": "a prediction, fixed at the moment it was committed",
     "docs/PRE-REGISTRATION-NOANSWER.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-STEREOSET.md": "a prediction, fixed at the moment it was committed",
     "docs/VIDEO.md": "the script as recorded, matching a video that cannot be edited",
     "docs/LINEAGE.md": "attribution of borrowed work, not a claim about this suite",
     "docs/SCIENCEAGENTBENCH.md": "an adapter note about an ecosystem not in the corpus",
