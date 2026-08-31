@@ -254,7 +254,7 @@ What is real:
 
 | removed | file | why it was dead |
 |---|---|---|
-| `PromptApprover` | `sandbox.py` | a third `Approver` alongside `DenyAll` and `AutoApprove`, never constructed, never wired to a CLI flag, never mentioned in any doc. An interactive-approval approach that was abandoned. |
+| `PromptApprover` | `sandbox.py` | a third `Approver` alongside `DenyAll` and `AutoApprove`, never constructed, never wired to a CLI flag, never mentioned in any doc. An interactive-approval approach that was abandoned. **Since restored, and the deletion is the more interesting half of the story — see `docs/changelog/98-approval-gate.md`.** It really was dead, so removing it was right on the evidence available. What the sweep could not see is that it was dead *because* `_harbor_corpus.py` had quietly hard-coded `AutoApprove("assay corpus run")`, so the shipped audit path never needed to ask anyone. Deleting the unused approver tidied away the only visible sign that the gate had been bypassed. A dead-code sweep answers "is anything calling this"; it cannot answer "should something have been". |
 | `reap_sessions()` | `sandbox.py` | a second implementation of what `cli._reap` does inline. `cli._reap` is the one that ships, is tested, and supports `--all`. |
 | `Timeout` | `sweep.py` | an exception class never raised and never caught. Left over from the `signal.alarm` approach the module docstring records as replaced. |
 | `rewards_by_group()` | `train/reward.py` | §1.8. |

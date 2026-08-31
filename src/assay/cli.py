@@ -1,4 +1,13 @@
-"""Command line entry point."""
+"""Command line entry point.
+
+`assay audit` runs third-party code, so it asks first. On a terminal you are
+shown the image, the command, every mount, the network state and every resource
+cap, and you answer. With no terminal and no explicit standing approval it
+refuses and exits 3 -- it does not approve on an absent human's behalf.
+
+Exit codes: 0 clean verdict, 1 any other verdict, 2 bad usage, 3 nothing ran
+because nothing was approved.
+"""
 
 from __future__ import annotations
 
@@ -36,7 +45,61 @@ def _selftest(args) -> int:
     return 0
 
 
+def _approval_summary(report) -> list[str]:
+    """One line to stderr saying who let this run, so it is visible without
+    writing a card. On stderr and not stdout so `--json` stays pipeable."""
+    approvals = list(getattr(report, "approvals", []) or [])
+    if not approvals:
+        return []
+    granted = [a for a in approvals if a.get("granted")]
+    refused = len(approvals) - len(granted)
+    who = ", ".join(sorted({a["approver"] for a in approvals}))
+    if not granted:
+        return [
+            f"approval: {refused} request(s) put to {who}, none granted — "
+            "nothing was executed"
+        ]
+    unattended = " — ran UNATTENDED" if report.ran_unattended else ""
+    outside = sum(1 for a in granted if not a.get("contained"))
+    note = f", {outside} of them outside the sandbox" if outside else ""
+    return [
+        f"approval: {len(granted)} granted, {refused} refused by {who}{note}{unattended}"
+    ]
+
+
+#: Printed instead of running anything when nobody can be asked. Exit code 3,
+#: distinct from 2 (bad usage) and 1 (a non-clean verdict), because "the gate
+#: held" and "the environment is defective" are not the same answer.
+NO_APPROVER = """\
+assay audit executes third-party code -- gold solutions, verifier scripts,
+adversarial policies -- and it needs approval before it does. There is no
+terminal here to ask at, so nothing has been executed.
+
+Run it from a terminal and you will be shown the image, the command, every
+mount, the network state and every resource cap before being asked.
+
+To run unattended, say so explicitly:
+
+  assay audit {env} --yes
+  ASSAY_APPROVE_ALL="nightly corpus run" assay audit {env}
+
+Either one is recorded on the Environment Card, so a reader can see the audit
+ran without a human in the loop."""
+
+
 def _audit(args) -> int:
+    from .sandbox import AutoApprove, PromptApprover, current_approver, set_approver
+
+    if args.yes:
+        set_approver(AutoApprove("--yes on the assay command line"))
+    # Asked before the corpus is even built. A gate that only fires on the
+    # first container start would have already unpacked a fixture tree and
+    # opened a Docker session before finding out nobody was there to ask.
+    approver = current_approver()
+    if isinstance(approver, PromptApprover) and not approver.can_ask():
+        print(NO_APPROVER.format(env=args.env), file=sys.stderr)
+        return 3
+
     found = [e for e in entries() if e[0] == args.env]
     if not found:
         print(f"unknown environment: {args.env}", file=sys.stderr)
@@ -50,6 +113,9 @@ def _audit(args) -> int:
         report = audit(adapter, {"challenger_passes": args.passes})
     finally:
         close_adapter(adapter)
+
+    for line in _approval_summary(report):
+        print(line, file=sys.stderr)
 
     if args.card:
         from .card import to_html, to_markdown
@@ -135,6 +201,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--json", action="store_true")
     p.add_argument("--card", metavar="PATH", help="write an Environment Card (.md or .html)")
     p.add_argument("--signed-by", metavar="NAME", help="record a human reviewer on the card")
+    p.add_argument(
+        "--yes", "-y", action="store_true",
+        help="grant a standing approval for everything this audit executes instead "
+             "of being asked for each. This is the escape for CI and scripts, and "
+             "it is not free: the Environment Card records that the audit ran "
+             "unattended and on whose say-so. ASSAY_APPROVE_ALL=\"<reason>\" in the "
+             "environment does the same thing for a process you cannot pass flags to. "
+             "Without either, and with no terminal to ask at, assay audit refuses and "
+             "exits 3 rather than running anything.",
+    )
     p.add_argument(
         "--passes", type=int, default=1, metavar="K",
         help="attack each task K times and report the hit rate. One pass turns a "

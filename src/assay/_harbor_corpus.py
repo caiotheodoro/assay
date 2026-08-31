@@ -100,11 +100,23 @@ def _probe() -> tuple[bool, str]:
 
 
 def corpus_entries() -> list[CorpusEntry]:
+    """Every Harbor environment, each with a sandbox that has to ask first.
+
+    This used to read `DockerSandbox(AutoApprove("assay corpus run"))`, which
+    meant `assay audit harbor/self-graded` started containers under a standing
+    approval nobody granted at run time -- while `sandbox.py` claimed
+    `AutoApprove` "has to be passed explicitly" and every exported trajectory
+    claimed a `DenyAll` default. All three could not be true at once.
+
+    `current_approver()` is resolved when the factory runs, not when the module
+    is imported, so it sees the `--yes` the CLI parsed and the environment the
+    process actually has.
+    """
     from .adapters.harbor import HarborAdapter
-    from .sandbox import AutoApprove, DockerSandbox
+    from .sandbox import DockerSandbox, current_approver
 
     return build_harbor_environments(
-        HarborAdapter, lambda: DockerSandbox(AutoApprove("assay corpus run"))
+        HarborAdapter, lambda: DockerSandbox(current_approver())
     )
 
 

@@ -826,6 +826,13 @@ class WildInspectAdapter(InspectAdapter):
     # -- protocol-aware scoring -------------------------------------------
 
     def _score_with(self, sample, answer: str, target_text: str) -> Score:
+        # Same gate as the corpus adapter, and it has to be repeated here
+        # because this override does not call super(). The wild sweep is the
+        # riskiest caller in the repo -- 246 published tasks, every one of them
+        # somebody else's Python, all of it running uncontained in this process
+        # -- so it is the last place that should have been left out of it.
+        self.authorise_scoring()
+
         from inspect_ai.model import ModelOutput
         from inspect_ai.scorer import Target
         from inspect_ai.solver import TaskState

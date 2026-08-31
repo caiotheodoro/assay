@@ -191,6 +191,16 @@ class BaseAdapter:
     def graded_policies(self, task_id: str) -> dict[str, list[Action]]:
         raise NotSupported("adapter defines no quality-graded policies")
 
+    def approval_log(self) -> list[dict[str, Any]]:
+        """Every execution approval this adapter asked for, granted or refused.
+
+        Empty means it never had to ask -- a fixture adapter is pure Python
+        this repo wrote -- and *not* that a gate was skipped. `runner.audit()`
+        collects this onto the report so the Environment Card can show who said
+        yes to what, and whether anybody was actually there to say it.
+        """
+        return []
+
 
 def close_adapter(adapter: object) -> None:
     """Release whatever an adapter is holding, if it holds anything.

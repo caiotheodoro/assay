@@ -20,6 +20,27 @@ import warnings
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _the_suite_grants_its_own_approval():
+    """The test suite is CI, and CI approves explicitly rather than implicitly.
+
+    Every shipped path now resolves its approver through
+    `sandbox.current_approver()`, whose default is a `PromptApprover` that
+    refuses when there is no terminal -- which is every pytest run. So the
+    suite states its standing approval here, in one place, carrying a reason,
+    exactly as `.github/workflows/ci.yml` does with `ASSAY_APPROVE_ALL`.
+
+    The tests that exercise the gate itself override this inside the test, and
+    the teardown puts normal resolution back so an override cannot leak into
+    the next test.
+    """
+    from assay.sandbox import AutoApprove, set_approver
+
+    set_approver(AutoApprove("assay test suite, tests/conftest.py"))
+    yield
+    set_approver(None)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _sandbox_containers_do_not_outlive_the_suite():
     """Fail loudly-but-not-redly if the suite leaves containers behind.

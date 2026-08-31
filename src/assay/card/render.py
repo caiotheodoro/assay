@@ -13,6 +13,13 @@ environment validity went unchecked for years.
 Absence of evidence is reported as loudly as evidence. The `NOT_APPLICABLE`
 section is not an appendix -- it is the part that stops a card with nothing in
 it being read as a clean bill of health.
+
+The same rule governs the approval section. An audit that ran unattended -- on
+`--yes`, or on `ASSAY_APPROVE_ALL` in a CI job -- is a different artifact from
+one a person watched, and the card has to say which it is before the reader
+gets to the verdict. It also has to say when Assay ran third-party code
+*outside* the container, because that is the part a reader would otherwise
+assume was sandboxed.
 """
 
 from __future__ import annotations
@@ -43,6 +50,80 @@ def _fmt_evidence(evidence: dict) -> str:
             text = text[:157] + "..."
         parts.append(f"`{key}`: {text}")
     return "; ".join(parts)
+
+
+def _approval_section(report: AuditReport) -> list[str]:
+    """Who approved what this audit executed, and whether anyone was there.
+
+    A card that showed only the granted requests would record the gate opening
+    and never it holding, so refusals are listed alongside.
+    """
+    approvals = list(getattr(report, "approvals", []) or [])
+    lines = ["## Execution approval", ""]
+    if not approvals:
+        lines += [
+            "Nothing here needed one. This audit started no container and ran no "
+            "third-party code inside the auditor's process.",
+            "",
+        ]
+        return lines
+
+    granted = [a for a in approvals if a.get("granted")]
+    refused = [a for a in approvals if not a.get("granted")]
+    unattended = [a for a in granted if not a.get("interactive")]
+    standing = sorted({a["approver"] for a in unattended})
+    uncontained = [a for a in granted if not a.get("contained")]
+
+    if standing:
+        lines += [
+            f"**This audit ran unattended.** {len(unattended)} of "
+            f"{len(approvals)} request(s) were granted by a standing approval rather "
+            f"than by a human answering at the time: {', '.join(f'`{s}`' for s in standing)}. "
+            "Nobody saw the request below before it ran.",
+            "",
+        ]
+    elif granted:
+        lines += [
+            f"A human was shown each request in full and approved "
+            f"{len(granted)} of {len(approvals)}.",
+            "",
+        ]
+    if refused and not granted:
+        lines += [
+            f"**Every request was refused and nothing executed.** "
+            f"{len(refused)} request(s) were put to the approver and none was granted, "
+            "so any probe that needed to run something reports ERROR rather than a "
+            "result.",
+            "",
+        ]
+    if uncontained:
+        lines += [
+            f"**{len(uncontained)} of these ran outside the sandbox.** An "
+            "`inspect_ai` scorer is a Python closure and is called in the auditor's "
+            "own process: no capability drop, no network namespace, no wall-clock "
+            "cap. The rows marked `in-process` below are that code.",
+            "",
+        ]
+
+    lines += ["| # | Approver | Answer | Containment | Request |", "|---|---|---|---|---|"]
+    for i, a in enumerate(approvals, start=1):
+        answer = "granted" if a.get("granted") else "**refused**"
+        how = "at the keyboard" if a.get("interactive") else "standing"
+        containment = "docker" if a.get("contained") else "**in-process**"
+        lines.append(
+            f"| {i} | `{a['approver']}` ({how}) | {answer} | {containment} | {a['what']} |"
+        )
+    lines.append("")
+
+    seen: list[str] = []
+    for a in approvals:
+        if a["what"] in seen:
+            continue
+        seen.append(a["what"])
+        lines += ["What the approver was shown:", "", "```"]
+        lines += list(a.get("detail") or [])
+        lines += ["```", ""]
+    return lines
 
 
 def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
@@ -94,6 +175,8 @@ def to_markdown(report: AuditReport, *, signed_by: str | None = None) -> str:
                 lines.append("")
     else:
         lines += ["## Findings", "", "None.", ""]
+
+    lines += _approval_section(report)
 
     not_run = report.by_status(ProbeStatus.NOT_APPLICABLE)
     lines += [

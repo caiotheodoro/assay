@@ -31,6 +31,25 @@ class AuditReport:
     ecosystem: str
     env_version: str
     results: list[ProbeResult] = field(default_factory=list)
+    #: Every execution approval this audit asked for -- who was asked, what
+    #: they were shown, and whether they were a human answering at the time or
+    #: a standing approval left behind by a script.
+    #:
+    #: Deliberately outside `to_dict()`. The content digest identifies the
+    #: probe output; folding an approval record into it would mean two audits
+    #: that found exactly the same defects got different digests because one
+    #: was answered at a keyboard and the other by `--yes`. The card renders it
+    #: from here instead.
+    approvals: list[dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def ran_unattended(self) -> bool:
+        """Whether anything ran on a standing approval rather than a live answer.
+
+        False when nothing needed approval at all: a fixture environment is
+        this repo's own Python and starts no container.
+        """
+        return any(a.get("granted") and not a.get("interactive") for a in self.approvals)
 
     # -- views -------------------------------------------------------------
 
@@ -123,4 +142,10 @@ def audit(adapter: EnvAdapter, ctx: dict[str, Any] | None = None) -> AuditReport
     )
     for probe in all_probes():
         report.results.append(probe.run(adapter, ctx))
+    # After the probes, not before: the approvals worth recording are the ones
+    # the audit actually asked for, and an adapter that opens its container
+    # lazily has not asked for any until a probe drives it.
+    log = getattr(adapter, "approval_log", None)
+    if callable(log):
+        report.approvals = list(log())
     return report
