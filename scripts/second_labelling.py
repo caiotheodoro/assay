@@ -333,6 +333,29 @@ def bundle_for(env_id: str) -> tuple[str, list[str]]:
                 "environment; judge from the provider below alone)\n"
             )
         add(SRC / "_inspect_evals_corpus.py")
+    elif ecosystem == "tau2":
+        # tau2-bench, audited as shipped, and the only corpus entry whose labels
+        # a third party established rather than this repository. The thing a
+        # second reader has to judge is therefore the *mapping* -- how a
+        # task-level "this record differs between two pinned revisions" became a
+        # frozenset[DefectClass] -- not the tasks themselves.
+        #
+        # tau2's own content is deliberately NOT bundled. It is third-party, it
+        # lives in a gitignored cache, and `src/assay/publish.py` exists to stop
+        # this repository redistributing other people's benchmark content. The
+        # reader gets the pinned revisions and the derivation instead, which is
+        # what the label actually rests on.
+        parts.append(
+            f"This environment is the published tau2-bench domain '{variant}', "
+            "audited as shipped. Its labels are externally derived: a task counts "
+            "as a positive iff its record differs between two pinned revisions, "
+            "and the files below are how that diff was turned into defect classes. "
+            "tau2's own task content is not reproduced here -- it is third-party "
+            "and this repository does not redistribute it.\n"
+        )
+        add(SRC / "tau2_truth.py")
+        add(SRC / "_tau2_corpus.py")
+        add(SRC / "adapters" / "tau2.py")
     else:
         raise SystemExit(f"no source bundle rule for ecosystem {ecosystem!r}")
 
