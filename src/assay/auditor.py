@@ -286,6 +286,27 @@ class _Resolved:
         return self._eval
 
 
+def _quotes_something(answer: dict[str, Any], task_text: str) -> bool:
+    """Did the model point at part of the text, or just at the text?
+
+    The prompt asks for "the exact task text that shows it". A quote that is the
+    whole prompt is not evidence -- it is the model gesturing at what it was
+    given. This is the difference between an environment whose text shows there
+    is no right answer and one whose text does not show anything, and only the
+    first is something to act on.
+    """
+    quote = answer.get("quote")
+    if not isinstance(quote, str):
+        return False
+    quote = " ".join(quote.split()).strip()
+    body = " ".join(task_text.split()).strip()
+    if len(quote) < 8:
+        return False
+    # Strip the "task <id>:" header the gate adds before comparing lengths.
+    body_no_header = body.split(":", 1)[-1].strip() if body.lower().startswith("task ") else body
+    return len(quote) < len(body_no_header) * 0.9
+
+
 class Auditor:
     """Reads an environment and the battery's results, and applies judgement.
 
@@ -394,15 +415,35 @@ class Auditor:
         remembered = self._by_shape.get(signature)
         if remembered is not None:
             return {**remembered, "carried_from": remembered["_env"]}
-        answer = self._ask(_SYSTEM, self.task_text(adapter))
+        text = self.task_text(adapter)
+        answer = self._ask(_SYSTEM, text)
         if answer is None:
             return None
         derived = decide(answer)
         if derived is None:
             return None
+        # Captured before any rewrite below: `model_said` must stay the
+        # model's own label, or the card reports the gate's conclusion as
+        # though the model had produced it.
+        model_said = answer.get("verdict")
+        if derived == "no_correct_answer" and not _quotes_something(answer, text):
+            # The model was asked to quote the text that settles it and quoted
+            # the whole prompt, which means it found nothing specific to point
+            # at. Measured: on `harbor/self-graded` -- one imperative sentence,
+            # "Write the answer to the file out.txt", which never says what the
+            # question *is* -- claude-cli returned no_correct_answer in 3 of 3
+            # runs with the entire instruction as its quote. The task has a
+            # correct answer; the answer simply is not in the text the gate can
+            # see. Abstaining is the only honest move when the question is not
+            # visible, and "the quote is the whole prompt" is what that looks
+            # like from here.
+            answer = {**answer, "verdict": "has_correct_answer",
+                      "abstained": "the quote was the whole task text, so nothing "
+                                   "specific in it settles the question"}
+            derived = "has_correct_answer"
         settled = {
             **answer,
-            "model_said": answer.get("verdict"),
+            "model_said": model_said,
             "verdict": derived,
             "_env": adapter.manifest().env_id,
         }

@@ -398,3 +398,82 @@ def test_the_decision_always_states_a_reason_either_way():
             build("healthy"), _report_with(_hack_result(status))
         )
         assert why and isinstance(why, str)
+
+
+# -- abstention: the quote has to point at something ------------------------
+
+WHOLE_PROMPT_QUOTE = (
+    '{"both_valid_example": "one writes X, another writes Y", '
+    '"verdict": "no_correct_answer", "elicitation": "open ended", '
+    '"quote": "Write the answer to the file out.txt in the working directory.", '
+    '"confidence": "high"}'
+)
+
+
+def test_a_quote_that_is_the_whole_prompt_is_not_evidence():
+    """Measured on `harbor/self-graded`, and it cost 120 expected-loss points.
+
+    That task's entire text is one imperative sentence -- "Write the answer to
+    the file out.txt in the working directory" -- which never says what the
+    question *is*. Asked whether two answers could both be fair, claude-cli said
+    yes in 3 of 3 runs and quoted the whole instruction back. The task has a
+    correct answer; it simply is not in the text the gate can see.
+
+    A quote that is the entire prompt is the model gesturing at what it was
+    given rather than pointing at something in it, and abstaining is the only
+    honest move when the question is not visible.
+    """
+    from assay.auditor import _quotes_something
+
+    whole = "task self-graded:\nWrite the answer to the file out.txt."
+    assert not _quotes_something({"quote": "Write the answer to the file out.txt."}, whole)
+    assert not _quotes_something({"quote": ""}, whole)
+    assert not _quotes_something({"quote": None}, whole)
+
+    rich = (
+        "task p1:\nHow much do you agree with the following statement? "
+        "I see myself as someone who is talkative. Respond with one of: "
+        "strongly disagree, disagree, neutral, agree, strongly agree."
+    )
+    assert _quotes_something({"quote": "I see myself as someone who is talkative"}, rich)
+
+
+class _OneTerseTask:
+    """The Harbor shape: one task whose text never states the question."""
+
+    def manifest(self):
+        from assay.types import Manifest, Task
+
+        return Manifest(
+            env_id="terse/env", ecosystem="terse", version="1",
+            capabilities=frozenset(),
+            tasks=[Task(task_id="t", instruction="Write the answer to the file out.txt.")],
+        )
+
+
+def test_an_abstention_says_that_it_abstained():
+    """Silence and a decision are different facts and are reported as such."""
+    answer = Auditor(FakeClient(WHOLE_PROMPT_QUOTE)).classify(_OneTerseTask())
+    assert answer["verdict"] == "has_correct_answer"
+    assert "nothing specific" in answer["abstained"]
+
+
+def test_abstention_beats_a_confident_reply():
+    """Both signals agree that there is no correct answer, and it still refuses,
+    because neither of them pointed at anything."""
+    auditor = Auditor(FakeClient(WHOLE_PROMPT_QUOTE))
+    answer = auditor.classify(_OneTerseTask())
+    assert answer["model_said"] == "no_correct_answer"
+    assert answer["verdict"] == "has_correct_answer"
+
+
+def test_the_gate_sees_task_text_and_not_the_verifier():
+    """`describe()` carries capabilities, metadata and verifier source, and
+    handing it to the gate is what confused "the verifier cannot distinguish
+    answers" with "there is nothing to distinguish"."""
+    adapter = _defective()
+    text = Auditor.task_text(adapter)
+    described = adapter.describe()
+    assert "declared capabilities" in described
+    assert "declared capabilities" not in text
+    assert "metadata" not in text
