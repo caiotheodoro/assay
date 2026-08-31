@@ -36,7 +36,7 @@ than buried:
   the part that matters.
 - **No test needs Ollama.** With `brew services stop ollama` the suite still
   passes with nothing skipped. (The count quoted here was 275 collected, measured
-  before the suite grew to 593; the *claim* — that nothing is
+  before the suite grew to 594; the *claim* — that nothing is
   model-gated — was re-checked, the number was not.) The model path is exercised by
   `scripts/challenger_ablation.py`, not by pytest, and that is where you see it
   degrade.

@@ -469,13 +469,22 @@ def test_the_suite_size_the_docs_advertise_is_the_suite_size_that_ran(request):
         doc_path = ROOT / doc
         if not doc_path.exists():
             continue
+        retired = False
         for line in doc_path.read_text().splitlines():
             # A heading can retire everything under it. docs/RUBRIC.md keeps its
             # superseded 74/100 scorecard in full, and every number below that
             # heading is a record of what was true then.
+            #
+            # Scoped to the section, not the rest of the file. This was `break`,
+            # which abandoned every remaining line in the document -- 82% of
+            # docs/RUBRIC.md sat unchecked behind one "Historical snapshot"
+            # heading, including live claims in later sections. A gate with a
+            # silent hole is worse than no gate, because it is trusted.
             low = line.lower()
-            if low.startswith("#") and ("historical" in low or "superseded" in low):
-                break
+            if low.startswith("#"):
+                retired = "historical" in low or "superseded" in low
+            if retired:
+                continue
             if any(marker in low for marker in HISTORICAL):
                 continue
             for number in set(claim.findall(line)):
