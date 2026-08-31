@@ -104,17 +104,16 @@ verified from the upstream project's own code with Assay out of the loop. Write-
 disclosures: [`docs/disclosures/`](docs/disclosures/README.md).
 
 **`inspect_evals` 0.18.0 — `paws` scores a constant string at 100%.** It asks for `Yes` or `No` and
-scores with `includes()`, a case-insensitive **substring** test against those literal targets, so
-`"yesno"` contains both labels and scores **8000/8000 = 100%**. The looseness is one-sided, which is
-worse than symmetric: 4464 of 8000 items have the target `No`, so `"I don't know"`, `"Not sure"` and
-`"None of the above"` are credited on 56% of the benchmark for free — the WebArena substring-match
-failure from the table above, live in a package people train and publish against.
+scores with `includes()`, a case-insensitive **substring** test, so `"yesno"` contains both labels
+and scores **8000/8000 = 100%**. The looseness is one-sided, which is worse than symmetric: 4464 of
+8000 items have the target `No`, so every hedging answer is credited on 56% of the benchmark for
+free — the WebArena substring-match failure from the table above, live in a package people train
+and publish against.
 
 **`openenv` — `textarena_env` accepts a seed and ignores it.** Six calls to `reset(seed=1234)`
 return six different secret Wordle words: `earth, north, south, bread, tight, stage`. The signature
 takes `seed`, then calls `self._ta_env.reset(num_players=...)` without it. gymnasium 1.3.0 raises on
-exactly this shape; OpenEnv has no equivalent check. The fix exists in one ecosystem, and the
-ecosystem people are adopting for RL environments does not have it.
+exactly this shape; OpenEnv has no equivalent check.
 
 **Assay found one of the two; a human found the other.** It flagged 14 of 25 sampled `paws` items as
 `REWARD_HACKABLE` but not the `"yesno"` case — hand triage did — and that split is pinned as a test
@@ -135,12 +134,12 @@ intervals: **giving the model a tool loop bought nothing measurable.** Reading a
 auditing it, and that is now a row rather than an argument.
 
 **2. Two figures in that table are weaker than they look.** The incumbent's 4.0% recall is a property
-of a *model*: `src/assay/baselines/structural.py` reimplements the two checkers, because the real
+of a *model* — `src/assay/baselines/structural.py` reimplements the two checkers, because the real
 ones cannot be pointed at a `ToyEnv`, an `inspect_ai` task or a Harbor container at all, and
-`NONDETERMINISM` is the only class it can return — run for real on five purpose-built shims they
+`NONDETERMINISM` is the only class it can return; run for real on five purpose-built shims they
 detect 1 of 4 ([`results/real_check_env.json`](results/real_check_env.json)). And Assay's precision
 of 1.000 is the modal run: across six full-corpus runs `harbor/broken-gold` reported a spurious
-`NONDETERMINISM` **once**, so it ships as a rate rather than a diagnosis.
+`NONDETERMINISM` **once**, so it ships as a rate, not a diagnosis.
 
 **3. The corpus is 4 of 26 genuinely third-party, and that is the ceiling on all of it.**
 `flag_everything`'s loss is exactly `Σ (14 − |planted|)`, so **every clean environment added moves
@@ -293,15 +292,15 @@ under-specification — Assay reads verifiers, and two thirds of what τ-bench n
 
 **ScienceAgentBench — 0 of 12, by BenchGuard's own scorer** (`eval/metrics.py` over verdicts from
 their `eval/match.py`; nothing here recomputes it). The honest reading is not that Assay finds
-instruction defects hard — it is that **Assay could not run at all on this benchmark, and said so
-twelve times**: all 12 probes returned `NOT_APPLICABLE` with a reason, verdict `UNVERIFIED`. SAB is a
-static task-definition set and these probes need an executable environment with a separable verifier,
-so the two tools are not competitors here and the zero says so more plainly than any argument. One
-thing fell out of running their scorer — **nine of the twelve defects are already fixed** in the
-split SAB tells you to use, so any tool's SAB recall number is uninterpretable without naming the
-split ([`docs/SCIENCEAGENTBENCH.md`](docs/SCIENCEAGENTBENCH.md)). So the blind spot is now measured
-twice, on two independently labelled sets: **Assay does not detect instruction defects, because
-"this instruction is ambiguous" is a judgement and nothing here scores with a judge.** Published as a
+instruction defects hard — it is that **Assay could not run at all here, and said so twelve times**:
+all 12 probes returned `NOT_APPLICABLE` with a reason, verdict `UNVERIFIED`, because SAB is a static
+task-definition set and these probes need an executable environment. The two tools are not
+competitors, and the zero says so more plainly than any argument. One thing fell out of running their
+scorer: **nine of the twelve defects are already fixed** in the split SAB tells you to use, so any
+tool's SAB recall number is uninterpretable without naming the split
+([`docs/SCIENCEAGENTBENCH.md`](docs/SCIENCEAGENTBENCH.md)). So the blind spot is measured twice, on
+two independently labelled sets: **Assay does not detect instruction defects, because "this
+instruction is ambiguous" is a judgement and nothing here scores with a judge.** Published as a
 limitation before it was measured; now a number.
 
 ## The probes
@@ -337,35 +336,30 @@ The category is not new and Assay does not claim it is. Static auditors read a b
 ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)), 219 flaws across 10 agent benchmarks, and
 [arXiv 2606.16062](https://arxiv.org/abs/2606.16062), whose gold-sanity gate on SWE-bench Verified
 found **28.5% of 49 tasks hackable**. Partial-input baselines, reward-model overoptimization and
-separability-as-a-metric are ported rather than invented. Papers, numbers and the head-to-head
-against BenchGuard's own scorer: [`docs/RESULTS.md`](docs/RESULTS.md); what predates this repo:
-[`docs/LINEAGE.md`](docs/LINEAGE.md), cited as lineage and not vendored. An earlier version of this
-section mis-cited someone else's paper — [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) §16.
-
-**Four things Assay does that those tools do not:** the **bundle** — nine probe families in one
-report under one severity-weighted expected-loss metric; **expected loss rather than a defect
-count**, including the cost profiles under which it loses to flagging everything; **absence of
-evidence reported as loudly as evidence** — every card names the probes that could not run and why,
-which on `openenv/textarena-wordle` is 11 of 12; and **one protocol across four ecosystems** behind
-a single adapter interface. A learned adversarial Challenger was trained and **did not work**; it is
-listed as an attempt, not a contribution.
+separability-as-a-metric are ported, not invented. What Assay adds is the **bundle** — nine families
+in one report under one expected-loss metric — plus **pricing rather than counting** defects, and
+**absence of evidence reported as loudly as evidence**. Papers, numbers, the head-to-head against
+BenchGuard's own scorer and the full novelty claim: [`docs/RESULTS.md`](docs/RESULTS.md); what
+predates this repo: [`docs/LINEAGE.md`](docs/LINEAGE.md), cited as lineage and not vendored. An
+earlier version of this section mis-cited someone else's paper —
+[`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) §16.
 
 ## Main failure mode
 
-**A Challenger that could not speak, reported as a Challenger that found nothing.** An agent has
-more ways to produce no output than a program does: the model refuses, every reply is unparseable,
-the budget runs out mid-plan, the CLI is rate-limited. All of those arrive at the probe as an empty
+**A Challenger that could not speak, reported as a Challenger that found nothing.** An agent has more
+ways to produce no output than a program does: the model refuses, every reply is unparseable, the
+budget runs out mid-plan, the CLI is rate-limited. All of those arrive at the probe as an empty
 attempt list, indistinguishable from a genuine "I attacked this environment and it held" — which
-means **a card can read `VALID` because the auditor was silent**. That is the single worst thing
-this tool can do, because it is the failure the tool exists to catch, happening inside the tool.
+means **a card can read `VALID` because the auditor was silent**. That is the single worst thing this
+tool can do, because it is the failure the tool exists to catch, happening inside the tool.
 
-Two routes are closed: `ChallengerExhausted(reason, history)` is raised instead of an empty list
-and caught in `src/assay/probes/hackability.py`, so the card says `NOT_APPLICABLE` with the reason
-rather than staying quiet; and `hackability.py` reads `challenger_passes` from context, so an audit
-can run the Challenger more than once. This section described both as open after they had closed —
+Two routes are closed: `ChallengerExhausted(reason, history)` is raised instead of an empty list and
+caught in `src/assay/probes/hackability.py`, so the card says `NOT_APPLICABLE` with the reason rather
+than staying quiet; and `hackability.py` reads `challenger_passes` from context, so an audit can run
+the Challenger more than once. This section described both as open after they had closed —
 [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) §17. What stays open is the shape of the problem: a
-silent auditor is indistinguishable from a clean environment unless every route to silence is made
-to say so, and only the routes someone has thought of are covered.
+silent auditor is indistinguishable from a clean environment unless every route to silence is made to
+say so, and only the routes someone has thought of are covered.
 
 ## Hot take
 
