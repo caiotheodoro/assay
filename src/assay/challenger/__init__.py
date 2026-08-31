@@ -16,6 +16,7 @@ __all__ = [
     "ScriptedChallenger",
     "CompositeChallenger",
     "PromptedChallenger",
+    "PolicySynthesisChallenger",
     "GRPOChallenger",
     "action_template",
     "action_vocabulary",
@@ -28,6 +29,10 @@ def __getattr__(name: str):
         from .prompted import PromptedChallenger
 
         return PromptedChallenger
+    if name == "PolicySynthesisChallenger":
+        from .synthesis import PolicySynthesisChallenger
+
+        return PolicySynthesisChallenger
     if name == "GRPOChallenger":
         from .grpo import GRPOChallenger
 
