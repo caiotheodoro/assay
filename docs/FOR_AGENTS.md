@@ -14,7 +14,7 @@
   "result": "assay 43.0 vs flag_everything 394.0, saved 351.0 [263, 404] separated, wins 4/4 cost profiles, separates 4/4",
   "margin_that_is_not_detection": "77.0 of the 351.0 is arithmetic — two defect classes and two environments added to the floor, not detection. Against the taxonomy and corpus this was first measured on the margin is 274.0 (docs/PRE-REGISTRATION-TAU2.md)",
   "cost_crossover": "1173.0h vs shipped 120h — survives 878% error",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (760 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (765 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 3.8s vs 261.7s (results/scripted_floor.json))",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
@@ -108,7 +108,7 @@ actually stopping things, and a cost table. One command per result:
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 760 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 765 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # headline: 28 envs, 54 defects, 22s, no GPU/key
 uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code; asks before it runs anything, add --yes to skip the prompt
 ```
@@ -252,7 +252,7 @@ about this repository, not as a comparison against work not seen.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 760 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 765 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
@@ -261,7 +261,7 @@ uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html;
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **760 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **765 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a
