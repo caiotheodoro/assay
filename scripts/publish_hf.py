@@ -1631,10 +1631,24 @@ def push(repo: str, repo_type: str, path: Path, message: str, sdk: str | None = 
         + (["--space-sdk", sdk or "gradio"] if repo_type == "space" else []),
         check=True,
     )
-    subprocess.run(
-        ["hf", "upload", repo, str(path), ".", "--type", repo_type,
-         "--commit-message", message],
-        check=True,
+    # `hf upload` calls `/api/repos/create` again on its way in, and has no
+    # `--space-sdk` to pass, so it asks for a **gradio** Space every time. On a
+    # free account that is an HTTP 402 -- for a repo that already exists, as a
+    # static Space, created by the line directly above. The upload never
+    # started; the billing check fires on the SDK in the request before
+    # anything looks at whether the repo is there.
+    #
+    # `upload_folder` is what that CLI command wraps, minus the create. The
+    # create was always redundant here -- this function does it explicitly, and
+    # explicitly is the only way to get the SDK right -- so the fix is to drop
+    # the second one rather than to route around it.
+    from huggingface_hub import HfApi
+
+    HfApi().upload_folder(
+        repo_id=repo,
+        repo_type=repo_type,
+        folder_path=str(path),
+        commit_message=message,
     )
     subprocess.run(
         ["hf", "repos", "tag", "create", repo, TAG, "--type", repo_type,
