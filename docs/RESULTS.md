@@ -17,14 +17,21 @@ artifacts disagree. Corrections this repository has had to publish are in
 and no API key.
 
 ```bash
-uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s warm
+uv run --extra tau2 python scripts/tau2_fetch.py                     # the two pinned snapshots, ~1 min
+ASSAY_APPROVE_ALL="reproduction" uv run --extra adapters --extra sweep --extra openenv --extra tau2 \
+  python scripts/full_run.py --out /tmp/check.json                   # 22s warm
 ```
 
-**Both extras are load-bearing.** `--extra adapters` alone omits `openenv` and
-`inspect_evals`, so it audits fewer environments than the published table reports.
-The run says so when it happens; read the degradation line before the table.
-Without the Docker daemon the run still completes, on 19 environments, and says
-which ecosystem it dropped and why.
+**All four extras are load-bearing, and dropping one flatters the result.**
+`--extra adapters` alone omits `openenv` and `inspect_evals`; without `--extra
+sweep` the two `inspect_evals` environments go, including `boolq`, the single
+documented miss; without `--extra tau2` the two τ² domains go, and with them all
+three spurious findings. The environments a missing provider takes are the ones
+Assay does worst on, so a reduced run produces a **better** number and exits 0 —
+which is why `full_run.py` now refuses it outright. Without the Docker daemon the
+run still completes, on the 23 environments
+[`results/corpus_splits.json`](../results/corpus_splits.json) calls `no-harbor`,
+and says which ecosystem it dropped and why.
 
 ---
 
@@ -162,8 +169,9 @@ two τ² environments drop out and the script recomputes every split on 26.
 
 `inspect_evals/paws` and `inspect_evals/boolq` were added under a pre-registration
 committed **before** the code that moved these numbers (`docs/PRE-REGISTRATION.md`,
-commit `d3da87c`), because `flag_everything`'s loss is `Σ (14 − |planted|)` and a
-corpus can be grown into a better headline without anyone writing a false number.
+commit `d3da87c`), because `flag_everything`'s loss was `Σ (14 − |planted|)` at that
+revision — it is `Σ (16 − |planted|)` now — and a corpus can be grown into a better
+headline without anyone writing a false number.
 Every prediction held: the floor went 290.0 → 316.0, Assay 240.0 → 280.0, and the
 margin narrowed from 50.0 to 36.0. (Those were the numbers before the two Harbor
 misses were closed; the table above is after.) `paws` was detected; `boolq` was
@@ -192,10 +200,15 @@ probe in the loop, pinned in `tests/test_harbor_ground_truth.py`.
 **One label changed, and it flattered us, so here is the number both ways.** Closing
 the misses showed that both environments also pay full marks to an input-ignoring
 policy, which is a trivial-floor breach by definition and was missing from their
-ground truth. Correcting it removes two false positives. With the corrected labels
-Assay scores **40.0 at precision 1.000**; with the original labels, **42.0 at
-precision 0.959**. **The margin over the floor is 351.0 either way** — the result
-does not depend on the relabelling, which is why the relabelling is defensible.
+ground truth. Correcting it removes two false positives. Measured at the
+26-environment revision where the relabelling landed, Assay scored **40.0 at
+precision 1.000** with the corrected labels and **42.0 at precision 0.959** with the
+original ones — a 2.0 difference against a margin two orders of magnitude larger, so
+the result does not depend on the relabelling, which is why the relabelling is
+defensible. On the corpus published today Assay scores **43.0 at precision 0.9464**
+and the margin over the floor is **351.0**; the counterfactual was not re-run at 28
+environments and no artifact in `results/` carries it, so it is quoted as the
+historical figure it is rather than restated in the present tense.
 
 The single remaining miss is `inspect_evals/boolq`, and it is external.
 
@@ -264,8 +277,13 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 | 2000 | 669.67 | 394.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
-anchor, so Assay's loss is linear in `C` while `flag_everything` never misses and does
-not move with `C` at all. They cross at `120 × 394 / 43 = 1173.0`.
+anchor, so Assay's loss is **affine** in `C` — the single miss scales with it and the
+three false alarms do not, giving `assay(C) = C/3 + 3` — while `flag_everything` never
+misses and does not move with `C` at all. They cross at `3 × (394 − 3) = 1173.0`, which
+is `results/cost_sensitivity.json`'s `exact_crossover_critical_cost`. **The ratio
+`120 × 394 / 43` stood here and it is not the solve**: it gives 1099.53, because it
+prices Assay's three constant false alarms as though they scaled too. The affine form
+is why the sweep table's rows read 136.33 and 269.67 rather than 143.33 and 286.67.
 
 **The shipped value is 120. The crossover is 1173.0.** That margin was **21%** before
 the two Harbor misses were closed — the crossover sat at 145 against the same shipped
@@ -318,8 +336,12 @@ becomes the floor: on an imbalanced 16-class multilabel problem, flagging at bas
 buys recall 0.111 at the cost of 41 false alarms and 48 misses, which is worse than
 flagging everything under every cost-asymmetric profile and worse than flagging nothing
 under `flat`. Adding a harder-sounding baseline did not make the floor harder, and that
-is published as the result rather than as a reason not to have run it. Full table, per
-profile, in `results/baselines.json`.
+is published as the result rather than as a reason not to have run it. The figures above
+are read from `results/full_run.json` and `results/intervals.json`, which are the
+current corpus. **`results/baselines.json` is not**: it still records
+`n_defect_classes: 14`, `n_environments: 24`, `n_planted_defects: 46`, so its per-profile
+table and its closed-form column are the 24-environment measurement and are cited here
+only as that. Regenerating it is outstanding work, noted rather than done quietly.
 
 ### The one interval whose shape decides its own answer
 
@@ -405,7 +427,9 @@ repertoire:*
 | prompted, `claude-cli` | **found** | **1.00** | 10 | 261.7s |
 | **scripted *(now)*** | **found** | **1.00** | 6 | **3.8s** |
 
-Read from `results/challenger_ablation.json`. A 10-turn budget; "scored attempts" counts
+The first three rows are read from `results/challenger_ablation.json`; the fourth —
+`scripted (now)` — is `results/scripted_floor.json`, which is a different run against a
+different repertoire and is why the row is labelled. A 10-turn budget; "scored attempts" counts
 the turns that parsed into an action. Wall clock is with the Ollama model already
 resident; the first call after a model swap costs another two to three minutes.
 

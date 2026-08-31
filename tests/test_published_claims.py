@@ -120,7 +120,14 @@ def test_the_readme_does_not_advertise_a_signed_card():
 
 
 def test_the_quickstart_command_produces_the_advertised_corpus():
-    """--extra adapters alone omits openenv and gives 22 environments, not 24."""
+    """--extra adapters alone omits openenv and audits fewer than the published 28.
+
+    The docstring said "22 environments, not 24" from the corpus this was written
+    on. `test_every_documented_headline_command_carries_the_extras_it_needs` is
+    the one that checks all four extras against the current corpus; this one is
+    the narrower, older assertion and is kept because it reads every `uv run`
+    line in the README rather than only the ones matching a fuller pattern.
+    """
     for line in README.splitlines():
         if "scripts/full_run.py" in line and "uv run" in line:
             assert "--extra openenv" in line, line
@@ -863,7 +870,12 @@ def test_every_documented_headline_command_carries_the_extras_it_needs():
     """
     needed = {"adapters", "sweep", "openenv", "tau2"}
     pattern = re.compile(r"uv run((?: --extra [\w-]+)+) python scripts/full_run\.py")
-    live = ["README.md", "AGENTS.md", "docs/FOR_AGENTS.md", "docs/REPRODUCTION.md"]
+    # docs/RESULTS.md was not on this list and printed the two-extra command
+    # directly under "28 environments, 54 planted defects" -- the same flattering
+    # 24/48 run this test was written for, in the document the README sends a
+    # reader to for "every number, with its caveats".
+    live = ["README.md", "AGENTS.md", "docs/FOR_AGENTS.md", "docs/REPRODUCTION.md",
+            "docs/RESULTS.md"]
     bad = []
     for name in live:
         path = ROOT / name

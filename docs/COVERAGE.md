@@ -178,7 +178,9 @@ move a `verifier_integrity` DEFECT to `NOT_APPLICABLE` — never to PASS, never
 into another family — and on the 20-environment set in
 `results/semantic_gate.json` — 2 with no correct answer, 18 with one, three runs
 each per backend — a `claude-cli:sonnet` backend withholds the `personality_BFI`
-verdict in **6 of 6 runs with 0 false overrides in 54**. It is **off by default**
+verdict in **3 of 3 runs**, and `toy-triage/preference`, the other environment with
+no correct answer, in 3 of 3 as well — **6 of 6 positive runs, with 0 false
+overrides in 54 negative ones**. It is **off by default**
 and changes none of the headline numbers. `qwen3:8b` matches it on the positives
 and pays **6 false overrides in 54**, which is the worse failure: a false override
 hides a real defect, where a miss only leaves one reported. That is why

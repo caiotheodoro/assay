@@ -89,7 +89,7 @@ ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
 # 2. Recall. The scripted Challenger finds 14 of 25 paws items and cannot reach
 #    the constant-string exploit a human found by hand. A synthesising one can.
 ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
-  python scripts/policy_synthesis.py --k 1 --arms claude   # scripted 14/25, synthesis 24/25
+  python scripts/policy_synthesis.py --k 1 --arms claude   # scripted 14/25, synthesis 24-25/25
 
 # 3. The gate from the CLI, in ten seconds, on a corpus environment: it consults
 #    the model and correctly declines, because this one has a correct answer.
@@ -321,8 +321,12 @@ is an affine solve rather than a ratio. So sweep it ([`results/cost_sensitivity.
 | flag_everything | 394.0 | 394.0 | **394.0** | 394.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
-The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
-misses and does not move with `C` at all, so they cross at `120 × 394 / 43 = 1173.0`. **The shipped
+The crossover is exact, not bisected. Assay's loss is **affine** in `C` — its one miss scales, its
+three false alarms do not, so `assay(C) = C/3 + 3` — while `flag_everything` never misses and does
+not move with `C` at all. They cross at `3 × (394 − 3) = 1173.0`. **The ratio `120 × 394 / 43` was
+printed here and it is not the solve: it gives 1099.53**
+([`docs/changelog/113-the-crossover-was-a-ratio-not-a-solve.md`](docs/changelog/113-the-crossover-was-a-ratio-not-a-solve.md)
+fixed the artifact and left the formula standing). **The shipped
 value is 120. The crossover is 1173.0.** The headline survives a **878% error** in a constant nobody
 derives — a margin that was 21% before the two Harbor misses were closed and 685% before the
 taxonomy grew, stated plainly because the earliest number was the sharpest criticism of this work and
@@ -392,8 +396,10 @@ variants — the both-labels-at-once class, reached from the task text. Three ru
 because one run of a stochastic attacker reported as a capability is the error this repo is
 about: the spread is 24–25 and the direction is not in doubt. `qwen3:8b` reaching 0 makes
 this a capability threshold rather than a property of the design. **Nothing here is scored by a model:**
-`self_report` records what the challenger claimed and is used for nothing, and it disagreed with
-the deterministic scorer zero times out of 24. The uncomfortable half is that blind scores 23–24
+`self_report` records what the challenger claimed and is used for nothing. On `claude-cli:sonnet` it
+disagreed with the deterministic scorer **0 times in 74 recorded claims**; on `qwen3:8b` it disagreed
+**75 times in 75**, claiming success on every attempt the probe scored as a miss — which is the
+argument for recording it and scoring none of it. The uncomfortable half is that blind scores 23–24
 against 24–25 — nearly all of the win is reading the task, not the verifier
 ([`docs/changelog/100-policy-synthesis.md`](docs/changelog/100-policy-synthesis.md)).
 
@@ -524,7 +530,7 @@ The category is not new and Assay does not claim it is. Static auditors read a b
 ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)), 219 flaws across 10 agent benchmarks, and
 [arXiv 2606.16062](https://arxiv.org/abs/2606.16062), whose gold-sanity gate on SWE-bench Verified
 found **28.5% of 49 tasks hackable**. Partial-input baselines, reward-model overoptimization and
-separability-as-a-metric are ported, not invented. What Assay adds is the **bundle** — nine families
+separability-as-a-metric are ported, not invented. What Assay adds is the **bundle** — eleven families
 in one report under one expected-loss metric — plus **pricing rather than counting** defects, and
 **absence of evidence reported as loudly as evidence**. Papers, numbers, the head-to-head against
 BenchGuard's own scorer and the full novelty claim: [`docs/RESULTS.md`](docs/RESULTS.md); what
