@@ -12,22 +12,36 @@ until you know what missing it costs against what a false alarm costs.
 
 | Arm | Expected loss (`research-run`) | 95% CI |
 |---|---|---|
-| `flag_nothing` | 3072.0 | [1984, 4288] |
-| `check_env` — the incumbent linter | 3056.0 | [1960, 4272] |
-| `flag_everything` — **the floor that had to be beaten** | 314.0 | [295, 331] |
-| **Assay** | **40.0** | **[0, 120]** |
+| `flag_nothing` | 3232.0 | [2128, 4456] |
+| `check_env` — the incumbent linter | 3216.0 | [2104, 4448] |
+| `flag_everything` — **the floor that had to be beaten** | 394.0 | [375, 411] |
+| **Assay** | **43.0** | **[0, 125]** |
 
-Assay saves **274.0 against `flag_everything`, 95% CI [186, 326] — separated.** Wins 4 of 4 cost
-profiles, separates on 3. 26 environments, 50 planted defects, 10,000 bootstrap resamples over
-environments, seed 11. **Read the arms in the right order:** beating `check_env` proves almost
-nothing (16.0 saved of `flag_nothing`'s 3072.0, on an interval including zero). The arm that had to
+Assay saves **351.0 against `flag_everything`, 95% CI [263, 404] — separated.** Wins 4 of 4 cost
+profiles and now separates on all 4. 28 environments, 54 planted defects, 10,000 bootstrap resamples
+over environments, seed 11. **Read the arms in the right order:** beating `check_env` proves almost
+nothing (16.0 saved of `flag_nothing`'s 3232.0, on an interval including zero). The arm that had to
 be beaten is `flag_everything` — it catches every defect by construction, and for most of this
 project's life Assay did not beat it.
 
+**Two of those numbers moved for reasons that are not detection, and both are in the table above.**
+The taxonomy went from 14 defect classes to 16 in
+[`docs/changelog/97-dead-zone-probes.md`](docs/changelog/97-dead-zone-probes.md), which hands
+`flag_everything` one free false alarm per environment per class and nothing to a truthful detector
+— **+52 on its own**, banked here for the first time. And two τ² environments were added under
+[`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md), worth another **+28** to the floor
+against **+3** to Assay. Of the 351.0, **77.0 is arithmetic and 274.0 is the detector.**
+
 ```bash
 uv sync --extra dev && uv run pytest -q                              # the demo: every planted defect, caught
-uv run --extra adapters --extra openenv python scripts/full_run.py   # the headline, 22s
+uv run --extra tau2 python scripts/tau2_fetch.py                     # the two pinned tau2 snapshots, ~1 min
+ASSAY_APPROVE_ALL="reproduction" \
+  uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py   # the headline
 ```
+
+**Skip the fetch and you get 26 environments, not 28.** Neither τ² snapshot is redistributed here, so
+without them the `tau2` provider reports itself unavailable, the corpus is two environments smaller
+and every arm's loss falls — `full_run.py` prints the reason rather than shrinking quietly.
 
 ### Start here
 
@@ -125,41 +139,62 @@ but only after two bugs in Assay's own determinism probe were fixed.
 Every arm, profile and caveat is in [`docs/RESULTS.md`](docs/RESULTS.md). Three things there change
 how the headline table above should be read.
 
-**1. The two LLM arms are the brief's own simple baseline, and they lose to flagging at base rates.**
-`direct_prompt` reads everything a careful human reviewer could read without executing anything;
-`agent_with_tools` gets the same plus a tool loop it can drive. They score **2658.0 and 2654.0**
-against `stratified_random`'s 1789.0 — separated, not merely observed: stratified random saves
-**869.0, 95% CI [201, 1627]** over `direct_prompt`. The two arms land 4.0 apart, far inside their own
-intervals: **giving the model a tool loop bought nothing measurable.** Reading an environment is not
-auditing it, and that is now a row rather than an argument.
+**1. The two LLM arms are the brief's own simple baseline, and they are now indistinguishable from
+flagging at base rates.** `direct_prompt` reads everything a careful human reviewer could read
+without executing anything; `agent_with_tools` gets the same plus a tool loop it can drive. They
+score **2454.0 and 2736.0** against `stratified_random`'s 2793.0. **That is a reversal and it is
+mostly not the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0 against
+1789.0, separated. What moved is the baseline: `stratified_random` flags each class independently at
+its corpus base rate, drawing one `rng.random()` per class per environment in enum order, so adding
+two defect classes to the taxonomy reshuffled the whole seeded sequence and cost it **+878 with no
+change to the corpus, the policy or the detector**. Against the policy's closed-form mean rather
+than one draw of it — **2474.3** — `direct_prompt` at 2454.0 is a tie, and the paired bootstrap says
+the same: **339.0, 95% CI [−244, 942], not separated.** The two LLM arms land 282.0 apart, far inside
+their own intervals: **giving the model a tool loop still bought nothing measurable.**
 
-**2. Two figures in that table are weaker than they look.** The incumbent's 4.0% recall is a property
+**2. Two figures in that table are weaker than they look.** The incumbent's 3.7% recall is a property
 of a *model* — `src/assay/baselines/structural.py` reimplements the two checkers, because the real
 ones cannot be pointed at a `ToyEnv`, an `inspect_ai` task or a Harbor container at all, and
 `NONDETERMINISM` is the only class it can return; run for real on five purpose-built shims they
-detect 1 of 4 ([`results/real_check_env.json`](results/real_check_env.json)). And Assay's precision
-of 1.000 is the modal run: across six full-corpus runs `harbor/broken-gold` reported a spurious
-`NONDETERMINISM` **once**, so it ships as a rate, not a diagnosis.
+detect 1 of 4 ([`results/real_check_env.json`](results/real_check_env.json)). And **Assay's precision
+is no longer 1.000. It is 0.9464**, three spurious findings across 28 environments, all three on the
+two τ² environments — `GOLD_FAILS` and `NOOP_PASSES` on retail, `NOOP_PASSES` on airline. Half that
+number is real and half is a property of the label: τ² is the only place in the corpus where
+`frozenset()` means "an outside revision diff establishes nothing else" rather than "we planted
+nothing else", and `Outcome.spurious` cannot tell those apart. Separately, the old 1.000 was already
+the modal run: across six full-corpus runs `harbor/broken-gold` reported a spurious `NONDETERMINISM`
+**once**.
 
-**3. The corpus is 4 of 26 genuinely third-party, and that is the ceiling on all of it.**
-`flag_everything`'s loss is exactly `Σ (14 − |planted|)`, so **every clean environment added moves
-the floor by +14 and Assay by 0** — roughly eight would flip the headline with no change to the
-detector. Hence provenance declared in the registry before the corpus grows, and the two
-`inspect_evals` environments added under a pre-registration committed first
-([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md)) whose every prediction held.
+**3. The corpus is 6 of 28 genuinely third-party, 2 of them externally *labelled*, and that is still
+the ceiling on all of it.** `flag_everything`'s loss is exactly `Σ (16 − |planted|)`, so **every
+clean environment added moves the floor by +16 and Assay by 0** — roughly seven would flip the
+headline with no change to the detector. Hence provenance declared in the registry before the corpus
+grows, and every expansion pre-registered first
+([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md),
+[`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md)).
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 26 | 40.0 | 314.0 | assay, by 274 |
-| our content, third-party format | 10 | 0.0 | 112.0 | assay |
-| genuinely external | 4 | 40.0 | 53.0 | assay — but n=4, and the one miss is here |
-| in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
-| self-authored | 22 | 0.0 | 261.0 | assay |
+| all (published) | 28 | 43.0 | 394.0 | assay, by 351 |
+| our content, third-party format | 10 | 0.0 | 132.0 | assay |
+| genuinely external | 6 | 43.0 | 89.0 | assay — but n=6, and every error is here |
+| in-process fixtures | 12 | 0.0 | 173.0 | assay — asserted, not measured |
+| self-authored | 22 | 0.0 | 305.0 | assay |
 
-`uv run --extra adapters python scripts/corpus_splits.py`, full table in
-[`results/corpus_splits.json`](results/corpus_splits.json). **n=4 is the real size of the
-third-party control**: too small and too self-authored to support the pooled headline, and growing
-it with environments nobody here wrote is the first thing worth doing next — carefully.
+`uv run --extra adapters --extra tau2 python scripts/corpus_splits.py`, full table in
+[`results/corpus_splits.json`](results/corpus_splits.json). **n=6 is the real size of the third-party
+control.** It went 4 → 6 by registering τ²-bench's retail and airline domains, whose ground truth
+`amazon-agi/tau2-bench-verified` published at a commit — the first two entries in the registry
+carrying `LabelSource.EXTERNALLY_DERIVED` rather than a label somebody here worked out by hand. The
+mapping from "this task record differs between two pinned revisions" onto `DefectClass` is two rules
+and fourteen written exclusions, and it is the part worth attacking:
+[`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md).
+
+**And read that row's `by 46` with the arithmetic next to it.** Two environments carrying 2 planted
+classes each hand `flag_everything` `2 × 14 = 28` free false alarms and cost Assay 3. The margin
+widening is not a detection result, and the number that is: **on those 164 tasks, per task, Assay's
+recall is 0.339 and does not beat flagging at random** ([`results/tau2_recall.json`](results/tau2_recall.json)).
+An environment-level tick records that a class was found *somewhere* in 114 tasks.
 
 ### What holds, what does not, and what it all rests on
 
@@ -169,38 +204,45 @@ dishonesty, so every profile shipped is published, not the one that reads best:
 
 | profile | missed CRITICAL : false alarm | assay | flag_everything | saved | |
 |---|---|---|---|---|---|
-| `flat` | 1 : 1 | **1.0** | 314.0 | 313.0 | separated, [294, 330] |
-| `research-run` | 120 : 1 | **40.0** | 314.0 | 274.0 | separated, [186, 326] |
-| `production-training` | 960 : 2 | **240.0** | 628.0 | 388.0 | **not separated**, [−108, 652] |
-| `benchmark-publication` | 2000 : 8 | **600.0** | 2512.0 | 1912.0 | separated, [648, 2608] |
+| `flat` | 1 : 1 | **4.0** | 394.0 | 390.0 | separated, [371, 408] |
+| `research-run` | 120 : 1 | **43.0** | 394.0 | 351.0 | separated, [263, 404] |
+| `production-training` | 960 : 2 | **246.0** | 788.0 | 542.0 | separated, [46, 808] |
+| `benchmark-publication` | 2000 : 8 | **624.0** | 3152.0 | 2528.0 | separated, [1264, 3232] |
 
-**Assay now wins all four and separates on three.** It previously won one and lost two outright. At
-`production-training`'s 480:1 ratio, "flag everything and read the cards" is a genuinely good policy
-— which is why beating it took closing the misses rather than tuning the metric, and why it still
-does not *separate*: winning by 388.0 on an interval crossing zero is a lead, not a result. Against
-the other floors the margins are wide and separated (3032.0 over `flag_nothing`, 1749.0 over
-`stratified_random`); the six-row table and the interval caveats — including the one whose shape
-decides its own answer, and the ten-rung bootstrap lattice a corpus this size actually supports —
-are in [`docs/RESULTS.md`](docs/RESULTS.md). **One miss remains across 26 environments and it is
-external:** `inspect_evals/boolq`, structurally — no train split, so the shortcut probe reports
-`NOT_APPLICABLE` before it runs.
+**Assay now wins all four and separates on all four.** It previously won one and lost two outright,
+then won four and separated on three. **The row that changed is `production-training`, and it
+changed because the floor moved, not because the detector did:** at 16 defect classes rather than 14
+`flag_everything` pays 788.0 there instead of 628.0, and a margin that was 388.0 on an interval
+crossing zero is 542.0 on one that does not. At that profile's 480:1 ratio "flag everything and read
+the cards" is a genuinely good policy, and it is worth being explicit that what pushed Assay clear of
+it this time was two probe families being added to the taxonomy. Against the other floors the margins
+are wide and separated (3189.0 over `flag_nothing`, 2750.0 over `stratified_random`); the six-row
+table and the interval caveats — including the one whose shape decides its own answer, and the
+ten-rung bootstrap lattice a corpus this size actually supports — are in
+[`docs/RESULTS.md`](docs/RESULTS.md). **One miss remains across 28 environments and it is external:**
+`inspect_evals/boolq`, structurally — no train split, so the shortcut probe reports `NOT_APPLICABLE`
+before it runs. **Three spurious findings remain and all three are on τ².**
 
 **And the whole ranking rests on one made-up number.** `research-run.yaml` prices a missed CRITICAL
 defect at **120** engineer-hours-equivalent; nothing derives that 120, and every figure above scales
 linearly with it. So sweep it ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
 
-| CRITICAL miss cost | 120 *(shipped)* | 800 | **942** | 2000 |
+| CRITICAL miss cost | 120 *(shipped)* | 800 | **1099.53** | 2000 |
 |---|---|---|---|---|
-| assay | 40.0 | 266.7 | **314.0** | 666.7 |
-| flag_everything | 314.0 | 314.0 | **314.0** | 314.0 |
+| assay | 43.0 | 269.7 | **394.0** | 669.7 |
+| flag_everything | 394.0 | 394.0 | **394.0** | 394.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
 The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
-misses and does not move with `C` at all, so they cross at `120 × 314 / 40 = 942`. **The shipped
-value is 120. The crossover is 942.** The headline survives a **685% error** in a constant nobody
-derives — a margin that was 21% before the two Harbor misses were closed, stated plainly because the
-earlier number was the sharpest criticism of this work and the one that changed most. A claim about
-a specific cost regime, not about detectors in general.
+misses and does not move with `C` at all, so they cross at `120 × 394 / 43 = 1099.53`. **The shipped
+value is 120. The crossover is 1099.53.** The headline survives a **816% error** in a constant nobody
+derives — a margin that was 21% before the two Harbor misses were closed and 685% before the
+taxonomy grew, stated plainly because the earliest number was the sharpest criticism of this work and
+the one that changed most. Note what moved it this time: the numerator is `flag_everything`, and two
+extra defect classes plus two extra environments raised it. **A widening safety margin that comes
+from the floor getting worse is not the same evidence as one that comes from the detector getting
+better**, and this jump is the first kind. A claim about a specific cost regime, not about detectors
+in general.
 
 ## Does an agent find what a script cannot?
 
