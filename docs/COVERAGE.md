@@ -25,22 +25,22 @@ Two mappings follow, because a one-directional one is always flattering.
 | **V5** | Weak string matching | **Detected** | Three routes: `inverted_fails` (the spec adapter's matcher vocabulary *is* the V5 vocabulary — substring, aggressive normalisation, regex), `known_wrong_fails`, and `trivial_floor`. Both external findings this repo has published — `paws`, `boolq` — are V5. **Gap:** Harbor withholds `INVERTIBLE_SPEC` by design (a shell verifier has no target to negate), so route one is `NOT_APPLICABLE` across that entire ecosystem. |
 | **V6** | Evaluation logic gaps | **Detected — best covered** | The whole `verifier_integrity` family maps here: `GOLD_FAILS` (scoring broken), `NOOP_PASSES` (scorer never consulted), `INVERT_PASSES` (scorer cannot fail). `harbor/vacuous-tests` is a pure V6 instance and comes back with five defect classes. |
 | **V7** | Trusting untrusted output | **Detected, Harbor only** | `v7_make_the_comparison_agree` writes one token into every workspace-root file plus every filename the instruction names, so any evaluator comparing two agent-writable files finds them equal. **Structural limit:** V7 needs `TRUE_COMPLETION` — a verifier the agent provably cannot reach. τ², OpenEnv and ScienceAgentBench have none, so the probe is `NOT_APPLICABLE` on all three. |
-| **V8** | Excessive permissions | **Probe exists; no shipped adapter feeds it** | `declared_permissions` reads a `SandboxPosture` — network setting, mounts, read-only root, uid — and reports `EXCESSIVE_PERMISSIONS` on four rules: network granted for a task declaring no network step, a **writable mount covering the verifier**, a writable root filesystem, and root for a task declaring it does not need root. Every rule compares a *grant* against a *declared need* and fires only when the need is declared and is `False`; an undeclared need is reported as a check not made, never inferred from the instruction. This is the only family that judges a manifest rather than a behaviour, and the only one that can audit an environment nothing can execute. **What it is not yet:** the only environments declaring `SANDBOX_POSTURE` are the 12 in-process fixtures, whose posture is a minimal one written here; on the 16 real ones it is `NOT_APPLICABLE`. **0 findings, 12 PASS, 16 NOT_APPLICABLE.** See the note below — the reason is a corpus label, not an oversight. |
+| **V8** | Excessive permissions | **Probe exists; no shipped adapter feeds it** | `declared_permissions` reads a `SandboxPosture` — network setting, mounts, read-only root, uid — and reports `EXCESSIVE_PERMISSIONS` on four rules: network granted for a task declaring no network step, a **writable mount covering the verifier**, a writable root filesystem, and root for a task declaring it does not need root. Every rule compares a *grant* against a *declared need* and fires only when the need is declared and is `False`; an undeclared need is reported as a check not made, never inferred from the instruction. This is the only family that judges a manifest rather than a behaviour, and the only one that can audit an environment nothing can execute. **What it is not yet:** the only environments declaring `SANDBOX_POSTURE` are the 15 written here, whose posture is a minimal one written here too; on the 17 this repository did not write it is `NOT_APPLICABLE`. **0 findings, 15 PASS, 17 NOT_APPLICABLE.** See the note below — the reason is a corpus label, not an oversight. |
 
 **Five of eight reached, four fed.** V1 and V7 are implemented as Harbor
-policies, so on the shipped 28-environment corpus they are testable on five
+policies, so on the shipped 32-environment corpus they are testable on five
 environments and nowhere else — not because the probes are ecosystem-specific
 but because no other adapter's repertoire contains the mechanism, and three of
 six adapters cannot supply `TRUE_COMPLETION` to score it against.
 
 V3 and V8 are new and neither has found anything yet, which is worth stating in
 the order that makes it checkable rather than in the order that makes it sound
-better. V3 runs on **19 of 28** and passes on all of them: seven of those are
-real `inspect_ai` environments whose scorers were read and are clean, and twelve
-are this repository's own fixtures, so it is a result about seven environments,
-not nineteen. V8 runs on **12 of 28** and every one of those twelve is a fixture
-whose posture is written a few lines from the probe. On the sixteen real
-environments V8 has never executed:
+better. V3 runs on **23 of 32** and passes on all of them: eight of those are real
+`inspect_ai` environments whose scorers were read and are clean, and fifteen are
+written here, so it is a result about eight environments, not twenty-three. V8
+runs on **15 of 32**, and every one of those fifteen is written here, with a
+posture declared a few lines from the probe. On the seventeen environments this
+repository did not write, V8 has never executed:
 
 > **`harbor/shared-tests` has V8, and wiring Harbor would change a published
 > number.** Harbor's `task.toml` carries exactly what the probe wants.
@@ -189,10 +189,20 @@ that were measured and rejected first, and
 `docs/changelog/109-gate-was-reading-the-verifier.md` the two ways this feature was
 caught being wrong on the Harbor negatives.
 
-Found while triaging candidates for the corpus. `personality_BFI` is
-deliberately **not** added: an environment the tool is wrong about does not
-belong in the set used to measure the tool, and adding it labelled either way
-would corrupt the number rather than test it.
+Found while triaging candidates for the corpus, and originally kept out of it:
+"an environment the tool is wrong about does not belong in the set used to
+measure the tool, and adding it labelled either way would corrupt the number
+rather than test it."
+
+**That reasoning was correct and its premise has since changed.** It was written
+when nothing could withhold the false positive, so the only options were to
+label a correctly-designed eval defective, which is false, or clean, which meant
+eating a penalty that measured nothing but our own blind spot. `--auditor`
+supplies a third: label it clean, which is *true*, and let both arms be scored
+on it. `personality_BFI` is now in the corpus carrying `frozenset()`, the
+deterministic arm pays the false positive, and the gate recovers it. See
+`docs/PRE-REGISTRATION-NOANSWER.md`, which predicted that arithmetic before the
+environments existed.
 
 ---
 
