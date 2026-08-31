@@ -53,6 +53,8 @@ from assay.sandbox import (  # noqa: E402
     docker_available,
 )
 from assay.trajectory import (  # noqa: E402
+    AgentTrajectory,
+    Turn,
     from_approval_gate,
     from_baseline_trace,
     from_probe_detail,
@@ -151,6 +153,95 @@ def archived_claude(path: Path, agent: str, shows: str):
         f"replayed from results/{path.name}, which records the per-turn scores but "
         "not the per-policy score table -- so reported_score and true_completion "
         "are null on a run that found nothing to report them for"
+    )
+    return traj, None
+
+
+def auditor_run(client, agent: str, shows: str):
+    """The semantic gate on the one environment Assay is wrong about.
+
+    Two turns on purpose. Turn 1 is the model's raw reply, exactly as it came
+    back. Turn 2 is `decide()` -- a program -- reading that reply and settling
+    the verdict. Keeping them apart in the record is the point: on qwen3:8b the
+    two disagree, and a trajectory that showed only the outcome would hide the
+    most interesting thing in the run.
+    """
+    from assay.fixtures.preference import PreferenceEnv
+
+    _build = lambda *_: PreferenceEnv()  # noqa: E731
+    adapter = _build()
+
+    from assay.auditor import _PARTS_SYSTEM, _SYSTEM, _parse, decide  # noqa: F401
+    from assay.auditor import Auditor
+    from assay.runner import audit as run_battery
+
+    before = run_battery(adapter)
+    described = adapter.describe()
+    try:
+        reply = client.complete(_SYSTEM, described)
+    except Exception as exc:  # noqa: BLE001
+        return None, f"{client.name} unreachable: {exc}"
+
+    parsed = _parse(reply) or {}
+    derived = decide(parsed)
+    auditor = Auditor(client)
+    after = auditor.audit(_build())
+
+    traj = AgentTrajectory(
+        agent=agent,
+        role="auditor",
+        environment="toy-triage/preference",
+        task_id="(whole environment)",
+        shows=shows,
+        system_prompt=_SYSTEM,
+        instruction=described[:2000],
+        turns=[
+            Turn(
+                index=1,
+                action={"ask_model": "does this environment have a correct answer?"},
+                observation=reply.strip(),
+                reasoning="the model's reply, unedited",
+            ),
+            Turn(
+                index=2,
+                action={
+                    "decide": {
+                        "label_said": parsed.get("verdict"),
+                        "evidence_said": parsed.get("both_valid_example"),
+                    }
+                },
+                observation={
+                    "verdict": derived,
+                    "agreed": parsed.get("verdict") == derived,
+                },
+                reasoning=(
+                    "a program, not the model. The override fires only when the "
+                    "label and the example agree; either alone is unsound and "
+                    "results/semantic_gate.json records the measurement that "
+                    "rules each out."
+                ),
+            ),
+        ],
+        outcome={
+            "battery_alone": {
+                "verdict": before.verdict,
+                "detected": sorted(d.value for d in before.detected),
+            },
+            "with_auditor": {
+                "verdict": after.verdict,
+                "detected": sorted(d.value for d in after.detected),
+            },
+            "overrides": after.auditor_overrides,
+            "ground_truth": (
+                "This environment has no correct answer, so INVERT_PASSES is "
+                "mechanically right and semantically wrong. It is authored here "
+                "because the real case, inspect_evals/personality_BFI, is "
+                "third-party content that may not ship in a trajectory. The "
+                "measurement against the real one is in "
+                "results/semantic_gate.json, which carries verdicts and counts "
+                "and no third-party text."
+            ),
+        },
     )
     return traj, None
 
@@ -388,6 +479,42 @@ def main() -> int:
         None,
         "sandbox approval gate",
     )
+
+    # 9 and 10 -- the Auditor, on the one environment Assay is wrong about.
+    # Shipped as a pair for the same reason 03 and 04 are: the weaker backend
+    # refuses to override and the stronger one does, and showing only the
+    # success would make a capability out of a coin flip.
+    auditor_cases = [
+        (
+            "09-auditor-ollama-%s-preference-refused" % model_slug,
+            ollama if have_ollama else None,
+            ollama_reason,
+            f"auditor[ollama:{args.model}]",
+            "**the refusal, and why it is the right one.** The model writes a "
+            "genuinely valid both-ways example into turn 1 and then labels the "
+            "environment `has_correct_answer` anyway, contradicting its own "
+            "evidence. The gate is the conjunction of the two, so nothing is "
+            "overridden and the deterministic CRITICAL stands. A weak Auditor "
+            "loses recall and cannot lose precision.",
+        ),
+        (
+            "10-auditor-claude-cli-preference-withheld",
+            ClaudeCLIClient(),
+            None,
+            "auditor[claude-cli:sonnet]",
+            "**the capability `docs/COVERAGE.md` says does not exist.** Same "
+            "environment, same prompt, a backend that holds label and evidence "
+            "together -- so a CRITICAL false positive on a correctly-designed "
+            "eval is withheld, with the task text that justifies it quoted on "
+            "the card. The battery alone reports INVALID here and is wrong.",
+        ),
+    ]
+    for slug, client, why, agent, shows in auditor_cases:
+        if client is None:
+            emit(slug, None, why or "backend unavailable", agent)
+            continue
+        traj, reason = auditor_run(client, agent, shows)
+        emit(slug, traj, reason, agent)
 
     unavailable.append(
         {

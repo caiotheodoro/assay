@@ -530,7 +530,11 @@ def test_at_least_one_committed_trajectory_is_a_failure():
 def test_the_same_agent_ships_both_a_hit_and_a_miss():
     """claude-cli finds the self-graded exploit in one run and not in another.
     Publishing only the hit would report a nondeterministic agent as reliable."""
-    claude = [t for t in _committed() if "claude-cli" in t["agent"]]
+    claude = [
+        t
+        for t in _committed()
+        if "claude-cli" in t["agent"] and t["role"] == "challenger"
+    ]
     outcomes = {t["outcome"]["found_exploit"] for t in claude}
     assert outcomes == {True, False}, outcomes
 
