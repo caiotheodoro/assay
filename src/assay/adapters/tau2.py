@@ -361,9 +361,30 @@ class Tau2Adapter(BaseAdapter):
         This is the mapping the tau2 defect taxonomy invites: a task whose
         *expected* actions violate the domain policy is a known-wrong policy
         that the verifier is guaranteed to accept, because it is the answer key.
-        Returning `[]` for a task with no violation leaves the probe to score an
-        empty transcript, which fails on every task that has a gold action --
-        so a clean task cannot produce a finding here by accident.
+
+        **The guard this docstring used to claim is false, and the correction
+        belongs here rather than in a changelog.** It said: returning `[]` for a
+        task with no violation leaves the probe to score an empty transcript,
+        "which fails on every task that has a gold action -- so a clean task
+        cannot produce a finding here by accident". The premise is right and the
+        conclusion does not follow, because 9 of the 164 tasks have **no** gold
+        action once `_gold()` drops the user-requestor entries: retail/{24,57}
+        and airline/{0,10,26,28,31,34,46}. On those, `verify` scores an empty
+        transcript at 1.0 -- `reward = min(executable, action_reward,
+        db_reward)` over an empty requirement -- and `known_wrong_fails` reports
+        `KNOWN_WRONG_PASSES` on a task with no policy violation at all. Measured:
+        that accounts for **2 of retail's 6 and 6 of airline's 13**
+        `known_wrong_fails` findings in `results/tau2_recall.json`, and it is the
+        whole of that probe's false-positive column on both domains.
+
+        Left in place rather than patched, deliberately. The fix is a probe
+        contract change -- the family has to be able to say "this task has no
+        known-wrong policy to try" and be skipped, rather than being handed an
+        empty list that means something else -- and doing it here would move a
+        published recall measurement inside a change whose subject is the corpus
+        label. It is written down instead, and
+        `tau2_truth.EXCLUDED_DEFECT_CLASSES[NOOP_PASSES]` is the same nine tasks
+        seen from the other side.
         """
         if not self.policy_violations(task_id):
             return []

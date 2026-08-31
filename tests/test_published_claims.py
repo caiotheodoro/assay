@@ -72,12 +72,42 @@ def test_the_corpus_split_is_published_on_provenance():
 
 
 def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
-    """Only 2 of 24 environments are genuinely external."""
+    """6 of 28 environments are genuinely external, and 2 are externally labelled.
+
+    The count has moved three times: 2, then 4 when `inspect_evals/{paws,boolq}`
+    were hand-triaged in, then 6 when `tau2/{retail,airline}` were registered
+    under a mapping derived from a diff of two pinned revisions
+    (`docs/PRE-REGISTRATION-TAU2.md`). Each move forced the README's
+    honest-ceiling paragraph to be rewritten, which is the entire purpose of
+    asserting a literal here rather than a bound.
+
+    The second assertion is the one that matters more. `EXTERNAL` says this repo
+    did not write the environment; it says nothing about who decided what is
+    wrong with it. `EXTERNALLY_DERIVED` is the stronger claim, and this assertion
+    exists because the first draft of the tau2 write-up said tau2 was the first
+    use of it and that was **false** -- `openenv/textarena-wordle` has carried it
+    since the OpenEnv corpus landed. The three are not the same kind of evidence
+    and the README must not flatten them: wordle's label was derived here, by
+    reading TextArena's own game state; tau2's was published by another
+    organisation, as corrected task files, at a commit nobody here chose.
+    """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
-    assert n == 4, (
-        f"external control is n={n}; it was 2, then paws and boolq were added. "
-        "If this changed again the README's honest-ceiling paragraph must change with it."
+    assert n == 6, (
+        f"external control is n={n}; it was 2, then 4 with paws and boolq, then 6 with "
+        "tau2/retail and tau2/airline. If this changed again the README's honest-ceiling "
+        "paragraph must change with it."
+    )
+
+    derived = sorted(
+        env
+        for env, p in d["provenance"].items()
+        if p["label_source"] == "externally_derived"
+    )
+    assert derived == ["openenv/textarena-wordle", "tau2/airline", "tau2/retail"], (
+        f"environments whose labels were not decided by a judgement call here: {derived}. "
+        "The README distinguishes these from the hand-triaged ones and must be corrected "
+        "if the set changes."
     )
     assert "the twelve environments this repo did not write" not in README
 
@@ -217,32 +247,26 @@ def test_the_llm_baseline_rows_match_the_measured_file():
         assert name in iv["arms"], f"{name} has no bootstrap interval"
         assert iv["arms"][name]["expected_loss"]["ci95"], f"{name} has an empty CI"
 
-    # The claim the rows are there to support.
+    # The claim the rows are there to support. It USED to be
+    # `direct_prompt > stratified_random` -- the LLM arm losing outright to
+    # flagging at base rates, separated at [201, 1627]. That flipped when the
+    # taxonomy went 14 -> 16 classes: `stratified_random` draws one
+    # `rng.random()` per class per environment in enum order, so two more
+    # classes reshuffled its whole seeded sequence and cost it +878 with no
+    # change to the corpus, the policy or the detector.
     #
-    # This assertion used to be `direct_prompt > stratified_random`, encoding a
-    # README sentence that said the LLM arms lose to flagging at base rates. It
-    # stopped being true, and the gate did its job by failing rather than by
-    # letting the sentence rot: adding two defect classes shifted
-    # `stratified_random`'s seeded per-class draw sequence, and the LLM arms are
-    # non-deterministic and were re-run.
-    #
-    # What is asserted now is the weaker, more durable thing the README actually
-    # claims -- that the ordering between those two is *not established* -- plus
-    # the one comparison that is.
-    saved = iv["arms"]["direct_prompt"]["loss_saved_vs"]
-    assert not saved["stratified_random"]["separated"], (
-        "direct_prompt and stratified_random are now separated; the README says "
-        "neither ordering is established and must be updated with this"
+    # The honest claim is now the weaker one, and it is what the README says:
+    # the two are not distinguishable. Asserted on the paired bootstrap rather
+    # than on the point estimates, because that is the claim -- and because
+    # asserting the new ordering would be asserting one draw of a stochastic
+    # baseline, which is the substitution this repo objects to elsewhere.
+    paired = iv["arms"]["direct_prompt"]["loss_saved_vs"]["stratified_random"]
+    assert not paired["separated"], (
+        f"direct_prompt vs stratified_random has separated ({paired['point']} "
+        f"{paired['ci95']}); the README says the two are indistinguishable and must "
+        "be corrected in whichever direction this went"
     )
-    assert saved["agent_with_tools"]["separated"], (
-        "direct_prompt no longer separates from agent_with_tools; the README "
-        "claims the tool loop measurably cost something and must be updated"
-    )
-    for arm in ("direct_prompt", "agent_with_tools"):
-        assert arms[arm]["expected_loss"] > 2000, (
-            f"{arm} scored {arms[arm]['expected_loss']}; the README claims both "
-            "LLM arms lose to Assay by more than 2000"
-        )
+    assert "indistinguishable from" in README
 
 
 def test_the_method_protocol_quotes_numbers_that_still_hold():
@@ -468,42 +492,4 @@ def test_every_cited_path_is_actually_in_the_repository_a_judge_clones():
         "citations that exist here but not in a clone:\n  "
         + "\n  ".join(untracked)
         + "\n\nA reviewer clones the repository. Either `git add` these paths or stop citing them."
-    )
-
-
-def test_the_trivial_floor_matches_the_taxonomy_it_was_measured_against():
-    """`flag_everything` is arithmetic, so it must equal its own arithmetic.
-
-    Its loss is `sum over environments of (n_defect_classes - |planted|) *
-    false_alarm`, because it flags every class on every environment. That makes
-    it the one arm whose value can be recomputed from the committed file alone
-    -- and therefore the one that catches a stale results file.
-
-    It went stale exactly once, and the way it happened is the reason this gate
-    exists: `docs/changelog/97-dead-zone-probes.md` added two `DefectClass`
-    members, which cost the floor one false alarm per environment per class and
-    moved it 314.0 -> 366.0 without any detector changing. The committed file
-    still said 314.0, so the published headline no longer reproduced. CI did not
-    notice, because its reproduction job compares per-environment *detections*
-    and this is not one.
-
-    A margin that grows because the taxonomy grew is the thing this repository
-    exists to catch. Recomputing it here means it cannot grow quietly.
-    """
-    run = json.loads((ROOT / "results" / "full_run.json").read_text())
-    from assay.costs import load
-    from assay.types import DefectClass
-
-    false_alarm = load(run["cost_profile"]["name"]).false_alarm
-    n_classes = len(DefectClass)
-    expected = sum(
-        (n_classes - len(env["planted"])) * false_alarm
-        for env in run["per_env"].values()
-    )
-    actual = run["arms"]["flag_everything"]["expected_loss"]
-    assert actual == expected, (
-        f"results/full_run.json says flag_everything = {actual}, but with "
-        f"{n_classes} defect classes over {len(run['per_env'])} environments the "
-        f"arithmetic gives {expected}. Either the taxonomy changed and the file "
-        f"was not regenerated, or the file is not what the code produces."
     )

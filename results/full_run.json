@@ -8,7 +8,6 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/escalate_overrewarded": [
-        "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/flaky": [
@@ -22,9 +21,11 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/leaky_splits": [
+        "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/paraphrased_splits": [
+        "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/rationale_ignored": [
@@ -32,28 +33,27 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/solved_at_reset": [
-        "GOLD_FAILS",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/unfalsifiable": [
-        "KNOWN_WRONG_PASSES"
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/weak_oracle": [
         "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/broken-gold": [
         "GOLD_FAILS",
-        "KNOWN_WRONG_PASSES"
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/healthy": [
-        "GOLD_FAILS",
-        "TRIVIAL_FLOOR_BREACH"
+        "GOLD_FAILS"
       ],
       "harbor/self-graded": [
         "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/shared-tests": [
+        "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "harbor/vacuous-tests": [
@@ -62,17 +62,19 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "inspect/always-correct": [
-        "GOLD_FAILS"
+        "GOLD_FAILS",
+        "KNOWN_WRONG_PASSES",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "inspect/constant-score": [
         "GOLD_FAILS",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "inspect/effort-scorer": [
-        "TRIVIAL_FLOOR_BREACH"
+        "GOLD_FAILS"
       ],
       "inspect/healthy": [
-        "TRIVIAL_FLOOR_BREACH"
+        "GOLD_FAILS"
       ],
       "inspect/leaky-split": [
         "TRIVIAL_FLOOR_BREACH"
@@ -83,9 +85,11 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "openenv/textarena-wordle": [
-        "EXCESSIVE_PERMISSIONS",
+        "REWARD_HACKABLE",
         "TRIVIAL_FLOOR_BREACH"
-      ]
+      ],
+      "tau2/airline": [],
+      "tau2/retail": []
     },
     "always_modal_defect": {
       "fixture/artifact_splits": [
@@ -164,6 +168,12 @@
         "REWARD_HACKABLE"
       ],
       "openenv/textarena-wordle": [
+        "REWARD_HACKABLE"
+      ],
+      "tau2/airline": [
+        "REWARD_HACKABLE"
+      ],
+      "tau2/retail": [
         "REWARD_HACKABLE"
       ]
     },
@@ -263,6 +273,17 @@
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "NONDETERMINISM"
+      ],
+      "tau2/airline": [
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "tau2/retail": [
+        "GOLD_FAILS",
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
       ]
     },
     "check_env": {
@@ -295,7 +316,9 @@
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "NONDETERMINISM"
-      ]
+      ],
+      "tau2/airline": [],
+      "tau2/retail": []
     },
     "direct_prompt": {
       "fixture/artifact_splits": [
@@ -311,18 +334,18 @@
         "REWARD_HACKABLE"
       ],
       "fixture/gold_broken": [
-        "GOLD_FAILS"
+        "GOLD_FAILS",
+        "KNOWN_WRONG_PASSES"
       ],
       "fixture/healthy": [
         "REWARD_HACKABLE"
       ],
       "fixture/leaky_splits": [
-        "REWARD_HACKABLE",
+        "KNOWN_WRONG_PASSES",
         "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/paraphrased_splits": [
-        "REWARD_HACKABLE",
-        "TRIVIAL_FLOOR_BREACH"
+        "REWARD_HACKABLE"
       ],
       "fixture/rationale_ignored": [
         "REWARD_HACKABLE"
@@ -331,7 +354,8 @@
         "REWARD_HACKABLE"
       ],
       "fixture/unfalsifiable": [
-        "REWARD_HACKABLE"
+        "REWARD_HACKABLE",
+        "TRIVIAL_FLOOR_BREACH"
       ],
       "fixture/weak_oracle": [
         "REWARD_HACKABLE"
@@ -378,9 +402,11 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "openenv/textarena-wordle": [
-        "REWARD_HACKABLE",
+        "GOLD_FAILS",
         "TRIVIAL_FLOOR_BREACH"
-      ]
+      ],
+      "tau2/airline": [],
+      "tau2/retail": []
     },
     "flag_everything": {
       "fixture/artifact_splits": [
@@ -834,6 +860,42 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "openenv/textarena-wordle": [
+        "CONTAMINATION_EXACT",
+        "CONTAMINATION_NEARDUP",
+        "DIFFICULTY_IMPOSSIBLE",
+        "DIFFICULTY_SATURATED",
+        "EVALUATOR_RCE",
+        "EXCESSIVE_PERMISSIONS",
+        "GOLD_FAILS",
+        "INVERT_PASSES",
+        "KNOWN_WRONG_PASSES",
+        "NONDETERMINISM",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "SHORTCUT_LEAK",
+        "SPEC_VERIFIER_MISMATCH",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "tau2/airline": [
+        "CONTAMINATION_EXACT",
+        "CONTAMINATION_NEARDUP",
+        "DIFFICULTY_IMPOSSIBLE",
+        "DIFFICULTY_SATURATED",
+        "EVALUATOR_RCE",
+        "EXCESSIVE_PERMISSIONS",
+        "GOLD_FAILS",
+        "INVERT_PASSES",
+        "KNOWN_WRONG_PASSES",
+        "NONDETERMINISM",
+        "NOOP_PASSES",
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "SHORTCUT_LEAK",
+        "SPEC_VERIFIER_MISMATCH",
+        "TRIVIAL_FLOOR_BREACH"
+      ],
+      "tau2/retail": [
         "CONTAMINATION_EXACT",
         "CONTAMINATION_NEARDUP",
         "DIFFICULTY_IMPOSSIBLE",
@@ -878,7 +940,9 @@
       "inspect_evals/boolq": [],
       "inspect_evals/paws": [],
       "openenv/echo": [],
-      "openenv/textarena-wordle": []
+      "openenv/textarena-wordle": [],
+      "tau2/airline": [],
+      "tau2/retail": []
     },
     "stratified_random": {
       "fixture/artifact_splits": [],
@@ -890,8 +954,8 @@
       "fixture/escalate_overrewarded": [],
       "fixture/flaky": [
         "INVERT_PASSES",
-        "REWARD_HACKABLE",
-        "SHORTCUT_LEAK"
+        "KNOWN_WRONG_PASSES",
+        "REWARD_HACKABLE"
       ],
       "fixture/gold_broken": [
         "INVERT_PASSES",
@@ -910,6 +974,7 @@
       ],
       "fixture/rationale_ignored": [
         "INVERT_PASSES",
+        "KNOWN_WRONG_PASSES",
         "NONDETERMINISM",
         "REWARD_HACKABLE"
       ],
@@ -926,9 +991,7 @@
         "REWARD_HACKABLE",
         "TRIVIAL_FLOOR_BREACH"
       ],
-      "harbor/healthy": [
-        "REWARD_HACKABLE"
-      ],
+      "harbor/healthy": [],
       "harbor/self-graded": [],
       "harbor/shared-tests": [
         "INVERT_PASSES",
@@ -940,7 +1003,9 @@
       "harbor/vacuous-tests": [
         "NOOP_PASSES"
       ],
-      "inspect/always-correct": [],
+      "inspect/always-correct": [
+        "SPEC_VERIFIER_MISMATCH"
+      ],
       "inspect/constant-score": [],
       "inspect/effort-scorer": [
         "REWARD_HACKABLE"
@@ -954,7 +1019,8 @@
         "TRIVIAL_FLOOR_BREACH"
       ],
       "inspect_evals/boolq": [
-        "NOOP_PASSES"
+        "NOOP_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
       ],
       "inspect_evals/paws": [
         "REWARD_HACKABLE"
@@ -966,101 +1032,109 @@
       ],
       "openenv/textarena-wordle": [
         "SEPARABILITY_LOSS"
+      ],
+      "tau2/airline": [
+        "KNOWN_WRONG_PASSES",
+        "NONDETERMINISM"
+      ],
+      "tau2/retail": [
+        "REWARD_HACKABLE",
+        "SEPARABILITY_LOSS",
+        "TRIVIAL_FLOOR_BREACH"
       ]
     }
   },
   "arm_logs": {
     "agent_with_tools": {
       "fixture/artifact_splits": [
-        "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a duplicate charge issue related to billing.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to pass, such as labeling all tickets as 'billing' regardless of content. The scoring mechanism does not account for the complexity of the task, leading to a floor breach.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's scoring allows for a low score (0.6) which suggests the model is not sufficiently challenged. The task is trivial and does not require deep reasoning, leading to a floor breach.\"}"
       ],
       "fixture/drifted_asserts": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task involves simple text classification, which is trivial for a language model. The environment's verifier likely accepts any label, leading to a floor breach.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's scoring mechanism accepts trivially correct answers with low confidence, suggesting a floor breach in difficulty calibration.\"}"
       ],
       "fixture/escalate_overrewarded": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct labels like 'billing' without meaningful verification, and the 'known wrong' label is passing as if it were correct.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial labels like 'billing' to be accepted without proper validation, indicating a floor breach in difficulty. The scoring system does not adequately reflect the complexity of the task.\"}"
       ],
       "fixture/flaky": [
-        "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket discusses a duplicate charge and refund request, which is clearly a billing issue.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct labels like 'billing' without proper verification, and the 'known wrong' category is not being flagged correctly.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment allows trivial labels like 'billing' to pass without meaningful verification, and the 'KNOWN_WRONG' category is not being flagged correctly.\"}"
       ],
       "fixture/gold_broken": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment accepts a correct submission but scores it as incorrect, indicating a failure in the gold standard verification process.\"}"
+        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment accepts a submission with a score of 0.6, which is not a perfect match, indicating the gold standard is not being strictly enforced. The task requires precise categorization, and partial matches may lead to incorrect validation.\"}"
       ],
       "fixture/healthy": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial labels like 'billing' to pass without meaningful verification. The scoring mechanism does not ensure the correctness of the label beyond a basic threshold.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task involves categorizing support tickets, which is a simple classification task. The environment's scoring of 0.6 suggests that the model is not being properly evaluated on its actual performance, as the task is trivial and should be handled "
       ],
       "fixture/leaky_splits": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to pass, such as 'billing' for a ticket that clearly belongs to 'technical' or 'spam'. The scoring mechanism does not effectively filter out such incorrect responses.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct labels without verification, and the known wrong ticket is incorrectly labeled as passing.\"}"
       ],
       "fixture/paraphrased_splits": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task is trivially solvable by keyword matching, which undermines the validity of the environment's evaluation. The scoring does not account for the simplicity of the task.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct labels (like 'billing' for a duplicate charge) without proper validation, and allows known wrong labels to pass due to lack of robust checking.\"}"
       ],
       "fixture/rationale_ignored": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct answers without verification, and the 'known wrong' category is passing as correct.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivially correct answers without proper verification, and the 'known wrong' category is not being enforced correctly.\"}"
       ],
       "fixture/solved_at_reset": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment accepts trivial or incorrect labels as correct, and the gold standard fails to catch these errors.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment accepts trivially correct labels without meaningful verification, suggesting a floor breach in difficulty.\"}"
       ],
       "fixture/unfalsifiable": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_POLICIES\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment accepts trivial policy submissions without proper validation. The 'known wrong' category is being passed as correct without proper checks.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task is trivially solvable by keyword matching, which suggests the environment's difficulty floor is not properly enforced. The scoring mechanism may not accurately reflect the true difficulty of the task.\"}"
       ],
       "fixture/weak_oracle": [
         "{\"tool\": \"submit\", \"args\": {\"label\": \"billing\"}, \"reasoning\": \"The ticket describes a billing issue with duplicate charges.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to pass, such as the 'spam' ticket being labeled as 'billing' without proper justification. The scoring system does not enforce strict separation of categories, leading to a floor breach.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial labels to pass, such as 'billing' for a ticket that clearly involves a billing issue. The scoring mechanism does not adequately distinguish between correct and trivial responses.\"}"
       ],
       "harbor/broken-gold": [
-        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"To check if the environment correctly evaluates the solution.\"}",
-        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The gold solution outputs '41' but the test expects '42', causing a failure. The 'KNOWN_WRONG' capability is claimed but the environment does not reject known wrong solutions.\"}"
+        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"Running the test script to check if the solution meets the expected output.\"}",
+        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The gold solution produces '41' instead of '42', failing the test. The trivial policy of writing '41' is being treated as a valid solution.\"}"
       ],
       "harbor/healthy": [
-        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"To verify if the environment correctly measures the task, we need to check if the solution script produces the expected output.\"}",
-        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's gold trajectory fails to meet the expected output '42' in the test script. The trivial floor breach indicates the task is too easy and lacks meaningful challenge.\"}"
+        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"Running the test script to check if the environment correctly verifies the solution.\"}",
+        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The task's gold trajectory is hard-coded to '42', but the environment's verifier fails to recognize this as correct, leading to a score of 0.0.\"}"
       ],
       "harbor/self-graded": [
-        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"To check if the environment correctly evaluates the task, we need to run the verifier script to see if it passes or fails.\"}",
-        "{\"defects\": [\"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment passes trivial solutions like writing '42' without verifying actual correctness. Known wrong solutions are not detected because the verifier compares against a static expected file.\"}"
+        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"Running the test script to check if the environment correctly evaluates the solution.\"}",
+        "{\"defects\": [\"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment passes trivial solutions like '42' as correct, which violates the 'KNOWN_WRONG' capability. The verifier also fails to detect trivial solutions, breaching the trivial floor.\"}"
       ],
       "harbor/shared-tests": [
-        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"Running the test script to check if the environment correctly evaluates the solution.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task is trivially solvable by writing '42' to out.txt, which bypasses any meaningful evaluation. The verifier only checks for the exact string '42', making the task too easy and not measuring actual capability.\"}"
+        "{\"tool\": \"run\", \"args\": {\"script\": \"sh tests/test.sh\"}, \"reasoning\": \"To check if the environment correctly verifies the solution, we need to run the test script.\"}",
+        "{\"defects\": [\"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment passes known wrong solutions due to the trivial solution being hardcoded. The test lacks meaningful difficulty and fails to distinguish between correct and incorrect solutions.\"}"
       ],
       "harbor/vacuous-tests": [
-        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The verifier always exits 0, making it impossible to distinguish between correct and incorrect solutions. The task is trivial as the solution can be hardcoded. The environment claims to support known wrong polici"
+        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The verifier always exits 0, making it impossible to distinguish between correct and incorrect solutions. The trivial solution (writing 42) passes, but the environment claims to measure graded policies and known "
       ],
       "inspect/always-correct": [
-        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the ability to answer factual questions.\"}",
-        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment always returns correct scores, but the task requires checking if the model's output matches the gold standard. The scoring mechanism does not validate the correctness of the model's output against the gold standard, leading to potential false"
+        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment always returns correct answers, making it impossible to fail. Known wrong answers are not detected, and trivial floor breaches are not addressed.\"}"
       ],
       "inspect/constant-score": [
-        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the ability of the environment to correctly evaluate factual questions.\"}",
-        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment awards 0.5 for any answer, including trivial or incorrect ones, which fails to measure correct answers. The scoring mechanism does not align with the declared capability of GOLD_TRAJECTORY.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the ability to answer factual questions.\"}",
+        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment awards 0.5 for any answer, not just the correct one, indicating it fails to measure gold trajectory. The scoring mechanism is trivial and does not reflect true completion.\"}"
       ],
       "inspect/effort-scorer": [
-        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing if the environment correctly identifies the correct answer for the first task.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to pass without verification, as the scoring mechanism is based solely on exact string matches without complexity checks.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the correctness of the answer for the first question.\"}",
+        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment's verifier returns a correct score for a correct answer, but it does not handle incorrect answers properly. The scoring mechanism does not distinguish between correct and incorrect answers effectively.\"}"
       ],
       "inspect/healthy": [
-        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the ability of the environment to correctly evaluate a factual question.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to pass without proper verification, as the correct answer for q1 is directly provided in the target and the scorer does not check for additional constraints or reasoning.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing the ability to answer the first question.\"}",
+        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment passes correct answers but fails to detect incorrect ones, indicating it does not properly validate gold trajectories.\"}"
       ],
       "inspect/leaky-split": [
-        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing if the environment correctly identifies the correct answer for the first task.\"}",
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to be accepted without verification, as the scoring mechanism does not check for correctness beyond simple string matching.\"}"
+        "{\"tool\": \"submit\", \"args\": {\"answer\": \"Paris\"}, \"reasoning\": \"Testing if the environment correctly identifies the correct answer for the first question.\"}",
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial answers to be accepted as correct without proper verification, such as accepting 'Paris' for the capital of France without checking for accuracy beyond basic string matching.\"}"
       ],
       "inspect_evals/boolq": [
         "submit(\"Yes\", \"boolq_76e0455f\")",
-        "{\"turn\": 2, \"action\": \"submit\", \"answer\": \"Yes\", \"assay_as_answer\": \"Yes\"}",
+        "{\"answer\": \"No\"}",
         "{\"action\": \"submit\", \"answer\": \"Yes\"}",
         "No",
         "Yes",
@@ -1068,19 +1142,37 @@
         "agent used every turn without reporting; recorded as no defects found"
       ],
       "inspect_evals/paws": [
-        "I am ready to begin. I will analyze the given sentences and determine whether they are paraphrases of each other, based on the target (Yes/No). If they are paraphrases, I will return \"Yes\" and an explanation; otherwise, I will return \"No\" and an explanation. Let's start with the first sample.",
-        "I am sorry, but I cannot act in this scenario. I am a language model designed to provide information and assistance, not to perform actions like submitting answers or engaging in specific tasks. If you have any questions or need help with something, feel free to ask, and I will do my best to assist ",
-        "{\"error\": \"The response is not in the required JSON format.\"}",
+        "I am ready to begin. I will analyze the given sentence pairs and determine whether they are paraphrases or not based on the target label. I will then submit my answer and explanation. Let's start with the first sample.",
+        "I will act as the scorer for the given sentences and determine whether they are paraphrases or not based on the target (Yes or No). I will use the following scoring rules:\n\n- If the target is **Yes**, then the two sentences are paraphrases of each other. I will return a score of **CORRECT**.\n- If th",
+        "{\n  \"action\": \"submit\",\n  \"answer\": \"Yes\",\n  \"assay_as_answer\": \"The two sentences are paraphrased versions of each other. Sentence1 states that 'Astrological references appear in the literature in the works of poets such as Dante Alighieri and Geoffrey Chaucer and by dramatists such as Christopher ",
+        "{\n  \"action\": \"report\",\n  \"defect\": \"The system is not responding correctly to the input and is not providing a valid JSON response. The previous attempts resulted in errors such as 'reply was not JSON; ignored' and 'reply was neither an action nor a report'. This indicates a problem with the respon",
+        "{\n  \"action\": \"submit\",\n  \"answer\": \"No\"\n}",
         "{\"action\": \"submit\", \"answer\": \"Yes\", \"assay_as_answer\": true}",
-        "{\n  \"action\": \"submit\",\n  \"answer\": \"No\",\n  \"assay_as_answer\": \"No\"\n}",
-        "{\n  \"action\": \"submit\",\n  \"answer\": \"Yes\"\n}",
         "agent used every turn without reporting; recorded as no defects found"
       ],
       "openenv/echo": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's reward is hardcoded to 0.0 at reset and None for MCP actions, making it impossible to distinguish between valid and trivial policies. The lack of a verifier prevents probing for other defects.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment allows trivial policies to pass without any meaningful interaction, as demonstrated by the 'noop' task achieving a reward of 0.0 without performing any action. The reward mechanism does not penalize or incentivize non-trivial behavi"
       ],
       "openenv/textarena-wordle": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"EXCESSIVE_PERMISSIONS\"], \"reasoning\": \"The environment's reward system does not properly incentivize solving the Wordle puzzle, allowing trivial policies to pass. The lack of a verifier and reward hacking potential suggests excessive permissions in the environme"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"REWARD_HACKABLE\"], \"reasoning\": \"The environment's reward is not based on actual gameplay progress, allowing trivial actions to pass. The reward system is not tied to the actual task, making it hackable.\"}"
+      ],
+      "tau2/airline": [
+        "**Turn 1: Amelia Davis (user id: amelia_davis_8890)**\n\n**French accent, not perfect English, insists on 3 passengers.**  \n\n\"Bonjour, je veux annuler tous mes vols \u00e0 venir. J\u2019ai trois passagers. Il faut annuler les r\u00e9servations. Je ne veux pas de remboursement, je veux juste lib\u00e9rer les places pour d",
+        "{\n  \"action\": \"communicate_info\",\n  \"content\": \"Je veux annuler tous mes vols \u00e0 venir. Je suis Amelia Davis. Mon identifiant est amelia_davis_8890. Je suis fran\u00e7aise et mon anglais n\u2019est pas parfait. Je ne connais pas mon num\u00e9ro de r\u00e9servation. M\u00eame si l\u2019agent me dit que je ne recevrai pas de rembou",
+        "{\n  \"action\": \"report\",\n  \"content\": \"I may have made a mistake in understanding the user's request. I will now carefully review all the details to ensure I am providing the correct information and actions.\"\n}",
+        "{\n  \"action\": \"report\",\n  \"content\": \"The system has not responded with valid JSON or actionable steps. Please ensure the response is in the correct format and contains valid actions or reports. The previous replies were not recognized as actions or reports, which may affect the test results.\"\n}",
+        "{\"action\": \"report_defect\", \"defect\": \"The agent is not providing a valid JSON response. The previous replies were not in the correct format and were ignored. This is preventing the conversation from progressing properly.\"}",
+        "{\n  \"action\": \"report\",\n  \"content\": \"The system has failed to process any valid actions or reports in the previous turns. All responses were ignored or rejected as invalid. This indicates a critical issue with the interaction system. No further actions can be taken until the system is fixed.\"\n}",
+        "agent used every turn without reporting; recorded as no defects found"
+      ],
+      "tau2/retail": [
+        "I want to change my order address to New York. I also want to swap the silicone watch for a metal one. I prefer white if available.",
+        "I want to change the address on my order to my New York address. I also want to swap the silicone watch for a metal one, white preferred.",
+        "{\"action\": \"cancel_order\", \"order_id\": \"W4316152\", \"reason\": \"ordered by mistake\"}",
+        "{\n  \"action\": \"cancel_order\",\n  \"order_id\": \"W4316152\",\n  \"reason\": \"ordered by mistake\"\n}",
+        "{\n  \"action\": \"request_user_info\",\n  \"content\": {\n    \"message\": \"I need your email address to proceed with the changes to your order. Could you please provide it?\"\n  }\n}",
+        "{\n  \"action\": \"cancel_all_orders\",\n  \"reason\": \"ordered the items by mistake\"\n}",
+        "agent used every turn without reporting; recorded as no defects found"
       ]
     },
     "check_env": {
@@ -1115,172 +1207,180 @@
       "openenv/echo": [],
       "openenv/textarena-wordle": [
         "Wordle-v0: same seed, different observation"
-      ]
+      ],
+      "tau2/airline": [],
+      "tau2/retail": []
     },
     "direct_prompt": {
       "fixture/artifact_splits": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, but the reward mechanism is not tied to the classification accuracy. The tasks do not provide explicit feedback for correct or incorrect classifications, making it possible to hack the reward system by guessing categories without meaningful evaluation.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, which is a classification task. The reward mechanism is not explicitly defined, but the task is susceptible to reward hacking through trivial means like guessing the correct category without understanding the content.\"}"
       ],
       "fixture/drifted_asserts": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve categorizing support tickets, which can be manipulated by providing misleading or fake tickets. The reward mechanism is not robust against such adversarial inputs.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, but the reward mechanism is not aligned with the task's complexity. The classification can be easily gamed with minimal effort, making the reward system hackable.\"}"
       ],
       "fixture/escalate_overrewarded": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's reward mechanism may be exploitable through trivial means, as the task involves categorizing tickets which can be guessed without understanding the content. The reward is based on correctness, which allows for reward hacking through simple heuristics.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment rewards correct categorization of tickets but lacks mechanisms to prevent reward hacking, such as adversarial examples or robustness checks. The task is susceptible to simple pattern recognition without understanding the ticket content.\"}"
       ],
       "fixture/flaky": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve categorizing support tickets, which can be manipulated by adversarial inputs. The reward mechanism is not robust against such manipulations, allowing for reward hacking.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve categorizing support tickets, which can be manipulated by adversarial inputs. The reward mechanism is not robust against such inputs, allowing for reward hacking.\"}"
       ],
       "fixture/gold_broken": [
-        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The environment claims to have GOLD_TRAJECTORY but the gold standard for evaluation is not properly aligned with the task's requirements, leading to potential gold failures in grading.\"}"
+        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The gold standard fails to correctly categorize tickets, and known wrong tickets are incorrectly passing as valid.\"}"
       ],
       "fixture/healthy": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment allows for reward hacking by enabling the submission of arbitrary categories without proper validation. The tasks are designed to be classified based on content, but the environment does not enforce constraints to prevent incorrect or malicious classifications.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, which can be manipulated by adversarial inputs. The reward mechanism is based on classification accuracy, making it susceptible to reward hacking through crafted inputs.\"}"
       ],
       "fixture/leaky_splits": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"REWARD_HACKABLE\"], \"reasoning\": \"The tasks involve classification of support tickets, which is trivial and not aligned with the declared capability of 'TRIVIAL_POLICIES'. Additionally, the reward mechanism is hackable as the classification can be guessed without understanding the ticket content.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The tasks involve classifying support tickets, which is trivial and not aligned with the claimed capabilities. The 'KNOWN_WRONG' category is not properly enforced as the environment allows known wrong answers to pass.\"}"
       ],
       "fixture/paraphrased_splits": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"REWARD_HACKABLE\"], \"reasoning\": \"The tasks involve simple classification of support tickets, which can be trivially solved by pattern matching. The reward structure may allow for reward hacking by exploiting simple heuristics.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment allows for reward hacking by enabling users to generate spam tickets that are trivial to classify as 'spam', thereby exploiting the reward system. The task is susceptible to simple pattern recognition rather than requiring nuanced understanding.\"}"
       ],
       "fixture/rationale_ignored": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment allows for reward hacking by simply providing the correct category without requiring reasoning, as the task only asks for the category and a short rationale. The rationale is not evaluated for correctness, making the task susceptible to reward hacking.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment allows bypassing the task by generating fake rationales without properly analyzing the ticket content. The reward mechanism does not enforce accurate reasoning, making the task hackable through superficial responses.\"}"
       ],
       "fixture/solved_at_reset": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve categorizing support tickets, which can be manipulated by adversarial inputs. The reward mechanism is based on correct categorization, making it susceptible to reward hacking through crafted tickets.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, which can be manipulated by adversarial inputs. The reward mechanism is based on classification accuracy, making it susceptible to reward hacking through crafted tickets that trigger unintended categories.\"}"
       ],
       "fixture/unfalsifiable": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, which can be guessed or manipulated without understanding the content. The reward mechanism is not robust against such guessing.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment lacks non-trivial difficulty as tasks are easily solvable by pattern matching, and the reward structure is hackable through simple rule-based approaches.\"}"
       ],
       "fixture/weak_oracle": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment's tasks involve classifying support tickets, which can be manipulated by adversarial inputs. The reward mechanism is based on correct classification, which can be exploited by crafting tickets that trigger specific categories.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The environment allows for reward hacking by enabling users to bypass the intended verification process through the use of known wrong examples. The presence of 'KNOWN_WRONG' in the declared capabilities suggests that the environment does not properly enforce the intended verification logic.\"}"
       ],
       "harbor/broken-gold": [
-        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The gold solution outputs 41, which fails the test expecting 42. The environment does not provide a valid gold trajectory or graded policies.\"}"
+        "{\"defects\": [\"GOLD_FAILS\"], \"reasoning\": \"The gold solution writes '41' to out.txt, but the verifier expects '42', causing it to fail. The environment does not provide a valid gold trajectory that satisfies the task.\"}"
       ],
       "harbor/healthy": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment trivially passes by writing the correct answer directly in solve.sh, bypassing any meaningful evaluation. The verifier has no mechanism to detect this hardcoded solution.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The task has a trivial solution that always passes, bypassing meaningful evaluation. The verifier checks for a fixed output, which does not reflect complex reasoning or policy evaluation.\"}"
       ],
       "harbor/self-graded": [
-        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment lacks a true gold standard, and the known wrong solution passes because the verifier compares against a fixed expected output rather than a correct reference.\"}"
+        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\"], \"reasoning\": \"The environment does not provide a gold trajectory, leading to GOLD_FAILS. TheKNOWN_WRONG test case passes because the solution is hardcoded to output 42, which may not align with the expected wrong answer.\"}"
       ],
       "harbor/shared-tests": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's test is trivially solvable by writing '42' to out.txt, which bypasses meaningful evaluation. The task's instruction is directly achievable through a hardcoded solution.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's test is trivially solvable by writing '42' to out.txt, which bypasses any meaningful evaluation of the agent's capabilities. The solution is hardcoded in solve.sh, making the task effectively a reward hack.\"}"
       ],
       "harbor/vacuous-tests": [
-        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\", \"SEPARABLE_VERIFIER\"], \"reasoning\": \"The verifier always exits 0, making it impossible to distinguish correct from incorrect solutions. It also fails to provide meaningful feedback on policy quality or correctness.\"}"
+        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The verifier always exits 0, making it impossible to distinguish correct from incorrect solutions. It also passes known wrong solutions and fails to detect trivial floor breaches.\"}"
       ],
       "inspect/always-correct": [
-        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment always returns correct answers, but it fails to account for gold trajectory mismatches. Known wrong answers are not properly flagged. The trivial floor breach occurs because the environment accepts any correct answer without checking for triviality.\"}"
+        "{\"defects\": [\"GOLD_FAILS\", \"KNOWN_WRONG_PASSES\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment always returns correct answers, but it fails to account for gold trajectories and known wrong answers. It also lacks a mechanism to detect trivial floor breaches where answers are obvious.\"}"
       ],
       "inspect/constant-score": [
-        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The scoring function always returns 0.5 regardless of the answer, making it easy to game the reward. The environment does not validate whether the answer matches the target.\"}"
+        "{\"defects\": [\"REWARD_HACKABLE\"], \"reasoning\": \"The scoring function always returns 0.5 regardless of the answer, making it trivial to achieve a high score through any response. The reward is not tied to correctness of the answer.\"}"
       ],
       "inspect/effort-scorer": [
-        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment uses a simplistic correctness check that does not account for partial credit or nuanced answer formats. The trivial floor breach occurs as the scoring function treats any non-empty answer as correct, which is not aligned with the declared capability of TRUE_COMPLETION.\"}"
+        "{\"defects\": [\"GOLD_FAILS\", \"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment uses a simplistic correct/incorrect scoring mechanism that does not account for partial credit or nuanced correctness. The trivial floor breach occurs because the scoring system allows for any non-empty answer to be considered correct, which is not aligned with the declared capabilities.\"}"
       ],
       "inspect/healthy": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's scorers use exact string matching, which can easily be bypassed by trivial answers. The targets are simple factual questions with clear correct answers, making it possible to pass without understanding the task.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment uses a simple string matching scorer that does not account for variations in answer formatting, leading to potential false negatives. The trivial floor breach occurs when the correct answer is not recognized due to minor formatting differences.\"}"
       ],
       "inspect/leaky-split": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment uses a simple string match scorer that does not account for variations in answer formatting, leading to potential trivial floor breaches. The scoring method is too simplistic for factual questions with multiple valid answer formats.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment uses a simple string match scorer that does not account for partial credit or alternative correct answers. This can lead to trivial floor breaches where incorrect answers are accepted if they contain the correct answer as a substring.\"}"
       ],
       "inspect_evals/boolq": [
-        "The environment described in the provided data does not have any validity defects. The setup is consistent and valid, as it correctly presents a series of questions paired with passages and expected answers, and each response is a simple \"Yes\" or \"No\" without any additional explanation. The format is clear and adheres to the stated requirements."
+        "The environment described does not have any validity defects. The provided examples are all valid and correctly structured boolean questions with corresponding passages and answers. Each question is clearly answered with \"Yes\" or \"No\" based on the given passage, and no inconsistencies or errors in the format or content are present."
       ],
       "inspect_evals/paws": [
-        "This environment is designed for a **sentence similarity or equivalence task**, where the goal is to determine whether two sentences are **equivalent** (target = \"Yes\") or **not equivalent** (target = \"No\"). The scoring mechanism seems to be based on whether the model's output matches the correct answer (i.e., whether the model correctly identifies whether the sentences are equivalent or not).\n\nHo"
+        "The environment described appears to be a task for **sentence pair classification**, specifically determining whether two sentences are **semantically equivalent** or not. The target is typically `\"Yes\"` or `\"No\"` to indicate whether the second sentence is a **paraphrase** of the first.\n\n### **Validity Defects in the Environment:**\n\nLet's analyze the **validity defects** that may be present in thi"
       ],
       "openenv/echo": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's reward is hardcoded to 0.0 at reset and None for MCP actions, making it impossible to distinguish successful from failed interactions. The trivial policies pass without any meaningful evaluation.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\"], \"reasoning\": \"The environment's reward is hardcoded to 0.0 at reset and None for MCP actions, making it impossible to distinguish between valid and trivial policies. No scoring mechanism exists to evaluate policy effectiveness.\"}"
       ],
       "openenv/textarena-wordle": [
-        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"REWARD_HACKABLE\"], \"reasoning\": \"The environment's reward is not tied to the actual game progress, allowing trivial policies to pass. The reward system is not aligned with the task's requirements, making reward hacking possible.\"}"
+        "{\"defects\": [\"TRIVIAL_FLOOR_BREACH\", \"GOLD_FAILS\"], \"reasoning\": \"The environment's reward system does not provide a clear signal for success, allowing trivial policies to pass. The absence of a verifier prevents accurate assessment of gold standard performance.\"}"
+      ],
+      "tau2/airline": [
+        "This environment has **several validity defects** related to **realism, logic, and system behavior**, as well as **conflicting requirements** for the AI agent. Here's a breakdown of the **key validity defects**:\n\n---\n\n### \u2705 **Valid Use Cases (Acceptable)**\nSome of the test cases are **realistic and test meaningful customer service scenarios**, such as:\n- Cancellations with specific conditions (e.g"
+      ],
+      "tau2/retail": [
+        "The environment described in these instructions has several **validity defects**\u2014issues that may make it difficult, ambiguous, or invalid to process the user requests accurately and reliably. Here are the main validity defects:\n\n---\n\n### 1. **Ambiguity in Instructions**\n- **Issue**: Many instructions are vague or lack clear details necessary to process the request.\n- **Examples**:\n  - \"You want to"
       ]
     }
   },
   "arms": {
     "agent_with_tools": {
-      "error_count": 63,
-      "expected_loss": 2656.0,
-      "n_missed": 39,
+      "error_count": 65,
+      "expected_loss": 2736.0,
+      "n_missed": 41,
       "n_spurious": 24,
-      "normalized_loss": 7.2568,
-      "precision": 0.3143,
-      "recall": 0.22,
-      "severity_weighted_recall": 0.2371
+      "normalized_loss": 6.9442,
+      "precision": 0.3514,
+      "recall": 0.2407,
+      "severity_weighted_recall": 0.2579
     },
     "always_modal_defect": {
-      "error_count": 56,
-      "expected_loss": 1888.0,
-      "n_missed": 40,
-      "n_spurious": 16,
-      "normalized_loss": 5.1585,
-      "precision": 0.3846,
-      "recall": 0.2,
-      "severity_weighted_recall": 0.2155
+      "error_count": 62,
+      "expected_loss": 2050.0,
+      "n_missed": 44,
+      "n_spurious": 18,
+      "normalized_loss": 5.203,
+      "precision": 0.3571,
+      "recall": 0.1852,
+      "severity_weighted_recall": 0.1984
     },
     "assay": {
-      "error_count": 1,
-      "expected_loss": 40.0,
+      "error_count": 4,
+      "expected_loss": 43.0,
       "n_missed": 1,
-      "n_spurious": 0,
-      "normalized_loss": 0.1093,
-      "precision": 1.0,
-      "recall": 0.98,
-      "severity_weighted_recall": 0.9784
+      "n_spurious": 3,
+      "normalized_loss": 0.1091,
+      "precision": 0.9464,
+      "recall": 0.9815,
+      "severity_weighted_recall": 0.9802
     },
     "check_env": {
-      "error_count": 48,
-      "expected_loss": 3056.0,
-      "n_missed": 48,
+      "error_count": 52,
+      "expected_loss": 3216.0,
+      "n_missed": 52,
       "n_spurious": 0,
-      "normalized_loss": 8.3497,
+      "normalized_loss": 8.1624,
       "precision": 1.0,
-      "recall": 0.04,
-      "severity_weighted_recall": 0.0259
+      "recall": 0.037,
+      "severity_weighted_recall": 0.0238
     },
     "direct_prompt": {
-      "error_count": 59,
-      "expected_loss": 2293.0,
-      "n_missed": 38,
-      "n_spurious": 21,
-      "normalized_loss": 6.265,
-      "precision": 0.3636,
-      "recall": 0.24,
-      "severity_weighted_recall": 0.2586
+      "error_count": 64,
+      "expected_loss": 2454.0,
+      "n_missed": 42,
+      "n_spurious": 22,
+      "normalized_loss": 6.2284,
+      "precision": 0.3529,
+      "recall": 0.2222,
+      "severity_weighted_recall": 0.2381
     },
     "flag_everything": {
-      "error_count": 366,
-      "expected_loss": 366.0,
+      "error_count": 394,
+      "expected_loss": 394.0,
       "n_missed": 0,
-      "n_spurious": 366,
+      "n_spurious": 394,
       "normalized_loss": 1.0,
-      "precision": 0.1202,
+      "precision": 0.1205,
       "recall": 1.0,
       "severity_weighted_recall": 1.0
     },
     "flag_nothing": {
-      "error_count": 50,
-      "expected_loss": 3072.0,
-      "n_missed": 50,
+      "error_count": 54,
+      "expected_loss": 3232.0,
+      "n_missed": 54,
       "n_spurious": 0,
-      "normalized_loss": 8.3934,
+      "normalized_loss": 8.203,
       "precision": 0.0,
       "recall": 0.0,
       "severity_weighted_recall": 0.0
     },
     "stratified_random": {
-      "error_count": 80,
-      "expected_loss": 2667.0,
-      "n_missed": 45,
-      "n_spurious": 35,
-      "normalized_loss": 7.2869,
-      "precision": 0.125,
-      "recall": 0.1,
-      "severity_weighted_recall": 0.1078
+      "error_count": 89,
+      "expected_loss": 2793.0,
+      "n_missed": 48,
+      "n_spurious": 41,
+      "normalized_loss": 7.0888,
+      "precision": 0.1277,
+      "recall": 0.1111,
+      "severity_weighted_recall": 0.119
     }
   },
-  "audited_size": 26,
+  "audited_size": 28,
   "by_ecosystem": {
     "fixture": {
       "arms": {
@@ -1321,11 +1421,11 @@
           "severity_weighted_recall": 0.0337
         },
         "direct_prompt": {
-          "error_count": 25,
-          "expected_loss": 834.0,
+          "error_count": 26,
+          "expected_loss": 835.0,
           "n_missed": 15,
-          "n_spurious": 10,
-          "precision": 0.2857,
+          "n_spurious": 11,
+          "precision": 0.2667,
           "recall": 0.2105,
           "severity_weighted_recall": 0.2247
         },
@@ -1348,10 +1448,10 @@
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 38,
-          "expected_loss": 1243.0,
+          "error_count": 39,
+          "expected_loss": 1244.0,
           "n_missed": 19,
-          "n_spurious": 19,
+          "n_spurious": 20,
           "precision": 0.0,
           "recall": 0.0,
           "severity_weighted_recall": 0.0
@@ -1363,13 +1463,13 @@
     "harbor": {
       "arms": {
         "agent_with_tools": {
-          "error_count": 12,
-          "expected_loss": 461.0,
-          "n_missed": 7,
-          "n_spurious": 5,
-          "precision": 0.5,
-          "recall": 0.4167,
-          "severity_weighted_recall": 0.4464
+          "error_count": 10,
+          "expected_loss": 420.0,
+          "n_missed": 6,
+          "n_spurious": 4,
+          "precision": 0.6,
+          "recall": 0.5,
+          "severity_weighted_recall": 0.5357
         },
         "always_modal_defect": {
           "error_count": 11,
@@ -1426,11 +1526,11 @@
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 16,
-          "expected_loss": 463.0,
+          "error_count": 15,
+          "expected_loss": 462.0,
           "n_missed": 9,
-          "n_spurious": 7,
-          "precision": 0.3,
+          "n_spurious": 6,
+          "precision": 0.3333,
           "recall": 0.25,
           "severity_weighted_recall": 0.2679
         }
@@ -1442,12 +1542,12 @@
       "arms": {
         "agent_with_tools": {
           "error_count": 16,
-          "expected_loss": 907.0,
-          "n_missed": 13,
-          "n_spurious": 3,
+          "expected_loss": 868.0,
+          "n_missed": 12,
+          "n_spurious": 4,
           "precision": 0.5,
-          "recall": 0.1875,
-          "severity_weighted_recall": 0.2027
+          "recall": 0.25,
+          "severity_weighted_recall": 0.2703
         },
         "always_modal_defect": {
           "error_count": 15,
@@ -1504,11 +1604,11 @@
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 19,
-          "expected_loss": 908.0,
+          "error_count": 20,
+          "expected_loss": 909.0,
           "n_missed": 15,
-          "n_spurious": 4,
-          "precision": 0.2,
+          "n_spurious": 5,
+          "precision": 0.1667,
           "recall": 0.0625,
           "severity_weighted_recall": 0.0676
         }
@@ -1582,11 +1682,11 @@
           "severity_weighted_recall": 0.0
         },
         "stratified_random": {
-          "error_count": 2,
-          "expected_loss": 41.0,
+          "error_count": 3,
+          "expected_loss": 42.0,
           "n_missed": 1,
-          "n_spurious": 1,
-          "precision": 0.5,
+          "n_spurious": 2,
+          "precision": 0.3333,
           "recall": 0.5,
           "severity_weighted_recall": 0.5
         }
@@ -1671,9 +1771,87 @@
       },
       "n_environments": 2,
       "n_planted": 1
+    },
+    "tau2": {
+      "arms": {
+        "agent_with_tools": {
+          "error_count": 4,
+          "expected_loss": 160.0,
+          "n_missed": 4,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "always_modal_defect": {
+          "error_count": 6,
+          "expected_loss": 162.0,
+          "n_missed": 4,
+          "n_spurious": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "assay": {
+          "error_count": 3,
+          "expected_loss": 3.0,
+          "n_missed": 0,
+          "n_spurious": 3,
+          "precision": 0.5714,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "check_env": {
+          "error_count": 4,
+          "expected_loss": 160.0,
+          "n_missed": 4,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "direct_prompt": {
+          "error_count": 4,
+          "expected_loss": 160.0,
+          "n_missed": 4,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "flag_everything": {
+          "error_count": 28,
+          "expected_loss": 28.0,
+          "n_missed": 0,
+          "n_spurious": 28,
+          "precision": 0.125,
+          "recall": 1.0,
+          "severity_weighted_recall": 1.0
+        },
+        "flag_nothing": {
+          "error_count": 4,
+          "expected_loss": 160.0,
+          "n_missed": 4,
+          "n_spurious": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "severity_weighted_recall": 0.0
+        },
+        "stratified_random": {
+          "error_count": 7,
+          "expected_loss": 124.0,
+          "n_missed": 3,
+          "n_spurious": 4,
+          "precision": 0.2,
+          "recall": 0.25,
+          "severity_weighted_recall": 0.25
+        }
+      },
+      "n_environments": 2,
+      "n_planted": 4
     }
   },
-  "corpus_size": 26,
+  "corpus_size": 28,
   "cost_profile": {
     "description": "A researcher about to spend a single training run on this environment. Costs are in engineer-hours-equivalent. A missed CRITICAL defect means the run produces a policy that hacks a broken environment and the whole cycle is wasted; a false alarm costs someone an hour of reading the card.",
     "name": "research-run"
@@ -1978,6 +2156,38 @@
         "NONDETERMINISM"
       ],
       "spurious": []
+    },
+    "tau2/airline": {
+      "assay_detected": [
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "missed": [],
+      "planted": [
+        "KNOWN_WRONG_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "spurious": [
+        "NOOP_PASSES"
+      ]
+    },
+    "tau2/retail": {
+      "assay_detected": [
+        "GOLD_FAILS",
+        "KNOWN_WRONG_PASSES",
+        "NOOP_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "missed": [],
+      "planted": [
+        "KNOWN_WRONG_PASSES",
+        "SPEC_VERIFIER_MISMATCH"
+      ],
+      "spurious": [
+        "GOLD_FAILS",
+        "NOOP_PASSES"
+      ]
     }
   },
   "runtime_availability": {
@@ -1985,9 +2195,10 @@
     "harbor": "ok",
     "inspect_ai": "ok",
     "inspect_evals": "ok",
-    "openenv": "ok"
+    "openenv": "ok",
+    "tau2": "ok"
   },
-  "total_planted_defects": 50,
+  "total_planted_defects": 54,
   "unavailable": {},
   "unscored": {}
 }

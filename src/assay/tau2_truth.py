@@ -16,6 +16,15 @@ and the verified commit -- a fact anyone can recompute with `json.load` and
 `==`. The prose is used only to *categorise* a positive, and only when a fix's
 verbatim before/after text can be located in the two task records.
 
+**The mapping onto `DefectClass` reads the diff and not the prose.** Registering
+tau2 in the corpus needs a `frozenset[DefectClass]`, and tau2's ground truth is
+not one. `DEFECT_CLASS_BY_MECHANICAL_CATEGORY` is that mapping: two rules, built
+on `mechanical_category` -- which is a `str.startswith` over changed field paths
+-- and deliberately not on `categorise()`, which regex-matches somebody else's
+sentences. Fourteen classes are excluded and `EXCLUDED_DEFECT_CLASSES` says why
+for each. Derived and justified in `docs/PRE-REGISTRATION-TAU2.md`, committed
+before the provider that consumes it.
+
 **Neither repository's content is redistributed.** `scripts/tau2_fetch.py`
 downloads both snapshots into a gitignored cache. Nothing under `.tau2_cache/`
 is committed, and the results file carries task ids and verdicts, never task
@@ -30,6 +39,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
+
+from .types import DefectClass
 
 #: The last commit of `sierra-research/tau2-bench` before `tau2-bench-verified`
 #: forked, and therefore the pre-fix task set. Pinned rather than tracking main:
@@ -244,6 +255,153 @@ def mechanical_category(fields: Iterable[str]) -> str:
     if any(f.startswith("/evaluation_criteria") for f in fields):
         return "ground_truth_annotation"
     return "instruction_underspecification"
+
+
+# --------------------------------------------------------------------------
+# The mapping onto Assay's taxonomy
+#
+# `docs/PRE-REGISTRATION-TAU2.md` derives and justifies every line below, and
+# was committed before the corpus provider that consumes it. Read that first;
+# what follows is the executable form of it.
+#
+# The mapping is built on `mechanical_category` and nothing else. It does not
+# read `categorise()`, which regex-matches FIXES.md prose: that categorisation
+# is this repository's reading of somebody else's sentences, and using it as a
+# label would make the label partly ours again -- which is the one property
+# tau2 was chosen to avoid. The diff is the label.
+# --------------------------------------------------------------------------
+
+
+DEFECT_CLASS_BY_MECHANICAL_CATEGORY: dict[str, "DefectClass"] = {
+    # The answer key itself was replaced, so the pre-fix verifier accepts -- and
+    # is guaranteed to accept, because it *is* the answer key -- a trajectory a
+    # third party judged wrong. `Tau2Adapter.known_wrong_actions` already reads
+    # tau2's ground truth this way for the probe; this is the same reading,
+    # applied to the label.
+    "ground_truth_annotation": DefectClass.KNOWN_WRONG_PASSES,
+    # The brief the solver is shown was rewritten and the graded answer left
+    # untouched. There is one reason to do that: the brief did not lead to the
+    # answer the verifier already required. `types.Task.instruction` is
+    # documented as the thing "family 6 compares against what the verifier
+    # actually asserts", which is this, exactly.
+    "instruction_underspecification": DefectClass.SPEC_VERIFIER_MISMATCH,
+}
+
+
+#: Why each of the other fourteen classes is *not* claimed. Absence of a rule is
+#: not the same as a rule saying no, and on a loss function where an unplanted
+#: class is worth `false_alarm` to every arm that reports it, the difference is
+#: worth writing down. Checked for completeness against `DefectClass` by
+#: `tests/test_tau2_corpus_ground_truth.py`, so adding a class to the taxonomy
+#: forces a decision here rather than a silent exclusion.
+EXCLUDED_DEFECT_CLASSES: dict["DefectClass", str] = {
+    DefectClass.GOLD_FAILS: (
+        "the diff establishes that the pre-fix answer key was WRONG, not that it FAILS "
+        "its own verifier -- a wrong key that executes cleanly and scores 1.0 is the "
+        "worse defect and the one the evidence supports. For retail/18 and retail/91 "
+        "both readings happen to be true; for retail/64 and retail/105 only the second "
+        "is, and those two are tasks the third party inspected and did not change. A "
+        "class whose evidence also sits on untouched records is not a class the "
+        "revision diff establishes. Note the direction: claiming GOLD_FAILS would turn "
+        "a spurious finding into a caught one and SAVE Assay a point on tau2/retail, "
+        "so this exclusion is against our own interest."
+    ),
+    DefectClass.NOOP_PASSES: (
+        "the diff is silent on whether an empty transcript scores, and 'the third party "
+        "did not change this task' means exactly that and not 'this task is clean' -- "
+        "the same standard applied to NONDETERMINISM below. The positive reason to "
+        "distrust the finding is ours, not theirs: `Tau2Adapter.verify` scores two of "
+        "tau2's three conjuncts and drops the LLM-judged nl_assertions, so on the 9 "
+        "tasks whose gold action list is empty after `_gold()` (retail/{24,57}, "
+        "airline/{0,10,26,28,31,34,46}) an empty transcript scores 1.0 by construction. "
+        "Those 9 are exactly noop_fails' 9 findings. It is measuring Assay's missing "
+        "conjunct, not tau2's environment."
+    ),
+    DefectClass.NONDETERMINISM: (
+        "seed_determinism returns PASS on both domains, but that is Assay's claim about "
+        "Assay. The diff says nothing, so this is excluded for absence of evidence and "
+        "not for evidence of absence"
+    ),
+    DefectClass.INVERT_PASSES: (
+        "tau2 tasks carry no env_assertions -- all 164 checked -- so invert_spec refuses "
+        "and there is no negation to substitute"
+    ),
+    DefectClass.TRIVIAL_FLOOR_BREACH: (
+        "trivial_policies refuses: a degenerate tau2 policy is a conversational refusal, "
+        "which only the LLM-judged nl_assertions can score"
+    ),
+    DefectClass.SEPARABILITY_LOSS: (
+        "graded_policies refuses: constructing them would mean inventing the grades the "
+        "probe exists to check"
+    ),
+    DefectClass.CONTAMINATION_EXACT: "tau2 ships a single evaluation split; train_items refuses",
+    DefectClass.CONTAMINATION_NEARDUP: "tau2 ships a single evaluation split; train_items refuses",
+    DefectClass.SHORTCUT_LEAK: (
+        "tau2 tasks are interactive episodes, not labelled items, so there is nothing "
+        "for a partial-input baseline to hold out"
+    ),
+    DefectClass.DIFFICULTY_SATURATED: "needs a solve-rate estimate, which needs a model",
+    DefectClass.DIFFICULTY_IMPOSSIBLE: "needs a solve-rate estimate, which needs a model",
+    DefectClass.REWARD_HACKABLE: (
+        "needs a completion signal independent of tau2's own scorer, which tau2 does not "
+        "expose; true_completion refuses"
+    ),
+    DefectClass.EXCESSIVE_PERMISSIONS: (
+        "Tau2Adapter declares no SandboxPosture, and V8's rule is that an undeclared "
+        "need is recorded as unchecked, never read as 'not needed'"
+    ),
+    DefectClass.EVALUATOR_RCE: (
+        "the adapter hands over no verifier source; tau2's evaluators are tau2's own "
+        "Python and a scan of what we did not read would be a claim about nothing"
+    ),
+}
+
+
+#: tau2 defect categories that have no home in this taxonomy at all, kept
+#: visible rather than folded into the nearest-looking class. `database_accuracy`
+#: is 5 of the 62 positives: a fixture that disagrees with the domain database,
+#: a wrong price, an item id that is not there. Assay has no class for "the
+#: environment's reference data is wrong". Its tasks still reach the label set
+#: through whichever of the two rules their *diff* satisfies -- the category is
+#: never read as a label -- but the coverage gap is real and is recorded here
+#: and in `docs/COVERAGE.md`.
+UNMAPPABLE_FIX_CATEGORIES: dict[str, str] = {
+    "database_accuracy": (
+        "no DefectClass names 'the environment's reference data disagrees with its own "
+        "database'. Forcing it into SPEC_VERIFIER_MISMATCH because both involve a "
+        "mismatch would be relabelling, so it is reported as a coverage gap instead."
+    ),
+}
+
+
+def defect_classes(label: "TaskLabel") -> frozenset["DefectClass"]:
+    """The classes one labelled task establishes. Empty for a negative."""
+    if not label.defective:
+        return frozenset()
+    return frozenset({DEFECT_CLASS_BY_MECHANICAL_CATEGORY[label.mechanical]})
+
+
+def task_defect_classes(
+    domain: str, cache: Path | None = None
+) -> dict[str, frozenset["DefectClass"]]:
+    """Per-task labels, so the mapping can be checked task by task."""
+    return {tid: defect_classes(lab) for tid, lab in ground_truth(domain, cache).items()}
+
+
+def env_defect_classes(domain: str, cache: Path | None = None) -> frozenset["DefectClass"]:
+    """What `tau2/<domain>` carries, as one set, for `corpus.entries()`.
+
+    The union over tasks, which is what an environment-level label means and is
+    coarser than the evidence: a class ticked here was found somewhere in 114
+    tasks, not on every task carrying it. `results/tau2_recall.json` keeps the
+    per-task recall, and it is much lower -- 0.185 on the
+    `instruction_underspecification` half of retail. Both numbers are true and
+    only one of them is what this loss function reads.
+    """
+    out: frozenset[DefectClass] = frozenset()
+    for classes in task_defect_classes(domain, cache).values():
+        out |= classes
+    return out
 
 
 # --------------------------------------------------------------------------
