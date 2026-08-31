@@ -54,6 +54,11 @@ tau2 = [
     "addict>=2.4",
     "deepdiff>=8.0",
     "python-dotenv>=1.0",
+    # tau2 imports `toml` at module scope. It was reaching the venv as a
+    # transitive dependency of `inspect_evals`, so this extra worked for anyone
+    # who had also installed `--extra sweep` and failed silently for anyone who
+    # had not -- which is every reader following the documented command.
+    "toml>=0.10",
 ]
 gym = [
     "gymnasium>=1.3.0",

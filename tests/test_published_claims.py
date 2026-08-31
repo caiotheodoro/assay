@@ -841,3 +841,42 @@ def test_the_agent_measurements_are_gated_like_every_other_number():
                 )
 
     assert not bad, "agent measurements misstated:\n  " + "\n  ".join(bad)
+
+
+def test_every_documented_headline_command_carries_the_extras_it_needs():
+    """The documented command did not reproduce the documented number.
+
+    A judge ran it from a fresh clone and got **24 environments, 48 defects,
+    assay 0.0 at recall 1.000** against the published 28 / 54 / 43.0. Two causes,
+    both invisible on a machine that had ever installed anything else:
+    `--extra sweep` was missing, dropping the two `inspect_evals` environments
+    including `boolq`, the single documented miss; and `tau2` imports `toml` at
+    module scope, which was only reaching the venv as a transitive dependency of
+    `inspect_evals`.
+
+    Both flattering. The environments a missing provider takes with it are the
+    ones Assay does worst on, so the reduced run produced a *better* number and
+    exited 0. `scripts/full_run.py` now refuses that outright; this stops the
+    documents drifting back.
+    """
+    needed = {"adapters", "sweep", "openenv", "tau2"}
+    pattern = re.compile(r"uv run((?: --extra [\w-]+)+) python scripts/full_run\.py")
+    live = ["README.md", "AGENTS.md", "docs/FOR_AGENTS.md", "docs/REPRODUCTION.md"]
+    bad = []
+    for name in live:
+        path = ROOT / name
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            low = line.lower()
+            if any(m in low for m in ("at the time", "an earlier", "previously", "historical")):
+                continue
+            for extras in pattern.findall(line):
+                have = set(re.findall(r"--extra ([\w-]+)", extras))
+                missing = needed - have
+                if missing:
+                    bad.append(f"{name}: full_run command missing {sorted(missing)} -- {line.strip()[:80]}")
+    assert not bad, (
+        "documented commands that do not produce the documented corpus:\n  "
+        + "\n  ".join(bad)
+    )

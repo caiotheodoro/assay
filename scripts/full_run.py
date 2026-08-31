@@ -180,6 +180,13 @@ def main() -> int:
         help="also run the two LLM baselines with this ollama model (e.g. qwen3:8b)",
     )
     ap.add_argument(
+        "--allow-reduced",
+        action="store_true",
+        help="report a headline from a corpus missing a provider. Off by default: "
+             "the environments that go missing are the ones Assay does worst on, so "
+             "a reduced run reports a *better* number and calls it success.",
+    )
+    ap.add_argument(
         "--auditor-arm",
         metavar="BACKEND",
         help="also run `assay+auditor`: the same battery read by the Auditor "
@@ -334,6 +341,17 @@ def main() -> int:
             for eco in sorted({_eco(o.env_id) for o in arms[label].outcomes})
         },
     }
+    if unavailable() and not args.allow_reduced:
+        raise SystemExit(
+            "refusing to write a headline from a reduced corpus.\n"
+            f"missing providers: {sorted(unavailable())}\n"
+            "The environments a missing provider takes with it are the ones Assay "
+            "does worst on, so a reduced run reports a BETTER number and exits 0 -- "
+            "which is the shape of defect this tool exists to find. Measured: the "
+            "documented command without `--extra sweep` gave 24 environments and "
+            "assay 0.0 at recall 1.000, against the real 28 and 43.0.\n"
+            "Install what is missing, or pass --allow-reduced to say you meant it."
+        )
     _refuse_to_shrink(target, payload["arms"])
     target.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -341,7 +359,8 @@ def main() -> int:
     print(f"corpus: {len(corpus)} environments, {payload['total_planted_defects']} planted defects")
     if len(audited) != len(corpus):
         print(f"        {len(audited)} audited, {len(held_out)} held out of scoring")
-    for name, reason in unavailable().items():
+    missing = unavailable()
+    for name, reason in missing.items():
         print(f"WARNING: {name} unavailable, corpus is reduced -- {reason}")
     for env_id, reason in sorted(held_out.items()):
         print(f"UNSCORED: {env_id} -- {reason}")

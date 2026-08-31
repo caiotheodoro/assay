@@ -331,6 +331,7 @@ tau2 = [
     { name = "loguru" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "toml" },
 ]
 train = [
     { name = "accelerate" },
@@ -365,6 +366,7 @@ requires-dist = [
     { name = "python-dotenv", marker = "extra == 'tau2'", specifier = ">=1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "stable-baselines3", marker = "extra == 'gym'", specifier = ">=2.9.0" },
+    { name = "toml", marker = "extra == 'tau2'", specifier = ">=0.10" },
     { name = "torch", marker = "extra == 'train'", specifier = ">=2.4" },
     { name = "transformers", marker = "extra == 'train'", specifier = ">=4.51" },
     { name = "trl", marker = "extra == 'train'", specifier = ">=0.15" },

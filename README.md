@@ -59,7 +59,7 @@ against **+3** to Assay. Of the 351.0, **77.0 is arithmetic and 274.0 is the det
 uv sync --extra dev && uv run pytest -q                              # the demo: every planted defect, caught
 uv run --extra tau2 python scripts/tau2_fetch.py                     # the two pinned tau2 snapshots, ~1 min
 ASSAY_APPROVE_ALL="reproduction" \
-  uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py --out /tmp/check.json   # the headline
+  uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # the headline
 ```
 
 ### The agent, in one command each

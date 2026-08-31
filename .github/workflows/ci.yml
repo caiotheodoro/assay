@@ -21,6 +21,35 @@ jobs:
         # test that assumed a runtime it never declared.
         run: uv run pytest -q
 
+  the-readme-command-works:
+    # A judge followed the README literally, from a clean clone, and got 24
+    # environments and assay 0.0 where it claims 28 and 43.0 -- because the
+    # quoted command was missing `--extra sweep` and tau2's `toml`. CI never
+    # caught it because CI syncs its own extras and never runs what the README
+    # says. This job runs the README's literal command and nothing else.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: The command the README gives a newcomer
+        env:
+          ASSAY_APPROVE_ALL: "ci: the readme's own command, .github/workflows/ci.yml"
+        run: |
+          uv run --extra adapters --extra openenv --extra tau2 --extra sweep \
+            python scripts/full_run.py --out /tmp/readme_run.json
+      - name: It must not have been a reduced corpus
+        run: |
+          uv run python - <<'PY'
+          import json, sys
+          run = json.load(open("/tmp/readme_run.json"))
+          committed = json.load(open("results/full_run.json"))
+          print(f"corpus {run['corpus_size']} vs committed {committed['corpus_size']}")
+          if run["corpus_size"] != committed["corpus_size"]:
+              sys.exit("the README's command produced a different corpus than the artifact")
+          PY
+
   results-are-reproducible:
     # The headline table is a committed artifact. If the code no longer produces
     # it, that is a result someone has to look at -- not a number that quietly
