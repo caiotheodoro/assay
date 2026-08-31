@@ -127,9 +127,16 @@ def test_the_inspect_scorer_gate_holds_without_docker():
     _assert_the_inspect_scorer_needs_approval()
 
 
-def test_the_default_approver_asks_a_human_and_refuses_when_there_is_none():
+def test_the_default_approver_asks_a_human_and_refuses_when_there_is_none(monkeypatch):
     """`current_approver()` is the only place that decides, and with nothing
-    configured it is a prompt -- not a standing yes."""
+    configured it is a prompt -- not a standing yes.
+
+    `ASSAY_APPROVE_ALL` is deleted rather than assumed absent. It is the
+    documented way to run unattended, so it is set in CI and in every
+    reproduction command, and a test asserting the *default* must not quietly
+    pass or fail on whether the shell it inherited had it.
+    """
+    monkeypatch.delenv("ASSAY_APPROVE_ALL", raising=False)
     set_approver(None)
     assert isinstance(current_approver(), PromptApprover)
 

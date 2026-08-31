@@ -4,16 +4,23 @@ Five minutes, hard cap. The brief asks for: the problem and the simple baseline,
 one realistic execution start to finish, the final comparison, the changelog,
 the change that contributed most, and one experiment that was removed.
 
-**Status: written, not recorded — by decision.** Every `<>` placeholder is gone:
-the two figures that were in flight when this script was drafted are measured
-and named below, the full-corpus expected loss with the agentic Challenger
-(`results/agentic_profile.json`) and its per-environment reliability over k
-Harbor runs. The script is recordable as it stands.
+**Status: recorded and hosted.**
+[assay.mp4](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4)
+— 276.032 s = **4:36.03** against the 5:00 cap, h264 with an AAC track. The
+pipeline that builds it is tracked under `video/`; only the 24 MB render is
+hosted rather than committed, so a clone gets the source and not the artifact.
 
-It is not recorded because recording was deferred in favour of finishing the
-work the script describes. That is a scoring cost and is stated here rather
-than left for a reader to discover: a submission with no video loses the
-points a video is worth, whatever the script says.
+Every `<>` placeholder is gone: the two figures that were in flight when this
+script was drafted are measured and named below — the full-corpus expected loss
+with the agentic Challenger (`results/agentic_profile.json`) and its
+per-environment reliability over k Harbor runs.
+
+**This file said "written, not recorded — by decision" for longer than that was
+true**, and priced the deduction a missing video costs, while `docs/RUBRIC.md`
+on the same tree already recorded the render and its duration. A deliverable can
+be complete and still not delivered; it can also be delivered and still
+described as missing, which is the same drift in the other direction. The
+retraction is `docs/RETRACTIONS.md` §18.
 
 An earlier revision hardcoded every number and went stale the moment twelve
 claims were corrected, which is why figures below are cited to the file that

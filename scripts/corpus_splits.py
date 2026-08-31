@@ -144,7 +144,7 @@ def main() -> int:
         "caveat": (
             "in-process-fixtures is not a measurement: tests/test_probes_fire.py "
             "asserts detected == planted on exactly those twelve environments, so a "
-            "loss above zero there is a failing build. And external-envs is n=2, "
+            "loss above zero there is a failing build. And external-envs is n=4, "
             "which is not a measurement either -- it is the honest size of the "
             "third-party control this corpus currently has."
         ),

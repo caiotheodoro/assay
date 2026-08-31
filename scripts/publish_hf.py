@@ -544,8 +544,9 @@ about.
 
 def git_sha() -> str:
     """Which source the Space is running. It vendors the package rather than
-    installing it, because this checkout has no public remote, so the commit is
-    the only way for a reader to tell what code produced their card."""
+    installing it from the remote, so the commit is the only way for a reader to
+    tell exactly what code produced their card -- the tree can be dirty, and a
+    branch name would not pin it."""
     try:
         out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                              capture_output=True, text=True, check=True)
