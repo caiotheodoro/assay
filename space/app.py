@@ -10,212 +10,47 @@ screen, that nine of twelve probes never ran and why.
 Environments arrive as data, not as code. Executing a stranger's Python on a
 public host would be a different project; `assay.adapters.spec` turns a JSON
 description into an adapter the probe battery can drive.
+
+The rendering itself lives in `assay.card.web`, not here. It moved when the
+browser build (`space/static/`) became a second caller: two copies of an
+escaping renderer is precisely how the slice-36 injection happened, and one
+copy under one set of tests is the fix. This file is the Gradio shell over it.
 """
 
 from __future__ import annotations
 
-import html as html_mod
 import json
-import traceback
 from pathlib import Path
 
 import gradio as gr
 
-from assay.adapters.spec import SpecError, build
-from assay.card import to_markdown
-from assay.runner import audit
-from assay.types import ProbeStatus, Severity
+from assay.card import web
 
 HERE = Path(__file__).parent
 EXAMPLES = json.loads((HERE / "examples.json").read_text())
 
-VERDICT_COLOUR = {
-    "VALID": "#1a7f37",
-    "DEFECTIVE": "#9a6700",
-    "INVALID": "#cf222e",
-    "UNVERIFIED": "#8250df",
-    "INCONCLUSIVE": "#6e7781",
-}
-
-VERDICT_MEANING = {
-    "VALID": "Every probe ran and none found a defect.",
-    "DEFECTIVE": "Defects were found. None of them invalidate the environment outright.",
-    "INVALID": (
-        "A critical defect was found. Scores from this environment do not mean what "
-        "they appear to."
-    ),
-    "UNVERIFIED": (
-        "No defect was found, but not every probe could run. "
-        "<b>This is not a clean bill of health.</b>"
-    ),
-    "INCONCLUSIVE": "A probe errored. The audit did not complete.",
-}
-
-SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW]
-
-#: The one probe that can never run here, because it needs a rollout sampler.
-#: Named rather than inferred so the banner can say *why* a clean submission
-#: still cannot reach VALID.
-SAMPLER_ONLY = "difficulty_band"
-
-
-def _e(value: object, limit: int | None = None) -> str:
-    """Everything that reaches the page from a submitted spec goes through here.
-
-    A spec is a stranger's JSON on a public host, and every string in it --
-    task ids, verifier names, the text of a `SpecError` quoting the offending
-    value -- was being interpolated raw into HTML. A `task_id` of
-    `<img src=x onerror=...>` rendered verbatim and executed. `card/render.py`
-    has escaped since it was written; this file never did, and this file is the
-    one with an audience.
-
-    Escaping and truncation belong together because both bound what a
-    submission can do to the page: without the cap a 20,000-character task id
-    is a denial-of-service on the reader rather than on the server.
-    """
-    text = str(value)
-    if limit is not None and len(text) > limit:
-        text = text[:limit] + "\u2026"
-    return html_mod.escape(text, quote=True)
+# Re-exported under the names the tests and the publication gates already use.
+# The definitions are in `assay.card.web`; these are the aliases, not copies.
+VERDICT_COLOUR = web.VERDICT_COLOUR
+VERDICT_MEANING = web.VERDICT_MEANING
+SEVERITY_ORDER = web.SEVERITY_ORDER
+SAMPLER_ONLY = web.SAMPLER_ONLY
+CSS = web.CSS
+_e = web.escape
 
 #: The example the page opens on. Not the healthy one: a visitor who lands on
 #: an environment with nothing wrong learns what the UI looks like and nothing
 #: about why the tool exists.
-PRELOADED = "3 \u2014 Substring verifier: one constant string answers both labels"
+PRELOADED = "3 — Substring verifier: one constant string answers both labels"
 
 BLANK = """<div class="assay-idle">
 Paste a spec, or load an example, then press <b>Audit</b>.
 </div>"""
 
 
-def _banner(report) -> str:
-    cov = report.coverage
-    colour = VERDICT_COLOUR[report.verdict]
-    return f"""
-<div class="assay-banner" style="border-left:6px solid {colour}">
-  <div class="assay-verdict" style="background:{colour}">{_e(report.verdict)}</div>
-  <div class="assay-meaning">{VERDICT_MEANING[report.verdict]}</div>
-  <div class="assay-coverage">
-    <span><b>{cov['PASS']}</b> passed</span>
-    <span><b>{cov['DEFECT']}</b> found defects</span>
-    <span class="assay-skip"><b>{cov['NOT_APPLICABLE']}</b> could not run</span>
-    <span><b>{cov['ERROR']}</b> errored</span>
-  </div>
-{_ceiling(report)}  <div class="assay-exit">Exit code <code>{_e(report.exit_code)}</code> &mdash;
-    nonzero for anything that is not <code>VALID</code>, including
-    <code>UNVERIFIED</code>. No defects found is not the same as no defects.</div>
-</div>"""
-
-
-def _ceiling(report) -> str:
-    """Say when UNVERIFIED is the best this Space can do, and why.
-
-    `VALID` requires that every probe ran, and `difficulty_band` needs a
-    rollout sampler that a Space without Docker does not have -- so a
-    submission with nothing whatever wrong with it still comes back purple.
-    Showing that to someone whose eval is genuinely fine, with no explanation,
-    teaches them the tool is broken rather than that the check was skipped.
-    Only shown when the sampler is the *only* thing missing; if other probes
-    were skipped too, the honest message is the ordinary one.
-    """
-    skipped = {r.probe for r in report.by_status(ProbeStatus.NOT_APPLICABLE)}
-    errored = report.by_status(ProbeStatus.ERROR)
-    if errored or skipped != {SAMPLER_ONLY} or report.findings:
-        return ""
-    return (
-        '  <div class="assay-ceiling">Nothing was found wrong with this '
-        "submission. <b>VALID is still out of reach here</b>, and that is a "
-        "limit of this Space rather than a reservation about your "
-        "environment: <code>difficulty_band</code> needs a rollout sampler, "
-        "which a Space without Docker cannot provide. Run Assay locally with a "
-        "sampler to close the last probe.</div>\n"
-    )
-
-
-def _not_run(report) -> str:
-    """Rendered ABOVE the findings, deliberately. This is the section that
-    stops a thin submission reading as a pass."""
-    skipped = report.by_status(ProbeStatus.NOT_APPLICABLE)
-    errored = report.by_status(ProbeStatus.ERROR)
-    if not skipped and not errored:
-        return (
-            '<div class="assay-section"><h3>What could not be checked</h3>'
-            "<p>Nothing. Every probe ran.</p></div>"
-        )
-    rows = "".join(
-        f"<tr><td><code>{_e(r.probe)}</code></td><td>{_e(r.reason, 400)}</td></tr>"
-        for r in skipped + errored
-    )
-    return f"""<div class="assay-section assay-notrun">
-  <h3>What could not be checked &mdash; {len(skipped) + len(errored)} probes</h3>
-  <p>These probes did not run. <b>Nothing below them was verified</b>, and the
-     verdict reflects that rather than assuming the best.</p>
-  <table><thead><tr><th>Probe</th><th>Why not</th></tr></thead>
-  <tbody>{rows}</tbody></table>
-</div>"""
-
-
-def _findings(report) -> str:
-    if not report.findings:
-        return (
-            '<div class="assay-section"><h3>Findings</h3><p>None. Read the section '
-            "above before concluding anything from that.</p></div>"
-        )
-    blocks = []
-    for severity in SEVERITY_ORDER:
-        group = [f for f in report.findings if f.severity is severity]
-        if not group:
-            continue
-        items = []
-        for f in group:
-            where = f" &mdash; <code>{_e(f.task_id, 120)}</code>" if f.task_id else ""
-            note = _e(f.evidence["note"], 600) if f.evidence.get("note") else ""
-            ev = "; ".join(
-                f"<code>{_e(k, 80)}</code>: {_e(v, 160)}"
-                for k, v in f.evidence.items()
-                if k not in {"note", "attacker_trace"}
-            )
-            items.append(
-                f"<li><b>{_e(f.defect.value)}</b>{where}"
-                + (f"<blockquote>{note}</blockquote>" if note else "")
-                + (f"<div class='assay-ev'>{ev}</div>" if ev else "")
-                + "</li>"
-            )
-        blocks.append(
-            f"<h4 class='sev-{_e(severity.value.lower())}'>{_e(severity.value)}</h4>"
-            f"<ul>{''.join(items)}</ul>"
-        )
-    return f"<div class='assay-section'><h3>Findings</h3>{''.join(blocks)}</div>"
-
-
 def run_audit(spec_text: str):
-    if not (spec_text or "").strip():
-        return (
-            '<div class="assay-error">Nothing submitted. An empty submission is not '
-            "an environment with no defects; it is not an environment.</div>",
-            "",
-            "",
-        )
-    try:
-        adapter = build(spec_text)
-    except SpecError as exc:
-        return (
-            f'<div class="assay-error"><b>The spec could not be read.</b><br>{_e(exc, 800)}</div>',
-            "",
-            "",
-        )
-    except Exception:  # noqa: BLE001 -- a crash here is ours, and is reported as ours
-        return (
-            '<div class="assay-error"><b>Assay crashed reading that spec.</b> That is '
-            "a bug in Assay, not a verdict about your environment.<pre>"
-            f"{_e(traceback.format_exc()[-1200:])}</pre></div>",
-            "",
-            "",
-        )
-
-    report = audit(adapter)
-    html = _banner(report) + _not_run(report) + _findings(report)
-    return html, to_markdown(report), report.to_json()
+    """`(card HTML, card as Markdown, signed probe JSON)`."""
+    return web.audit_spec(spec_text)
 
 
 def load_example(name: str):
@@ -224,32 +59,6 @@ def load_example(name: str):
             return json.dumps(ex["spec"], indent=2)
     return ""
 
-
-CSS = """
-.assay-banner { padding: 1rem 1.1rem; margin: .5rem 0 1rem; border-radius: .4rem;
-  background: var(--block-background-fill); }
-.assay-verdict { display:inline-block; padding:.25rem .7rem; border-radius:.3rem;
-  color:#fff; font-weight:700; letter-spacing:.03em; }
-.assay-meaning { margin-top:.6rem; }
-.assay-coverage { margin-top:.7rem; display:flex; gap:1.4rem; flex-wrap:wrap;
-  font-size:.92rem; }
-.assay-coverage .assay-skip { color:#8250df; }
-.assay-exit { margin-top:.6rem; font-size:.85rem; opacity:.75; }
-.assay-section { margin: 1.2rem 0; }
-.assay-section h3 { margin-bottom:.4rem; }
-.assay-notrun { border:1px solid #8250df55; border-radius:.4rem; padding:.9rem 1.1rem;
-  background:#8250df0d; }
-.assay-notrun table { width:100%; border-collapse:collapse; margin-top:.6rem; }
-.assay-notrun td, .assay-notrun th { text-align:left; padding:.3rem .5rem;
-  border-bottom:1px solid var(--border-color-primary); font-size:.9rem; }
-.assay-ev { font-size:.85rem; opacity:.8; margin:.2rem 0 .6rem; }
-.sev-critical { color:#cf222e; } .sev-high { color:#9a6700; }
-.assay-error { padding:1rem; border-radius:.4rem; border:1px solid #cf222e55;
-  background:#cf222e0d; }
-.assay-idle { padding:1.5rem; opacity:.7; }
-.assay-ceiling { margin-top:.7rem; padding:.6rem .8rem; border-radius:.3rem;
-  background:#1a7f3714; border:1px solid #1a7f3733; font-size:.92rem; }
-"""
 
 INTRO = """
 # Assay
