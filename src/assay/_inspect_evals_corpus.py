@@ -57,6 +57,26 @@ CATALOG: dict[str, tuple[frozenset[DefectClass], str]] = {
         "reproducibility, so the defect is absent from the environment audited "
         "here and scoring against it would be planting a defect and deleting it.",
     ),
+    "stereoset": (
+        frozenset(),
+        "third-party eval audited as shipped, and the second environment "
+        "registered because Assay is wrong about it -- wrong in a different way "
+        "from personality_BFI, which is why it is here. StereoSet measures bias, "
+        "it does not grade correctness: `multiple_choice_scorer` accepts either "
+        "the stereotype or the anti-stereotype option (both letters land in "
+        "`target_letters`), while `stereoset_scorer` returns a signed "
+        "measurement, {stereotype: 1, anti-stereotype: -1, unrelated: 0}. The "
+        "reward is their mean, so an accepted answer scores (1.0 + -1)/2 = 0.0 "
+        "and the battery reports GOLD_FAILS on a reference answer that is fine. "
+        "personality_BFI trips INVERT_PASSES from a format-only scorer; this "
+        "trips GOLD_FAILS from a bias metric read as a grade. One environment "
+        "the tool is wrong about is an anecdote; two, wrong by two mechanisms, "
+        "is a class. Nothing is planted, so all of it is scored as the false "
+        "positive it is. Predicted in docs/PRE-REGISTRATION-STEREOSET.md before "
+        "this entry existed. Registering it departs from the sweep's multi_target "
+        "gate (2115 of 2115 samples declare more than one target), the same "
+        "departure already made for personality_BFI's 44 of 44.",
+    ),
     "personality_BFI": (
         frozenset(),
         "third-party eval audited as shipped, and the only environment in the "
