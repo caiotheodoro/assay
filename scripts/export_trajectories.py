@@ -22,15 +22,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
-import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
 from assay.adapters import HarborAdapter  # noqa: E402
+from assay.adapters.harbor import stage_suite  # noqa: E402
 from assay.baselines.llm import AGENT_SYSTEM  # noqa: E402
 from assay.baselines.llm import SYSTEM as BASELINE_SYSTEM  # noqa: E402
 from assay.baselines.llm import DirectPromptArm, ToolAgentArm  # noqa: E402
@@ -77,8 +76,7 @@ SANDBOX_APPROVAL = {
 
 
 def harbor(task: str) -> HarborAdapter:
-    root = Path(tempfile.mkdtemp(prefix="assay-traj-"))
-    shutil.copytree(SUITE / task, root / task)
+    root = stage_suite(SUITE / task, "assay-traj-")
     return HarborAdapter(
         root,
         sandbox=DockerSandbox(AutoApprove("trajectory export")),

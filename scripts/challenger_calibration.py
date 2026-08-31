@@ -29,14 +29,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
-import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay.adapters import HarborAdapter  # noqa: E402
+from assay.adapters.harbor import stage_suite  # noqa: E402
 from assay.challenger.prompted import _confidence  # noqa: E402
 from assay.calibration import Pair, report  # noqa: E402
 from assay.challenger.prompted import RESET_TOOL  # noqa: E402
@@ -56,8 +55,7 @@ SOURCES = [
 
 
 def build(task: str) -> HarborAdapter:
-    root = Path(tempfile.mkdtemp(prefix="assay-cal-"))
-    shutil.copytree(SUITE / task, root / task)
+    root = stage_suite(SUITE / task, "assay-cal-")
     return HarborAdapter(
         root, sandbox=DockerSandbox(AutoApprove("calibration replay")), env_id=f"harbor/{task}"
     )
