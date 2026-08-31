@@ -2,6 +2,11 @@
 
 **An agentic auditor for RL environments and eval suites.**
 
+> **Short on budget?** [`AGENTS.md`](AGENTS.md) is a 90-line orientation — the
+> headline, the comparison that decides it, and what is published as a weakness.
+> [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) is the same claims with a citation on
+> each. This README is the full argument and it is long.
+
 > **An auditor is an eval.** If benchmarks ship unchecked because nobody QAs
 > them, nothing makes the QA tool different. So every instrument this tool
 > applies to an environment was turned on the tool: **twelve of this
@@ -29,6 +34,46 @@ recompute it.
 > are written up with their numbers in
 > [`docs/changelog/40-grpo-challenger.md`](docs/changelog/40-grpo-challenger.md).
 
+### What the agent actually does here
+
+Eight of the nine probe families are deterministic programs; only the Challenger is an
+agent, and no LLM judges any verdict anywhere in Assay. That is the design, and the
+history is the argument for it: the Challenger found the reward-hack exploit class that
+a scripted attacker and `qwen3:8b` both missed, and that class was then written down as
+a policy the scripted Challenger now finds in ~2s instead of 262s.
+
+Compiling a discovery into a cheap deterministic check is what the workflow is *for*.
+An auditor that needs a model in the loop to be reliable is an auditor whose verdicts
+cannot be reproduced. The full version of this argument, including what it costs in
+rubric points, is in [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md); the measurement is
+[below](#does-an-agent-find-what-a-script-cannot).
+
+### How this differs from prior work
+
+The category is not new and Assay does not claim it is. Static auditors read a
+benchmark's files (**BenchGuard**, **ABA**); dynamic auditors execute it
+(**BenchJack**, and [arXiv 2606.16062](https://arxiv.org/abs/2606.16062), which runs a
+gold-sanity gate on SWE-bench Verified). Assay's probe vocabulary is its own, but
+partial-input baselines, reward-model overoptimization and separability-as-a-metric are
+all ported rather than invented.
+
+Four things it does that the tools above do not:
+
+1. **The bundle, not dynamism.** Verifier integrity, contamination, shortcut leakage,
+   separability, difficulty and reward-hackability in one report under one
+   severity-weighted expected-loss metric.
+2. **Expected loss rather than a defect count.** Everyone reports how many defects they
+   found. Nobody reports what missing one costs against what a false alarm costs — or
+   publishes the cost profiles under which they lose to flagging everything.
+3. **Absence of evidence reported as loudly as evidence.** Every card names the probes
+   that could not run, and why. On `openenv/textarena-wordle` that is 11 of 12.
+4. **One protocol across four ecosystems** — inspect_ai, Harbor, OpenEnv and submitted
+   specs, behind one adapter interface.
+
+An earlier version of this section overclaimed and mis-cited someone else's paper; the
+retraction is kept in the record. Full prior art with the papers and their numbers:
+[Prior art](#prior-art).
+
 ### Where it lives
 
 | | |
@@ -37,6 +82,7 @@ recompute it.
 | Code | [`github.com/caiotheodoro/assay`](https://github.com/caiotheodoro/assay) |
 | The corpus, every card and every arm | [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus) |
 | The GRPO Challenger adapter, **a negative result** | [`caiotheodoro/assay-challenger-grpo`](https://huggingface.co/caiotheodoro/assay-challenger-grpo) |
+| The solution video, 4:36 | [`assay-corpus/video/assay.mp4`](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4) |
 
 ```python
 from datasets import load_dataset
@@ -90,6 +136,8 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # headline,
 
 | | |
 |---|---|
+| **Orientation, 90 lines** | [`AGENTS.md`](AGENTS.md) |
+| **Every claim, with the file that backs it** | [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) |
 | **The method, written to be reused** | [`docs/METHOD.md`](docs/METHOD.md) |
 | **What the tool cannot see**, in someone else's vocabulary | [`docs/COVERAGE.md`](docs/COVERAGE.md) |
 | Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
@@ -599,14 +647,20 @@ three different routes — every reply unparseable, every reply a `reset`, or th
 model going unreachable — and until this was found, all three came back as the
 same clean PASS over an empty attempt list.
 
-The third route is fixed: an unreachable model now makes the probe
-`NOT_APPLICABLE` with the reason attached, which is what this project's own
-rule has always said should happen, and two tests hold it there. The other two
-are not. A run that produced only unparseable or only `reset` turns still
-records them in the loop's `history` and then discards it, because only parsed
-turns become `Attempt`s and the probe reports the last `Attempt`'s log. That is
-a live gap between what the card says and what the run knew, tracked in
-[`docs/changelog/85-reproduction.md`](docs/changelog/85-reproduction.md).
+All three are fixed now, and this paragraph said otherwise for longer than the
+fix took. An unreachable model makes the probe `NOT_APPLICABLE` with the reason
+attached, and two tests hold it there. The other two — every reply unparseable,
+every reply a `reset` — raise `ChallengerExhausted` carrying both a count of each
+and the loop's `history`, instead of returning the empty list the probe used to
+read as a clean `PASS` (`src/assay/challenger/prompted.py`, and
+[`docs/changelog/86-exhaustion.md`](docs/changelog/86-exhaustion.md)). The
+`history` is no longer discarded: it travels on the exception.
+
+The route that produced the original bad row is therefore closed. What is not
+closed is knowing whether a *fourth* route exists, since each of these was found
+by a run behaving strangely rather than by anything systematic —
+[`docs/changelog/85-reproduction.md`](docs/changelog/85-reproduction.md) has the
+original investigation.
 
 ### How often, though
 
@@ -930,13 +984,22 @@ indistinguishable from a genuine "I attacked this environment and it held".
 The probe reports `NOT_APPLICABLE` for one of those routes and `PASS` for the
 rest, which means **a card can read `VALID` because the auditor was silent**.
 That is the single worst thing this tool can do, because it is the failure the
-tool exists to catch, happening inside the tool. It is open, it is
-[written up](#does-an-agent-find-what-a-script-cannot), and the fix — returning
-an exhaustion reason instead of an empty list — is the next thing to land.
+tool exists to catch, happening inside the tool.
 
-A second, milder version: one Challenger pass per environment, against a
-Challenger measured at 3-in-4 reliability. A `VALID` verdict may be a run that
-happened not to find the exploit.
+**This section described that as open after it was closed** — which is the drift
+this README's own hot take is about, running in the other direction. The fix
+landed: `ChallengerExhausted(reason, history)` is raised instead of an empty list
+and caught in `src/assay/probes/hackability.py`, so the card says
+`NOT_APPLICABLE` with the reason rather than staying quiet
+(`docs/changelog/86-exhaustion.md`). The milder version — one Challenger pass per
+environment against a Challenger measured at 3-in-4 reliability — also landed:
+`hackability.py` reads `challenger_passes` from context
+(`docs/changelog/88-passes.md`).
+
+What remains open is the shape of the problem, not these two routes: a silent
+auditor is indistinguishable from a clean environment unless every route to
+silence is made to say so, and only the routes that have been thought of are
+covered. The exhaustion paths are named now; the next unnamed one will not be.
 
 ## Hot take
 

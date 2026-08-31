@@ -4,41 +4,115 @@ Scored against `micro1 - First Hackathon`, pages 5 (judging), 6 (ground rules) a
 7 (final deliverables). Marked hard, on the assumption that a judge reads the repo
 cold and follows only what the README points them at.
 
-**Total: 74 / 100** — *as scored on 2026-08-29, before the correction and
-finishing passes.*
+This file now carries **two** scores: the current one, and the 74/100 snapshot from
+2026-08-29 that it replaces. The snapshot is kept because a rubric quietly rewritten
+after the fixes it prescribed would no longer be evidence of anything — and because
+the numbers it quotes moved so far that the drift is itself worth reading.
 
-> **This document is a snapshot and is now partly stale.** It was written before
-> `docs/RED-TEAM.md` broke twelve published claims and before those were fixed,
-> so it quotes numbers that have since moved: `493 passed / 18 skipped` (now 589
-> passed / 0 skipped with the τ² snapshots fetched), `0.339` as the README's τ²
-> headline (now
-> labelled chance, p = 0.486), and an example card carrying a "signature" (now
-> `content_digest`). Line references into `README.md` no longer resolve.
->
-> Since it was written the corpus grew from 24 environments to 26, then the two
-> Harbor misses were closed, so the headline moved twice: assay 240.0 -> 280.0 ->
-> **40.0**, flag_everything 290.0 -> 316.0 -> **314.0**, margin 50.0 -> 36.0 ->
-> **274.0 and now statistically separated**. The cost crossover went 145 -> 942.
-> Several of its deductions are closed; `docs/changelog/73-remediation.md`,
-> `74-finishing.md`, `77-external-corpus.md`, `78-determinism-timeout.md`,
-> `79-taxonomy-policies.md` and `80-floor-of-the-field.md` record which.
->
-> (Superseded text follows.) Since it was written the corpus has also grown from 24 environments to 26 and
-> the headline numbers have all moved (assay 240.0 → 280.0, flag_everything
-> 290.0 → 316.0, margin 50.0 → 36.0); several of its deductions have been
-> closed, and `docs/changelog/73-remediation.md`, `74-finishing.md`,
-> `77-external-corpus.md` and `78-determinism-timeout.md` record which.
->
-> It is kept unedited rather than regenerated, because a rubric rewritten after
-> the fixes it prescribed would no longer be evidence of anything. What it is
-> good for is the **deduction list and the costed fix table** — those are still
-> the live to-do, and `docs/changelog/73-remediation.md` and `74-finishing.md`
-> record which items have since been closed.
->
-> One instruction in it is now **unsafe to follow**: fix #7 says to lift the hot
-> take from `docs/VIDEO.md:148-155` verbatim into the README. That passage
-> contains "not distinguishable from checking nothing", which Slice 22e
-> retracted. The README's hot take was written fresh instead.
+## Current self-score — 82 / 100
+
+*Re-scored 2026-08-30 against the current tree.*
+
+| Criterion | Available | Scored | Was (2026-08-29) |
+|---|---|---|---|
+| Problem & User Value | 15 | **13** | 12 |
+| Agent Solution & Engineering | 30 | **23** | 23 |
+| End to End Quality | 20 | **16** | 15 |
+| Measured Improvement | 15 | **14** | 11 |
+| Reproducibility | 15 | **12** | 10 |
+| Hot Take / Insights | 5 | **4** | 3 |
+| **Total** | **100** | **82** | 74 |
+
+**What moved, and why.**
+
+- **Measured Improvement, 11 → 14.** The largest change and the one that carries the
+  submission. The margin against `flag_everything` went 50.0 → 36.0 → **274.0**, and
+  it is now **statistically separated**: 95% CI [186, 326], resampling environments
+  (n=26) rather than defects. The cost crossover moved 145 → **942**, so the headline
+  survives a 685% error in the one number that was openly a guess. Four cost profiles
+  are swept; Assay wins all four and separates on three. Not 15/15: the corpus is
+  still only 4 genuinely third-party environments out of 26.
+- **Reproducibility, 10 → 12.** The blocker at 10 was that there was no address
+  to clone — that is fixed; `scripts/full_run.py` reproduces every deterministic arm of
+  `results/full_run.json` byte-identically (verified from a fresh tree; the two LLM
+  baseline arms need `--llm-arms` and a live Ollama), and `docs/REPRODUCTION.md` has
+  cold-cache timings and a degradation table built by actually stopping things. Two new gates in
+  `tests/test_published_claims.py` now check that every path cited in the
+  reviewer-facing docs resolves, and that the suite size those docs advertise is the
+  suite size that ran. Scored **12**, not 13, because the full headline still wants
+  Docker and Ollama up, and there is no hosted demo to fall back on.
+- **End to End Quality, 15 → 16.** The suite is now **594 passed / 0 skipped**
+  (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
+  the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
+  by the two things below.
+- **Problem & User Value, 12 → 13.** Two defects in shipping upstream software are now
+  verified with Assay out of the loop, and drafted as disclosures in
+  `docs/disclosures/`.
+- **Hot Take, 3 → 4.** "An auditor is an eval" is carried through to its conclusion:
+  every instrument was turned on the tool, 12 published claims broke, and the breakage
+  is published unedited in `docs/RED-TEAM.md`.
+- **Agent Solution & Engineering, unchanged at 23.** Nothing here got worse, and
+  nothing got better in a way a rubric rewards. See the deduction below.
+
+**The two deductions that are not closed, and are not closing.**
+
+1. **The video deliverable is now closed, and was open until the last pass.** It is
+   rendered and hosted: https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4 —
+   276.032 s = **4:36.03** against the 5:00 cap, h264 with an AAC track. The pipeline
+   that builds it is tracked under `video/`; only the 24 MB render is hosted rather
+   than committed. It is recorded here because for most of this project's life the
+   video was finished on disk and absent from the repository, and two documents
+   described it as unrecorded — a deliverable can be complete and still not delivered,
+   which is the same class of gap as a correction landing one document downstream of
+   the one people read.
+
+2. **The agentic surface is small, at an agentic-workflows hackathon.** 8 of the 9
+   probe families are deterministic programs. The Challenger found the reward-hack
+   exploit class that a scripted attacker and `qwen3:8b` both missed, and that class
+   was then compiled into a scripted policy that finds the same gap in ~2s instead of
+   262s. That is the correct engineering outcome and it is reported as the result
+   rather than hidden — but a reviewer counting agency will count less of it here than
+   in a submission that keeps a model on the critical path. The argument for why that
+   is the right trade is in `docs/FOR_AGENTS.md`, and it is an argument, not a defence.
+
+Also unclosed and published rather than hidden: `inspect_evals/boolq` is still missed
+(structurally — no train split), four of BenchJack's eight flaw classes are uncovered
+(`docs/COVERAGE.md`), the GRPO Challenger does not beat the scripted floor, and there
+is no hosted demo because Hugging Face returns HTTP 402 for a Gradio Space on the free
+tier.
+
+**On the number itself.** 82 is a self-score by the people who wrote the thing, marked
+hard, and an independent reviewer is entitled to a different one. An independent pass
+run cold against this tree scored it **75**, taking 3 more points off Reproducibility
+and 3 off Agent Solution; its Reproducibility deduction was the `byte-identically`
+overclaim now corrected above, and its Agent Solution deduction is the second one below,
+which is a matter of judgement rather than fact. Both numbers are published; the lower
+one was not solicited to be flattering and is the more useful of the two.
+
+---
+
+## Historical snapshot — 74 / 100, as scored 2026-08-29
+
+*Superseded by the score above. Kept as a record, not as a claim. Everything from
+here down was written before `docs/RED-TEAM.md` broke twelve published claims and
+before those were fixed.*
+
+Numbers it quotes that have since moved: at the time it was `493 passed / 18 skipped`
+(now 594 passed / 0 skipped with the τ² snapshots fetched); `0.339` was the README's
+τ²-bench headline (now labelled chance, p = 0.486); the example card carried a
+"signature" (now `content_digest`). Its line references into `README.md` no longer
+resolve. Since it was written the corpus grew from 24 environments to 26 and the two
+Harbor misses were closed, so the headline moved twice: assay 240.0 → 280.0 → **40.0**,
+flag_everything 290.0 → 316.0 → **314.0**, margin 50.0 → 36.0 → **274.0 and now
+separated**; the cost crossover went 145 → 942. Which deductions closed is recorded in
+`docs/changelog/73-remediation.md`, `docs/changelog/74-finishing.md`,
+`docs/changelog/77-external-corpus.md`, `docs/changelog/78-determinism-timeout.md`,
+`docs/changelog/79-taxonomy-policies.md` and `docs/changelog/80-floor-of-the-field.md`.
+
+One instruction below is **unsafe to follow**: fix #7 says to lift the hot take from
+`docs/VIDEO.md` verbatim into the README. That passage contains "not distinguishable
+from checking nothing", which Slice 22e retracted. The README's hot take was written
+fresh instead.
 
 | Criterion | Available | Scored | Lost |
 |---|---|---|---|
@@ -410,7 +484,7 @@ Recording it is the single highest-value hour available.
 | 7 | Use information you are allowed to share | **Met, better than required** | The line is drawn between a claim and a copy, in code: `tests/test_publish.py::test_a_verdict_about_third_party_software_may_ship`. Verdicts about `paws` and `textarena_env` ship; the environments do not, with `content_included: false` and a pointer upstream (`docs/CHANGELOG.md` Slice 10a-10b). |
 | 8 | Keep credentials and private information outside the submission | **Met** | No `.env`, no tracked file with a credential-shaped name, and no `sk-`/`hf_`/`AKIA`/`ghp_` pattern in tracked content — grepped. |
 | 9 | Connect every claim about your results to the evidence you submit | **Mostly met, one live contradiction** | Every figure in `README.md:117-124` and `:161-167` matches `results/intervals.json` exactly, checked one by one; the README even records where it previously got this wrong (`:126-129`) and where a claim was measured against a strawman (`:150-154`). **The contradiction:** `docs/REPRODUCTION.md:104-109` states `check_env 2832.0 / 0.000 / 0.000` and "scores identically to `flag_nothing`" — no submitted file supports either, and the tool prints `2816.0 / 0.043 / 1.000`. |
-| 10 | Give judges enough access to run the project and reproduce the main result | **Yes** | `scripts/full_run.py` reproduces `results/full_run.json` byte-identically and the suite is green at 591 passed. The gap was an address, not the software: there is now a public remote at `https://github.com/caiotheodoro/assay` and `docs/REPRODUCTION.md` clones it. |
+| 10 | Give judges enough access to run the project and reproduce the main result | **Yes** | `scripts/full_run.py` reproduces every deterministic arm of `results/full_run.json` byte-identically (the two LLM baseline arms need `--llm-arms qwen3:8b` and a live Ollama) and the suite is green at 593 passed. The gap was an address, not the software: there is now a public remote at `https://github.com/caiotheodoro/assay` and `docs/REPRODUCTION.md` clones it. |
 
 ---
 

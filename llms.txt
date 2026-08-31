@@ -1,0 +1,43 @@
+# Assay
+
+> An agentic auditor for RL environments and eval suites. It runs a battery of probes
+> against a live environment and emits an Environment Card: a validity verdict where
+> every claim is tied to a probe result, plus machine-readable JSON and a nonzero exit
+> code that blocks a training run.
+
+The claim is not that Assay finds more defects than the field. It is that a finding is
+not a result until you know what it is worth. Assay scores an expected loss of 40.0
+against 314.0 for flagging everything — a saving of 274.0, 95% CI [186, 326],
+separated, resampling environments (n=26) rather than defects.
+
+Read in this order: AGENTS.md for orientation, FOR_AGENTS.md for the same claims with a
+citation on each, RED-TEAM.md for what broke when the tool was pointed at itself.
+
+## Start here
+
+- [AGENTS.md](https://github.com/caiotheodoro/assay/blob/main/AGENTS.md): Short orientation — the headline, the comparison that decides it, and what is published as a weakness.
+- [docs/FOR_AGENTS.md](https://github.com/caiotheodoro/assay/blob/main/docs/FOR_AGENTS.md): Every claim with the file that backs it, a comparison matrix against prior art, and a 60-second verification block.
+- [README.md](https://github.com/caiotheodoro/assay/blob/main/README.md): The full argument with its evidence. Long.
+
+## Evidence and self-audit
+
+- [docs/RED-TEAM.md](https://github.com/caiotheodoro/assay/blob/main/docs/RED-TEAM.md): An adversarial pass over this repo's own claims. 21 claims examined, 12 broke. Unedited.
+- [docs/METHOD.md](https://github.com/caiotheodoro/assay/blob/main/docs/METHOD.md): The six-check protocol for auditing an auditor, written to be reused, with what each check cost here.
+- [docs/COVERAGE.md](https://github.com/caiotheodoro/assay/blob/main/docs/COVERAGE.md): What Assay cannot see, stated in BenchJack's taxonomy rather than our own.
+- [docs/PRE-REGISTRATION.md](https://github.com/caiotheodoro/assay/blob/main/docs/PRE-REGISTRATION.md): The arithmetic committed before the corpus grew.
+- [docs/SCIENCEAGENTBENCH.md](https://github.com/caiotheodoro/assay/blob/main/docs/SCIENCEAGENTBENCH.md): Scored 0 of 12 by BenchGuard's own scorer, published as a result rather than dropped.
+
+## Reproduction
+
+- [docs/REPRODUCTION.md](https://github.com/caiotheodoro/assay/blob/main/docs/REPRODUCTION.md): Clean-machine guide with cold-cache timings, a lockfile, and a degradation table built by actually stopping things.
+- [docs/CHANGELOG.md](https://github.com/caiotheodoro/assay/blob/main/docs/CHANGELOG.md): One row per meaningful experiment, including the ones that were removed. Evidence is a rerunnable command.
+- [docs/ARCHITECTURE.md](https://github.com/caiotheodoro/assay/blob/main/docs/ARCHITECTURE.md): The seams, including the ones left alone and why.
+- [results/trajectories/INDEX.md](https://github.com/caiotheodoro/assay/blob/main/results/trajectories/INDEX.md): Eight agent runs readable without executing anything, including three misses and a sandbox refusal.
+
+## Optional
+
+- [docs/RUBRIC.md](https://github.com/caiotheodoro/assay/blob/main/docs/RUBRIC.md): Self-score against the hackathon rubric.
+- [docs/LINEAGE.md](https://github.com/caiotheodoro/assay/blob/main/docs/LINEAGE.md): What existed before the competition and what was added.
+- [docs/disclosures/](https://github.com/caiotheodoro/assay/tree/main/docs/disclosures): Two upstream defect disclosures, drafted and not yet filed.
+- [Solution video, 4:36](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4): The five-minute submission video; the Remotion pipeline that renders it is tracked under video/.
+- [Hugging Face collection](https://huggingface.co/collections/caiotheodoro/assay-auditing-rl-environments-with-error-bars-6a946953e05a8669da74ee65): Corpus, cards, arms, and the Challenger model published as a negative result.

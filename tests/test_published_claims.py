@@ -9,6 +9,7 @@ project exists to catch and did not catch in itself.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -293,3 +294,157 @@ def test_the_coverage_matrix_agrees_with_the_shipped_miss():
         "example and the README both describe the old one"
     )
     assert "inspect_evals/boolq" in coverage
+
+
+# --- Gates added after two dead paths shipped in the reviewer-facing docs -----
+#
+# `docs/FOR_AGENTS.md` told a reviewer "every claim cites a file you can open"
+# while citing seven paths that did not resolve, two of them inside the block a
+# reviewer is invited to run. Nothing checked, so nothing caught it. These two
+# tests are the check.
+
+DOCS_THAT_CITE_PATHS = (
+    "README.md",
+    "AGENTS.md",
+    "docs/FOR_AGENTS.md",
+    "docs/RUBRIC.md",
+)
+
+# Prefixes belonging to somebody else's repository. Cited on purpose, not
+# vendored here -- see docs/LINEAGE.md, which keeps "read, not vendored"
+# separate from "vendored with attribution".
+EXTERNAL_PREFIXES = ("third_party/", "BenchGuard/", "eval/")
+
+_CITATION = re.compile(
+    r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\."
+    r"(?:md|py|json|jsonl|ts|tsx|mjs|yaml|yml|cast|html|toml|lock|cff|txt))"
+    r"(?::[0-9]+(?:-[0-9]+)?)?`"
+)
+
+def test_every_file_path_cited_in_the_reviewer_docs_resolves():
+    """A citation a reviewer cannot open is worse than no citation.
+
+    The whole argument of these documents is "do not trust the prose, open the
+    file". That argument inverts the moment a path is wrong: one dead link and a
+    reader is entitled to assume the rest are decorative too.
+    """
+    broken: list[str] = []
+    for doc in DOCS_THAT_CITE_PATHS:
+        doc_path = ROOT / doc
+        if not doc_path.exists():
+            continue
+        for cited in sorted(set(_CITATION.findall(doc_path.read_text()))):
+            # A bare filename is a mention, not a citation: `expected.txt` is a
+            # file the reward-hack exploit writes inside a sandbox, and
+            # `match.py` lives in BenchGuard's tree. Only a path with a
+            # directory component is a claim about *this* repository.
+            if "/" not in cited:
+                continue
+            if cited.startswith(EXTERNAL_PREFIXES):
+                continue
+            if not (ROOT / cited).exists():
+                broken.append(f"{doc} cites {cited!r}, which does not exist")
+    assert not broken, "dead citations:\n  " + "\n  ".join(broken)
+
+def test_the_suite_size_the_docs_advertise_is_the_suite_size_that_ran(request):
+    """Three documents said 589 while two others said 591, for the same suite.
+
+    `docs/CHANGELOG.md` slice 38c records fixing exactly this -- three live
+    present-tense claims of 513 against a suite of 589 -- and it came back,
+    because the fix was a careful edit and not a gate. The number is checked
+    against the collection that is running this assertion, so it cannot drift
+    from the suite again without failing.
+    """
+    # A reduced-extras run collects fewer tests for a good reason, and the docs
+    # are not wrong when it does. `uv sync --extra dev` alone collects 498 of
+    # 593; only the full optional set makes the advertised number meaningful.
+    pytest.importorskip("inspect_evals", reason="needs --extra sweep")
+    pytest.importorskip("openenv", reason="needs --extra openenv")
+
+    collected = request.session.testscollected
+    if collected < 400:
+        pytest.skip(f"partial run ({collected} collected); only meaningful on the full suite")
+
+    live_docs = (
+        "README.md",
+        "AGENTS.md",
+        "docs/FOR_AGENTS.md",
+        "docs/REPRODUCTION.md",
+        "docs/ARCHITECTURE.md",
+        "docs/RUBRIC.md",
+    )
+    # "N passed" in a live doc is a present-tense claim about this suite.
+    # docs/CHANGELOG.md and docs/RED-TEAM.md are excluded wholesale: they are
+    # historical records, and their old numbers are the point of keeping them.
+    # Inside a live doc the same distinction is drawn per line -- a sentence that
+    # says when it was true is a record, not a promise.
+    claim = re.compile(r"\b([0-9]{3,4}) passed\b")
+    HISTORICAL = (
+        "at the time",
+        "an earlier",
+        "earlier revision",
+        "before the suite grew",
+        "previously",
+        "historical",
+    )
+
+    wrong: list[str] = []
+    for doc in live_docs:
+        doc_path = ROOT / doc
+        if not doc_path.exists():
+            continue
+        for line in doc_path.read_text().splitlines():
+            # A heading can retire everything under it. docs/RUBRIC.md keeps its
+            # superseded 74/100 scorecard in full, and every number below that
+            # heading is a record of what was true then.
+            low = line.lower()
+            if low.startswith("#") and ("historical" in low or "superseded" in low):
+                break
+            if any(marker in low for marker in HISTORICAL):
+                continue
+            for number in set(claim.findall(line)):
+                if int(number) != collected:
+                    wrong.append(
+                        f"{doc}: {number!r} passed is claimed in the present tense; "
+                        f"the suite collected {collected}  --  {line.strip()[:90]}"
+                    )
+    assert not wrong, "stale suite-size claims:\n  " + "\n  ".join(wrong)
+
+def test_every_cited_path_is_actually_in_the_repository_a_judge_clones():
+    """Existing on this disk is not the same as existing in the clone.
+
+    `docs/FOR_AGENTS.md` invited a reviewer to run
+    `node video/capture/check-shot-reality.mjs` and cited
+    `video/src/components/Panels.tsx` as evidence. Both are real files here and
+    neither is tracked, so in a fresh clone the command fails and the citation
+    points at nothing. A filesystem check cannot see that; only git can.
+    """
+    import subprocess
+
+    try:
+        out = subprocess.run(
+            ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, timeout=30
+        )
+    except (OSError, subprocess.SubprocessError):  # pragma: no cover - no git
+        pytest.skip("git unavailable")
+    if out.returncode != 0:
+        pytest.skip("not a git checkout")
+
+    tracked = set(out.stdout.split("\n"))
+    untracked: list[str] = []
+    for doc in DOCS_THAT_CITE_PATHS:
+        doc_path = ROOT / doc
+        if not doc_path.exists():
+            continue
+        for cited in sorted(set(_CITATION.findall(doc_path.read_text()))):
+            if "/" not in cited or cited.startswith(EXTERNAL_PREFIXES):
+                continue
+            if not (ROOT / cited).exists():
+                continue  # the sibling test owns that failure
+            if cited not in tracked:
+                untracked.append(f"{doc} cites {cited!r}, which is not tracked by git")
+    assert not untracked, (
+        "citations that exist here but not in a clone:\n  "
+        + "\n  ".join(untracked)
+        + "\n\nA reviewer clones the repository. Either `git add` these paths or stop citing them."
+    )
