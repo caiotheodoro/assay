@@ -73,12 +73,15 @@ def _mount_dir(prefix: str) -> Path:
     as owned by the container user, so the mode is not consulted. The suite was
     only ever run there, and CI has been red since the day it was added.
 
-    0755 is safe for what goes in here -- benchmark fixtures and their logs,
-    already world-readable in the repo -- and it is the mode the container
-    needs to read a directory this process owns and is about to hand it.
+    Reading is not enough: the task writes its solution into /work and the
+    verifier writes its result into /logs, and root-without-DAC_OVERRIDE cannot
+    write to a directory it does not own whatever the mode says about others.
+    So these two are 0777. The path comes from `mkdtemp`, so it is unguessable
+    and lives for one audit; what goes in it is benchmark fixture content that
+    is already world-readable in the repo.
     """
     path = Path(tempfile.mkdtemp(prefix=prefix))
-    path.chmod(0o755)
+    path.chmod(0o777)
     return path
 
 
