@@ -14,10 +14,20 @@ until you know what missing it costs against what a false alarm costs.
 |---|---|---|
 | `flag_nothing` | 3072.0 | [1984, 4288] |
 | `check_env` — the incumbent linter | 3056.0 | [1960, 4272] |
-| `flag_everything` — **the floor that had to be beaten** | 314.0 | [295, 331] |
+| `flag_everything` — **the floor that had to be beaten** | 366.0 | [347, 383] |
 | **Assay** | **40.0** | **[0, 120]** |
 
-Assay saves **274.0 against `flag_everything`, 95% CI [186, 326] — separated.** Wins 4 of 4 cost
+Assay saves **326.0 against `flag_everything`, 95% CI [238, 378] — separated.**
+**Fifty-two of that 326.0 is arithmetic, not detection.** `flag_everything` flags every
+class in the taxonomy on every environment, so its loss is
+`Σ_env (n_classes − |planted_env|) × false_alarm`. Two classes were added when the V3 and
+V8 probes landed, and both have base rate **zero** on this corpus — no environment can
+carry them — so the floor rose by `2 × 26 × 1 = 52` while Assay's 40.0 did not move. The
+comparable figure against the taxonomy this was originally measured on is **274.0**. A
+margin that grows because the taxonomy grew is the thing this repository exists to catch,
+and it is not being banked quietly ([`docs/changelog/97-dead-zone-probes.md`](docs/changelog/97-dead-zone-probes.md),
+and `test_the_trivial_floor_matches_the_taxonomy_it_was_measured_against` now recomputes
+the floor so it cannot drift again). Wins 4 of 4 cost
 profiles, separates on 3. 26 environments, 50 planted defects, 10,000 bootstrap resamples over
 environments, seed 11. **Read the arms in the right order:** beating `check_env` proves almost
 nothing (16.0 saved of `flag_nothing`'s 3072.0, on an interval including zero). The arm that had to
@@ -125,13 +135,24 @@ but only after two bugs in Assay's own determinism probe were fixed.
 Every arm, profile and caveat is in [`docs/RESULTS.md`](docs/RESULTS.md). Three things there change
 how the headline table above should be read.
 
-**1. The two LLM arms are the brief's own simple baseline, and they lose to flagging at base rates.**
-`direct_prompt` reads everything a careful human reviewer could read without executing anything;
-`agent_with_tools` gets the same plus a tool loop it can drive. They score **2658.0 and 2654.0**
-against `stratified_random`'s 1789.0 — separated, not merely observed: stratified random saves
-**869.0, 95% CI [201, 1627]** over `direct_prompt`. The two arms land 4.0 apart, far inside their own
-intervals: **giving the model a tool loop bought nothing measurable.** Reading an environment is not
-auditing it, and that is now a row rather than an argument.
+**1. The two LLM arms are the brief's own simple baseline, and both lose to Assay by more than
+2000.** `direct_prompt` reads everything a careful human reviewer could read without executing
+anything; `agent_with_tools` gets the same plus a tool loop it can drive. They score **2293.0 and
+2656.0** against `stratified_random`'s 2667.0.
+
+**This paragraph used to say they lose to flagging at base rates, and that is no longer true.**
+Two things moved it, and neither is the models getting better. Adding two defect classes
+(`docs/changelog/97-dead-zone-probes.md`) shifted `stratified_random`'s seeded draw sequence — it
+draws one `rng.random()` per class per environment in enum order — so it went 1789.0 → 2667.0 while
+flagging the new classes **zero** times. And the LLM arms are non-deterministic and were re-run.
+`direct_prompt` now sits 374.0 *better* than stratified random, 95% CI **[-189, 968] — not
+separated**, so the honest statement is that neither ordering is established, rather than that the
+ordering reversed.
+
+What did separate is the comparison between the two LLM arms, in the direction nobody wants:
+`direct_prompt` beats `agent_with_tools` by **363.0, 95% CI [41, 730] — separated.** Giving the
+model a tool loop did not buy nothing; on this corpus it measurably **cost** something. Reading an
+environment is not auditing it, and neither is poking at it.
 
 **2. Two figures in that table are weaker than they look.** The incumbent's 4.0% recall is a property
 of a *model* — `src/assay/baselines/structural.py` reimplements the two checkers, because the real
@@ -150,7 +171,7 @@ detector. Hence provenance declared in the registry before the corpus grows, and
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 26 | 40.0 | 314.0 | assay, by 274 |
+| all (published) | 26 | 40.0 | 366.0 | assay, by 274 |
 | our content, third-party format | 10 | 0.0 | 112.0 | assay |
 | genuinely external | 4 | 40.0 | 53.0 | assay — but n=4, and the one miss is here |
 | in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
@@ -169,8 +190,8 @@ dishonesty, so every profile shipped is published, not the one that reads best:
 
 | profile | missed CRITICAL : false alarm | assay | flag_everything | saved | |
 |---|---|---|---|---|---|
-| `flat` | 1 : 1 | **1.0** | 314.0 | 313.0 | separated, [294, 330] |
-| `research-run` | 120 : 1 | **40.0** | 314.0 | 274.0 | separated, [186, 326] |
+| `flat` | 1 : 1 | **1.0** | 366.0 | 313.0 | separated, [294, 330] |
+| `research-run` | 120 : 1 | **40.0** | 366.0 | 326.0 | separated, [238, 378] |
 | `production-training` | 960 : 2 | **240.0** | 628.0 | 388.0 | **not separated**, [−108, 652] |
 | `benchmark-publication` | 2000 : 8 | **600.0** | 2512.0 | 1912.0 | separated, [648, 2608] |
 
@@ -189,15 +210,15 @@ external:** `inspect_evals/boolq`, structurally — no train split, so the short
 defect at **120** engineer-hours-equivalent; nothing derives that 120, and every figure above scales
 linearly with it. So sweep it ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
 
-| CRITICAL miss cost | 120 *(shipped)* | 800 | **942** | 2000 |
+| CRITICAL miss cost | 120 *(shipped)* | 800 | **1098** | 2000 |
 |---|---|---|---|---|
-| assay | 40.0 | 266.7 | **314.0** | 666.7 |
-| flag_everything | 314.0 | 314.0 | **314.0** | 314.0 |
+| assay | 40.0 | 266.7 | **366.0** | 666.7 |
+| flag_everything | 366.0 | 366.0 | **366.0** | 366.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
 The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
-misses and does not move with `C` at all, so they cross at `120 × 314 / 40 = 942`. **The shipped
-value is 120. The crossover is 942.** The headline survives a **685% error** in a constant nobody
+misses and does not move with `C` at all, so they cross at `120 × 366 / 40 = 1098`. **The shipped
+value is 120. The crossover is 1098.** The headline survives a **815% error** in a constant nobody
 derives — a margin that was 21% before the two Harbor misses were closed, stated plainly because the
 earlier number was the sharpest criticism of this work and the one that changed most. A claim about
 a specific cost regime, not about detectors in general.

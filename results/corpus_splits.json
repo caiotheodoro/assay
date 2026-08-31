@@ -174,13 +174,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 2654.0,
+            "expected_loss": 2656.0,
             "recall": 0.22,
-            "precision": 0.3333,
+            "precision": 0.3143,
             "severity_weighted_recall": 0.2371,
             "n_missed": 39,
-            "n_spurious": 22,
-            "error_count": 61
+            "n_spurious": 24,
+            "error_count": 63
           },
           "always_modal_defect": {
             "expected_loss": 1888.0,
@@ -210,22 +210,22 @@
             "error_count": 48
           },
           "direct_prompt": {
-            "expected_loss": 2658.0,
-            "recall": 0.22,
-            "precision": 0.2973,
-            "severity_weighted_recall": 0.2371,
-            "n_missed": 39,
-            "n_spurious": 26,
-            "error_count": 65
+            "expected_loss": 2293.0,
+            "recall": 0.24,
+            "precision": 0.3636,
+            "severity_weighted_recall": 0.2586,
+            "n_missed": 38,
+            "n_spurious": 21,
+            "error_count": 59
           },
           "flag_everything": {
-            "expected_loss": 314.0,
+            "expected_loss": 366.0,
             "recall": 1.0,
-            "precision": 0.1374,
+            "precision": 0.1202,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 314,
-            "error_count": 314
+            "n_spurious": 366,
+            "error_count": 366
           },
           "flag_nothing": {
             "expected_loss": 3072.0,
@@ -237,24 +237,24 @@
             "error_count": 50
           },
           "stratified_random": {
-            "expected_loss": 1789.0,
-            "recall": 0.36,
-            "precision": 0.383,
-            "severity_weighted_recall": 0.3534,
-            "n_missed": 32,
-            "n_spurious": 29,
-            "error_count": 61
+            "expected_loss": 2667.0,
+            "recall": 0.1,
+            "precision": 0.125,
+            "severity_weighted_recall": 0.1078,
+            "n_missed": 45,
+            "n_spurious": 35,
+            "error_count": 80
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 19844.0,
+            "expected_loss": 19848.0,
             "recall": 0.22,
-            "precision": 0.3333,
+            "precision": 0.3143,
             "severity_weighted_recall": 0.2371,
             "n_missed": 39,
-            "n_spurious": 22,
-            "error_count": 61
+            "n_spurious": 24,
+            "error_count": 63
           },
           "always_modal_defect": {
             "expected_loss": 12872.0,
@@ -284,22 +284,22 @@
             "error_count": 48
           },
           "direct_prompt": {
-            "expected_loss": 19852.0,
-            "recall": 0.22,
-            "precision": 0.2973,
-            "severity_weighted_recall": 0.2371,
-            "n_missed": 39,
-            "n_spurious": 26,
-            "error_count": 65
+            "expected_loss": 16722.0,
+            "recall": 0.24,
+            "precision": 0.3636,
+            "severity_weighted_recall": 0.2586,
+            "n_missed": 38,
+            "n_spurious": 21,
+            "error_count": 59
           },
           "flag_everything": {
-            "expected_loss": 628.0,
+            "expected_loss": 732.0,
             "recall": 1.0,
-            "precision": 0.1374,
+            "precision": 0.1202,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 314,
-            "error_count": 314
+            "n_spurious": 366,
+            "error_count": 366
           },
           "flag_nothing": {
             "expected_loss": 22440.0,
@@ -311,24 +311,24 @@
             "error_count": 50
           },
           "stratified_random": {
-            "expected_loss": 12498.0,
-            "recall": 0.36,
-            "precision": 0.383,
-            "severity_weighted_recall": 0.3534,
-            "n_missed": 32,
-            "n_spurious": 29,
-            "error_count": 61
+            "expected_loss": 19150.0,
+            "recall": 0.1,
+            "precision": 0.125,
+            "severity_weighted_recall": 0.1078,
+            "n_missed": 45,
+            "n_spurious": 35,
+            "error_count": 80
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 42876.0,
+            "expected_loss": 42892.0,
             "recall": 0.22,
-            "precision": 0.3333,
+            "precision": 0.3143,
             "severity_weighted_recall": 0.2371,
             "n_missed": 39,
-            "n_spurious": 22,
-            "error_count": 61
+            "n_spurious": 24,
+            "error_count": 63
           },
           "always_modal_defect": {
             "expected_loss": 29428.0,
@@ -358,22 +358,22 @@
             "error_count": 48
           },
           "direct_prompt": {
-            "expected_loss": 42908.0,
-            "recall": 0.22,
-            "precision": 0.2973,
-            "severity_weighted_recall": 0.2371,
-            "n_missed": 39,
-            "n_spurious": 26,
-            "error_count": 65
+            "expected_loss": 36668.0,
+            "recall": 0.24,
+            "precision": 0.3636,
+            "severity_weighted_recall": 0.2586,
+            "n_missed": 38,
+            "n_spurious": 21,
+            "error_count": 59
           },
           "flag_everything": {
-            "expected_loss": 2512.0,
+            "expected_loss": 2928.0,
             "recall": 1.0,
-            "precision": 0.1374,
+            "precision": 0.1202,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 314,
-            "error_count": 314
+            "n_spurious": 366,
+            "error_count": 366
           },
           "flag_nothing": {
             "expected_loss": 49300.0,
@@ -385,24 +385,24 @@
             "error_count": 50
           },
           "stratified_random": {
-            "expected_loss": 28132.0,
-            "recall": 0.36,
-            "precision": 0.383,
-            "severity_weighted_recall": 0.3534,
-            "n_missed": 32,
-            "n_spurious": 29,
-            "error_count": 61
+            "expected_loss": 42380.0,
+            "recall": 0.1,
+            "precision": 0.125,
+            "severity_weighted_recall": 0.1078,
+            "n_missed": 45,
+            "n_spurious": 35,
+            "error_count": 80
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 61.0,
+            "expected_loss": 63.0,
             "recall": 0.22,
-            "precision": 0.3333,
+            "precision": 0.3143,
             "severity_weighted_recall": 0.2371,
             "n_missed": 39,
-            "n_spurious": 22,
-            "error_count": 61
+            "n_spurious": 24,
+            "error_count": 63
           },
           "always_modal_defect": {
             "expected_loss": 56.0,
@@ -432,22 +432,22 @@
             "error_count": 48
           },
           "direct_prompt": {
-            "expected_loss": 65.0,
-            "recall": 0.22,
-            "precision": 0.2973,
-            "severity_weighted_recall": 0.2371,
-            "n_missed": 39,
-            "n_spurious": 26,
-            "error_count": 65
+            "expected_loss": 59.0,
+            "recall": 0.24,
+            "precision": 0.3636,
+            "severity_weighted_recall": 0.2586,
+            "n_missed": 38,
+            "n_spurious": 21,
+            "error_count": 59
           },
           "flag_everything": {
-            "expected_loss": 314.0,
+            "expected_loss": 366.0,
             "recall": 1.0,
-            "precision": 0.1374,
+            "precision": 0.1202,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 314,
-            "error_count": 314
+            "n_spurious": 366,
+            "error_count": 366
           },
           "flag_nothing": {
             "expected_loss": 50.0,
@@ -459,13 +459,13 @@
             "error_count": 50
           },
           "stratified_random": {
-            "expected_loss": 61.0,
-            "recall": 0.36,
-            "precision": 0.383,
-            "severity_weighted_recall": 0.3534,
-            "n_missed": 32,
-            "n_spurious": 29,
-            "error_count": 61
+            "expected_loss": 80.0,
+            "recall": 0.1,
+            "precision": 0.125,
+            "severity_weighted_recall": 0.1078,
+            "n_missed": 45,
+            "n_spurious": 35,
+            "error_count": 80
           }
         }
       },
@@ -494,10 +494,10 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 2614.0,
+              "point": 2616.0,
               "ci95": [
-                1590.0,
-                3790.025
+                1605.975,
+                3771.0
               ],
               "separated": true
             },
@@ -518,18 +518,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 2618.0,
+              "point": 2253.0,
               "ci95": [
-                1652.975,
-                3707.05
+                1408.975,
+                3182.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": 274.0,
+              "point": 326.0,
               "ci95": [
-                185.975,
-                326.0
+                237.975,
+                378.0
               ],
               "separated": true
             },
@@ -542,10 +542,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 1749.0,
+              "point": 2627.0,
               "ci95": [
-                1000.0,
-                2599.0
+                1595.975,
+                3799.0
               ],
               "separated": true
             }
@@ -553,82 +553,82 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 2654.0,
+            "point": 2656.0,
             "ci95": [
-              1643.0,
-              3815.025
+              1666.0,
+              3787.1
             ]
           },
           "recall": {
             "point": 0.22,
             "ci95": [
-              0.1176,
-              0.3273
+              0.1186,
+              0.3208
             ]
           },
           "precision": {
-            "point": 0.3333,
+            "point": 0.3143,
             "ci95": [
-              0.1667,
-              0.5
+              0.1599,
+              0.4688
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2614.0,
+              "point": -2616.0,
               "ci95": [
-                -3790.025,
-                -1590.0
+                -3771.0,
+                -1605.975
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": -766.0,
+              "point": -768.0,
               "ci95": [
-                -1326.0,
-                -278.0
+                -1286.0,
+                -291.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 402.0,
+              "point": 400.0,
               "ci95": [
-                159.975,
-                680.0
+                155.0,
+                669.025
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 4.0,
+              "point": -363.0,
               "ci95": [
-                -159.0,
-                168.0
+                -730.0,
+                -41.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -2340.0,
+              "point": -2290.0,
               "ci95": [
-                -3519.025,
-                -1311.975
+                -3440.0,
+                -1286.975
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 418.0,
+              "point": 416.0,
               "ci95": [
-                175.0,
-                697.025
+                174.0,
+                694.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -865.0,
+              "point": 11.0,
               "ci95": [
-                -1679.025,
-                -178.0
+                -394.0,
+                395.025
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -664,10 +664,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 766.0,
+              "point": 768.0,
               "ci95": [
-                278.0,
-                1326.0
+                291.0,
+                1286.0
               ],
               "separated": true
             },
@@ -680,18 +680,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 770.0,
+              "point": 405.0,
               "ci95": [
-                289.0,
-                1291.025
+                39.0,
+                844.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -1574.0,
+              "point": -1522.0,
               "ci95": [
-                -2374.025,
-                -866.95
+                -2322.025,
+                -814.95
               ],
               "separated": true
             },
@@ -704,12 +704,12 @@
               "separated": true
             },
             "stratified_random": {
-              "point": -99.0,
+              "point": 779.0,
               "ci95": [
-                -706.0,
-                495.1
+                298.0,
+                1332.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -745,10 +745,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -402.0,
+              "point": -400.0,
               "ci95": [
-                -680.0,
-                -159.975
+                -669.025,
+                -155.0
               ],
               "separated": true
             },
@@ -761,18 +761,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": -398.0,
+              "point": -763.0,
               "ci95": [
-                -678.025,
-                -155.0
+                -1247.0,
+                -336.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2742.0,
+              "point": -2690.0,
               "ci95": [
-                -3976.025,
-                -1628.975
+                -3924.025,
+                -1576.975
               ],
               "separated": true
             },
@@ -785,10 +785,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -1267.0,
+              "point": -389.0,
               "ci95": [
-                -2108.05,
-                -530.0
+                -809.025,
+                -42.0
               ],
               "separated": true
             }
@@ -796,91 +796,91 @@
         },
         "direct_prompt": {
           "expected_loss": {
-            "point": 2658.0,
+            "point": 2293.0,
             "ci95": [
-              1702.975,
-              3740.05
+              1465.0,
+              3216.0
             ]
           },
           "recall": {
-            "point": 0.22,
+            "point": 0.24,
             "ci95": [
-              0.1333,
-              0.303
+              0.1613,
+              0.3115
             ]
           },
           "precision": {
-            "point": 0.2973,
+            "point": 0.3636,
             "ci95": [
-              0.1471,
-              0.45
+              0.1944,
+              0.5333
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2618.0,
+              "point": -2253.0,
               "ci95": [
-                -3707.05,
-                -1652.975
+                -3182.0,
+                -1408.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -4.0,
+              "point": 363.0,
               "ci95": [
-                -168.0,
-                159.0
+                41.0,
+                730.0
               ],
-              "separated": false
+              "separated": true
             },
             "always_modal_defect": {
-              "point": -770.0,
+              "point": -405.0,
               "ci95": [
-                -1291.025,
-                -289.0
+                -844.0,
+                -39.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 398.0,
+              "point": 763.0,
               "ci95": [
-                155.0,
-                678.025
+                336.0,
+                1247.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2344.0,
+              "point": -1927.0,
               "ci95": [
-                -3444.0,
-                -1373.975
+                -2864.025,
+                -1085.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 414.0,
+              "point": 779.0,
               "ci95": [
-                172.0,
-                695.0
+                371.975,
+                1261.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -869.0,
+              "point": 374.0,
               "ci95": [
-                -1627.025,
-                -200.975
+                -189.0,
+                968.025
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 314.0,
+            "point": 366.0,
             "ci95": [
-              295.0,
-              331.0
+              347.0,
+              383.0
             ]
           },
           "recall": {
@@ -891,66 +891,66 @@
             ]
           },
           "precision": {
-            "point": 0.1374,
+            "point": 0.1202,
             "ci95": [
-              0.0907,
-              0.1896
+              0.0793,
+              0.1659
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -274.0,
+              "point": -326.0,
               "ci95": [
-                -326.0,
-                -185.975
+                -378.0,
+                -237.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 2340.0,
+              "point": 2290.0,
               "ci95": [
-                1311.975,
-                3519.025
+                1286.975,
+                3440.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 1574.0,
+              "point": 1522.0,
               "ci95": [
-                866.95,
-                2374.025
+                814.95,
+                2322.025
               ],
               "separated": true
             },
             "check_env": {
-              "point": 2742.0,
+              "point": 2690.0,
               "ci95": [
-                1628.975,
-                3976.025
+                1576.975,
+                3924.025
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 2344.0,
+              "point": 1927.0,
               "ci95": [
-                1373.975,
-                3444.0
+                1085.0,
+                2864.025
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 2758.0,
+              "point": 2706.0,
               "ci95": [
-                1650.975,
-                3988.075
+                1598.975,
+                3936.075
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 1475.0,
+              "point": 2301.0,
               "ci95": [
-                725.0,
-                2321.025
+                1266.95,
+                3480.0
               ],
               "separated": true
             }
@@ -988,10 +988,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -418.0,
+              "point": -416.0,
               "ci95": [
-                -697.025,
-                -175.0
+                -694.0,
+                -174.0
               ],
               "separated": true
             },
@@ -1012,26 +1012,26 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -414.0,
+              "point": -779.0,
               "ci95": [
-                -695.0,
-                -172.0
+                -1261.0,
+                -371.975
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2758.0,
+              "point": -2706.0,
               "ci95": [
-                -3988.075,
-                -1650.975
+                -3936.075,
+                -1598.975
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -1283.0,
+              "point": -405.0,
               "ci95": [
-                -2118.0,
-                -548.0
+                -816.025,
+                -65.825
               ],
               "separated": true
             }
@@ -1039,80 +1039,80 @@
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 1789.0,
+            "point": 2667.0,
             "ci95": [
-              1049.975,
-              2625.0
+              1647.975,
+              3830.025
             ]
           },
           "recall": {
-            "point": 0.36,
+            "point": 0.1,
             "ci95": [
-              0.1892,
-              0.5079
+              0.0317,
+              0.18
             ]
           },
           "precision": {
-            "point": 0.383,
+            "point": 0.125,
             "ci95": [
-              0.1842,
-              0.5741
+              0.0377,
+              0.2353
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1749.0,
+              "point": -2627.0,
               "ci95": [
-                -2599.0,
-                -1000.0
+                -3799.0,
+                -1595.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 865.0,
+              "point": -11.0,
               "ci95": [
-                178.0,
-                1679.025
-              ],
-              "separated": true
-            },
-            "always_modal_defect": {
-              "point": 99.0,
-              "ci95": [
-                -495.1,
-                706.0
+                -395.025,
+                394.0
               ],
               "separated": false
             },
-            "check_env": {
-              "point": 1267.0,
+            "always_modal_defect": {
+              "point": -779.0,
               "ci95": [
-                530.0,
-                2108.05
+                -1332.0,
+                -298.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 389.0,
+              "ci95": [
+                42.0,
+                809.025
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 869.0,
+              "point": -374.0,
               "ci95": [
-                200.975,
-                1627.025
+                -968.025,
+                189.0
               ],
-              "separated": true
+              "separated": false
             },
             "flag_everything": {
-              "point": -1475.0,
+              "point": -2301.0,
               "ci95": [
-                -2321.025,
-                -725.0
+                -3480.0,
+                -1266.95
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 1283.0,
+              "point": 405.0,
               "ci95": [
-                548.0,
-                2118.0
+                65.825,
+                816.025
               ],
               "separated": true
             }
@@ -1133,13 +1133,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 170.0,
+            "expected_loss": 171.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 51.0,
@@ -1178,13 +1178,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 53.0,
+            "expected_loss": 61.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 168.0,
@@ -1196,24 +1196,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 173.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 53.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 1244.0,
+            "expected_loss": 1246.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 286.0,
@@ -1252,13 +1252,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 106.0,
+            "expected_loss": 122.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 1240.0,
@@ -1270,24 +1270,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 1250.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 290.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 2716.0,
+            "expected_loss": 2724.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 724.0,
@@ -1326,13 +1326,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 424.0,
+            "expected_loss": 488.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 2700.0,
@@ -1344,24 +1344,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 2740.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 740.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 5.0,
+            "expected_loss": 6.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 5.0,
@@ -1400,13 +1400,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 53.0,
+            "expected_loss": 61.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 3.0,
@@ -1418,13 +1418,13 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 8.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 7.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         }
       },
@@ -1453,7 +1453,7 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 130.0,
+              "point": 131.0,
               "ci95": [
                 2.0,
                 361.0
@@ -1485,10 +1485,10 @@
               "separated": true
             },
             "flag_everything": {
-              "point": 13.0,
+              "point": 21.0,
               "ci95": [
-                -68.0,
-                55.0
+                -60.0,
+                63.0
               ],
               "separated": false
             },
@@ -1501,10 +1501,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 133.0,
+              "point": 13.0,
               "ci95": [
-                8.0,
-                362.0
+                2.0,
+                28.0
               ],
               "separated": true
             }
@@ -1512,10 +1512,10 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 170.0,
+            "point": 171.0,
             "ci95": [
-              20.0,
-              369.0
+              22.0,
+              370.0
             ]
           },
           "recall": {
@@ -1534,7 +1534,7 @@
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -130.0,
+              "point": -131.0,
               "ci95": [
                 -361.0,
                 -2.0
@@ -1542,49 +1542,49 @@
               "separated": true
             },
             "always_modal_defect": {
-              "point": -119.0,
+              "point": -120.0,
               "ci95": [
                 -360.0,
-                3.0
+                2.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": -10.0,
+              "point": -11.0,
               "ci95": [
-                -27.0,
+                -30.0,
                 0.0
               ],
               "separated": false
             },
             "direct_prompt": {
-              "point": 1.0,
+              "point": 0.0,
               "ci95": [
                 0.0,
-                3.0
+                0.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -117.0,
+              "point": -110.0,
               "ci95": [
-                -317.0,
-                34.0
+                -310.0,
+                40.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": -2.0,
+              "point": -3.0,
               "ci95": [
-                -4.0,
+                -6.0,
                 0.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 3.0,
+              "point": -118.0,
               "ci95": [
-                0.0,
+                -359.0,
                 6.0
               ],
               "separated": false
@@ -1623,9 +1623,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 119.0,
+              "point": 120.0,
               "ci95": [
-                -3.0,
+                -2.0,
                 360.0
               ],
               "separated": false
@@ -1647,10 +1647,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": 2.0,
+              "point": 10.0,
               "ci95": [
-                -71.0,
-                52.0
+                -63.0,
+                60.0
               ],
               "separated": false
             },
@@ -1663,12 +1663,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 122.0,
+              "point": 2.0,
               "ci95": [
-                1.0,
-                361.0
+                0.0,
+                6.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -1704,10 +1704,10 @@
               "separated": false
             },
             "agent_with_tools": {
-              "point": 10.0,
+              "point": 11.0,
               "ci95": [
                 0.0,
-                27.0
+                30.0
               ],
               "separated": false
             },
@@ -1728,10 +1728,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -107.0,
+              "point": -99.0,
               "ci95": [
-                -308.0,
-                54.0
+                -300.0,
+                62.0
               ],
               "separated": false
             },
@@ -1744,12 +1744,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 13.0,
+              "point": -107.0,
               "ci95": [
-                2.0,
-                29.0
+                -357.0,
+                28.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -1785,9 +1785,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -1.0,
+              "point": 0.0,
               "ci95": [
-                -3.0,
+                0.0,
                 0.0
               ],
               "separated": false
@@ -1809,10 +1809,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -118.0,
+              "point": -110.0,
               "ci95": [
-                -318.0,
-                32.0
+                -310.0,
+                40.0
               ],
               "separated": false
             },
@@ -1825,9 +1825,9 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 2.0,
+              "point": -118.0,
               "ci95": [
-                -2.0,
+                -359.0,
                 6.0
               ],
               "separated": false
@@ -1836,10 +1836,10 @@
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 53.0,
+            "point": 61.0,
             "ci95": [
-              52.0,
-              55.0
+              60.0,
+              63.0
             ]
           },
           "recall": {
@@ -1850,66 +1850,66 @@
             ]
           },
           "precision": {
-            "point": 0.0536,
+            "point": 0.0469,
             "ci95": [
-              0.0179,
-              0.0714
+              0.0156,
+              0.0625
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -13.0,
+              "point": -21.0,
               "ci95": [
-                -55.0,
-                68.0
+                -63.0,
+                60.0
               ],
               "separated": false
             },
             "agent_with_tools": {
-              "point": 117.0,
+              "point": 110.0,
               "ci95": [
-                -34.0,
-                317.0
+                -40.0,
+                310.0
               ],
               "separated": false
             },
             "always_modal_defect": {
-              "point": -2.0,
+              "point": -10.0,
               "ci95": [
-                -52.0,
-                71.0
+                -60.0,
+                63.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 107.0,
+              "point": 99.0,
               "ci95": [
-                -54.0,
-                308.0
+                -62.0,
+                300.0
               ],
               "separated": false
             },
             "direct_prompt": {
-              "point": 118.0,
+              "point": 110.0,
               "ci95": [
-                -32.0,
-                318.0
+                -40.0,
+                310.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": 115.0,
+              "point": 107.0,
               "ci95": [
-                -38.0,
-                316.0
+                -46.0,
+                308.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 120.0,
+              "point": -8.0,
               "ci95": [
-                -32.0,
-                317.0
+                -56.0,
+                65.0
               ],
               "separated": false
             }
@@ -1947,10 +1947,10 @@
               "separated": false
             },
             "agent_with_tools": {
-              "point": 2.0,
+              "point": 3.0,
               "ci95": [
                 0.0,
-                4.0
+                6.0
               ],
               "separated": false
             },
@@ -1979,101 +1979,101 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -115.0,
+              "point": -107.0,
               "ci95": [
-                -316.0,
-                38.0
+                -308.0,
+                46.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 5.0,
+              "point": -115.0,
               "ci95": [
-                2.0,
-                8.0
+                -359.0,
+                10.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 173.0,
+            "point": 53.0,
             "ci95": [
-              22.0,
-              369.0
+              6.0,
+              126.0
             ]
           },
           "recall": {
-            "point": 0.0,
+            "point": 0.3333,
             "ci95": [
               0.0,
-              0.0
+              1.0
             ]
           },
           "precision": {
-            "point": 0.0,
+            "point": 0.1667,
             "ci95": [
               0.0,
-              0.0
+              0.75
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -133.0,
+              "point": -13.0,
               "ci95": [
-                -362.0,
-                -8.0
+                -28.0,
+                -2.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -3.0,
+              "point": 118.0,
+              "ci95": [
+                -6.0,
+                359.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -2.0,
               "ci95": [
                 -6.0,
                 0.0
               ],
               "separated": false
             },
-            "always_modal_defect": {
-              "point": -122.0,
-              "ci95": [
-                -361.0,
-                -1.0
-              ],
-              "separated": true
-            },
             "check_env": {
-              "point": -13.0,
+              "point": 107.0,
               "ci95": [
-                -29.0,
-                -2.0
+                -28.0,
+                357.0
               ],
-              "separated": true
+              "separated": false
             },
             "direct_prompt": {
-              "point": -2.0,
+              "point": 118.0,
               "ci95": [
                 -6.0,
-                2.0
+                359.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -120.0,
+              "point": 8.0,
               "ci95": [
-                -317.0,
-                32.0
+                -65.0,
+                56.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": -5.0,
+              "point": 115.0,
               "ci95": [
-                -8.0,
-                -2.0
+                -10.0,
+                359.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         }
@@ -2110,13 +2110,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 2484.0,
+            "expected_loss": 2485.0,
             "recall": 0.234,
-            "precision": 0.3548,
+            "precision": 0.3438,
             "severity_weighted_recall": 0.2511,
             "n_missed": 36,
-            "n_spurious": 20,
-            "error_count": 56
+            "n_spurious": 21,
+            "error_count": 57
           },
           "always_modal_defect": {
             "expected_loss": 1837.0,
@@ -2146,22 +2146,22 @@
             "error_count": 46
           },
           "direct_prompt": {
-            "expected_loss": 2487.0,
-            "recall": 0.234,
-            "precision": 0.3235,
-            "severity_weighted_recall": 0.2511,
-            "n_missed": 36,
-            "n_spurious": 23,
-            "error_count": 59
+            "expected_loss": 2122.0,
+            "recall": 0.2553,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.274,
+            "n_missed": 35,
+            "n_spurious": 18,
+            "error_count": 53
           },
           "flag_everything": {
-            "expected_loss": 261.0,
+            "expected_loss": 305.0,
             "recall": 1.0,
-            "precision": 0.1526,
+            "precision": 0.1335,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 261,
-            "error_count": 261
+            "n_spurious": 305,
+            "error_count": 305
           },
           "flag_nothing": {
             "expected_loss": 2904.0,
@@ -2173,24 +2173,24 @@
             "error_count": 47
           },
           "stratified_random": {
-            "expected_loss": 1616.0,
-            "recall": 0.383,
-            "precision": 0.4286,
-            "severity_weighted_recall": 0.3744,
-            "n_missed": 29,
-            "n_spurious": 24,
-            "error_count": 53
+            "expected_loss": 2614.0,
+            "recall": 0.0851,
+            "precision": 0.1176,
+            "severity_weighted_recall": 0.0913,
+            "n_missed": 43,
+            "n_spurious": 30,
+            "error_count": 73
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 18600.0,
+            "expected_loss": 18602.0,
             "recall": 0.234,
-            "precision": 0.3548,
+            "precision": 0.3438,
             "severity_weighted_recall": 0.2511,
             "n_missed": 36,
-            "n_spurious": 20,
-            "error_count": 56
+            "n_spurious": 21,
+            "error_count": 57
           },
           "always_modal_defect": {
             "expected_loss": 12586.0,
@@ -2220,22 +2220,22 @@
             "error_count": 46
           },
           "direct_prompt": {
-            "expected_loss": 18606.0,
-            "recall": 0.234,
-            "precision": 0.3235,
-            "severity_weighted_recall": 0.2511,
-            "n_missed": 36,
-            "n_spurious": 23,
-            "error_count": 59
+            "expected_loss": 15476.0,
+            "recall": 0.2553,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.274,
+            "n_missed": 35,
+            "n_spurious": 18,
+            "error_count": 53
           },
           "flag_everything": {
-            "expected_loss": 522.0,
+            "expected_loss": 610.0,
             "recall": 1.0,
-            "precision": 0.1526,
+            "precision": 0.1335,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 261,
-            "error_count": 261
+            "n_spurious": 305,
+            "error_count": 305
           },
           "flag_nothing": {
             "expected_loss": 21200.0,
@@ -2247,24 +2247,24 @@
             "error_count": 47
           },
           "stratified_random": {
-            "expected_loss": 11248.0,
-            "recall": 0.383,
-            "precision": 0.4286,
-            "severity_weighted_recall": 0.3744,
-            "n_missed": 29,
-            "n_spurious": 24,
-            "error_count": 53
+            "expected_loss": 18860.0,
+            "recall": 0.0851,
+            "precision": 0.1176,
+            "severity_weighted_recall": 0.0913,
+            "n_missed": 43,
+            "n_spurious": 30,
+            "error_count": 73
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 40160.0,
+            "expected_loss": 40168.0,
             "recall": 0.234,
-            "precision": 0.3548,
+            "precision": 0.3438,
             "severity_weighted_recall": 0.2511,
             "n_missed": 36,
-            "n_spurious": 20,
-            "error_count": 56
+            "n_spurious": 21,
+            "error_count": 57
           },
           "always_modal_defect": {
             "expected_loss": 28704.0,
@@ -2294,22 +2294,22 @@
             "error_count": 46
           },
           "direct_prompt": {
-            "expected_loss": 40184.0,
-            "recall": 0.234,
-            "precision": 0.3235,
-            "severity_weighted_recall": 0.2511,
-            "n_missed": 36,
-            "n_spurious": 23,
-            "error_count": 59
+            "expected_loss": 33944.0,
+            "recall": 0.2553,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.274,
+            "n_missed": 35,
+            "n_spurious": 18,
+            "error_count": 53
           },
           "flag_everything": {
-            "expected_loss": 2088.0,
+            "expected_loss": 2440.0,
             "recall": 1.0,
-            "precision": 0.1526,
+            "precision": 0.1335,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 261,
-            "error_count": 261
+            "n_spurious": 305,
+            "error_count": 305
           },
           "flag_nothing": {
             "expected_loss": 46600.0,
@@ -2321,24 +2321,24 @@
             "error_count": 47
           },
           "stratified_random": {
-            "expected_loss": 25392.0,
-            "recall": 0.383,
-            "precision": 0.4286,
-            "severity_weighted_recall": 0.3744,
-            "n_missed": 29,
-            "n_spurious": 24,
-            "error_count": 53
+            "expected_loss": 41640.0,
+            "recall": 0.0851,
+            "precision": 0.1176,
+            "severity_weighted_recall": 0.0913,
+            "n_missed": 43,
+            "n_spurious": 30,
+            "error_count": 73
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 56.0,
+            "expected_loss": 57.0,
             "recall": 0.234,
-            "precision": 0.3548,
+            "precision": 0.3438,
             "severity_weighted_recall": 0.2511,
             "n_missed": 36,
-            "n_spurious": 20,
-            "error_count": 56
+            "n_spurious": 21,
+            "error_count": 57
           },
           "always_modal_defect": {
             "expected_loss": 51.0,
@@ -2368,22 +2368,22 @@
             "error_count": 46
           },
           "direct_prompt": {
-            "expected_loss": 59.0,
-            "recall": 0.234,
-            "precision": 0.3235,
-            "severity_weighted_recall": 0.2511,
-            "n_missed": 36,
-            "n_spurious": 23,
-            "error_count": 59
+            "expected_loss": 53.0,
+            "recall": 0.2553,
+            "precision": 0.4,
+            "severity_weighted_recall": 0.274,
+            "n_missed": 35,
+            "n_spurious": 18,
+            "error_count": 53
           },
           "flag_everything": {
-            "expected_loss": 261.0,
+            "expected_loss": 305.0,
             "recall": 1.0,
-            "precision": 0.1526,
+            "precision": 0.1335,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 261,
-            "error_count": 261
+            "n_spurious": 305,
+            "error_count": 305
           },
           "flag_nothing": {
             "expected_loss": 47.0,
@@ -2395,13 +2395,13 @@
             "error_count": 47
           },
           "stratified_random": {
-            "expected_loss": 53.0,
-            "recall": 0.383,
-            "precision": 0.4286,
-            "severity_weighted_recall": 0.3744,
-            "n_missed": 29,
-            "n_spurious": 24,
-            "error_count": 53
+            "expected_loss": 73.0,
+            "recall": 0.0851,
+            "precision": 0.1176,
+            "severity_weighted_recall": 0.0913,
+            "n_missed": 43,
+            "n_spurious": 30,
+            "error_count": 73
           }
         }
       },
@@ -2430,10 +2430,10 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 2484.0,
+              "point": 2485.0,
               "ci95": [
-                1511.0,
-                3595.025
+                1532.0,
+                3577.025
               ],
               "separated": true
             },
@@ -2454,18 +2454,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 2487.0,
+              "point": 2122.0,
               "ci95": [
-                1572.95,
-                3516.025
+                1338.0,
+                3012.05
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": 261.0,
+              "point": 305.0,
               "ci95": [
-                243.0,
-                277.0
+                287.0,
+                321.0
               ],
               "separated": true
             },
@@ -2478,10 +2478,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 1616.0,
+              "point": 2614.0,
               "ci95": [
-                897.975,
-                2439.0
+                1628.0,
+                3711.0
               ],
               "separated": true
             }
@@ -2489,82 +2489,82 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 2484.0,
+            "point": 2485.0,
             "ci95": [
-              1511.0,
-              3595.025
+              1532.0,
+              3577.025
             ]
           },
           "recall": {
             "point": 0.234,
             "ci95": [
-              0.1277,
-              0.35
+              0.129,
+              0.3415
             ]
           },
           "precision": {
-            "point": 0.3548,
+            "point": 0.3438,
             "ci95": [
               0.1786,
-              0.5312
+              0.5
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2484.0,
+              "point": -2485.0,
               "ci95": [
-                -3595.025,
-                -1511.0
+                -3577.025,
+                -1532.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": -647.0,
+              "point": -648.0,
               "ci95": [
-                -1132.0,
-                -196.3
+                -1091.0,
+                -208.975
               ],
               "separated": true
             },
             "check_env": {
-              "point": 412.0,
+              "point": 411.0,
               "ci95": [
-                170.975,
+                172.0,
                 662.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 3.0,
+              "point": -363.0,
               "ci95": [
-                -159.0,
-                167.0
+                -728.0,
+                -41.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -2223.0,
+              "point": -2180.0,
               "ci95": [
-                -3348.1,
-                -1238.0
+                -3290.025,
+                -1212.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 420.0,
+              "point": 419.0,
               "ci95": [
                 178.0,
-                665.0
+                663.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -868.0,
+              "point": 129.0,
               "ci95": [
-                -1653.0,
-                -195.95
+                -193.0,
+                443.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -2600,10 +2600,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 647.0,
+              "point": 648.0,
               "ci95": [
-                196.3,
-                1132.0
+                208.975,
+                1091.0
               ],
               "separated": true
             },
@@ -2616,18 +2616,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 650.0,
+              "point": 285.0,
               "ci95": [
-                207.0,
-                1096.0
+                -40.0,
+                650.0
               ],
-              "separated": true
+              "separated": false
             },
             "flag_everything": {
-              "point": -1576.0,
+              "point": -1532.0,
               "ci95": [
-                -2333.0,
-                -906.0
+                -2289.0,
+                -862.0
               ],
               "separated": true
             },
@@ -2640,12 +2640,12 @@
               "separated": true
             },
             "stratified_random": {
-              "point": -221.0,
+              "point": 777.0,
               "ci95": [
-                -789.0,
-                318.0
+                296.0,
+                1299.025
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -2681,10 +2681,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -412.0,
+              "point": -411.0,
               "ci95": [
                 -662.0,
-                -170.975
+                -172.0
               ],
               "separated": true
             },
@@ -2697,18 +2697,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": -409.0,
+              "point": -774.0,
               "ci95": [
-                -662.0,
-                -168.0
+                -1227.0,
+                -362.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2635.0,
+              "point": -2591.0,
               "ci95": [
-                -3818.0,
-                -1572.975
+                -3774.0,
+                -1528.975
               ],
               "separated": true
             },
@@ -2721,10 +2721,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -1280.0,
+              "point": -282.0,
               "ci95": [
-                -2084.025,
-                -572.0
+                -641.0,
+                -1.0
               ],
               "separated": true
             }
@@ -2732,91 +2732,91 @@
         },
         "direct_prompt": {
           "expected_loss": {
-            "point": 2487.0,
+            "point": 2122.0,
             "ci95": [
-              1572.95,
-              3516.025
+              1338.0,
+              3012.05
             ]
           },
           "recall": {
-            "point": 0.234,
+            "point": 0.2553,
             "ci95": [
-              0.1463,
-              0.3235
+              0.1786,
+              0.3265
             ]
           },
           "precision": {
-            "point": 0.3235,
+            "point": 0.4,
             "ci95": [
-              0.1667,
-              0.4848
+              0.2222,
+              0.5758
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2487.0,
+              "point": -2122.0,
               "ci95": [
-                -3516.025,
-                -1572.95
+                -3012.05,
+                -1338.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -3.0,
+              "point": 363.0,
               "ci95": [
-                -167.0,
-                159.0
-              ],
-              "separated": false
-            },
-            "always_modal_defect": {
-              "point": -650.0,
-              "ci95": [
-                -1096.0,
-                -207.0
+                41.0,
+                728.0
               ],
               "separated": true
             },
-            "check_env": {
-              "point": 409.0,
+            "always_modal_defect": {
+              "point": -285.0,
               "ci95": [
-                168.0,
-                662.0
+                -650.0,
+                40.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 774.0,
+              "ci95": [
+                362.0,
+                1227.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2226.0,
+              "point": -1817.0,
               "ci95": [
-                -3269.025,
-                -1294.95
+                -2726.025,
+                -1018.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 417.0,
+              "point": 782.0,
               "ci95": [
-                175.0,
-                664.0
+                377.0,
+                1228.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -871.0,
+              "point": 492.0,
               "ci95": [
-                -1607.025,
-                -217.0
+                -14.05,
+                1015.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 261.0,
+            "point": 305.0,
             "ci95": [
-              243.0,
-              277.0
+              287.0,
+              321.0
             ]
           },
           "recall": {
@@ -2827,66 +2827,66 @@
             ]
           },
           "precision": {
-            "point": 0.1526,
+            "point": 0.1335,
             "ci95": [
-              0.1006,
-              0.211
+              0.0881,
+              0.1847
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -261.0,
+              "point": -305.0,
               "ci95": [
-                -277.0,
-                -243.0
+                -321.0,
+                -287.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 2223.0,
+              "point": 2180.0,
               "ci95": [
-                1238.0,
-                3348.1
+                1212.0,
+                3290.025
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 1576.0,
+              "point": 1532.0,
               "ci95": [
-                906.0,
-                2333.0
+                862.0,
+                2289.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 2635.0,
+              "point": 2591.0,
               "ci95": [
-                1572.975,
-                3818.0
+                1528.975,
+                3774.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 2226.0,
+              "point": 1817.0,
               "ci95": [
-                1294.95,
-                3269.025
+                1018.0,
+                2726.025
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 2643.0,
+              "point": 2599.0,
               "ci95": [
-                1581.95,
-                3825.0
+                1537.95,
+                3781.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 1355.0,
+              "point": 2309.0,
               "ci95": [
-                626.0,
-                2189.0
+                1308.0,
+                3424.025
               ],
               "separated": true
             }
@@ -2924,9 +2924,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -420.0,
+              "point": -419.0,
               "ci95": [
-                -665.0,
+                -663.0,
                 -178.0
               ],
               "separated": true
@@ -2948,26 +2948,26 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -417.0,
+              "point": -782.0,
               "ci95": [
-                -664.0,
-                -175.0
+                -1228.0,
+                -377.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2643.0,
+              "point": -2599.0,
               "ci95": [
-                -3825.0,
-                -1581.95
+                -3781.0,
+                -1537.95
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -1288.0,
+              "point": -290.0,
               "ci95": [
-                -2088.05,
-                -584.975
+                -648.0,
+                -10.0
               ],
               "separated": true
             }
@@ -2975,80 +2975,80 @@
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 1616.0,
+            "point": 2614.0,
             "ci95": [
-              897.975,
-              2439.0
+              1628.0,
+              3711.0
             ]
           },
           "recall": {
-            "point": 0.383,
+            "point": 0.0851,
             "ci95": [
-              0.2051,
-              0.5385
+              0.0213,
+              0.1572
             ]
           },
           "precision": {
-            "point": 0.4286,
+            "point": 0.1176,
             "ci95": [
-              0.2195,
-              0.6304
+              0.0286,
+              0.2308
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1616.0,
+              "point": -2614.0,
               "ci95": [
-                -2439.0,
-                -897.975
+                -3711.0,
+                -1628.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 868.0,
+              "point": -129.0,
               "ci95": [
-                195.95,
-                1653.0
-              ],
-              "separated": true
-            },
-            "always_modal_defect": {
-              "point": 221.0,
-              "ci95": [
-                -318.0,
-                789.0
+                -443.0,
+                193.0
               ],
               "separated": false
             },
-            "check_env": {
-              "point": 1280.0,
+            "always_modal_defect": {
+              "point": -777.0,
               "ci95": [
-                572.0,
-                2084.025
+                -1299.025,
+                -296.0
+              ],
+              "separated": true
+            },
+            "check_env": {
+              "point": 282.0,
+              "ci95": [
+                1.0,
+                641.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 871.0,
+              "point": -492.0,
               "ci95": [
-                217.0,
-                1607.025
+                -1015.0,
+                14.05
               ],
-              "separated": true
+              "separated": false
             },
             "flag_everything": {
-              "point": -1355.0,
+              "point": -2309.0,
               "ci95": [
-                -2189.0,
-                -626.0
+                -3424.025,
+                -1308.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 1288.0,
+              "point": 290.0,
               "ci95": [
-                584.975,
-                2088.05
+                10.0,
+                648.0
               ],
               "separated": true
             }
@@ -3069,13 +3069,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 170.0,
+            "expected_loss": 171.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 51.0,
@@ -3114,13 +3114,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 53.0,
+            "expected_loss": 61.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 168.0,
@@ -3132,24 +3132,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 173.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 53.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 1244.0,
+            "expected_loss": 1246.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 286.0,
@@ -3188,13 +3188,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 106.0,
+            "expected_loss": 122.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 1240.0,
@@ -3206,24 +3206,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 1250.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 290.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 2716.0,
+            "expected_loss": 2724.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 724.0,
@@ -3262,13 +3262,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 424.0,
+            "expected_loss": 488.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 2700.0,
@@ -3280,24 +3280,24 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 2740.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 740.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 5.0,
+            "expected_loss": 6.0,
             "recall": 0.0,
             "precision": 0.0,
             "severity_weighted_recall": 0.0,
             "n_missed": 3,
-            "n_spurious": 2,
-            "error_count": 5
+            "n_spurious": 3,
+            "error_count": 6
           },
           "always_modal_defect": {
             "expected_loss": 5.0,
@@ -3336,13 +3336,13 @@
             "error_count": 6
           },
           "flag_everything": {
-            "expected_loss": 53.0,
+            "expected_loss": 61.0,
             "recall": 1.0,
-            "precision": 0.0536,
+            "precision": 0.0469,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 53,
-            "error_count": 53
+            "n_spurious": 61,
+            "error_count": 61
           },
           "flag_nothing": {
             "expected_loss": 3.0,
@@ -3354,13 +3354,13 @@
             "error_count": 3
           },
           "stratified_random": {
-            "expected_loss": 8.0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "severity_weighted_recall": 0.0,
-            "n_missed": 3,
+            "expected_loss": 7.0,
+            "recall": 0.3333,
+            "precision": 0.1667,
+            "severity_weighted_recall": 0.3846,
+            "n_missed": 2,
             "n_spurious": 5,
-            "error_count": 8
+            "error_count": 7
           }
         }
       },
@@ -3389,7 +3389,7 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 130.0,
+              "point": 131.0,
               "ci95": [
                 2.0,
                 361.0
@@ -3421,10 +3421,10 @@
               "separated": true
             },
             "flag_everything": {
-              "point": 13.0,
+              "point": 21.0,
               "ci95": [
-                -68.0,
-                55.0
+                -60.0,
+                63.0
               ],
               "separated": false
             },
@@ -3437,10 +3437,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 133.0,
+              "point": 13.0,
               "ci95": [
-                8.0,
-                362.0
+                2.0,
+                28.0
               ],
               "separated": true
             }
@@ -3448,10 +3448,10 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 170.0,
+            "point": 171.0,
             "ci95": [
-              20.0,
-              369.0
+              22.0,
+              370.0
             ]
           },
           "recall": {
@@ -3470,7 +3470,7 @@
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -130.0,
+              "point": -131.0,
               "ci95": [
                 -361.0,
                 -2.0
@@ -3478,49 +3478,49 @@
               "separated": true
             },
             "always_modal_defect": {
-              "point": -119.0,
+              "point": -120.0,
               "ci95": [
                 -360.0,
-                3.0
+                2.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": -10.0,
+              "point": -11.0,
               "ci95": [
-                -27.0,
+                -30.0,
                 0.0
               ],
               "separated": false
             },
             "direct_prompt": {
-              "point": 1.0,
+              "point": 0.0,
               "ci95": [
                 0.0,
-                3.0
+                0.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -117.0,
+              "point": -110.0,
               "ci95": [
-                -317.0,
-                34.0
+                -310.0,
+                40.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": -2.0,
+              "point": -3.0,
               "ci95": [
-                -4.0,
+                -6.0,
                 0.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 3.0,
+              "point": -118.0,
               "ci95": [
-                0.0,
+                -359.0,
                 6.0
               ],
               "separated": false
@@ -3559,9 +3559,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 119.0,
+              "point": 120.0,
               "ci95": [
-                -3.0,
+                -2.0,
                 360.0
               ],
               "separated": false
@@ -3583,10 +3583,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": 2.0,
+              "point": 10.0,
               "ci95": [
-                -71.0,
-                52.0
+                -63.0,
+                60.0
               ],
               "separated": false
             },
@@ -3599,12 +3599,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 122.0,
+              "point": 2.0,
               "ci95": [
-                1.0,
-                361.0
+                0.0,
+                6.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -3640,10 +3640,10 @@
               "separated": false
             },
             "agent_with_tools": {
-              "point": 10.0,
+              "point": 11.0,
               "ci95": [
                 0.0,
-                27.0
+                30.0
               ],
               "separated": false
             },
@@ -3664,10 +3664,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -107.0,
+              "point": -99.0,
               "ci95": [
-                -308.0,
-                54.0
+                -300.0,
+                62.0
               ],
               "separated": false
             },
@@ -3680,12 +3680,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 13.0,
+              "point": -107.0,
               "ci95": [
-                2.0,
-                29.0
+                -357.0,
+                28.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -3721,9 +3721,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -1.0,
+              "point": 0.0,
               "ci95": [
-                -3.0,
+                0.0,
                 0.0
               ],
               "separated": false
@@ -3745,10 +3745,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -118.0,
+              "point": -110.0,
               "ci95": [
-                -318.0,
-                32.0
+                -310.0,
+                40.0
               ],
               "separated": false
             },
@@ -3761,9 +3761,9 @@
               "separated": false
             },
             "stratified_random": {
-              "point": 2.0,
+              "point": -118.0,
               "ci95": [
-                -2.0,
+                -359.0,
                 6.0
               ],
               "separated": false
@@ -3772,10 +3772,10 @@
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 53.0,
+            "point": 61.0,
             "ci95": [
-              52.0,
-              55.0
+              60.0,
+              63.0
             ]
           },
           "recall": {
@@ -3786,66 +3786,66 @@
             ]
           },
           "precision": {
-            "point": 0.0536,
+            "point": 0.0469,
             "ci95": [
-              0.0179,
-              0.0714
+              0.0156,
+              0.0625
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -13.0,
+              "point": -21.0,
               "ci95": [
-                -55.0,
-                68.0
+                -63.0,
+                60.0
               ],
               "separated": false
             },
             "agent_with_tools": {
-              "point": 117.0,
+              "point": 110.0,
               "ci95": [
-                -34.0,
-                317.0
+                -40.0,
+                310.0
               ],
               "separated": false
             },
             "always_modal_defect": {
-              "point": -2.0,
+              "point": -10.0,
               "ci95": [
-                -52.0,
-                71.0
+                -60.0,
+                63.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 107.0,
+              "point": 99.0,
               "ci95": [
-                -54.0,
-                308.0
+                -62.0,
+                300.0
               ],
               "separated": false
             },
             "direct_prompt": {
-              "point": 118.0,
+              "point": 110.0,
               "ci95": [
-                -32.0,
-                318.0
+                -40.0,
+                310.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": 115.0,
+              "point": 107.0,
               "ci95": [
-                -38.0,
-                316.0
+                -46.0,
+                308.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 120.0,
+              "point": -8.0,
               "ci95": [
-                -32.0,
-                317.0
+                -56.0,
+                65.0
               ],
               "separated": false
             }
@@ -3883,10 +3883,10 @@
               "separated": false
             },
             "agent_with_tools": {
-              "point": 2.0,
+              "point": 3.0,
               "ci95": [
                 0.0,
-                4.0
+                6.0
               ],
               "separated": false
             },
@@ -3915,101 +3915,101 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -115.0,
+              "point": -107.0,
               "ci95": [
-                -316.0,
-                38.0
+                -308.0,
+                46.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": 5.0,
+              "point": -115.0,
               "ci95": [
-                2.0,
-                8.0
+                -359.0,
+                10.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 173.0,
+            "point": 53.0,
             "ci95": [
-              22.0,
-              369.0
+              6.0,
+              126.0
             ]
           },
           "recall": {
-            "point": 0.0,
+            "point": 0.3333,
             "ci95": [
               0.0,
-              0.0
+              1.0
             ]
           },
           "precision": {
-            "point": 0.0,
+            "point": 0.1667,
             "ci95": [
               0.0,
-              0.0
+              0.75
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -133.0,
+              "point": -13.0,
               "ci95": [
-                -362.0,
-                -8.0
+                -28.0,
+                -2.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -3.0,
+              "point": 118.0,
+              "ci95": [
+                -6.0,
+                359.0
+              ],
+              "separated": false
+            },
+            "always_modal_defect": {
+              "point": -2.0,
               "ci95": [
                 -6.0,
                 0.0
               ],
               "separated": false
             },
-            "always_modal_defect": {
-              "point": -122.0,
-              "ci95": [
-                -361.0,
-                -1.0
-              ],
-              "separated": true
-            },
             "check_env": {
-              "point": -13.0,
+              "point": 107.0,
               "ci95": [
-                -29.0,
-                -2.0
+                -28.0,
+                357.0
               ],
-              "separated": true
+              "separated": false
             },
             "direct_prompt": {
-              "point": -2.0,
+              "point": 118.0,
               "ci95": [
                 -6.0,
-                2.0
+                359.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -120.0,
+              "point": 8.0,
               "ci95": [
-                -317.0,
-                32.0
+                -65.0,
+                56.0
               ],
               "separated": false
             },
             "flag_nothing": {
-              "point": -5.0,
+              "point": 115.0,
               "ci95": [
-                -8.0,
-                -2.0
+                -10.0,
+                359.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         }
@@ -4036,13 +4036,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 1116.0,
+            "expected_loss": 1117.0,
             "recall": 0.1579,
-            "precision": 0.2,
+            "precision": 0.1875,
             "severity_weighted_recall": 0.1685,
             "n_missed": 16,
-            "n_spurious": 12,
-            "error_count": 28
+            "n_spurious": 13,
+            "error_count": 29
           },
           "always_modal_defect": {
             "expected_loss": 873.0,
@@ -4072,22 +4072,22 @@
             "error_count": 18
           },
           "direct_prompt": {
-            "expected_loss": 1119.0,
-            "recall": 0.1579,
-            "precision": 0.1667,
-            "severity_weighted_recall": 0.1685,
-            "n_missed": 16,
-            "n_spurious": 15,
-            "error_count": 31
+            "expected_loss": 834.0,
+            "recall": 0.2105,
+            "precision": 0.2857,
+            "severity_weighted_recall": 0.2247,
+            "n_missed": 15,
+            "n_spurious": 10,
+            "error_count": 25
           },
           "flag_everything": {
-            "expected_loss": 149.0,
+            "expected_loss": 173.0,
             "recall": 1.0,
-            "precision": 0.1131,
+            "precision": 0.099,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 149,
-            "error_count": 149
+            "n_spurious": 173,
+            "error_count": 173
           },
           "flag_nothing": {
             "expected_loss": 1224.0,
@@ -4099,24 +4099,24 @@
             "error_count": 19
           },
           "stratified_random": {
-            "expected_loss": 673.0,
-            "recall": 0.3684,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.3708,
-            "n_missed": 12,
-            "n_spurious": 17,
-            "error_count": 29
+            "expected_loss": 1243.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 19,
+            "error_count": 38
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 8304.0,
+            "expected_loss": 8306.0,
             "recall": 0.1579,
-            "precision": 0.2,
+            "precision": 0.1875,
             "severity_weighted_recall": 0.1685,
             "n_missed": 16,
-            "n_spurious": 12,
-            "error_count": 28
+            "n_spurious": 13,
+            "error_count": 29
           },
           "always_modal_defect": {
             "expected_loss": 6138.0,
@@ -4146,22 +4146,22 @@
             "error_count": 18
           },
           "direct_prompt": {
-            "expected_loss": 8310.0,
-            "recall": 0.1579,
-            "precision": 0.1667,
-            "severity_weighted_recall": 0.1685,
-            "n_missed": 16,
-            "n_spurious": 15,
-            "error_count": 31
+            "expected_loss": 5900.0,
+            "recall": 0.2105,
+            "precision": 0.2857,
+            "severity_weighted_recall": 0.2247,
+            "n_missed": 15,
+            "n_spurious": 10,
+            "error_count": 25
           },
           "flag_everything": {
-            "expected_loss": 298.0,
+            "expected_loss": 346.0,
             "recall": 1.0,
-            "precision": 0.1131,
+            "precision": 0.099,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 149,
-            "error_count": 149
+            "n_spurious": 173,
+            "error_count": 173
           },
           "flag_nothing": {
             "expected_loss": 9000.0,
@@ -4173,24 +4173,24 @@
             "error_count": 19
           },
           "stratified_random": {
-            "expected_loss": 4674.0,
-            "recall": 0.3684,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.3708,
-            "n_missed": 12,
-            "n_spurious": 17,
-            "error_count": 29
+            "expected_loss": 9038.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 19,
+            "error_count": 38
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 17996.0,
+            "expected_loss": 18004.0,
             "recall": 0.1579,
-            "precision": 0.2,
+            "precision": 0.1875,
             "severity_weighted_recall": 0.1685,
             "n_missed": 16,
-            "n_spurious": 12,
-            "error_count": 28
+            "n_spurious": 13,
+            "error_count": 29
           },
           "always_modal_defect": {
             "expected_loss": 13772.0,
@@ -4220,22 +4220,22 @@
             "error_count": 18
           },
           "direct_prompt": {
-            "expected_loss": 18020.0,
-            "recall": 0.1579,
-            "precision": 0.1667,
-            "severity_weighted_recall": 0.1685,
-            "n_missed": 16,
-            "n_spurious": 15,
-            "error_count": 31
+            "expected_loss": 13180.0,
+            "recall": 0.2105,
+            "precision": 0.2857,
+            "severity_weighted_recall": 0.2247,
+            "n_missed": 15,
+            "n_spurious": 10,
+            "error_count": 25
           },
           "flag_everything": {
-            "expected_loss": 1192.0,
+            "expected_loss": 1384.0,
             "recall": 1.0,
-            "precision": 0.1131,
+            "precision": 0.099,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 149,
-            "error_count": 149
+            "n_spurious": 173,
+            "error_count": 173
           },
           "flag_nothing": {
             "expected_loss": 19700.0,
@@ -4247,24 +4247,24 @@
             "error_count": 19
           },
           "stratified_random": {
-            "expected_loss": 10536.0,
-            "recall": 0.3684,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.3708,
-            "n_missed": 12,
-            "n_spurious": 17,
-            "error_count": 29
+            "expected_loss": 19852.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 19,
+            "error_count": 38
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 28.0,
+            "expected_loss": 29.0,
             "recall": 0.1579,
-            "precision": 0.2,
+            "precision": 0.1875,
             "severity_weighted_recall": 0.1685,
             "n_missed": 16,
-            "n_spurious": 12,
-            "error_count": 28
+            "n_spurious": 13,
+            "error_count": 29
           },
           "always_modal_defect": {
             "expected_loss": 25.0,
@@ -4294,22 +4294,22 @@
             "error_count": 18
           },
           "direct_prompt": {
-            "expected_loss": 31.0,
-            "recall": 0.1579,
-            "precision": 0.1667,
-            "severity_weighted_recall": 0.1685,
-            "n_missed": 16,
-            "n_spurious": 15,
-            "error_count": 31
+            "expected_loss": 25.0,
+            "recall": 0.2105,
+            "precision": 0.2857,
+            "severity_weighted_recall": 0.2247,
+            "n_missed": 15,
+            "n_spurious": 10,
+            "error_count": 25
           },
           "flag_everything": {
-            "expected_loss": 149.0,
+            "expected_loss": 173.0,
             "recall": 1.0,
-            "precision": 0.1131,
+            "precision": 0.099,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 149,
-            "error_count": 149
+            "n_spurious": 173,
+            "error_count": 173
           },
           "flag_nothing": {
             "expected_loss": 19.0,
@@ -4321,13 +4321,13 @@
             "error_count": 19
           },
           "stratified_random": {
-            "expected_loss": 29.0,
-            "recall": 0.3684,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.3708,
-            "n_missed": 12,
-            "n_spurious": 17,
-            "error_count": 29
+            "expected_loss": 38.0,
+            "recall": 0.0,
+            "precision": 0.0,
+            "severity_weighted_recall": 0.0,
+            "n_missed": 19,
+            "n_spurious": 19,
+            "error_count": 38
           }
         }
       },
@@ -4356,10 +4356,10 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 1116.0,
+              "point": 1117.0,
               "ci95": [
-                422.975,
-                1963.025
+                478.0,
+                1884.0
               ],
               "separated": true
             },
@@ -4380,18 +4380,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 1119.0,
+              "point": 834.0,
               "ci95": [
-                500.975,
-                1855.0
+                383.975,
+                1371.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": 149.0,
+              "point": 173.0,
               "ci95": [
-                138.0,
-                157.0
+                162.0,
+                181.0
               ],
               "separated": true
             },
@@ -4404,10 +4404,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 673.0,
+              "point": 1243.0,
               "ci95": [
-                250.0,
-                1266.0
+                574.0,
+                2060.025
               ],
               "separated": true
             }
@@ -4415,82 +4415,82 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 1116.0,
+            "point": 1117.0,
             "ci95": [
-              422.975,
-              1963.025
+              478.0,
+              1884.0
             ]
           },
           "recall": {
             "point": 0.1579,
             "ci95": [
               0.0,
-              0.4167
+              0.3158
             ]
           },
           "precision": {
-            "point": 0.2,
+            "point": 0.1875,
             "ci95": [
               0.0,
-              0.4286
+              0.375
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1116.0,
+              "point": -1117.0,
               "ci95": [
-                -1963.025,
-                -422.975
+                -1884.0,
+                -478.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": -243.0,
+              "point": -244.0,
               "ci95": [
-                -645.0,
-                80.0
+                -568.0,
+                39.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 100.0,
+              "point": 99.0,
               "ci95": [
-                -17.025,
-                231.0
+                -21.0,
+                229.0
               ],
               "separated": false
             },
             "direct_prompt": {
-              "point": 3.0,
+              "point": -283.0,
               "ci95": [
-                -159.025,
-                168.0
+                -605.0,
+                -3.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -967.0,
+              "point": -944.0,
               "ci95": [
-                -1825.025,
-                -266.975
+                -1721.025,
+                -297.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 108.0,
+              "point": 107.0,
               "ci95": [
                 -14.0,
-                232.0
+                230.0
               ],
               "separated": false
             },
             "stratified_random": {
-              "point": -443.0,
+              "point": 126.0,
               "ci95": [
-                -1102.0,
-                44.0
+                6.0,
+                251.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -4526,10 +4526,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 243.0,
+              "point": 244.0,
               "ci95": [
-                -80.0,
-                645.0
+                -39.0,
+                568.0
               ],
               "separated": false
             },
@@ -4542,18 +4542,18 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": 246.0,
+              "point": -39.0,
               "ci95": [
-                -38.0,
-                572.0
+                -123.0,
+                4.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -724.0,
+              "point": -700.0,
               "ci95": [
-                -1251.0,
-                -279.0
+                -1227.0,
+                -255.0
               ],
               "separated": true
             },
@@ -4566,12 +4566,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -200.0,
+              "point": 370.0,
               "ci95": [
-                -672.075,
-                248.0
+                15.0,
+                732.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -4607,10 +4607,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -100.0,
+              "point": -99.0,
               "ci95": [
-                -231.0,
-                17.025
+                -229.0,
+                21.0
               ],
               "separated": false
             },
@@ -4623,18 +4623,18 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -97.0,
+              "point": -382.0,
               "ci95": [
-                -227.0,
-                19.0
+                -754.0,
+                -70.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -1067.0,
+              "point": -1043.0,
               "ci95": [
-                -1897.0,
-                -379.0
+                -1873.0,
+                -355.0
               ],
               "separated": true
             },
@@ -4647,10 +4647,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -543.0,
+              "point": 27.0,
               "ci95": [
-                -1197.0,
-                -70.975
+                11.0,
+                49.0
               ],
               "separated": true
             }
@@ -4658,91 +4658,91 @@
         },
         "direct_prompt": {
           "expected_loss": {
-            "point": 1119.0,
+            "point": 834.0,
             "ci95": [
-              500.975,
-              1855.0
+              383.975,
+              1371.0
             ]
           },
           "recall": {
-            "point": 0.1579,
+            "point": 0.2105,
             "ci95": [
-              0.0,
-              0.2917
+              0.0769,
+              0.3571
             ]
           },
           "precision": {
-            "point": 0.1667,
+            "point": 0.2857,
             "ci95": [
-              0.0,
-              0.3333
+              0.0667,
+              0.5833
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1119.0,
+              "point": -834.0,
               "ci95": [
-                -1855.0,
-                -500.975
+                -1371.0,
+                -383.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -3.0,
+              "point": 283.0,
               "ci95": [
-                -168.0,
-                159.025
+                3.0,
+                605.0
               ],
-              "separated": false
+              "separated": true
             },
             "always_modal_defect": {
-              "point": -246.0,
+              "point": 39.0,
               "ci95": [
-                -572.0,
-                38.0
+                -4.0,
+                123.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 97.0,
+              "point": 382.0,
               "ci95": [
-                -19.0,
-                227.0
+                70.0,
+                754.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -970.0,
+              "point": -661.0,
               "ci95": [
-                -1718.0,
-                -343.0
+                -1208.0,
+                -204.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 105.0,
+              "point": 390.0,
               "ci95": [
-                -16.0,
-                228.0
+                70.0,
+                754.0
               ],
-              "separated": false
+              "separated": true
             },
             "stratified_random": {
-              "point": -446.0,
+              "point": 409.0,
               "ci95": [
-                -1054.0,
-                10.0
+                99.975,
+                771.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 149.0,
+            "point": 173.0,
             "ci95": [
-              138.0,
-              157.0
+              162.0,
+              181.0
             ]
           },
           "recall": {
@@ -4753,66 +4753,66 @@
             ]
           },
           "precision": {
-            "point": 0.1131,
+            "point": 0.099,
             "ci95": [
-              0.0655,
-              0.1786
+              0.0573,
+              0.1562
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -149.0,
+              "point": -173.0,
               "ci95": [
-                -157.0,
-                -138.0
+                -181.0,
+                -162.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 967.0,
+              "point": 944.0,
               "ci95": [
-                266.975,
-                1825.025
+                297.0,
+                1721.025
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 724.0,
+              "point": 700.0,
               "ci95": [
-                279.0,
-                1251.0
+                255.0,
+                1227.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 1067.0,
+              "point": 1043.0,
               "ci95": [
-                379.0,
-                1897.0
+                355.0,
+                1873.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 970.0,
+              "point": 661.0,
               "ci95": [
-                343.0,
-                1718.0
+                204.0,
+                1208.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 1075.0,
+              "point": 1051.0,
               "ci95": [
-                395.0,
-                1905.0
+                371.0,
+                1881.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 524.0,
+              "point": 1070.0,
               "ci95": [
-                96.0,
-                1121.025
+                393.975,
+                1899.025
               ],
               "separated": true
             }
@@ -4850,9 +4850,9 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -108.0,
+              "point": -107.0,
               "ci95": [
-                -232.0,
+                -230.0,
                 14.0
               ],
               "separated": false
@@ -4874,26 +4874,26 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -105.0,
+              "point": -390.0,
               "ci95": [
-                -228.0,
-                16.0
+                -754.0,
+                -70.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -1075.0,
+              "point": -1051.0,
               "ci95": [
-                -1905.0,
-                -395.0
+                -1881.0,
+                -371.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -551.0,
+              "point": 19.0,
               "ci95": [
-                -1206.0,
-                -94.0
+                11.0,
+                27.0
               ],
               "separated": true
             }
@@ -4901,80 +4901,80 @@
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 673.0,
+            "point": 1243.0,
             "ci95": [
-              250.0,
-              1266.0
+              574.0,
+              2060.025
             ]
           },
           "recall": {
-            "point": 0.3684,
+            "point": 0.0,
             "ci95": [
-              0.0769,
-              0.5714
+              0.0,
+              0.0
             ]
           },
           "precision": {
-            "point": 0.2917,
+            "point": 0.0,
             "ci95": [
-              0.0526,
-              0.56
+              0.0,
+              0.0
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -673.0,
+              "point": -1243.0,
               "ci95": [
-                -1266.0,
-                -250.0
+                -2060.025,
+                -574.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 443.0,
+              "point": -126.0,
               "ci95": [
-                -44.0,
-                1102.0
+                -251.0,
+                -6.0
               ],
-              "separated": false
+              "separated": true
             },
             "always_modal_defect": {
-              "point": 200.0,
+              "point": -370.0,
               "ci95": [
-                -248.0,
-                672.075
+                -732.0,
+                -15.0
               ],
-              "separated": false
+              "separated": true
             },
             "check_env": {
-              "point": 543.0,
+              "point": -27.0,
               "ci95": [
-                70.975,
-                1197.0
+                -49.0,
+                -11.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 446.0,
+              "point": -409.0,
               "ci95": [
-                -10.0,
-                1054.0
+                -771.0,
+                -99.975
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
-              "point": -524.0,
+              "point": -1070.0,
               "ci95": [
-                -1121.025,
-                -96.0
+                -1899.025,
+                -393.975
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 551.0,
+              "point": -19.0,
               "ci95": [
-                94.0,
-                1206.0
+                -27.0,
+                -11.0
               ],
               "separated": true
             }
@@ -5037,7 +5037,7 @@
             "error_count": 28
           },
           "direct_prompt": {
-            "expected_loss": 1368.0,
+            "expected_loss": 1288.0,
             "recall": 0.2857,
             "precision": 0.5,
             "severity_weighted_recall": 0.3077,
@@ -5046,13 +5046,13 @@
             "error_count": 28
           },
           "flag_everything": {
-            "expected_loss": 112.0,
+            "expected_loss": 132.0,
             "recall": 1.0,
-            "precision": 0.2,
+            "precision": 0.175,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 112,
-            "error_count": 112
+            "n_spurious": 132,
+            "error_count": 132
           },
           "flag_nothing": {
             "expected_loss": 1680.0,
@@ -5064,13 +5064,13 @@
             "error_count": 28
           },
           "stratified_random": {
-            "expected_loss": 943.0,
-            "recall": 0.3929,
-            "precision": 0.6111,
-            "severity_weighted_recall": 0.3769,
-            "n_missed": 17,
-            "n_spurious": 7,
-            "error_count": 24
+            "expected_loss": 1371.0,
+            "recall": 0.1429,
+            "precision": 0.2667,
+            "severity_weighted_recall": 0.1538,
+            "n_missed": 24,
+            "n_spurious": 11,
+            "error_count": 35
           }
         },
         "production-training": {
@@ -5111,7 +5111,7 @@
             "error_count": 28
           },
           "direct_prompt": {
-            "expected_loss": 10296.0,
+            "expected_loss": 9576.0,
             "recall": 0.2857,
             "precision": 0.5,
             "severity_weighted_recall": 0.3077,
@@ -5120,13 +5120,13 @@
             "error_count": 28
           },
           "flag_everything": {
-            "expected_loss": 224.0,
+            "expected_loss": 264.0,
             "recall": 1.0,
-            "precision": 0.2,
+            "precision": 0.175,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 112,
-            "error_count": 112
+            "n_spurious": 132,
+            "error_count": 132
           },
           "flag_nothing": {
             "expected_loss": 12200.0,
@@ -5138,13 +5138,13 @@
             "error_count": 28
           },
           "stratified_random": {
-            "expected_loss": 6574.0,
-            "recall": 0.3929,
-            "precision": 0.6111,
-            "severity_weighted_recall": 0.3769,
-            "n_missed": 17,
-            "n_spurious": 7,
-            "error_count": 24
+            "expected_loss": 9822.0,
+            "recall": 0.1429,
+            "precision": 0.2667,
+            "severity_weighted_recall": 0.1538,
+            "n_missed": 24,
+            "n_spurious": 11,
+            "error_count": 35
           }
         },
         "benchmark-publication": {
@@ -5185,7 +5185,7 @@
             "error_count": 28
           },
           "direct_prompt": {
-            "expected_loss": 22164.0,
+            "expected_loss": 20764.0,
             "recall": 0.2857,
             "precision": 0.5,
             "severity_weighted_recall": 0.3077,
@@ -5194,13 +5194,13 @@
             "error_count": 28
           },
           "flag_everything": {
-            "expected_loss": 896.0,
+            "expected_loss": 1056.0,
             "recall": 1.0,
-            "precision": 0.2,
+            "precision": 0.175,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 112,
-            "error_count": 112
+            "n_spurious": 132,
+            "error_count": 132
           },
           "flag_nothing": {
             "expected_loss": 26900.0,
@@ -5212,13 +5212,13 @@
             "error_count": 28
           },
           "stratified_random": {
-            "expected_loss": 14856.0,
-            "recall": 0.3929,
-            "precision": 0.6111,
-            "severity_weighted_recall": 0.3769,
-            "n_missed": 17,
-            "n_spurious": 7,
-            "error_count": 24
+            "expected_loss": 21788.0,
+            "recall": 0.1429,
+            "precision": 0.2667,
+            "severity_weighted_recall": 0.1538,
+            "n_missed": 24,
+            "n_spurious": 11,
+            "error_count": 35
           }
         },
         "flat": {
@@ -5268,13 +5268,13 @@
             "error_count": 28
           },
           "flag_everything": {
-            "expected_loss": 112.0,
+            "expected_loss": 132.0,
             "recall": 1.0,
-            "precision": 0.2,
+            "precision": 0.175,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 112,
-            "error_count": 112
+            "n_spurious": 132,
+            "error_count": 132
           },
           "flag_nothing": {
             "expected_loss": 28.0,
@@ -5286,13 +5286,13 @@
             "error_count": 28
           },
           "stratified_random": {
-            "expected_loss": 24.0,
-            "recall": 0.3929,
-            "precision": 0.6111,
-            "severity_weighted_recall": 0.3769,
-            "n_missed": 17,
-            "n_spurious": 7,
-            "error_count": 24
+            "expected_loss": 35.0,
+            "recall": 0.1429,
+            "precision": 0.2667,
+            "severity_weighted_recall": 0.1538,
+            "n_missed": 24,
+            "n_spurious": 11,
+            "error_count": 35
           }
         }
       },
@@ -5323,8 +5323,8 @@
             "agent_with_tools": {
               "point": 1368.0,
               "ci95": [
-                761.0,
-                2036.025
+                752.0,
+                2103.0
               ],
               "separated": true
             },
@@ -5345,18 +5345,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 1368.0,
+              "point": 1288.0,
               "ci95": [
-                759.0,
-                2039.0
+                719.0,
+                1913.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": 112.0,
+              "point": 132.0,
               "ci95": [
-                99.0,
-                124.0
+                119.0,
+                144.0
               ],
               "separated": true
             },
@@ -5369,10 +5369,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 943.0,
+              "point": 1371.0,
               "ci95": [
-                420.0,
-                1514.0
+                725.0,
+                2090.075
               ],
               "separated": true
             }
@@ -5382,78 +5382,78 @@
           "expected_loss": {
             "point": 1368.0,
             "ci95": [
-              761.0,
-              2036.025
+              752.0,
+              2103.0
             ]
           },
           "recall": {
             "point": 0.2857,
             "ci95": [
-              0.1739,
-              0.4
+              0.1379,
+              0.4348
             ]
           },
           "precision": {
             "point": 0.5,
             "ci95": [
-              0.2353,
-              0.75
+              0.25,
+              0.7143
             ]
           },
           "loss_saved_vs": {
             "assay": {
               "point": -1368.0,
               "ci95": [
-                -2036.025,
-                -761.0
+                -2103.0,
+                -752.0
               ],
               "separated": true
             },
             "always_modal_defect": {
               "point": -404.0,
               "ci95": [
-                -690.0,
-                -120.0
+                -686.0,
+                -122.0
               ],
               "separated": true
             },
             "check_env": {
               "point": 312.0,
               "ci95": [
-                145.0,
+                147.0,
                 513.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 0.0,
+              "point": -80.0,
               "ci95": [
-                -3.0,
-                3.0
+                -281.0,
+                83.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -1256.0,
+              "point": -1236.0,
               "ci95": [
-                -1940.025,
-                -639.0
+                -1982.0,
+                -608.975
               ],
               "separated": true
             },
             "flag_nothing": {
               "point": 312.0,
               "ci95": [
-                145.0,
+                147.0,
                 513.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -425.0,
+              "point": 3.0,
               "ci95": [
-                -850.0,
-                18.025
+                -304.0,
+                280.0
               ],
               "separated": false
             }
@@ -5493,8 +5493,8 @@
             "agent_with_tools": {
               "point": 404.0,
               "ci95": [
-                120.0,
-                690.0
+                122.0,
+                686.0
               ],
               "separated": true
             },
@@ -5507,18 +5507,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 404.0,
+              "point": 324.0,
               "ci95": [
-                119.0,
-                690.0
+                40.0,
+                646.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -852.0,
+              "point": -832.0,
               "ci95": [
-                -1375.0,
-                -387.0
+                -1355.0,
+                -367.0
               ],
               "separated": true
             },
@@ -5531,12 +5531,12 @@
               "separated": true
             },
             "stratified_random": {
-              "point": -21.0,
+              "point": 407.0,
               "ci95": [
-                -259.025,
-                304.0
+                51.0,
+                769.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -5575,7 +5575,7 @@
               "point": -312.0,
               "ci95": [
                 -513.0,
-                -145.0
+                -147.0
               ],
               "separated": true
             },
@@ -5588,18 +5588,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": -312.0,
+              "point": -392.0,
               "ci95": [
-                -513.0,
-                -147.0
+                -636.0,
+                -150.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -1568.0,
+              "point": -1548.0,
               "ci95": [
-                -2325.275,
-                -850.0
+                -2305.275,
+                -830.0
               ],
               "separated": true
             },
@@ -5612,10 +5612,10 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -737.0,
+              "point": -309.0,
               "ci95": [
-                -1204.0,
-                -280.0
+                -621.0,
+                -35.0
               ],
               "separated": true
             }
@@ -5623,80 +5623,80 @@
         },
         "direct_prompt": {
           "expected_loss": {
-            "point": 1368.0,
+            "point": 1288.0,
             "ci95": [
-              759.0,
-              2039.0
+              719.0,
+              1913.0
             ]
           },
           "recall": {
             "point": 0.2857,
             "ci95": [
-              0.1739,
-              0.4
+              0.1923,
+              0.36
             ]
           },
           "precision": {
             "point": 0.5,
             "ci95": [
               0.25,
-              0.7143
+              0.7
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1368.0,
+              "point": -1288.0,
               "ci95": [
-                -2039.0,
-                -759.0
+                -1913.0,
+                -719.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 0.0,
+              "point": 80.0,
               "ci95": [
-                -3.0,
-                3.0
+                -83.0,
+                281.0
               ],
               "separated": false
             },
             "always_modal_defect": {
-              "point": -404.0,
+              "point": -324.0,
               "ci95": [
-                -690.0,
-                -119.0
+                -646.0,
+                -40.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 312.0,
+              "point": 392.0,
               "ci95": [
-                147.0,
-                513.0
+                150.0,
+                636.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -1256.0,
+              "point": -1156.0,
               "ci95": [
-                -1943.0,
-                -638.0
+                -1795.0,
+                -578.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 312.0,
+              "point": 392.0,
               "ci95": [
-                147.0,
-                513.0
+                150.0,
+                636.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -425.0,
+              "point": 83.0,
               "ci95": [
-                -850.0,
-                19.025
+                -272.0,
+                441.0
               ],
               "separated": false
             }
@@ -5704,10 +5704,10 @@
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 112.0,
+            "point": 132.0,
             "ci95": [
-              99.0,
-              124.0
+              119.0,
+              144.0
             ]
           },
           "recall": {
@@ -5718,66 +5718,66 @@
             ]
           },
           "precision": {
-            "point": 0.2,
+            "point": 0.175,
             "ci95": [
-              0.1143,
-              0.2929
+              0.1,
+              0.2562
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -112.0,
+              "point": -132.0,
               "ci95": [
-                -124.0,
-                -99.0
+                -144.0,
+                -119.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 1256.0,
+              "point": 1236.0,
               "ci95": [
-                639.0,
-                1940.025
+                608.975,
+                1982.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 852.0,
+              "point": 832.0,
               "ci95": [
-                387.0,
-                1375.0
+                367.0,
+                1355.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 1568.0,
+              "point": 1548.0,
               "ci95": [
-                850.0,
-                2325.275
+                830.0,
+                2305.275
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 1256.0,
+              "point": 1156.0,
               "ci95": [
-                638.0,
-                1943.0
+                578.0,
+                1795.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 1568.0,
+              "point": 1548.0,
               "ci95": [
-                850.0,
-                2325.275
+                830.0,
+                2305.275
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 831.0,
+              "point": 1239.0,
               "ci95": [
-                300.975,
-                1410.0
+                585.0,
+                1970.0
               ],
               "separated": true
             }
@@ -5818,7 +5818,7 @@
               "point": -312.0,
               "ci95": [
                 -513.0,
-                -145.0
+                -147.0
               ],
               "separated": true
             },
@@ -5839,26 +5839,26 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -312.0,
+              "point": -392.0,
               "ci95": [
-                -513.0,
-                -147.0
+                -636.0,
+                -150.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -1568.0,
+              "point": -1548.0,
               "ci95": [
-                -2325.275,
-                -850.0
+                -2305.275,
+                -830.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -737.0,
+              "point": -309.0,
               "ci95": [
-                -1204.0,
-                -280.0
+                -621.0,
+                -35.0
               ],
               "separated": true
             }
@@ -5866,80 +5866,80 @@
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 943.0,
+            "point": 1371.0,
             "ci95": [
-              420.0,
-              1514.0
+              725.0,
+              2090.075
             ]
           },
           "recall": {
-            "point": 0.3929,
+            "point": 0.1429,
             "ci95": [
-              0.1714,
-              0.6154
+              0.0417,
+              0.2632
             ]
           },
           "precision": {
-            "point": 0.6111,
+            "point": 0.2667,
             "ci95": [
-              0.3,
-              0.8571
+              0.1,
+              0.5455
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -943.0,
+              "point": -1371.0,
               "ci95": [
-                -1514.0,
-                -420.0
+                -2090.075,
+                -725.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 425.0,
+              "point": -3.0,
               "ci95": [
-                -18.025,
-                850.0
+                -280.0,
+                304.0
               ],
               "separated": false
             },
             "always_modal_defect": {
-              "point": 21.0,
+              "point": -407.0,
               "ci95": [
-                -304.0,
-                259.025
+                -769.0,
+                -51.0
               ],
-              "separated": false
+              "separated": true
             },
             "check_env": {
-              "point": 737.0,
+              "point": 309.0,
               "ci95": [
-                280.0,
-                1204.0
+                35.0,
+                621.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 425.0,
+              "point": -83.0,
               "ci95": [
-                -19.025,
-                850.0
+                -441.0,
+                272.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -831.0,
+              "point": -1239.0,
               "ci95": [
-                -1410.0,
-                -300.975
+                -1970.0,
+                -585.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 737.0,
+              "point": 309.0,
               "ci95": [
-                280.0,
-                1204.0
+                35.0,
+                621.0
               ],
               "separated": true
             }
@@ -5977,13 +5977,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 2153.0,
-            "recall": 0.1842,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 17,
-            "error_count": 48
+            "expected_loss": 2195.0,
+            "recall": 0.1579,
+            "precision": 0.24,
+            "severity_weighted_recall": 0.1705,
+            "n_missed": 32,
+            "n_spurious": 19,
+            "error_count": 51
           },
           "always_modal_defect": {
             "expected_loss": 1590.0,
@@ -6013,22 +6013,22 @@
             "error_count": 36
           },
           "direct_prompt": {
-            "expected_loss": 2158.0,
-            "recall": 0.1842,
-            "precision": 0.2414,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 22,
-            "error_count": 53
+            "expected_loss": 1793.0,
+            "recall": 0.2105,
+            "precision": 0.32,
+            "severity_weighted_recall": 0.2273,
+            "n_missed": 30,
+            "n_spurious": 17,
+            "error_count": 47
           },
           "flag_everything": {
-            "expected_loss": 256.0,
+            "expected_loss": 298.0,
             "recall": 1.0,
-            "precision": 0.1293,
+            "precision": 0.1131,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 256,
-            "error_count": 256
+            "n_spurious": 298,
+            "error_count": 298
           },
           "flag_nothing": {
             "expected_loss": 2416.0,
@@ -6040,24 +6040,24 @@
             "error_count": 38
           },
           "stratified_random": {
-            "expected_loss": 1409.0,
-            "recall": 0.3947,
-            "precision": 0.375,
-            "severity_weighted_recall": 0.3807,
-            "n_missed": 23,
-            "n_spurious": 25,
-            "error_count": 48
+            "expected_loss": 2204.0,
+            "recall": 0.0526,
+            "precision": 0.0667,
+            "severity_weighted_recall": 0.0568,
+            "n_missed": 36,
+            "n_spurious": 28,
+            "error_count": 64
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 16154.0,
-            "recall": 0.1842,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 17,
-            "error_count": 48
+            "expected_loss": 16398.0,
+            "recall": 0.1579,
+            "precision": 0.24,
+            "severity_weighted_recall": 0.1705,
+            "n_missed": 32,
+            "n_spurious": 19,
+            "error_count": 51
           },
           "always_modal_defect": {
             "expected_loss": 11108.0,
@@ -6087,22 +6087,22 @@
             "error_count": 36
           },
           "direct_prompt": {
-            "expected_loss": 16164.0,
-            "recall": 0.1842,
-            "precision": 0.2414,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 22,
-            "error_count": 53
+            "expected_loss": 13034.0,
+            "recall": 0.2105,
+            "precision": 0.32,
+            "severity_weighted_recall": 0.2273,
+            "n_missed": 30,
+            "n_spurious": 17,
+            "error_count": 47
           },
           "flag_everything": {
-            "expected_loss": 512.0,
+            "expected_loss": 596.0,
             "recall": 1.0,
-            "precision": 0.1293,
+            "precision": 0.1131,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 256,
-            "error_count": 256
+            "n_spurious": 298,
+            "error_count": 298
           },
           "flag_nothing": {
             "expected_loss": 17800.0,
@@ -6114,24 +6114,24 @@
             "error_count": 38
           },
           "stratified_random": {
-            "expected_loss": 10010.0,
-            "recall": 0.3947,
-            "precision": 0.375,
-            "severity_weighted_recall": 0.3807,
-            "n_missed": 23,
-            "n_spurious": 25,
-            "error_count": 48
+            "expected_loss": 15936.0,
+            "recall": 0.0526,
+            "precision": 0.0667,
+            "severity_weighted_recall": 0.0568,
+            "n_missed": 36,
+            "n_spurious": 28,
+            "error_count": 64
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 34836.0,
-            "recall": 0.1842,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 17,
-            "error_count": 48
+            "expected_loss": 35452.0,
+            "recall": 0.1579,
+            "precision": 0.24,
+            "severity_weighted_recall": 0.1705,
+            "n_missed": 32,
+            "n_spurious": 19,
+            "error_count": 51
           },
           "always_modal_defect": {
             "expected_loss": 25012.0,
@@ -6161,22 +6161,22 @@
             "error_count": 36
           },
           "direct_prompt": {
-            "expected_loss": 34876.0,
-            "recall": 0.1842,
-            "precision": 0.2414,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 22,
-            "error_count": 53
+            "expected_loss": 28636.0,
+            "recall": 0.2105,
+            "precision": 0.32,
+            "severity_weighted_recall": 0.2273,
+            "n_missed": 30,
+            "n_spurious": 17,
+            "error_count": 47
           },
           "flag_everything": {
-            "expected_loss": 2048.0,
+            "expected_loss": 2384.0,
             "recall": 1.0,
-            "precision": 0.1293,
+            "precision": 0.1131,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 256,
-            "error_count": 256
+            "n_spurious": 298,
+            "error_count": 298
           },
           "flag_nothing": {
             "expected_loss": 38900.0,
@@ -6188,24 +6188,24 @@
             "error_count": 38
           },
           "stratified_random": {
-            "expected_loss": 22300.0,
-            "recall": 0.3947,
-            "precision": 0.375,
-            "severity_weighted_recall": 0.3807,
-            "n_missed": 23,
-            "n_spurious": 25,
-            "error_count": 48
+            "expected_loss": 35124.0,
+            "recall": 0.0526,
+            "precision": 0.0667,
+            "severity_weighted_recall": 0.0568,
+            "n_missed": 36,
+            "n_spurious": 28,
+            "error_count": 64
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 48.0,
-            "recall": 0.1842,
-            "precision": 0.2917,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 17,
-            "error_count": 48
+            "expected_loss": 51.0,
+            "recall": 0.1579,
+            "precision": 0.24,
+            "severity_weighted_recall": 0.1705,
+            "n_missed": 32,
+            "n_spurious": 19,
+            "error_count": 51
           },
           "always_modal_defect": {
             "expected_loss": 45.0,
@@ -6235,22 +6235,22 @@
             "error_count": 36
           },
           "direct_prompt": {
-            "expected_loss": 53.0,
-            "recall": 0.1842,
-            "precision": 0.2414,
-            "severity_weighted_recall": 0.1989,
-            "n_missed": 31,
-            "n_spurious": 22,
-            "error_count": 53
+            "expected_loss": 47.0,
+            "recall": 0.2105,
+            "precision": 0.32,
+            "severity_weighted_recall": 0.2273,
+            "n_missed": 30,
+            "n_spurious": 17,
+            "error_count": 47
           },
           "flag_everything": {
-            "expected_loss": 256.0,
+            "expected_loss": 298.0,
             "recall": 1.0,
-            "precision": 0.1293,
+            "precision": 0.1131,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 256,
-            "error_count": 256
+            "n_spurious": 298,
+            "error_count": 298
           },
           "flag_nothing": {
             "expected_loss": 38.0,
@@ -6262,13 +6262,13 @@
             "error_count": 38
           },
           "stratified_random": {
-            "expected_loss": 48.0,
-            "recall": 0.3947,
-            "precision": 0.375,
-            "severity_weighted_recall": 0.3807,
-            "n_missed": 23,
-            "n_spurious": 25,
-            "error_count": 48
+            "expected_loss": 64.0,
+            "recall": 0.0526,
+            "precision": 0.0667,
+            "severity_weighted_recall": 0.0568,
+            "n_missed": 36,
+            "n_spurious": 28,
+            "error_count": 64
           }
         }
       },
@@ -6297,10 +6297,10 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 2113.0,
+              "point": 2155.0,
               "ci95": [
-                1126.0,
-                3230.025
+                1181.9,
+                3264.025
               ],
               "separated": true
             },
@@ -6321,18 +6321,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 2118.0,
+              "point": 1753.0,
               "ci95": [
-                1184.975,
-                3164.0
+                977.975,
+                2642.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": 216.0,
+              "point": 258.0,
               "ci95": [
-                130.0,
-                267.0
+                172.0,
+                309.0
               ],
               "separated": true
             },
@@ -6345,10 +6345,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 1369.0,
+              "point": 2164.0,
               "ci95": [
-                720.9,
-                2123.025
+                1160.975,
+                3296.025
               ],
               "separated": true
             }
@@ -6356,82 +6356,82 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 2153.0,
+            "point": 2195.0,
             "ci95": [
-              1169.0,
-              3264.075
+              1233.0,
+              3297.025
             ]
           },
           "recall": {
-            "point": 0.1842,
+            "point": 0.1579,
             "ci95": [
-              0.069,
-              0.3171
+              0.0541,
+              0.2759
             ]
           },
           "precision": {
-            "point": 0.2917,
+            "point": 0.24,
             "ci95": [
-              0.1,
-              0.4815
+              0.0769,
+              0.4286
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2113.0,
+              "point": -2155.0,
               "ci95": [
-                -3230.025,
-                -1126.0
+                -3264.025,
+                -1181.9
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": -563.0,
+              "point": -605.0,
               "ci95": [
-                -1045.0,
-                -121.0
+                -1050.0,
+                -200.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 247.0,
+              "point": 205.0,
               "ci95": [
-                49.0,
-                468.025
+                24.0,
+                424.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 5.0,
+              "point": -402.0,
               "ci95": [
-                -158.0,
-                169.0
+                -765.0,
+                -117.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_everything": {
               "point": -1897.0,
               "ci95": [
-                -3023.1,
-                -901.0
+                -3017.0,
+                -925.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 263.0,
+              "point": 221.0,
               "ci95": [
-                62.0,
-                470.0
+                56.0,
+                426.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -744.0,
+              "point": 9.0,
               "ci95": [
-                -1480.025,
-                -167.0
+                -355.0,
+                336.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
@@ -6467,10 +6467,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 563.0,
+              "point": 605.0,
               "ci95": [
-                121.0,
-                1045.0
+                200.0,
+                1050.0
               ],
               "separated": true
             },
@@ -6483,18 +6483,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": 568.0,
+              "point": 203.0,
               "ci95": [
-                167.975,
-                1009.0
+                -41.0,
+                524.0
               ],
-              "separated": true
+              "separated": false
             },
             "flag_everything": {
-              "point": -1334.0,
+              "point": -1292.0,
               "ci95": [
-                -2114.05,
-                -652.0
+                -2072.05,
+                -610.0
               ],
               "separated": true
             },
@@ -6507,12 +6507,12 @@
               "separated": true
             },
             "stratified_random": {
-              "point": -181.0,
+              "point": 614.0,
               "ci95": [
-                -741.0,
-                350.0
+                144.975,
+                1095.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -6548,10 +6548,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -247.0,
+              "point": -205.0,
               "ci95": [
-                -468.025,
-                -49.0
+                -424.0,
+                -24.0
               ],
               "separated": true
             },
@@ -6564,18 +6564,18 @@
               "separated": true
             },
             "direct_prompt": {
-              "point": -242.0,
+              "point": -607.0,
               "ci95": [
-                -463.0,
-                -43.0
+                -1066.025,
+                -194.975
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2144.0,
+              "point": -2102.0,
               "ci95": [
-                -3343.05,
-                -1081.975
+                -3301.05,
+                -1039.975
               ],
               "separated": true
             },
@@ -6588,102 +6588,102 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -991.0,
+              "point": -196.0,
               "ci95": [
-                -1796.05,
-                -315.975
+                -565.0,
+                59.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "direct_prompt": {
           "expected_loss": {
-            "point": 2158.0,
+            "point": 1793.0,
             "ci95": [
-              1236.975,
-              3187.05
+              1030.0,
+              2667.0
             ]
           },
           "recall": {
-            "point": 0.1842,
+            "point": 0.2105,
             "ci95": [
-              0.087,
-              0.2778
+              0.1212,
+              0.2895
             ]
           },
           "precision": {
-            "point": 0.2414,
+            "point": 0.32,
             "ci95": [
-              0.08,
-              0.4074
+              0.1304,
+              0.5161
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -2118.0,
+              "point": -1753.0,
               "ci95": [
-                -3164.0,
-                -1184.975
+                -2642.0,
+                -977.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": -5.0,
+              "point": 402.0,
               "ci95": [
-                -169.0,
-                158.0
-              ],
-              "separated": false
-            },
-            "always_modal_defect": {
-              "point": -568.0,
-              "ci95": [
-                -1009.0,
-                -167.975
+                117.0,
+                765.0
               ],
               "separated": true
             },
-            "check_env": {
-              "point": 242.0,
+            "always_modal_defect": {
+              "point": -203.0,
               "ci95": [
-                43.0,
-                463.0
+                -524.0,
+                41.0
+              ],
+              "separated": false
+            },
+            "check_env": {
+              "point": 607.0,
+              "ci95": [
+                194.975,
+                1066.025
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -1902.0,
+              "point": -1495.0,
               "ci95": [
-                -2947.075,
-                -967.0
+                -2384.025,
+                -719.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 258.0,
+              "point": 623.0,
               "ci95": [
-                57.0,
-                464.0
+                219.0,
+                1069.025
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -749.0,
+              "point": 411.0,
               "ci95": [
-                -1424.025,
-                -199.0
+                -120.0,
+                974.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 256.0,
+            "point": 298.0,
             "ci95": [
-              238.975,
-              271.0
+              280.975,
+              313.0
             ]
           },
           "recall": {
@@ -6694,66 +6694,66 @@
             ]
           },
           "precision": {
-            "point": 0.1293,
+            "point": 0.1131,
             "ci95": [
-              0.0782,
-              0.1872
+              0.0685,
+              0.1638
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -216.0,
+              "point": -258.0,
               "ci95": [
-                -267.0,
-                -130.0
+                -309.0,
+                -172.0
               ],
               "separated": true
             },
             "agent_with_tools": {
               "point": 1897.0,
               "ci95": [
-                901.0,
-                3023.1
+                925.0,
+                3017.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 1334.0,
+              "point": 1292.0,
               "ci95": [
-                652.0,
-                2114.05
+                610.0,
+                2072.05
               ],
               "separated": true
             },
             "check_env": {
-              "point": 2144.0,
+              "point": 2102.0,
               "ci95": [
-                1081.975,
-                3343.05
+                1039.975,
+                3301.05
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 1902.0,
+              "point": 1495.0,
               "ci95": [
-                967.0,
-                2947.075
+                719.0,
+                2384.025
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 2160.0,
+              "point": 2118.0,
               "ci95": [
-                1108.0,
-                3353.0
+                1066.0,
+                3311.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 1153.0,
+              "point": 1906.0,
               "ci95": [
-                507.975,
-                1913.0
+                899.975,
+                3034.05
               ],
               "separated": true
             }
@@ -6791,10 +6791,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -263.0,
+              "point": -221.0,
               "ci95": [
-                -470.0,
-                -62.0
+                -426.0,
+                -56.0
               ],
               "separated": true
             },
@@ -6815,109 +6815,109 @@
               "separated": false
             },
             "direct_prompt": {
-              "point": -258.0,
+              "point": -623.0,
               "ci95": [
-                -464.0,
-                -57.0
+                -1069.025,
+                -219.0
               ],
               "separated": true
             },
             "flag_everything": {
-              "point": -2160.0,
+              "point": -2118.0,
               "ci95": [
-                -3353.0,
-                -1108.0
+                -3311.0,
+                -1066.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -1007.0,
+              "point": -212.0,
               "ci95": [
-                -1808.0,
-                -338.0
+                -576.0,
+                35.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 1409.0,
+            "point": 2204.0,
             "ci95": [
-              772.925,
-              2159.025
+              1214.95,
+              3318.05
             ]
           },
           "recall": {
-            "point": 0.3947,
+            "point": 0.0526,
             "ci95": [
-              0.2,
-              0.5278
+              0.0,
+              0.1333
             ]
           },
           "precision": {
-            "point": 0.375,
+            "point": 0.0667,
             "ci95": [
-              0.1515,
-              0.5897
+              0.0,
+              0.1852
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -1369.0,
+              "point": -2164.0,
               "ci95": [
-                -2123.025,
-                -720.9
+                -3296.025,
+                -1160.975
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 744.0,
+              "point": -9.0,
               "ci95": [
-                167.0,
-                1480.025
-              ],
-              "separated": true
-            },
-            "always_modal_defect": {
-              "point": 181.0,
-              "ci95": [
-                -350.0,
-                741.0
+                -336.0,
+                355.0
               ],
               "separated": false
             },
-            "check_env": {
-              "point": 991.0,
+            "always_modal_defect": {
+              "point": -614.0,
               "ci95": [
-                315.975,
-                1796.05
+                -1095.0,
+                -144.975
               ],
               "separated": true
+            },
+            "check_env": {
+              "point": 196.0,
+              "ci95": [
+                -59.0,
+                565.0
+              ],
+              "separated": false
             },
             "direct_prompt": {
-              "point": 749.0,
+              "point": -411.0,
               "ci95": [
-                199.0,
-                1424.025
+                -974.0,
+                120.0
               ],
-              "separated": true
+              "separated": false
             },
             "flag_everything": {
-              "point": -1153.0,
+              "point": -1906.0,
               "ci95": [
-                -1913.0,
-                -507.975
+                -3034.05,
+                -899.975
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 1007.0,
+              "point": 212.0,
               "ci95": [
-                338.0,
-                1808.0
+                -35.0,
+                576.0
               ],
-              "separated": true
+              "separated": false
             }
           }
         }
@@ -6937,13 +6937,13 @@
       "profiles": {
         "research-run": {
           "agent_with_tools": {
-            "expected_loss": 501.0,
-            "recall": 0.3333,
-            "precision": 0.4444,
-            "severity_weighted_recall": 0.3571,
-            "n_missed": 8,
+            "expected_loss": 461.0,
+            "recall": 0.4167,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.4464,
+            "n_missed": 7,
             "n_spurious": 5,
-            "error_count": 13
+            "error_count": 12
           },
           "always_modal_defect": {
             "expected_loss": 298.0,
@@ -6982,13 +6982,13 @@
             "error_count": 12
           },
           "flag_everything": {
-            "expected_loss": 58.0,
+            "expected_loss": 68.0,
             "recall": 1.0,
-            "precision": 0.1714,
+            "precision": 0.15,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 58,
-            "error_count": 58
+            "n_spurious": 68,
+            "error_count": 68
           },
           "flag_nothing": {
             "expected_loss": 656.0,
@@ -7000,24 +7000,24 @@
             "error_count": 12
           },
           "stratified_random": {
-            "expected_loss": 380.0,
+            "expected_loss": 463.0,
             "recall": 0.25,
-            "precision": 0.4286,
+            "precision": 0.3,
             "severity_weighted_recall": 0.2679,
             "n_missed": 9,
-            "n_spurious": 4,
-            "error_count": 13
+            "n_spurious": 7,
+            "error_count": 16
           }
         },
         "production-training": {
           "agent_with_tools": {
-            "expected_loss": 3690.0,
-            "recall": 0.3333,
-            "precision": 0.4444,
-            "severity_weighted_recall": 0.3571,
-            "n_missed": 8,
+            "expected_loss": 3450.0,
+            "recall": 0.4167,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.4464,
+            "n_missed": 7,
             "n_spurious": 5,
-            "error_count": 13
+            "error_count": 12
           },
           "always_modal_defect": {
             "expected_loss": 1764.0,
@@ -7056,13 +7056,13 @@
             "error_count": 12
           },
           "flag_everything": {
-            "expected_loss": 116.0,
+            "expected_loss": 136.0,
             "recall": 1.0,
-            "precision": 0.1714,
+            "precision": 0.15,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 58,
-            "error_count": 58
+            "n_spurious": 68,
+            "error_count": 68
           },
           "flag_nothing": {
             "expected_loss": 4640.0,
@@ -7074,24 +7074,24 @@
             "error_count": 12
           },
           "stratified_random": {
-            "expected_loss": 2488.0,
+            "expected_loss": 3214.0,
             "recall": 0.25,
-            "precision": 0.4286,
+            "precision": 0.3,
             "severity_weighted_recall": 0.2679,
             "n_missed": 9,
-            "n_spurious": 4,
-            "error_count": 13
+            "n_spurious": 7,
+            "error_count": 16
           }
         },
         "benchmark-publication": {
           "agent_with_tools": {
-            "expected_loss": 8040.0,
-            "recall": 0.3333,
-            "precision": 0.4444,
-            "severity_weighted_recall": 0.3571,
-            "n_missed": 8,
+            "expected_loss": 7440.0,
+            "recall": 0.4167,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.4464,
+            "n_missed": 7,
             "n_spurious": 5,
-            "error_count": 13
+            "error_count": 12
           },
           "always_modal_defect": {
             "expected_loss": 4416.0,
@@ -7130,13 +7130,13 @@
             "error_count": 12
           },
           "flag_everything": {
-            "expected_loss": 464.0,
+            "expected_loss": 544.0,
             "recall": 1.0,
-            "precision": 0.1714,
+            "precision": 0.15,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 58,
-            "error_count": 58
+            "n_spurious": 68,
+            "error_count": 68
           },
           "flag_nothing": {
             "expected_loss": 10400.0,
@@ -7148,24 +7148,24 @@
             "error_count": 12
           },
           "stratified_random": {
-            "expected_loss": 5832.0,
+            "expected_loss": 7256.0,
             "recall": 0.25,
-            "precision": 0.4286,
+            "precision": 0.3,
             "severity_weighted_recall": 0.2679,
             "n_missed": 9,
-            "n_spurious": 4,
-            "error_count": 13
+            "n_spurious": 7,
+            "error_count": 16
           }
         },
         "flat": {
           "agent_with_tools": {
-            "expected_loss": 13.0,
-            "recall": 0.3333,
-            "precision": 0.4444,
-            "severity_weighted_recall": 0.3571,
-            "n_missed": 8,
+            "expected_loss": 12.0,
+            "recall": 0.4167,
+            "precision": 0.5,
+            "severity_weighted_recall": 0.4464,
+            "n_missed": 7,
             "n_spurious": 5,
-            "error_count": 13
+            "error_count": 12
           },
           "always_modal_defect": {
             "expected_loss": 11.0,
@@ -7204,13 +7204,13 @@
             "error_count": 12
           },
           "flag_everything": {
-            "expected_loss": 58.0,
+            "expected_loss": 68.0,
             "recall": 1.0,
-            "precision": 0.1714,
+            "precision": 0.15,
             "severity_weighted_recall": 1.0,
             "n_missed": 0,
-            "n_spurious": 58,
-            "error_count": 58
+            "n_spurious": 68,
+            "error_count": 68
           },
           "flag_nothing": {
             "expected_loss": 12.0,
@@ -7222,13 +7222,13 @@
             "error_count": 12
           },
           "stratified_random": {
-            "expected_loss": 13.0,
+            "expected_loss": 16.0,
             "recall": 0.25,
-            "precision": 0.4286,
+            "precision": 0.3,
             "severity_weighted_recall": 0.2679,
             "n_missed": 9,
-            "n_spurious": 4,
-            "error_count": 13
+            "n_spurious": 7,
+            "error_count": 16
           }
         }
       },
@@ -7257,10 +7257,10 @@
           },
           "loss_saved_vs": {
             "agent_with_tools": {
-              "point": 501.0,
+              "point": 461.0,
               "ci95": [
-                216.0,
-                782.0
+                176.0,
+                700.0
               ],
               "separated": true
             },
@@ -7289,10 +7289,10 @@
               "separated": true
             },
             "flag_everything": {
-              "point": 58.0,
+              "point": 68.0,
               "ci95": [
-                51.0,
-                65.0
+                61.0,
+                75.0
               ],
               "separated": true
             },
@@ -7305,10 +7305,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 380.0,
+              "point": 463.0,
               "ci95": [
-                44.0,
-                833.0
+                140.0,
+                828.0
               ],
               "separated": true
             }
@@ -7316,80 +7316,80 @@
         },
         "agent_with_tools": {
           "expected_loss": {
-            "point": 501.0,
+            "point": 461.0,
             "ci95": [
-              216.0,
-              782.0
+              176.0,
+              700.0
             ]
           },
           "recall": {
-            "point": 0.3333,
+            "point": 0.4167,
             "ci95": [
-              0.125,
-              0.4444
+              0.3636,
+              0.5
             ]
           },
           "precision": {
-            "point": 0.4444,
+            "point": 0.5,
             "ci95": [
-              0.1111,
-              0.8571
+              0.2222,
+              0.7143
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -501.0,
+              "point": -461.0,
               "ci95": [
-                -782.0,
-                -216.0
+                -700.0,
+                -176.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": -203.0,
+              "point": -163.0,
               "ci95": [
-                -447.0,
-                41.0
+                -363.0,
+                38.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 155.0,
+              "point": 195.0,
               "ci95": [
-                32.0,
-                278.0
+                73.0,
+                315.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": -1.0,
+              "point": 39.0,
               "ci95": [
-                -3.0,
-                0.0
+                -4.0,
+                122.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -443.0,
+              "point": -393.0,
               "ci95": [
-                -728.0,
-                -151.0
+                -636.0,
+                -101.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 155.0,
+              "point": 195.0,
               "ci95": [
-                32.0,
-                278.0
+                73.0,
+                315.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -121.0,
+              "point": 2.0,
               "ci95": [
-                -481.0,
-                239.0
+                -190.0,
+                157.0
               ],
               "separated": false
             }
@@ -7427,10 +7427,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 203.0,
+              "point": 163.0,
               "ci95": [
-                -41.0,
-                447.0
+                -38.0,
+                363.0
               ],
               "separated": false
             },
@@ -7451,10 +7451,10 @@
               "separated": false
             },
             "flag_everything": {
-              "point": -240.0,
+              "point": -230.0,
               "ci95": [
-                -463.0,
-                -58.0
+                -453.0,
+                -48.0
               ],
               "separated": true
             },
@@ -7467,10 +7467,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": 82.0,
+              "point": 165.0,
               "ci95": [
-                -118.0,
-                360.0
+                -74.0,
+                440.0
               ],
               "separated": false
             }
@@ -7508,10 +7508,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -155.0,
+              "point": -195.0,
               "ci95": [
-                -278.0,
-                -32.0
+                -315.0,
+                -73.0
               ],
               "separated": true
             },
@@ -7532,10 +7532,10 @@
               "separated": true
             },
             "flag_everything": {
-              "point": -598.0,
+              "point": -588.0,
               "ci95": [
-                -942.0,
-                -183.0
+                -932.0,
+                -173.0
               ],
               "separated": true
             },
@@ -7548,12 +7548,12 @@
               "separated": false
             },
             "stratified_random": {
-              "point": -276.0,
+              "point": -193.0,
               "ci95": [
-                -597.0,
-                4.0
+                -387.0,
+                -36.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -7589,10 +7589,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": 1.0,
+              "point": -39.0,
               "ci95": [
-                0.0,
-                3.0
+                -122.0,
+                4.0
               ],
               "separated": false
             },
@@ -7613,10 +7613,10 @@
               "separated": true
             },
             "flag_everything": {
-              "point": -442.0,
+              "point": -432.0,
               "ci95": [
-                -728.0,
-                -148.0
+                -718.0,
+                -138.0
               ],
               "separated": true
             },
@@ -7629,10 +7629,10 @@
               "separated": true
             },
             "stratified_random": {
-              "point": -120.0,
+              "point": -37.0,
               "ci95": [
-                -480.0,
-                240.0
+                -228.0,
+                115.0
               ],
               "separated": false
             }
@@ -7640,10 +7640,10 @@
         },
         "flag_everything": {
           "expected_loss": {
-            "point": 58.0,
+            "point": 68.0,
             "ci95": [
-              51.0,
-              65.0
+              61.0,
+              75.0
             ]
           },
           "recall": {
@@ -7654,68 +7654,68 @@
             ]
           },
           "precision": {
-            "point": 0.1714,
+            "point": 0.15,
             "ci95": [
-              0.0714,
-              0.2714
+              0.0625,
+              0.2375
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -58.0,
+              "point": -68.0,
               "ci95": [
-                -65.0,
-                -51.0
+                -75.0,
+                -61.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 443.0,
+              "point": 393.0,
               "ci95": [
-                151.0,
-                728.0
+                101.0,
+                636.0
               ],
               "separated": true
             },
             "always_modal_defect": {
-              "point": 240.0,
+              "point": 230.0,
               "ci95": [
-                58.0,
-                463.0
+                48.0,
+                453.0
               ],
               "separated": true
             },
             "check_env": {
-              "point": 598.0,
+              "point": 588.0,
               "ci95": [
-                183.0,
-                942.0
+                173.0,
+                932.0
               ],
               "separated": true
             },
             "direct_prompt": {
-              "point": 442.0,
+              "point": 432.0,
               "ci95": [
-                148.0,
-                728.0
+                138.0,
+                718.0
               ],
               "separated": true
             },
             "flag_nothing": {
-              "point": 598.0,
+              "point": 588.0,
               "ci95": [
-                183.0,
-                942.0
+                173.0,
+                932.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": 322.0,
+              "point": 395.0,
               "ci95": [
-                -20.0,
-                782.0
+                67.0,
+                767.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
@@ -7751,10 +7751,10 @@
               "separated": true
             },
             "agent_with_tools": {
-              "point": -155.0,
+              "point": -195.0,
               "ci95": [
-                -278.0,
-                -32.0
+                -315.0,
+                -73.0
               ],
               "separated": true
             },
@@ -7783,101 +7783,101 @@
               "separated": true
             },
             "flag_everything": {
-              "point": -598.0,
+              "point": -588.0,
               "ci95": [
-                -942.0,
-                -183.0
+                -932.0,
+                -173.0
               ],
               "separated": true
             },
             "stratified_random": {
-              "point": -276.0,
+              "point": -193.0,
               "ci95": [
-                -597.0,
-                4.0
+                -387.0,
+                -36.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         },
         "stratified_random": {
           "expected_loss": {
-            "point": 380.0,
+            "point": 463.0,
             "ci95": [
-              44.0,
-              833.0
+              140.0,
+              828.0
             ]
           },
           "recall": {
             "point": 0.25,
             "ci95": [
-              0.0,
-              0.8333
+              0.1111,
+              0.4286
             ]
           },
           "precision": {
-            "point": 0.4286,
+            "point": 0.3,
             "ci95": [
-              0.0,
-              0.8182
+              0.1429,
+              0.6667
             ]
           },
           "loss_saved_vs": {
             "assay": {
-              "point": -380.0,
+              "point": -463.0,
               "ci95": [
-                -833.0,
-                -44.0
+                -828.0,
+                -140.0
               ],
               "separated": true
             },
             "agent_with_tools": {
-              "point": 121.0,
+              "point": -2.0,
               "ci95": [
-                -239.0,
-                481.0
+                -157.0,
+                190.0
               ],
               "separated": false
             },
             "always_modal_defect": {
-              "point": -82.0,
+              "point": -165.0,
               "ci95": [
-                -360.0,
-                118.0
+                -440.0,
+                74.0
               ],
               "separated": false
             },
             "check_env": {
-              "point": 276.0,
+              "point": 193.0,
               "ci95": [
-                -4.0,
-                597.0
+                36.0,
+                387.0
               ],
-              "separated": false
+              "separated": true
             },
             "direct_prompt": {
-              "point": 120.0,
+              "point": 37.0,
               "ci95": [
-                -240.0,
-                480.0
+                -115.0,
+                228.0
               ],
               "separated": false
             },
             "flag_everything": {
-              "point": -322.0,
+              "point": -395.0,
               "ci95": [
-                -782.0,
-                20.0
+                -767.0,
+                -67.0
               ],
-              "separated": false
+              "separated": true
             },
             "flag_nothing": {
-              "point": 276.0,
+              "point": 193.0,
               "ci95": [
-                -4.0,
-                597.0
+                36.0,
+                387.0
               ],
-              "separated": false
+              "separated": true
             }
           }
         }

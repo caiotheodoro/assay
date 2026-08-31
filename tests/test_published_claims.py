@@ -218,10 +218,31 @@ def test_the_llm_baseline_rows_match_the_measured_file():
         assert iv["arms"][name]["expected_loss"]["ci95"], f"{name} has an empty CI"
 
     # The claim the rows are there to support.
-    assert arms["direct_prompt"]["expected_loss"] > arms["stratified_random"]["expected_loss"], (
-        "the LLM arm now beats flagging at base rates -- the README says it "
-        "does not, and must be updated with this"
+    #
+    # This assertion used to be `direct_prompt > stratified_random`, encoding a
+    # README sentence that said the LLM arms lose to flagging at base rates. It
+    # stopped being true, and the gate did its job by failing rather than by
+    # letting the sentence rot: adding two defect classes shifted
+    # `stratified_random`'s seeded per-class draw sequence, and the LLM arms are
+    # non-deterministic and were re-run.
+    #
+    # What is asserted now is the weaker, more durable thing the README actually
+    # claims -- that the ordering between those two is *not established* -- plus
+    # the one comparison that is.
+    saved = iv["arms"]["direct_prompt"]["loss_saved_vs"]
+    assert not saved["stratified_random"]["separated"], (
+        "direct_prompt and stratified_random are now separated; the README says "
+        "neither ordering is established and must be updated with this"
     )
+    assert saved["agent_with_tools"]["separated"], (
+        "direct_prompt no longer separates from agent_with_tools; the README "
+        "claims the tool loop measurably cost something and must be updated"
+    )
+    for arm in ("direct_prompt", "agent_with_tools"):
+        assert arms[arm]["expected_loss"] > 2000, (
+            f"{arm} scored {arms[arm]['expected_loss']}; the README claims both "
+            "LLM arms lose to Assay by more than 2000"
+        )
 
 
 def test_the_method_protocol_quotes_numbers_that_still_hold():
@@ -447,4 +468,42 @@ def test_every_cited_path_is_actually_in_the_repository_a_judge_clones():
         "citations that exist here but not in a clone:\n  "
         + "\n  ".join(untracked)
         + "\n\nA reviewer clones the repository. Either `git add` these paths or stop citing them."
+    )
+
+
+def test_the_trivial_floor_matches_the_taxonomy_it_was_measured_against():
+    """`flag_everything` is arithmetic, so it must equal its own arithmetic.
+
+    Its loss is `sum over environments of (n_defect_classes - |planted|) *
+    false_alarm`, because it flags every class on every environment. That makes
+    it the one arm whose value can be recomputed from the committed file alone
+    -- and therefore the one that catches a stale results file.
+
+    It went stale exactly once, and the way it happened is the reason this gate
+    exists: `docs/changelog/97-dead-zone-probes.md` added two `DefectClass`
+    members, which cost the floor one false alarm per environment per class and
+    moved it 314.0 -> 366.0 without any detector changing. The committed file
+    still said 314.0, so the published headline no longer reproduced. CI did not
+    notice, because its reproduction job compares per-environment *detections*
+    and this is not one.
+
+    A margin that grows because the taxonomy grew is the thing this repository
+    exists to catch. Recomputing it here means it cannot grow quietly.
+    """
+    run = json.loads((ROOT / "results" / "full_run.json").read_text())
+    from assay.costs import load
+    from assay.types import DefectClass
+
+    false_alarm = load(run["cost_profile"]["name"]).false_alarm
+    n_classes = len(DefectClass)
+    expected = sum(
+        (n_classes - len(env["planted"])) * false_alarm
+        for env in run["per_env"].values()
+    )
+    actual = run["arms"]["flag_everything"]["expected_loss"]
+    assert actual == expected, (
+        f"results/full_run.json says flag_everything = {actual}, but with "
+        f"{n_classes} defect classes over {len(run['per_env'])} environments the "
+        f"arithmetic gives {expected}. Either the taxonomy changed and the file "
+        f"was not regenerated, or the file is not what the code produces."
     )

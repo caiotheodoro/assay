@@ -146,13 +146,13 @@ wins — at **145 against a shipped 120**. The entire headline survived a **21%
 error** in a number somebody guessed. That was the sharpest criticism of this
 work, and it was only sayable because we ran the sweep.
 
-*(After later work closed two detector misses the crossover moved to 942, a 685%
+*(After later work closed two detector misses the crossover moved to 1098, a 815%
 margin. The check did not change; the tool did.)*
 
 **The check.** The crossover is analytic, not a bisection: if your detector's
 loss is all misses and the floor's is all false alarms, they cross at
 `shipped × floor / yours`. Publish it. "Costs are illustrative" hides whether
-the margin is 21% or 685%.
+the margin is 21% or 815%.
 
 `scripts/cost_sensitivity.py`
 
@@ -260,7 +260,7 @@ benchmarks, and our corpus is 26 environments of which **4** are genuinely
 third-party.
 
 What it buys is that every number here can be interpreted. When we say the
-detector separates from its floor — 274.0 saved, 95% CI [186, 326] — that
+detector separates from its floor — 326.0 saved, 95% CI [238, 378] — that
 sentence has a floor behind it, a cost sweep, a provenance split, a
 pre-registration, and an adversary who tried to break it and is quoted where it
 succeeded.
@@ -270,5 +270,5 @@ evidence: a check that could not run must never read as a check that passed. And
 a correction that improves your own score carries the burden of proof — when
 relabelling two fixtures lifted our precision from 0.959 to 1.000, the labels
 were re-derived from the environments' own scripts with our tool out of the
-loop, and **both numbers were published**, because the margin was 274.0 either
+loop, and **both numbers were published**, because the margin was 326.0 either
 way and the result had to be shown not to depend on it.

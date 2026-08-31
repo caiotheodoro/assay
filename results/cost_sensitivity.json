@@ -11,12 +11,12 @@
       2000
     ]
   ],
-  "exact_crossover_critical_cost": 942.0,
+  "exact_crossover_critical_cost": 1098.0,
   "margin": {
     "shipped": 120.0,
-    "crossover": 942.0,
-    "ratio": 7.85,
-    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 942.0. The shipped profile says 120. The headline therefore survives a 685% error in a constant nothing derives, and no more."
+    "crossover": 1098.0,
+    "ratio": 9.15,
+    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 1098.0. The shipped profile says 120. The headline therefore survives a 815% error in a constant nothing derives, and no more."
   },
   "assay_beats_flag_everything_when_critical_at_least": 1,
   "rows": [
@@ -25,12 +25,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 1.0,
       "loss": {
+        "agent_with_tools": 45.93,
         "always_modal_defect": 31.6,
         "assay": 0.33,
         "check_env": 25.47,
-        "flag_everything": 314.0,
+        "direct_prompt": 39.93,
+        "flag_everything": 366.0,
         "flag_nothing": 25.6,
-        "stratified_random": 43.67
+        "stratified_random": 56.93
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -40,12 +42,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 2.0,
       "loss": {
+        "agent_with_tools": 67.87,
         "always_modal_defect": 47.2,
         "assay": 0.67,
         "check_env": 50.93,
-        "flag_everything": 314.0,
+        "direct_prompt": 58.87,
+        "flag_everything": 366.0,
         "flag_nothing": 51.2,
-        "stratified_random": 58.33
+        "stratified_random": 78.87
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -55,12 +59,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 5.0,
       "loss": {
+        "agent_with_tools": 133.67,
         "always_modal_defect": 94.0,
         "assay": 1.67,
         "check_env": 127.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 115.67,
+        "flag_everything": 366.0,
         "flag_nothing": 128.0,
-        "stratified_random": 102.33
+        "stratified_random": 144.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -70,12 +76,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 10.0,
       "loss": {
+        "agent_with_tools": 243.33,
         "always_modal_defect": 172.0,
         "assay": 3.33,
         "check_env": 254.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 210.33,
+        "flag_everything": 366.0,
         "flag_nothing": 256.0,
-        "stratified_random": 175.67
+        "stratified_random": 254.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -85,12 +93,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 20.0,
       "loss": {
+        "agent_with_tools": 462.67,
         "always_modal_defect": 328.0,
         "assay": 6.67,
         "check_env": 509.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 399.67,
+        "flag_everything": 366.0,
         "flag_nothing": 512.0,
-        "stratified_random": 322.33
+        "stratified_random": 473.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -100,12 +110,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 40.0,
       "loss": {
+        "agent_with_tools": 901.33,
         "always_modal_defect": 640.0,
         "assay": 13.33,
         "check_env": 1018.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 778.33,
+        "flag_everything": 366.0,
         "flag_nothing": 1024.0,
-        "stratified_random": 615.67
+        "stratified_random": 912.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -115,12 +127,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 80.0,
       "loss": {
+        "agent_with_tools": 1778.67,
         "always_modal_defect": 1264.0,
         "assay": 26.67,
         "check_env": 2037.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 1535.67,
+        "flag_everything": 366.0,
         "flag_nothing": 2048.0,
-        "stratified_random": 1202.33
+        "stratified_random": 1789.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -130,12 +144,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 120.0,
       "loss": {
+        "agent_with_tools": 2656.0,
         "always_modal_defect": 1888.0,
         "assay": 40.0,
         "check_env": 3056.0,
-        "flag_everything": 314.0,
+        "direct_prompt": 2293.0,
+        "flag_everything": 366.0,
         "flag_nothing": 3072.0,
-        "stratified_random": 1789.0
+        "stratified_random": 2667.0
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -145,12 +161,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 130.0,
       "loss": {
+        "agent_with_tools": 2875.33,
         "always_modal_defect": 2044.0,
         "assay": 43.33,
         "check_env": 3310.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 2482.33,
+        "flag_everything": 366.0,
         "flag_nothing": 3328.0,
-        "stratified_random": 1935.67
+        "stratified_random": 2886.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -160,12 +178,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 140.0,
       "loss": {
+        "agent_with_tools": 3094.67,
         "always_modal_defect": 2200.0,
         "assay": 46.67,
         "check_env": 3565.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 2671.67,
+        "flag_everything": 366.0,
         "flag_nothing": 3584.0,
-        "stratified_random": 2082.33
+        "stratified_random": 3105.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -175,12 +195,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 145.0,
       "loss": {
+        "agent_with_tools": 3204.33,
         "always_modal_defect": 2278.0,
         "assay": 48.33,
         "check_env": 3692.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 2766.33,
+        "flag_everything": 366.0,
         "flag_nothing": 3712.0,
-        "stratified_random": 2155.67
+        "stratified_random": 3215.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -190,12 +212,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 150.0,
       "loss": {
+        "agent_with_tools": 3314.0,
         "always_modal_defect": 2356.0,
         "assay": 50.0,
         "check_env": 3820.0,
-        "flag_everything": 314.0,
+        "direct_prompt": 2861.0,
+        "flag_everything": 366.0,
         "flag_nothing": 3840.0,
-        "stratified_random": 2229.0
+        "stratified_random": 3325.0
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -205,12 +229,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 160.0,
       "loss": {
+        "agent_with_tools": 3533.33,
         "always_modal_defect": 2512.0,
         "assay": 53.33,
         "check_env": 4074.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 3050.33,
+        "flag_everything": 366.0,
         "flag_nothing": 4096.0,
-        "stratified_random": 2375.67
+        "stratified_random": 3544.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -220,12 +246,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 200.0,
       "loss": {
+        "agent_with_tools": 4410.67,
         "always_modal_defect": 3136.0,
         "assay": 66.67,
         "check_env": 5093.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 3807.67,
+        "flag_everything": 366.0,
         "flag_nothing": 5120.0,
-        "stratified_random": 2962.33
+        "stratified_random": 4421.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -235,12 +263,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 400.0,
       "loss": {
+        "agent_with_tools": 8797.33,
         "always_modal_defect": 6256.0,
         "assay": 133.33,
         "check_env": 10186.67,
-        "flag_everything": 314.0,
+        "direct_prompt": 7594.33,
+        "flag_everything": 366.0,
         "flag_nothing": 10240.0,
-        "stratified_random": 5895.67
+        "stratified_random": 8808.33
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -250,12 +280,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 800.0,
       "loss": {
+        "agent_with_tools": 17570.67,
         "always_modal_defect": 12496.0,
         "assay": 266.67,
         "check_env": 20373.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 15167.67,
+        "flag_everything": 366.0,
         "flag_nothing": 20480.0,
-        "stratified_random": 11762.33
+        "stratified_random": 17581.67
       },
       "winner": "assay",
       "assay_beats_flag_everything": true
@@ -265,12 +297,14 @@
       "false_alarm_cost": 1.0,
       "ratio": 2000.0,
       "loss": {
+        "agent_with_tools": 43890.67,
         "always_modal_defect": 31216.0,
         "assay": 666.67,
         "check_env": 50933.33,
-        "flag_everything": 314.0,
+        "direct_prompt": 37887.67,
+        "flag_everything": 366.0,
         "flag_nothing": 51200.0,
-        "stratified_random": 29362.33
+        "stratified_random": 43901.67
       },
       "winner": "flag_everything",
       "assay_beats_flag_everything": false

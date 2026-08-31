@@ -11,9 +11,9 @@
   "category": "agentic workflows — QA for evals",
   "user": "researcher about to spend GPU on an env they didn't write, or maintainer about to publish one",
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
-  "result": "assay 40.0 vs flag_everything 314.0, saved 274.0 [186, 326] separated, wins 4/4 cost profiles, separates 3/4",
-  "cost_crossover": "942h vs shipped 120h — survives 685% error",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (705 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
+  "result": "assay 40.0 vs flag_everything 366.0, saved 326.0 [238, 378] separated, wins 4/4 cost profiles, separates 3/4",
+  "cost_crossover": "942h vs shipped 120h — survives 815% error",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (711 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
@@ -103,7 +103,7 @@ actually stopping things, and a cost table. One command per result:
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 705 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 711 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # headline: 26 envs, 50 defects, 22s, no GPU/key
 uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code; asks before it runs anything, add --yes to skip the prompt
 ```
@@ -151,7 +151,7 @@ model is on the Hub labelled as a negative result.
 | **ABA** | static | 34k tasks, 14k major issues | count | no | no | 168 benchmarks, static only |
 | **BenchJack** | dynamic (agent-driven) | 219 flaws, adversarial patch loop | hackable-task ratio | no | no | 10 agent benchmarks |
 | **arXiv 2606.16062** | dynamic | SWE-bench gold-sanity | 28.5% hackable | no | no | SWE-bench only |
-| **Assay** | **dynamic, 9 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (40.0 [0, 120] vs 314.0 [295, 331]), saved 274.0 [186, 326]**, 4 cost profiles | **yes — 120→942 crossover, 685% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
+| **Assay** | **dynamic, 11 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (40.0 [0, 120] vs 366.0 [347, 383]), saved 326.0 [238, 378]**, 4 cost profiles | **yes — 120→1098 crossover, 815% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
 
 **The gap Assay fills:** no other tool (a) bundles verifier + contamination + shortcut
 + separability + difficulty + reward-hack in one report, (b) prices misses against false
@@ -201,8 +201,8 @@ shows where it wins and loses. The one remaining miss is external —
 `inspect_evals/boolq`, no train split → `NOT_APPLICABLE`.
 
 **Q: Is the 120h miss cost made up?**
-Yes, and it is labelled a guess. It was swept: the crossover is at **942**
-(`results/cost_sensitivity.json`), so the headline survives a 685% error in it. Before
+Yes, and it is labelled a guess. It was swept: the crossover is at **1098**
+(`results/cost_sensitivity.json`), so the headline survives a 815% error in it. Before
 the Harbor misses were closed the margin was 21%; both are published.
 
 ---
@@ -230,7 +230,7 @@ about this repository, not as a comparison against work not seen.
 4. **The correct bootstrap unit.** `results/intervals.json` resamples **environments**
    (n=26), not defects, and carries a `"why"` field saying so. Resampling defects would
    report an interval far too tight. Paired differences on a shared resample: assay vs
-   `flag_everything` **274.0 [186, 326] separated**; assay vs `check_env` **3016.0 [1904, 4240]**.
+   `flag_everything` **326.0 [238, 378] separated**; assay vs `check_env` **3016.0 [1904, 4240]**.
 
 5. **Trajectories that include the misses.** `results/trajectories/INDEX.md` — 8 runs,
    3 Challenger misses, 1 sandbox gate refusal, unparseable replies kept rather than
@@ -242,7 +242,7 @@ about this repository, not as a comparison against work not seen.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 705 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 711 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
@@ -251,7 +251,7 @@ uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html;
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **705 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **711 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

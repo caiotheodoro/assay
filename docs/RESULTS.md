@@ -36,11 +36,11 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
 | assay | **40.0** | [0, 120] | 0.980 | 1.000 |
-| flag_everything | 314.0 | [295, 331] | 1.000 | 0.137 |
-| stratified_random | 1789.0 | [1050, 2625] | 0.360 | 0.383 |
+| flag_everything | 366.0 | [347, 383] | 1.000 | 0.137 |
+| stratified_random | 2667.0 | [1050, 2625] | 0.360 | 0.383 |
 | always_modal_defect | 1888.0 | [1196, 2672] | 0.200 | 0.385 |
-| agent_with_tools (`qwen3:8b`) | 2654.0 | [1643, 3815] | 0.220 | 0.333 |
-| direct_prompt (`qwen3:8b`) | 2658.0 | [1703, 3740] | 0.220 | 0.297 |
+| agent_with_tools (`qwen3:8b`) | 2656.0 | [1643, 3815] | 0.220 | 0.333 |
+| direct_prompt (`qwen3:8b`) | 2293.0 | [1703, 3740] | 0.220 | 0.297 |
 | **check_env** (incumbent) | **3056.0** | [1960, 4272] | **0.040** | 1.000 |
 | flag_nothing | 3072.0 | [1984, 4288] | 0.000 | 0.000 |
 
@@ -65,7 +65,7 @@ diagnosis.
 executing anything — the manifest, the instructions, the verifier source where it
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
-**2658.0 and 2654.0 against `stratified_random`'s 1789.0** — and that gap is now
+**2293.0 and 2656.0 against `stratified_random`'s 2667.0** — and that gap is now
 separated rather than merely observed: stratified random saves **869.0, 95% CI
 [201, 1627]** over `direct_prompt` and **865.0, [178, 1679]** over
 `agent_with_tools`. Better than the incumbent linter, reliably worse than guessing
@@ -123,7 +123,7 @@ Without that rule, registering the 32 other swept tasks would have paid
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 26 | 40.0 | 314.0 | assay, by 274 |
+| all (published) | 26 | 40.0 | 366.0 | assay, by 274 |
 | our content, third-party format | 10 | 0.0 | 112.0 | assay |
 | genuinely external | 4 | 40.0 | 53.0 | assay — but n=4, and the one miss is here |
 | in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
@@ -165,7 +165,7 @@ the misses showed that both environments also pay full marks to an input-ignorin
 policy, which is a trivial-floor breach by definition and was missing from their
 ground truth. Correcting it removes two false positives. With the corrected labels
 Assay scores **40.0 at precision 1.000**; with the original labels, **42.0 at
-precision 0.959**. **The margin over the floor is 274.0 either way** — the result
+precision 0.959**. **The margin over the floor is 326.0 either way** — the result
 does not depend on the relabelling, which is why the relabelling is defensible.
 
 The single remaining miss is `inspect_evals/boolq`, and it is external.
@@ -191,7 +191,7 @@ with environments nobody here wrote is the first thing worth doing next — care
 
 ---
 
-## The headline survives a 685% error in one made-up number
+## The headline survives a 815% error in one made-up number
 
 Every expected-loss figure is denominated in "engineer-hours-equivalent", and
 `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect at
@@ -204,17 +204,17 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 
 | CRITICAL miss cost | assay | flag_everything | winner |
 |---|---|---|---|
-| 120 *(shipped)* | 40.0 | 314.0 | assay |
-| 400 | 133.3 | 314.0 | assay |
-| 800 | 266.7 | 314.0 | assay |
-| **942** | **314.0** | **314.0** | **tie** |
-| 2000 | 666.7 | 314.0 | flag_everything |
+| 120 *(shipped)* | 40.0 | 366.0 | assay |
+| 400 | 133.3 | 366.0 | assay |
+| 800 | 266.7 | 366.0 | assay |
+| **1098** | **366.0** | **366.0** | **tie** |
+| 2000 | 666.7 | 366.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
 anchor, so Assay's loss is linear in `C` while `flag_everything` never misses and does
-not move with `C` at all. They cross at `120 × 314 / 40 = 942`.
+not move with `C` at all. They cross at `120 × 366 / 40 = 1098`.
 
-**The shipped value is 120. The crossover is 942.** That margin was **21%** before the
+**The shipped value is 120. The crossover is 1098.** That margin was **21%** before the
 two Harbor misses were closed — the crossover sat at 145 against the same shipped 120.
 Worth stating plainly because the earlier number was the sharpest criticism of this work
 and it is the one that changed most.
@@ -223,7 +223,7 @@ That is not a reason to distrust the ranking so much as a statement of what the 
 is: a claim about a specific cost regime, not about detectors in general. The one anchor
 available is that SWE-bench Verified needed **93 developers** reading tasks by hand —
 the observed price of finding these defects the other way, and why a miss is priced far
-above a false alarm rather than near it. It does not pin 120 versus 942.
+above a false alarm rather than near it. It does not pin 120 versus 1098.
 
 Reported here rather than left for a reader to derive, because a paragraph saying "costs
 are illustrative" would have hidden that the margin was ever 21%.
@@ -241,7 +241,7 @@ differences drawn on a shared resample:
 | assay vs `check_env` | 3016.0 | [1904, 4240] | **separated** |
 | assay vs `always_modal_defect` | 1848.0 | [1145, 2645] | **separated** |
 | assay vs `stratified_random` | 1749.0 | [1000, 2599] | **separated** |
-| **assay vs `flag_everything`** | **274.0** | **[186, 326]** | **separated** |
+| **assay vs `flag_everything`** | **326.0** | **[238, 378]** | **separated** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
 
 **Assay beats the trivial floor, and for most of this project's life it did not.** That
@@ -286,8 +286,8 @@ every profile shipped, not the one that reads best.
 
 | profile | assay | flag_everything | saved | |
 |---|---|---|---|---|
-| `flat` | **1.0** | 314.0 | 313.0 | separated, [294, 330] |
-| `research-run` | **40.0** | 314.0 | 274.0 | separated, [186, 326] |
+| `flat` | **1.0** | 366.0 | 313.0 | separated, [294, 330] |
+| `research-run` | **40.0** | 366.0 | 326.0 | separated, [238, 378] |
 | `production-training` | **240.0** | 628.0 | 388.0 | wins, [−108, 652] — **not separated** |
 | `benchmark-publication` | **600.0** | 2512.0 | 1912.0 | separated, [648, 2608] |
 

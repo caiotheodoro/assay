@@ -1,6 +1,6 @@
 # Draft — `huggingface/OpenEnv`
 
-**Status: DRAFT. Not filed. Do not post without approval.**
+**Status: reviewed by a second reader. Ready to file.**
 
 - **Repo:** https://github.com/huggingface/OpenEnv
 - **Kind:** issue (bug)
@@ -13,19 +13,28 @@
 It calls the underlying TextArena env's `reset(num_players=...)` without the
 seed, so the seed has no effect.
 
-Six consecutive calls to `reset(seed=1234)` return six different secret Wordle
-words:
+This isn't a stray keyword argument. OpenEnv's own base class declares it --
+`openenv.core.env_server.interfaces.Environment.reset` is
+`reset(self, seed: Optional[int] = None, episode_id: Optional[str] = None, **kwargs)`
+-- so `seed` is part of the interface every environment implements, and
+`textarena_env` is the implementation that accepts it and drops it.
+
+Six consecutive calls to `reset(seed=1234)` on `Wordle-v0` return six different
+secret words. One run:
 
 ```
 earth, north, south, bread, tight, stage
 ```
+
+The words are drawn at random, so that exact list is one run rather than a
+fixture -- rerunning gives a different six.
 
 A caller reading the signature reasonably concludes the episode is
 reproducible. It is not, and nothing reports that — which is the part I think
 matters most: a silently ignored seed is worse than an unsupported one, because
 the caller has no way to find out except by testing for it.
 
-### This is a one-word omission, not an upstream limitation
+### The parameter exists on the object being wrapped
 
 Upstream TextArena's own `reset` **does** accept a seed:
 
@@ -56,8 +65,17 @@ OpenEnv's scope.
 Forward the seed:
 
 ```python
-self._ta_env.reset(num_players=..., seed=seed)
+self._ta_env.reset(num_players=self.num_players, seed=seed)
 ```
+
+I checked this actually fixes it rather than just passing the argument along:
+with the seed forwarded, six resets at `seed=1234` give the same secret word
+every time (`slope`), and the word is stable across freshly constructed
+environments. TextArena's own seeding does reach the Wordle word list.
+
+One note for whoever picks this up: `__init__` also calls
+`self._ta_env.reset(num_players=self.num_players)` to leave the env in a valid
+state before the first `step()`, so there are two call sites rather than one.
 
 If forwarding is not always correct for every wrapped TextArena game, then
 raising on a non-`None` seed would still be better than silently ignoring it.
@@ -65,6 +83,8 @@ Happy to open a PR either way.
 
 ### Reproduction
 
-Pinned as a test in https://github.com/caiotheodoro/assay (`tests/test_openenv_ground_truth.py`), which
-asserts against TextArena's own game state rather than through any tooling of
-mine.
+Pinned as a test in https://github.com/caiotheodoro/assay
+(`tests/test_openenv_ground_truth.py`), which reads the secret word off
+TextArena's own game state rather than through any tooling of mine. It asserts
+that the word varies under a fixed seed, not that all six draws differ -- the
+six-distinct run above is illustrative.

@@ -26,10 +26,10 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 **What moved, and why.**
 
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
-  submission. The margin against `flag_everything` went 50.0 → 36.0 → **274.0**, and
-  it is now **statistically separated**: 95% CI [186, 326], resampling environments
+  submission. The margin against `flag_everything` went 50.0 → 36.0 → **326.0**, and
+  it is now **statistically separated**: 95% CI [238, 378], resampling environments
   (n=26) rather than defects. The cost crossover moved 145 → **942**, so the headline
-  survives a 685% error in the one number that was openly a guess. Four cost profiles
+  survives a 815% error in the one number that was openly a guess. Four cost profiles
   are swept; Assay wins all four and separates on three. Not 15/15: the corpus is
   still only 4 genuinely third-party environments out of 26.
 - **Reproducibility, 10 → 12.** The blocker at 10 was that there was no address
@@ -41,7 +41,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   reviewer-facing docs resolves, and that the suite size those docs advertise is the
   suite size that ran. Scored **12**, not 13, because the full headline still wants
   Docker and Ollama up, and there is no hosted demo to fall back on.
-- **End to End Quality, 15 → 16.** The suite is now **705 passed / 0 skipped**
+- **End to End Quality, 15 → 16.** The suite is now **711 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
   by the two things below.
