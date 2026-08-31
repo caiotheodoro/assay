@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assay — audit an RL environment in your browser</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --fg:#1f2328; --bg:#fff; --panel:#f6f8fa; --muted:#656d76; --line:#d1d9e0;
+  --accent:#4b3fbb; --code:#eff1f3;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fg:#e6edf3; --bg:#0d1117; --panel:#161b22; --muted:#9198a1;
+          --line:#30363d; --accent:#a5a1f5; --code:#1b212a; }
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+  font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif; }
+main { max-width:74rem; margin:0 auto; padding:2.5rem 1.25rem 5rem; }
+h1 { font-size:2rem; margin:0 0 .2rem; letter-spacing:-.02em; }
+h2 { font-size:1.15rem; margin:3rem 0 .4rem; letter-spacing:-.01em; }
+h2:first-of-type { margin-top:2rem; }
+p { margin:.6rem 0; }
+a { color:var(--accent); }
+code { font:.88em/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+  background:var(--code); padding:.1em .35em; border-radius:.25em; }
+pre { margin:0; }
+pre code { background:none; padding:0; }
+.lede { font-size:1.05rem; color:var(--fg); max-width:46rem; }
+.sub { color:var(--muted); max-width:46rem; }
+.rule { border:0; border-top:1px solid var(--line); margin:2.5rem 0 0; }
+
+/* --- the live auditor ------------------------------------------------ */
+.auditor { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+  gap:1.5rem; margin-top:1rem; }
+@media (max-width:840px) { .auditor { grid-template-columns:1fr; } }
+.pane { min-width:0; }
+label { display:block; font-size:.82rem; font-weight:600; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.06em; margin:0 0 .35rem; }
+select, textarea, button { font-family:inherit; font-size:.92rem;
+  border:1px solid var(--line); border-radius:.4rem; background:var(--bg);
+  color:var(--fg); }
+select { width:100%; padding:.5rem .6rem; }
+textarea { width:100%; min-height:24rem; padding:.7rem .8rem; margin-top:.8rem;
+  font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; resize:vertical;
+  background:var(--panel); }
+.controls { display:flex; align-items:center; gap:.9rem; margin-top:.8rem;
+  flex-wrap:wrap; }
+button.go { background:var(--accent); color:#fff; border-color:transparent;
+  font-weight:600; padding:.55rem 1.3rem; cursor:pointer; }
+button.go[disabled] { opacity:.5; cursor:progress; }
+button.ghost { padding:.3rem .6rem; font-size:.8rem; cursor:pointer; }
+.status { font-size:.85rem; color:var(--muted); }
+.status.ready::before { content:"\25CF"; color:#1a7f37; margin-right:.4rem; }
+.status.boot::before  { content:"\25CB"; margin-right:.4rem; }
+.status.bad::before   { content:"\25CF"; color:#cf222e; margin-right:.4rem; }
+details { margin-top:1rem; border-top:1px solid var(--line); padding-top:.7rem; }
+summary { cursor:pointer; font-size:.85rem; color:var(--muted); }
+details pre { margin-top:.7rem; padding:.8rem; background:var(--panel);
+  border-radius:.4rem; overflow-x:auto;
+  font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+/* --- the pre-rendered gallery ---------------------------------------- */
+.gallery { display:grid; gap:1.5rem; margin-top:1rem; }
+.example { border:1px solid var(--line); border-radius:.6rem; overflow:hidden; }
+.example > header { display:flex; justify-content:space-between; gap:1rem;
+  align-items:baseline; padding:.7rem 1rem; background:var(--panel);
+  border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.example > header h3 { margin:0; font-size:.95rem; font-weight:600; }
+.example .body { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1fr);
+  gap:0; }
+@media (max-width:840px) { .example .body { grid-template-columns:1fr; } }
+.example .spec { padding:1rem; border-right:1px solid var(--line);
+  background:var(--bg); overflow-x:auto; }
+@media (max-width:840px) { .example .spec { border-right:0;
+  border-bottom:1px solid var(--line); } }
+.example .spec pre { font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted); }
+.example .card { padding:0 1rem 1rem; }
+.example .card .assay-banner { margin-top:1rem; }
+.badge { font:.72rem/1 ui-monospace,monospace; letter-spacing:.06em;
+  padding:.3rem .5rem; border-radius:.25rem; color:#fff; }
+
+/* --- limits ----------------------------------------------------------- */
+.limits { max-width:52rem; }
+.limits li { margin:.45rem 0; }
+footer { margin-top:3.5rem; padding-top:1.2rem; border-top:1px solid var(--line);
+  font-size:.85rem; color:var(--muted); }
+footer a { color:var(--muted); }
+
+/* --- the card fragment's own styling, shared with the Gradio app ------- */
+{{CARD_CSS}}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Assay</h1>
+<p class="lede">Submit an environment. Get an <b>Environment Card</b>: a validity
+verdict where every claim is tied to a probe result — and <b>every probe that
+could not run, with the reason</b>.</p>
+<p class="sub">That second half is the point. A card with no findings is not a
+clean bill of health, and this page will not render one as if it were.
+<b>No LLM judge scores anything here.</b> Every oracle is a deterministic
+program.</p>
+
+<hr class="rule">
+
+<h2>Audit one now</h2>
+<p class="sub">This is a <b>static</b> Space — Hugging Face serves these files and
+runs no compute. The probe battery still runs: it runs
+<b>in this tab</b>, in a WebAssembly CPython, against the same vendored
+<code>assay</code> package the command line uses. Nothing you paste is uploaded
+anywhere, because there is nowhere to upload it to.</p>
+
+<div class="auditor">
+  <div class="pane">
+    <label for="picker">Load an example</label>
+    <select id="picker">{{PICKER_OPTIONS}}</select>
+    <label for="spec" style="position:absolute;left:-9999px">Environment spec</label>
+    <textarea id="spec" spellcheck="false" aria-label="Environment spec (JSON)">{{PRELOADED_SPEC}}</textarea>
+    <div class="controls">
+      <button class="go" id="go" disabled>Audit</button>
+      <span class="status boot" id="status">starting Python…</span>
+    </div>
+  </div>
+  <div class="pane">
+    <label>Environment card</label>
+    <div id="card">{{PRELOADED_CARD}}</div>
+    <p class="sub" id="prerendered-note" style="font-size:.82rem">The card above was
+      rendered when this page was built. Press <b>Audit</b> to run the battery here
+      and replace it.</p>
+    <details id="md-wrap" hidden><summary>Card as Markdown</summary><pre><code id="md"></code></pre></details>
+    <details id="json-wrap" hidden><summary>Signed probe output (JSON)</summary><pre><code id="json"></code></pre></details>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Seven environments, already audited</h2>
+<p class="sub">These are rendered into this page at build time by the same
+renderer the button above calls, so they are readable before the runtime
+finishes loading and stay readable if it never does. Each is a synthetic
+fixture with a defect planted on purpose — or, in one case, a deliberately thin
+spec that shows what happens when there is nothing to check.</p>
+
+<div class="gallery">
+{{EXAMPLES}}
+</div>
+
+<hr class="rule">
+
+<h2>What this cannot check here</h2>
+<ul class="limits">
+  <li><b>Single-turn, string-answer environments only.</b> Multi-turn shell
+    environments — where the interesting exploits live — need Docker.
+    <code>harbor/self-graded</code>, the one environment in the corpus that Assay
+    itself misses, cannot be expressed in this format.</li>
+  <li>The <b>difficulty-band</b> probe needs a rollout sampler and always reports
+    <code>NOT_APPLICABLE</code> here, so no submission can reach
+    <code>VALID</code> on this page however good it is. The banner says so when
+    the sampler is the only gap.</li>
+  <li><b><code>verifier: "regex"</code> is refused</b>, not degraded.
+    <code>assay.safe_regex</code> bounds a submitted pattern by matching it in a
+    subprocess under a wall clock — <code>(a+)+$</code> against 31 characters
+    takes about 100 seconds, which is a denial of service with a dozen bytes —
+    and WebAssembly has no subprocesses. Falling back to a bare
+    <code>re.search</code> would put that defect back on the one page it was
+    about. Every other verifier runs in full.</li>
+  <li>Caps: 200 tasks, 2,000 split items, 20,000 characters per item.</li>
+</ul>
+
+<h2>Synthetic, and not production-validated</h2>
+<p class="sub">The examples are synthetic fixtures with defects planted on
+purpose. Assay is <b>not production-validated</b> — it has been measured against
+defects its own authors planted, which is a lower bar than defects found in the
+wild. On that corpus it <b>does not separate from a policy that flags every
+environment unread</b>, and under a production-training cost profile that policy
+beats it outright. Both numbers, with 95% intervals, are on
+<a href="https://huggingface.co/datasets/{{DATASET_REPO}}">{{DATASET_REPO}}</a>.
+A <code>VALID</code> verdict here is not sign-off on anything that matters. The
+card stays unsigned until a human signs it.</p>
+
+<footer>
+  <p><a href="https://github.com/caiotheodoro/assay">Source</a> ·
+     <a href="https://huggingface.co/datasets/{{DATASET_REPO}}">Corpus, cards and arms</a> ·
+     <a href="https://huggingface.co/{{MODEL_REPO}}">The GRPO Challenger, a negative result</a> ·
+     Apache-2.0, version <code>{{TAG}}</code></p>
+  <p>The <code>assay</code> package is <b>vendored</b> into this Space at commit
+     <code>{{COMMIT}}</code> and unpacked into the WebAssembly filesystem at load.
+     That commit is the only way to tell which code produced the card you are
+     looking at.</p>
+</footer>
+
+</main>
+
+<script type="application/json" id="examples-data">{{EXAMPLES_JSON}}</script>
+<script src="{{PYODIDE_URL}}"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const status = $("status"), go = $("go"), specBox = $("spec"), card = $("card");
+  const picker = $("picker"), note = $("prerendered-note");
+  const EXAMPLES = JSON.parse($("examples-data").textContent);
+
+  const setStatus = (cls, text) => { status.className = "status " + cls;
+    status.textContent = text; };
+
+  picker.addEventListener("change", () => {
+    const ex = EXAMPLES[picker.value];
+    if (ex) specBox.value = ex.spec;
+  });
+
+  document.querySelectorAll("[data-load]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const i = b.getAttribute("data-load");
+      const ex = EXAMPLES[i];
+      if (!ex) return;
+      picker.value = i;
+      specBox.value = ex.spec;
+      document.querySelector(".auditor").scrollIntoView({behavior: "smooth", block: "center"});
+    });
+  });
+
+  let audit = null;
+
+  async function boot() {
+    const t0 = performance.now();
+    // `loadPyodide` with no packages: the audit path is pure standard
+    // library, so there is no micropip step and no wheel index to reach.
+    const pyodide = await loadPyodide();
+    setStatus("boot", "unpacking assay…");
+    const zip = await (await fetch("assay.zip")).arrayBuffer();
+    pyodide.unpackArchive(zip, "zip");
+    const src = await (await fetch("browser.py")).text();
+    pyodide.FS.writeFile("/home/pyodide/assay_browser.py", src);
+    pyodide.runPython('import sys; sys.path.insert(0, "/home/pyodide")');
+    audit = pyodide.pyimport("assay_browser");
+    go.disabled = false;
+    setStatus("ready", "Python " + pyodide.runPython("import sys; sys.version.split()[0]")
+      + " ready in " + (( performance.now() - t0) / 1000).toFixed(1) + "s");
+  }
+
+  go.addEventListener("click", () => {
+    if (!audit) return;
+    go.disabled = true;
+    setStatus("boot", "running the battery…");
+    // Deferred a frame so the status paints before the battery blocks the
+    // thread. It takes single-digit milliseconds; the frame is for honesty,
+    // not for throughput.
+    requestAnimationFrame(() => {
+      const t0 = performance.now();
+      let out;
+      try {
+        out = JSON.parse(audit.audit(specBox.value));
+      } catch (err) {
+        card.innerHTML = '<div class="assay-error"><b>The in-browser runtime '
+          + 'raised.</b> That is a bug in Assay, not a verdict about your '
+          + 'environment.</div>';
+        console.error(err);
+        go.disabled = false;
+        setStatus("bad", "the runtime raised — see the console");
+        return;
+      }
+      card.innerHTML = out.html;
+      if (note) note.remove();
+      for (const [key, wrap, el] of [["markdown", "md-wrap", "md"],
+                                     ["json", "json-wrap", "json"]]) {
+        const has = Boolean(out[key]);
+        $(wrap).hidden = !has;
+        $(el).textContent = out[key] || "";
+      }
+      go.disabled = false;
+      setStatus("ready", "audited in " + (performance.now() - t0).toFixed(0)
+        + "ms, in this tab");
+    });
+  });
+
+  boot().catch((err) => {
+    console.error(err);
+    setStatus("bad", "the in-browser runtime did not start");
+    note.innerHTML = "<b>The in-browser runtime did not start</b> ("
+      + String(err).slice(0, 200).replace(/[<>&]/g, "") + "). Every card on this "
+      + "page was rendered ahead of time and is unaffected; only the button is.";
+  });
+})();
+</script>
+</body>
+</html>
