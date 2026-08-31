@@ -47,10 +47,34 @@ from .llm import LLMClient, LLMUnavailable
 from .runner import AuditReport, audit as _run_battery
 from .types import Capability, Item, ProbeResult, ProbeStatus, digest
 
-#: The only family whose results the semantic gate may touch. Every probe in
-#: it asks a question that presumes the environment has a correct answer, which
-#: is exactly the presumption that can fail.
-SEMANTIC_SCOPE = "verifier_integrity"
+#: The families the semantic gate may touch, and the test for membership is one
+#: question: does this probe's question *presuppose that a correct answer
+#: exists*? If it does, the question is void on an environment that has none,
+#: and a DEFECT it reports there is an artefact of the presumption rather than a
+#: property of the environment.
+#:
+#: - `verifier_integrity` -- gold passes, no-op fails, an inverted spec fails.
+#:   Every one of those compares against a key. Void without one.
+#: - `separability` -- the best graded policy must beat the worst. There is no
+#:   grading to separate when five answers are equally valid.
+#: - `trivial_floor` -- an input-ignoring policy must not beat a graded one. On
+#:   an opinion inventory an input-ignoring policy *is* a legitimate response,
+#:   so it beating the floor is the design working.
+#: - `spec_verifier_match` -- lexical overlap between the instruction and the
+#:   verifier's asserts. A format check legitimately shares no content words
+#:   with the question it is checking the format of.
+#:
+#: `reward_hackability` is deliberately **out**, and it is the interesting
+#: exclusion. Its question does presuppose a correct answer -- an exploit gap is
+#: `env_score - true_completion`, and `true_completion` is meaningless without a
+#: key -- so on the argument above it belongs here. It stays out because it is
+#: the only CRITICAL class in the set, and a false withhold there hides the
+#: worst defect this tool can find. The cost of that choice is measured rather
+#: than assumed: `results/semantic_gate.json` records what still fires on a
+#: no-correct-answer environment after the gate has run.
+SEMANTIC_SCOPE = frozenset(
+    {"verifier_integrity", "separability", "trivial_floor", "spec_verifier_match"}
+)
 
 #: How many declared trivial policies count as a repertoire wide enough
 #: that finding nothing means something. Below this, silence is cheap.
@@ -474,10 +498,26 @@ class Auditor:
         self._by_shape[signature] = settled
         return settled
 
+    #: Why each family's question is void when there is no correct answer. One
+    #: sentence per family, because a card that gives the same reason for four
+    #: different probes is telling the reader the gate did not look.
+    _VOID_BECAUSE = {
+        "verifier_integrity": "a verifier that cannot separate targets is the right "
+                              "design here, not a defect: there are no targets to separate",
+        "separability": "there is no grading to separate -- the responses are equally "
+                        "valid, so a graded policy cannot beat an ungraded one",
+        "trivial_floor": "an input-ignoring policy is a legitimate response to this "
+                         "question, so beating the floor is the design working",
+        "spec_verifier_match": "a format check legitimately shares no content words "
+                               "with the question whose format it checks",
+    }
+
     def _withhold(self, result: ProbeResult, answer: dict[str, Any], who: str) -> ProbeResult:
+        because = self._VOID_BECAUSE.get(
+            result.family, "this probe's question presupposes a correct answer"
+        )
         reason = (
-            "this environment has no correct answer, so a verifier that cannot "
-            "separate targets is the right design rather than a defect "
+            f"this environment has no correct answer, so {because} "
             f"({answer.get('elicitation', 'unstated')})"
         )
         self.overrides.append(
@@ -508,7 +548,7 @@ class Auditor:
         flagged = [
             r
             for r in report.results
-            if r.family == SEMANTIC_SCOPE and r.status is ProbeStatus.DEFECT
+            if r.family in SEMANTIC_SCOPE and r.status is ProbeStatus.DEFECT
         ]
         if not flagged:
             return report

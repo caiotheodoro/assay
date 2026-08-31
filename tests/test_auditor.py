@@ -505,3 +505,58 @@ def test_an_unknown_gate_input_is_refused_rather_than_silently_ignored():
     """A typo that falls back to the shipped input would report the wrong arm."""
     with pytest.raises(ValueError, match="gate_input"):
         Auditor(gate_input="descibe")
+
+
+# -- the widened scope, and the one family deliberately left out -------------
+
+
+def _preference_with(client):
+    from assay.fixtures.preference import PreferenceEnv
+
+    auditor = Auditor(client)
+    return auditor, auditor.audit(PreferenceEnv())
+
+
+def test_the_gate_covers_every_family_whose_question_needs_a_correct_answer():
+    """It used to reach `verifier_integrity` only, and recovered half the damage.
+
+    A judge wrote a Likert inventory as a spec, ran `--auditor`, and got
+    `auditor: ran, and was not consulted` -- because that environment's false
+    positives landed in `separability` and `spec_verifier_match`, outside the
+    scope. The gate missed its own motivating failure class.
+
+    The membership test is one question: does the probe presuppose a correct
+    answer exists? Four families do, and all four are void without one.
+    """
+    auditor, report = _preference_with(FakeClient(NO_ANSWER))
+    families = {o.family for o in auditor.overrides}
+    assert {"verifier_integrity", "separability", "spec_verifier_match"} <= families
+    assert report.detected == set(), (
+        "every finding on a correctly-designed no-correct-answer environment "
+        f"should be withheld; still reported {sorted(d.value for d in report.detected)}"
+    )
+
+
+def test_reward_hackability_is_never_withheld():
+    """The deliberate exclusion, and the one worth guarding.
+
+    Its question does presuppose a correct answer -- an exploit gap is
+    `env_score - true_completion` -- so by the rule above it qualifies. It stays
+    out because it is the only CRITICAL class in the set, and a false withhold
+    there hides the worst defect the tool can find.
+    """
+    from assay.auditor import SEMANTIC_SCOPE
+
+    assert "reward_hackability" not in SEMANTIC_SCOPE
+    auditor, _ = _preference_with(FakeClient(NO_ANSWER))
+    assert all(o.family != "reward_hackability" for o in auditor.overrides)
+
+
+def test_each_withheld_family_gives_its_own_reason():
+    """Four probes withheld with one sentence between them tells a reader the
+    gate did not look at which probe it was silencing."""
+    auditor, _ = _preference_with(FakeClient(NO_ANSWER))
+    reasons = {o.family: o.reason for o in auditor.overrides}
+    assert len(set(reasons.values())) == len(reasons), reasons
+    assert "no grading to separate" in reasons["separability"]
+    assert "format check" in reasons["spec_verifier_match"]
