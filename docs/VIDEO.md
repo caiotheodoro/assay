@@ -4,6 +4,13 @@ Five minutes, hard cap. The brief asks for: the problem and the simple baseline,
 one realistic execution start to finish, the final comparison, the changelog,
 the change that contributed most, and one experiment that was removed.
 
+> **This script describes the video that shipped.** The submission has moved on
+> since the shoot -- a second agent, two probe families, an approval gate on the
+> shipped path -- so the script for the *next* cut lives in
+> [`VIDEO-NEXT.md`](VIDEO-NEXT.md) and says plainly that it has not been shot.
+> This file is not edited to match the current tree, because a shooting script
+> revised after the shoot is a description of a video nobody made.
+
 **Status: recorded and hosted.**
 [assay.mp4](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4)
 — 276.032 s = **4:36.03** against the 5:00 cap, h264 with an AAC track. The
