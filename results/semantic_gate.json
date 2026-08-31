@@ -1,0 +1,184 @@
+{
+  "what": "The semantic gate: can a model tell an environment with no correct answer from one whose verifier is simply broken?",
+  "why": "docs/COVERAGE.md records inspect_evals/personality_BFI as a CRITICAL false positive the battery cannot avoid, and ends: 'The right fix is a capability an eval can withhold -- this environment has no correct answer -- and it does not exist yet.' This measures the fix.",
+  "design": "Two signals from one call: a label, and a concrete example of two different responses that would both be fair. The override fires only when both agree. Neither is sound alone -- see decide() in src/assay/auditor.py for the two measurements that rule each out.",
+  "corpus": "12 toy-triage fixtures, every one of which has a correct answer, plus inspect_evals/personality_BFI, which does not. n_positive=1.",
+  "scope": "An override may only move a verifier_integrity DEFECT to NOT_APPLICABLE. It can never produce a PASS and can never reach another probe family.",
+  "backends": {
+    "ollama:qwen3:8b": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "n_positive": 1,
+      "n_negative": 12,
+      "seconds": 58.5,
+      "rows": [
+        {
+          "env": "healthy",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "gold_broken",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "solved_at_reset",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "unfalsifiable",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "weak_oracle",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "escalate_overrewarded",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "rationale_ignored",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "leaky_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "paraphrased_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "artifact_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "drifted_asserts",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "flaky",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "personality_BFI",
+          "truth": "no_correct_answer",
+          "got": "has_correct_answer",
+          "ok": false
+        }
+      ]
+    },
+    "claude-cli:sonnet": {
+      "true_positives": 1,
+      "false_positives": 0,
+      "n_positive": 1,
+      "n_negative": 12,
+      "seconds": 136.6,
+      "rows": [
+        {
+          "env": "healthy",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "gold_broken",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "solved_at_reset",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "unfalsifiable",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "weak_oracle",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "escalate_overrewarded",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "rationale_ignored",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "leaky_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "paraphrased_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "artifact_splits",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "drifted_asserts",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "flaky",
+          "truth": "has_correct_answer",
+          "got": "has_correct_answer",
+          "ok": true
+        },
+        {
+          "env": "personality_BFI",
+          "truth": "no_correct_answer",
+          "got": "no_correct_answer",
+          "ok": true
+        }
+      ]
+    }
+  },
+  "reading": "Precision is perfect on both backends and recall is not. qwen3:8b labels personality_BFI has_correct_answer in 3 of 3 runs directly after writing a valid both-ways example, so the conjunction refuses and nothing is overridden. That is the intended degradation: a weak Auditor loses recall and cannot lose precision."
+}
