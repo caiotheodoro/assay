@@ -222,7 +222,7 @@ uv run --extra tau2 python scripts/tau2_fetch.py
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q
 ```
 
-**Measured: 745 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
+**Measured: 746 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
 An earlier revision of this guide claimed 275 collected; the suite has roughly
 doubled since and that number was never re-measured. The 650 and the 128 s are
 one measurement of this command on one machine — an earlier revision quoted 594
@@ -231,7 +231,7 @@ in 82 s, and the wall clock is hardware, not a property of the suite.
 **`--extra tau2` is load-bearing on the test line too**, and this guide previously
 omitted it there. Without the snapshots `tests/test_tau2_adapter.py` skips (18 skips,
 measured); without the extra it *fails*, on `No module named 'loguru'`. Both were
-verified from a fresh tree with no `.venv`: the command above gives 745 passed, 0
+verified from a fresh tree with no `.venv`: the command above gives 746 passed, 0
 failed, exit 0, and dropping `--extra tau2` from it gives 7 failures. The
 fresh-tree timing that used to sit here (87 s) is dropped rather than carried
 over: the count was re-measured when the suite grew and that number was not.

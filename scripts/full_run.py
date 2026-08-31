@@ -62,6 +62,36 @@ def run_assay(corpus, ctx: dict | None = None, label: str = "assay") -> ArmResul
     return arm
 
 
+def run_auditor_arm(corpus, client, label: str = "assay+auditor") -> tuple[ArmResult, dict]:
+    """The same battery, read by the Auditor before the verdict is recorded.
+
+    This exists to answer one criticism directly: every number this submission
+    leads with is produced with the agent switched off. Here is the number with
+    it on, on the same corpus, so the comparison is a row rather than an
+    argument.
+
+    One Auditor across the whole run, not one per environment, because the
+    memory is the point -- `results/auditor_memory.json` measures the twelve
+    toy-triage fixtures costing one model call between them.
+    """
+    from assay.auditor import Auditor
+
+    auditor = Auditor(client)
+    result = ArmResult(label)
+    for env_id, factory, planted in corpus:
+        with _closing(factory()) as adapter:
+            report = auditor.audit(adapter)
+        result.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
+              flush=True)
+    return result, {
+        "backend": getattr(client, "name", "unknown"),
+        "model_calls": auditor.calls,
+        "decisions": auditor.decisions,
+        "overrides": [o.to_dict() for o in auditor.overrides],
+    }
+
+
 def run_arm(corpus, arm) -> tuple[ArmResult, dict]:
     """Any baseline exposing .run(adapter) -> (detected, log)."""
     result = ArmResult(arm.arm)
@@ -118,6 +148,14 @@ def main() -> int:
         "--llm-arms",
         metavar="MODEL",
         help="also run the two LLM baselines with this ollama model (e.g. qwen3:8b)",
+    )
+    ap.add_argument(
+        "--auditor-arm",
+        metavar="BACKEND",
+        help="also run `assay+auditor`: the same battery read by the Auditor "
+             "before the verdict is recorded. An ollama tag, or 'claude'. The "
+             "headline arm stays deterministic; this is the row that answers "
+             "'every number here is produced with the agent switched off'.",
     )
     args = ap.parse_args()
 
@@ -181,6 +219,23 @@ def main() -> int:
                 result, logs = run_arm(corpus, arm)
                 arms[arm.arm] = result
                 arm_logs[arm.arm] = logs
+
+    if args.auditor_arm:
+        from assay.llm import ClaudeCLIClient, OllamaClient
+
+        client = (
+            ClaudeCLIClient() if args.auditor_arm == "claude"
+            else OllamaClient(args.auditor_arm)
+        )
+        usable, reason = client.availability()
+        if not usable:
+            print(f"SKIPPING auditor arm: {reason}")
+            print("an arm missing from a comparison is a result about the run, not the method")
+        else:
+            print(f"running auditor arm ({client.name}) ...", flush=True)
+            result, logs = run_auditor_arm(corpus, client)
+            arms[result.arm] = result
+            arm_logs[result.arm] = logs
 
     rows = {}
     for name, arm in arms.items():
