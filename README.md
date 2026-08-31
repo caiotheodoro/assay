@@ -384,15 +384,30 @@ correct answer, plus the 2 that do not:
 
 | backend | withheld the false positive | false overrides | wall clock |
 |---|---|---|---|
-| `claude-cli:sonnet` | **6 of 6 runs** | **0 of 39 runs** | 378.5s |
-| `ollama:qwen3:8b` | 4 of 6 runs | **2 of 39 runs** | 261.1s |
+| `claude-cli:sonnet` | **6 of 6 runs** | **0 of 54 runs** | 1733.2s |
+| `ollama:qwen3:8b` | 6 of 6 runs | **6 of 54 runs** | 217.4s |
 
-15 environments — 2 with no correct answer, 13 with one — at three runs each per
-backend. **An earlier version of this table said 1-of-1 and 0-of-1 at k=1, and it was
-wrong in both directions about the weak backend:** `qwen3:8b` withholds more often than
-one run suggested, and it also produces false overrides, which one run did not show at
-all. Reporting a stochastic classifier from a single draw is the error this repo is
-about, and it took a judge to point out that it was happening here.
+18 environments — 2 with no correct answer, 16 with one — at three runs each per backend.
+**Read the second column, not the first.** A false override hides a real defect, which is
+worse than missing one, so `qwen3:8b` is not a backend to run this with; `--auditor-model`
+exists to say which one you mean.
+
+Five of the sixteen negatives are Harbor environments, and they are there because they
+caught this feature being wrong twice. First the gate was reading `describe()` — which
+carries the verifier's source and the fixture's own metadata — and on
+`harbor/vacuous-tests` both backends read *"The verifier always exits 0"* and concluded
+the environment had no correct answer. It has one; the verifier is broken, which is the
+defect the battery correctly found and the gate then withheld. That cost **120
+expected-loss points** on the corpus, and the `assay+auditor` arm below is what exposed
+it. Then, scoped to task text, `claude-cli` called `harbor/self-graded` answerless in 3 of
+3 runs — that task's entire text is *"Write the answer to the file out.txt"*, which never
+says what the question is — so the gate now abstains when the model's quote is the whole
+prompt rather than something within it. Both fixes are in
+[`docs/changelog/109-gate-was-reading-the-verifier.md`](docs/changelog/109-gate-was-reading-the-verifier.md).
+
+An earlier version of this table said 1-of-1 and 0-of-1 at **k=1 over 13 environments**,
+and it was wrong in both directions. Reporting a stochastic classifier from a single draw
+is the error this repo is about, and it took an outside judge to notice it here.
 
 **The interesting half is that the small model could make the observation and could not make the
 decision.** The gate is the conjunction of the model's label and its own quoted evidence, because

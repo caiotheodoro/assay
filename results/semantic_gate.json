@@ -6,7 +6,7 @@
   "corpus_note": "n_positive is 2, and that is a ceiling rather than a choice. Of the 246 tasks inspect_evals registers, a deliberately broad lexical filter matches four: personality_TRAIT is gated, writingbench is scored by an LLM judge and this project scores nothing with a judge, and bbq turns out to have correct answers and is used as a negative. Environments with no correct answer are rare in the eval ecosystem, which is part of why the false positive went unnoticed.",
   "k": 3,
   "assay_revision": {
-    "commit": "8463843f5f7453b19257effcc45bfa55f960a72c",
+    "commit": "0d71b711a85c00ba3305a29b4a097ba7634c95f2",
     "dirty": true
   },
   "backends": {
@@ -19,11 +19,11 @@
           "has_correct_answer": false,
           "verdicts": [
             "no_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
+            "no_correct_answer",
+            "no_correct_answer"
           ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
         },
         {
           "env": "toy-triage/preference",
@@ -44,7 +44,7 @@
           "note": "ticket classification",
           "has_correct_answer": true,
           "verdicts": [
-            "has_correct_answer",
+            "UNPARSED",
             "has_correct_answer",
             "has_correct_answer"
           ],
@@ -57,12 +57,12 @@
           "note": "ticket classification",
           "has_correct_answer": true,
           "verdicts": [
-            "has_correct_answer",
+            "no_correct_answer",
             "has_correct_answer",
             "has_correct_answer"
           ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
           "env": "toy-triage/solved_at_reset",
@@ -71,7 +71,7 @@
           "has_correct_answer": true,
           "verdicts": [
             "has_correct_answer",
-            "has_correct_answer",
+            "UNPARSED",
             "has_correct_answer"
           ],
           "fired_no_correct_answer": 0,
@@ -98,26 +98,13 @@
           "verdicts": [
             "has_correct_answer",
             "has_correct_answer",
-            "has_correct_answer"
+            "no_correct_answer"
           ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
           "env": "toy-triage/escalate_overrewarded",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/rationale_ignored",
           "source": "fixture",
           "note": "ticket classification",
           "has_correct_answer": true,
@@ -128,6 +115,19 @@
           ],
           "fired_no_correct_answer": 1,
           "rate": 0.333
+        },
+        {
+          "env": "toy-triage/rationale_ignored",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
           "env": "toy-triage/leaky_splits",
@@ -161,12 +161,12 @@
           "note": "ticket classification",
           "has_correct_answer": true,
           "verdicts": [
-            "has_correct_answer",
+            "no_correct_answer",
             "has_correct_answer",
             "has_correct_answer"
           ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
           "env": "toy-triage/drifted_asserts",
@@ -175,7 +175,7 @@
           "has_correct_answer": true,
           "verdicts": [
             "has_correct_answer",
-            "has_correct_answer",
+            "UNPARSED",
             "has_correct_answer"
           ],
           "fired_no_correct_answer": 0,
@@ -200,21 +200,86 @@
           "note": "bias QA -- reads like opinion, has correct answers",
           "has_correct_answer": true,
           "verdicts": [
-            "UNPARSED",
-            "UNPARSED",
-            "UNPARSED"
+            "has_correct_answer",
+            "no_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
+        },
+        {
+          "env": "harbor/vacuous-tests",
+          "source": "harbor",
+          "note": "a verifier that always exits 0 -- broken, not answerless",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/self-graded",
+          "source": "harbor",
+          "note": "the environment grades itself; the task has an answer",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/broken-gold",
+          "source": "harbor",
+          "note": "gold fails its own tests; the task has an answer",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/shared-tests",
+          "source": "harbor",
+          "note": "tests reachable from the workspace",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/healthy",
+          "source": "harbor",
+          "note": "nothing planted",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
         }
       ],
       "n_positive": 2,
-      "n_negative": 13,
-      "true_positive_runs": 4,
+      "n_negative": 18,
+      "true_positive_runs": 6,
       "positive_runs": 6,
-      "false_positive_runs": 2,
-      "negative_runs": 39,
-      "seconds": 261.1
+      "false_positive_runs": 6,
+      "negative_runs": 54,
+      "seconds": 217.4
     },
     "claude-cli:sonnet": {
       "rows": [
@@ -412,15 +477,80 @@
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
+        },
+        {
+          "env": "harbor/vacuous-tests",
+          "source": "harbor",
+          "note": "a verifier that always exits 0 -- broken, not answerless",
+          "has_correct_answer": true,
+          "verdicts": [
+            "UNPARSED",
+            "UNPARSED",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/self-graded",
+          "source": "harbor",
+          "note": "the environment grades itself; the task has an answer",
+          "has_correct_answer": true,
+          "verdicts": [
+            "UNPARSED",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/broken-gold",
+          "source": "harbor",
+          "note": "gold fails its own tests; the task has an answer",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/shared-tests",
+          "source": "harbor",
+          "note": "tests reachable from the workspace",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "harbor/healthy",
+          "source": "harbor",
+          "note": "nothing planted",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "UNPARSED"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         }
       ],
       "n_positive": 2,
-      "n_negative": 13,
+      "n_negative": 18,
       "true_positive_runs": 6,
       "positive_runs": 6,
       "false_positive_runs": 0,
-      "negative_runs": 39,
-      "seconds": 378.5
+      "negative_runs": 54,
+      "seconds": 1733.2
     }
   }
 }
