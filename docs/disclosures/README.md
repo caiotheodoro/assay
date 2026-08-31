@@ -1,11 +1,11 @@
-# Disclosure drafts — not sent
+# Disclosures — both filed
 
-Two drafts, both written to go upstream, **neither filed**:
+Two upstream bug reports, **both filed 2026-08-31**:
 
-| Draft | Recipient | Finding |
-|---|---|---|
-| [`inspect_evals-paws-scorer.md`](inspect_evals-paws-scorer.md) | `UKGovernmentBEIS/inspect_evals` | scorer defect found by the wild sweep |
-| [`openenv-textarena-seed.md`](openenv-textarena-seed.md) | `huggingface/OpenEnv` | seed handling, pinned by a test here |
+| Report | Recipient | Finding | Filed |
+|---|---|---|---|
+| [`inspect_evals-paws-scorer.md`](inspect_evals-paws-scorer.md) | `UKGovernmentBEIS/inspect_evals` | scorer defect found by the wild sweep | [#2331](https://github.com/UKGovernmentBEIS/inspect_evals/issues/2331) |
+| [`openenv-textarena-seed.md`](openenv-textarena-seed.md) | `huggingface/OpenEnv` | seed handling, pinned by a test here | [#1102](https://github.com/huggingface/OpenEnv/issues/1102) |
 
 Both now cite a real repository (`https://github.com/caiotheodoro/assay`), so a
 maintainer can check the tests behind each claim. That was the blocker; it is

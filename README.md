@@ -109,6 +109,8 @@ apart from the task. Linters for *"will this crash my trainer"*, with one check 
 
 ## Two real defects, in software shipping today
 
+Both are now filed upstream — [inspect_evals#2331](https://github.com/UKGovernmentBEIS/inspect_evals/issues/2331) and [OpenEnv#1102](https://github.com/huggingface/OpenEnv/issues/1102) — after a second reader went through both drafts and changed three things in them ([`docs/changelog/106-disclosures-filed.md`](docs/changelog/106-disclosures-filed.md)). No maintainer has replied yet.
+
 The corpus measures Assay against defects this repo planted. These two were not, and both were
 verified from the upstream project's own code with Assay out of the loop. Write-ups and drafted
 disclosures: [`docs/disclosures/`](docs/disclosures/README.md).

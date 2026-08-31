@@ -38,6 +38,6 @@ citation on each, RED-TEAM.md for what broke when the tool was pointed at itself
 
 - [docs/RUBRIC.md](https://github.com/caiotheodoro/assay/blob/main/docs/RUBRIC.md): Self-score against the hackathon rubric.
 - [docs/LINEAGE.md](https://github.com/caiotheodoro/assay/blob/main/docs/LINEAGE.md): What existed before the competition and what was added.
-- [docs/disclosures/](https://github.com/caiotheodoro/assay/tree/main/docs/disclosures): Two upstream defect disclosures, drafted and not yet filed.
+- [docs/disclosures/](https://github.com/caiotheodoro/assay/tree/main/docs/disclosures): Two upstream defect disclosures, both filed 2026-08-31 (inspect_evals#2331, OpenEnv#1102).
 - [Solution video, 4:36](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4): The five-minute submission video; the Remotion pipeline that renders it is tracked under video/.
 - [Hugging Face collection](https://huggingface.co/collections/caiotheodoro/assay-auditing-rl-environments-with-error-bars-6a946953e05a8669da74ee65): Corpus, cards, arms, and the Challenger model published as a negative result.

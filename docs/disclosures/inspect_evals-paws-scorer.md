@@ -1,6 +1,8 @@
 # Draft — `UKGovernmentBEIS/inspect_evals`
 
-**Status: reviewed by a second reader. Ready to file.**
+**Status: FILED — https://github.com/UKGovernmentBEIS/inspect_evals/issues/2331**
+
+Reviewed by a second reader before filing; that review changed the reproduction section, the suggested fix and the version claim. What is above is what was sent.
 
 - **Repo:** https://github.com/UKGovernmentBEIS/inspect_evals
 - **Kind:** issue (bug)

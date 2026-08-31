@@ -1,6 +1,8 @@
 # Draft — `huggingface/OpenEnv`
 
-**Status: reviewed by a second reader. Ready to file.**
+**Status: FILED — https://github.com/huggingface/OpenEnv/issues/1102**
+
+Reviewed by a second reader before filing; that review changed the reproduction section, the suggested fix and the version claim. What is above is what was sent.
 
 - **Repo:** https://github.com/huggingface/OpenEnv
 - **Kind:** issue (bug)
