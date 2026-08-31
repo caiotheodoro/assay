@@ -296,18 +296,26 @@ DEFECT_CLASS_BY_MECHANICAL_CATEGORY: dict[str, "DefectClass"] = {
 #: forces a decision here rather than a silent exclusion.
 EXCLUDED_DEFECT_CLASSES: dict["DefectClass", str] = {
     DefectClass.GOLD_FAILS: (
-        "the diff establishes that the pre-fix answer key was wrong, not that it fails "
+        "the diff establishes that the pre-fix answer key was WRONG, not that it FAILS "
         "its own verifier -- a wrong key that executes cleanly and scores 1.0 is the "
-        "worse defect and the one the evidence supports. Assay's gold_passes probe does "
-        "fire on 4 retail tasks, but 2 of them (retail/64, retail/105) are tasks the "
-        "third party inspected and did not change, and gold answers the tools refuse "
-        "persist after the fix (retail/18, 64, 91, 105). Excluded knowing it costs a "
-        "spurious finding on tau2/retail."
+        "worse defect and the one the evidence supports. For retail/18 and retail/91 "
+        "both readings happen to be true; for retail/64 and retail/105 only the second "
+        "is, and those two are tasks the third party inspected and did not change. A "
+        "class whose evidence also sits on untouched records is not a class the "
+        "revision diff establishes. Note the direction: claiming GOLD_FAILS would turn "
+        "a spurious finding into a caught one and SAVE Assay a point on tau2/retail, "
+        "so this exclusion is against our own interest."
     ),
     DefectClass.NOOP_PASSES: (
-        "nothing in the diff speaks to whether an empty transcript scores, and the "
-        "evidence points away: noop_fails is tp=0/fp=2 on retail and tp=1/fp=6 on "
-        "airline, so 8 of its 9 findings land on tasks the third party left alone"
+        "the diff is silent on whether an empty transcript scores, and 'the third party "
+        "did not change this task' means exactly that and not 'this task is clean' -- "
+        "the same standard applied to NONDETERMINISM below. The positive reason to "
+        "distrust the finding is ours, not theirs: `Tau2Adapter.verify` scores two of "
+        "tau2's three conjuncts and drops the LLM-judged nl_assertions, so on the 9 "
+        "tasks whose gold action list is empty after `_gold()` (retail/{24,57}, "
+        "airline/{0,10,26,28,31,34,46}) an empty transcript scores 1.0 by construction. "
+        "Those 9 are exactly noop_fails' 9 findings. It is measuring Assay's missing "
+        "conjunct, not tau2's environment."
     ),
     DefectClass.NONDETERMINISM: (
         "seed_determinism returns PASS on both domains, but that is Assay's claim about "

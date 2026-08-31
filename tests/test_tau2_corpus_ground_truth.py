@@ -52,10 +52,49 @@ pytestmark = pytest.mark.skipif(
     ),
 )
 
-#: The four field families the two revisions differ in, and nothing else. The
-#: first two are what a solver is shown; the last two are the answer key.
-BRIEF = ("user_scenario", "description")
-ANSWER_KEY = ("evaluation_criteria",)
+#: The field families the two revisions differ in, at LEAF level and not at
+#: top-level-key level. The distinction is load-bearing and was got wrong first
+#: time: `mechanical_category` is a fall-through, so anything that is not an
+#: `/evaluation_criteria` change becomes `SPEC_VERIFIER_MISMATCH` -- and that
+#: class is only justified for fields `Tau2Adapter._instruction` actually reads.
+#: A future re-pin that moved `/user_scenario/persona` or `/description/notes`
+#: would satisfy a top-level check, be labelled `SPEC_VERIFIER_MISMATCH`, and be
+#: wrong: the solver's brief would not have moved at all.
+BRIEF = ("/user_scenario/instructions/", "/description/purpose")
+ANSWER_KEY = ("/evaluation_criteria",)
+
+
+def _leaves(value, prefix=""):
+    """Flatten to `{path: scalar}`. A local re-implementation on purpose.
+
+    `tau2_truth.leaf_paths` does the same thing and is the code under test.
+    """
+    out = {}
+    if isinstance(value, dict):
+        for key, sub in value.items():
+            out.update(_leaves(sub, f"{prefix}/{key}"))
+    elif isinstance(value, list):
+        for i, sub in enumerate(value):
+            out.update(_leaves(sub, f"{prefix}[{i}]"))
+    else:
+        out[prefix or "/"] = value
+    return out
+
+
+_ABSENT = object()
+
+
+def _changed_leaves(before: dict, after: dict) -> set[str]:
+    a, b = _leaves(before), _leaves(after)
+    return {k for k in set(a) | set(b) if a.get(k, _ABSENT) != b.get(k, _ABSENT)}
+
+
+def _is_brief(path: str) -> bool:
+    return path.startswith(BRIEF)
+
+
+def _is_answer_key(path: str) -> bool:
+    return path.startswith(ANSWER_KEY)
 
 #: Counted from the snapshots, and asserted rather than trusted: if amazon-agi
 #: republishes, these move and every number this repository publishes about
@@ -79,10 +118,6 @@ def _positives(domain: str) -> dict[str, tuple[dict, dict]]:
         for tid in base
         if tid in verified and base[tid] != verified[tid]
     }
-
-
-def _differing_top_level_keys(before: dict, after: dict) -> set[str]:
-    return {k for k in set(before) | set(after) if before.get(k) != after.get(k)}
 
 
 # -- the label rule ----------------------------------------------------------
@@ -118,16 +153,21 @@ def test_no_positive_is_a_whitespace_change(domain):
 def test_every_positive_moves_the_brief_or_the_answer_key_and_nothing_else(domain):
     """The premise the whole mapping rests on, checked instead of assumed.
 
-    If a third family of fields ever moves, the two rules stop partitioning the
-    evidence and the mapping is incomplete rather than wrong -- which is worse,
-    because it would fail silently.
+    Checked at leaf level. A top-level check would pass for a change to
+    `/user_scenario/persona` -- a field `Tau2Adapter._instruction` never reads --
+    and `mechanical_category`'s fall-through would still label it
+    `SPEC_VERIFIER_MISMATCH`. That is the silent-failure mode this guards.
     """
-    seen: set[str] = set()
+    unaccounted: set[str] = set()
     for before, after in _positives(domain).values():
-        seen |= _differing_top_level_keys(before, after)
-    assert seen <= set(BRIEF) | set(ANSWER_KEY), (
-        f"{domain}: the revisions also differ in {sorted(seen - set(BRIEF) - set(ANSWER_KEY))}, "
-        "which no rule in DEFECT_CLASS_BY_MECHANICAL_CATEGORY accounts for"
+        for path in _changed_leaves(before, after):
+            if not (_is_brief(path) or _is_answer_key(path)):
+                unaccounted.add(path)
+    assert not unaccounted, (
+        f"{domain}: the revisions also differ at {sorted(unaccounted)[:8]}, which is "
+        "neither the brief Tau2Adapter._instruction reads nor the answer key. No rule "
+        "in DEFECT_CLASS_BY_MECHANICAL_CATEGORY accounts for it, and the fall-through "
+        "would silently call it SPEC_VERIFIER_MISMATCH."
     )
 
 
@@ -136,14 +176,13 @@ def test_every_positive_moves_the_brief_or_the_answer_key_and_nothing_else(domai
 
 @pytest.mark.parametrize("domain", DOMAINS)
 def test_known_wrong_passes_is_claimed_exactly_when_the_answer_key_moved(domain):
-    """Rule 1, checked against the raw records rather than against itself."""
+    """The answer-key rule, checked against the raw records rather than itself."""
     labels = task_defect_classes(domain)
-    positives = _positives(domain)
     claimed = {t for t, c in labels.items() if DefectClass.KNOWN_WRONG_PASSES in c}
     from_disk = {
         tid
-        for tid, (b, v) in positives.items()
-        if _differing_top_level_keys(b, v) & set(ANSWER_KEY)
+        for tid, (b, v) in _positives(domain).items()
+        if any(_is_answer_key(p) for p in _changed_leaves(b, v))
     }
     assert claimed == from_disk
     assert len(claimed) == EXPECTED[domain]["answer_key"]
@@ -151,25 +190,28 @@ def test_known_wrong_passes_is_claimed_exactly_when_the_answer_key_moved(domain)
 
 @pytest.mark.parametrize("domain", DOMAINS)
 def test_spec_verifier_mismatch_is_claimed_only_when_the_verifier_stood_still(domain):
-    """Rule 2, and the half of it that carries the argument.
+    """The brief-only rule, and the half of it that carries the argument.
 
     The class means "the instruction and what the verifier asserts disagree".
     The evidence for that is the third party moving the instruction and leaving
-    the graded answer *untouched* -- so this asserts the answer key is byte-for-
-    byte identical on every task claiming the class, not merely that the brief
-    moved.
+    the graded answer *untouched* -- so this asserts the answer key is
+    byte-for-byte identical on every task claiming the class, and that the field
+    which did move is one `Tau2Adapter._instruction` actually concatenates into
+    `Task.instruction`. Anything else and the class is being claimed about text
+    no solver is shown.
     """
     labels = task_defect_classes(domain)
     base, verified = _raw(domain, "base"), _raw(domain, "verified")
     claimed = {t for t, c in labels.items() if DefectClass.SPEC_VERIFIER_MISMATCH in c}
     assert len(claimed) == EXPECTED[domain]["brief_only"]
     for tid in claimed:
-        for key in ANSWER_KEY:
-            assert base[tid].get(key) == verified[tid].get(key), (
-                f"{domain}/{tid} claims SPEC_VERIFIER_MISMATCH but its {key} also moved"
-            )
-        assert _differing_top_level_keys(base[tid], verified[tid]) & set(BRIEF), (
-            f"{domain}/{tid} claims SPEC_VERIFIER_MISMATCH and its brief did not move"
+        assert base[tid].get("evaluation_criteria") == verified[tid].get(
+            "evaluation_criteria"
+        ), f"{domain}/{tid} claims SPEC_VERIFIER_MISMATCH but its answer key also moved"
+        moved = _changed_leaves(base[tid], verified[tid])
+        assert any(_is_brief(p) for p in moved), (
+            f"{domain}/{tid} claims SPEC_VERIFIER_MISMATCH and none of {sorted(moved)} "
+            "is a field the solver is shown"
         )
 
 
@@ -259,6 +301,66 @@ def test_gold_execution_failure_is_not_what_the_revision_diff_is_about():
             "must be rewritten"
         )
     assert DefectClass.GOLD_FAILS in EXCLUDED_DEFECT_CLASSES
+
+
+def test_the_noop_exclusion_names_nine_tasks_and_all_nine_really_have_no_gold_action():
+    """The stated reason for excluding `NOOP_PASSES`, made checkable.
+
+    The reason is not "the third party left those tasks alone" -- that is the
+    absence of evidence, and the label rule says a negative means "unchanged",
+    never "clean". It is that `noop_fails`' nine findings are an artifact of
+    Assay's own verifier: `Tau2Adapter.verify` drops tau2's LLM-judged
+    `nl_assertions` conjunct, so a task with no gold agent action has nothing
+    left to require and an empty transcript scores 1.0 by construction.
+
+    Reading the tasks straight off disk, without the adapter, so this is a claim
+    about tau2's files rather than about our own `_gold()`.
+    """
+    empty = {
+        domain: sorted(
+            (
+                tid
+                for tid, task in _raw(domain, "base").items()
+                if not [
+                    a
+                    for a in (task.get("evaluation_criteria") or {}).get("actions") or []
+                    if a.get("requestor") != "user"
+                ]
+            ),
+            key=int,
+        )
+        for domain in DOMAINS
+    }
+    assert empty == {
+        "retail": ["24", "57"],
+        "airline": ["0", "10", "26", "28", "31", "34", "46"],
+    }, f"the nine tasks the NOOP_PASSES exclusion names have changed: {empty}"
+    reason = EXCLUDED_DEFECT_CLASSES[DefectClass.NOOP_PASSES]
+    assert "nl_assertions" in reason and "scores 1.0" in reason
+
+
+def test_the_schema_only_exclusion_still_excludes_nothing():
+    """A tripwire on the one field that could silently move a task's class.
+
+    `SCHEMA_ONLY_FIELDS` strips `/evaluation_criteria/reward_basis` before the
+    diff. `results/tau2_recall.json` records that it excludes nothing today --
+    the field is absent from both revisions. It is also the single field whose
+    change would be the strongest possible answer-key evidence, so if a re-pin
+    ever reintroduced it, stripping it would demote a task from
+    `KNOWN_WRONG_PASSES` to `SPEC_VERIFIER_MISMATCH` and no other test would
+    notice.
+    """
+    from assay.tau2_truth import SCHEMA_ONLY_FIELDS
+
+    assert SCHEMA_ONLY_FIELDS == (("evaluation_criteria", "reward_basis"),)
+    for domain in DOMAINS:
+        for which in ("base", "verified"):
+            for task in _raw(domain, which).values():
+                assert "reward_basis" not in (task.get("evaluation_criteria") or {}), (
+                    f"{domain}/{which}/{task['id']} now carries reward_basis, which "
+                    "SCHEMA_ONLY_FIELDS strips before the diff -- the exclusion is no "
+                    "longer inert and the label rule has to be re-derived"
+                )
 
 
 def test_every_defect_class_is_either_mapped_or_excluded_with_a_reason():
