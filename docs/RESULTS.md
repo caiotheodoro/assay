@@ -341,7 +341,7 @@ repertoire:*
 | scripted *(then)* | missed | 0.00 | 4 | 2.2s |
 | prompted, `qwen3:8b` | missed | 0.00 | 10 | 97.0s |
 | prompted, `claude-cli` | **found** | **1.00** | 10 | 261.7s |
-| **scripted *(now)*** | **found** | **1.00** | 6 | **~2s** |
+| **scripted *(now)*** | **found** | **1.00** | 6 | **3.8s** |
 
 Read from `results/challenger_ablation.json`. A 10-turn budget; "scored attempts" counts
 the turns that parsed into an action. Wall clock is with the Ollama model already

@@ -324,7 +324,7 @@ trivially true. Scored 1.0 by the environment, 0.0 by the independent verifier t
 access to; that difference is the whole measurement. Then the cheapest possible response — writing
 the mechanism down as a fixed policy, named after BenchJack's V7 *trusting untrusted output* —
 captured it permanently at zero marginal cost, and the scripted Challenger now finds the same gap in
-**~2s instead of 262s** with no model in the loop. Good for the tool, bad for the argument that the
+**3.8s instead of 262s** with no model in the loop. Good for the tool, bad for the argument that the
 agent is load-bearing: an auditor that needs a model in the loop to be reliable is an auditor whose
 verdicts cannot be reproduced ([`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) has that argument in full,
 and what it costs in rubric points).
