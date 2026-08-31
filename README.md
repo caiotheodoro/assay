@@ -105,21 +105,21 @@ disclosures: [`docs/disclosures/`](docs/disclosures/README.md).
 
 **`inspect_evals` 0.18.0 — `paws` scores a constant string at 100%.** It asks for `Yes` or `No` and
 scores with `includes()`, a case-insensitive **substring** test against those literal targets, so
-`"yesno"` contains both labels and scores **8000/8000 = 100%**. The looseness is one-sided, which
-is worse than symmetric: 4464 of 8000 items have the target `No`, so `"I don't know"`, `"Not sure"`
-and `"None of the above"` are credited on 56% of the benchmark for free. This is the WebArena
-substring-match failure from the table above, live in a package people train and publish against.
+`"yesno"` contains both labels and scores **8000/8000 = 100%**. The looseness is one-sided, which is
+worse than symmetric: 4464 of 8000 items have the target `No`, so `"I don't know"`, `"Not sure"` and
+`"None of the above"` are credited on 56% of the benchmark for free — the WebArena substring-match
+failure from the table above, live in a package people train and publish against.
 
 **`openenv` — `textarena_env` accepts a seed and ignores it.** Six calls to `reset(seed=1234)`
 return six different secret Wordle words: `earth, north, south, bread, tight, stage`. The signature
-takes `seed`, then calls `self._ta_env.reset(num_players=...)` without it. gymnasium 1.3.0 raises
-on exactly this shape; OpenEnv has no equivalent check. The fix exists in one ecosystem, and the
+takes `seed`, then calls `self._ta_env.reset(num_players=...)` without it. gymnasium 1.3.0 raises on
+exactly this shape; OpenEnv has no equivalent check. The fix exists in one ecosystem, and the
 ecosystem people are adopting for RL environments does not have it.
 
-**Assay found one of the two, and a human found the other.** It flagged 14 of 25 sampled `paws`
-items as `REWARD_HACKABLE` but not the `"yesno"` case — hand triage did — and that split is pinned
-as a test so it cannot quietly close in the write-up. `textarena_env` went the other way: the
-probes found it, but only after two bugs in Assay's own determinism probe were fixed.
+**Assay found one of the two; a human found the other.** It flagged 14 of 25 sampled `paws` items as
+`REWARD_HACKABLE` but not the `"yesno"` case — hand triage did — and that split is pinned as a test
+so it cannot quietly close in the write-up. `textarena_env` went the other way: the probes found it,
+but only after two bugs in Assay's own determinism probe were fixed.
 
 ## Measured result
 
@@ -179,10 +179,10 @@ dishonesty, so every profile shipped is published, not the one that reads best:
 `production-training`'s 480:1 ratio, "flag everything and read the cards" is a genuinely good policy
 — which is why beating it took closing the misses rather than tuning the metric, and why it still
 does not *separate*: winning by 388.0 on an interval crossing zero is a lead, not a result. Against
-the other floors the margins are wide and separated — 3032.0 over `flag_nothing`, 1749.0 over
-`stratified_random`; the full six-row table is in [`docs/RESULTS.md`](docs/RESULTS.md) with the
-interval caveats, including the one whose shape decides its own answer and the ten-rung bootstrap
-lattice a corpus this size actually supports. **One miss remains across 26 environments and it is
+the other floors the margins are wide and separated (3032.0 over `flag_nothing`, 1749.0 over
+`stratified_random`); the six-row table and the interval caveats — including the one whose shape
+decides its own answer, and the ten-rung bootstrap lattice a corpus this size actually supports —
+are in [`docs/RESULTS.md`](docs/RESULTS.md). **One miss remains across 26 environments and it is
 external:** `inspect_evals/boolq`, structurally — no train split, so the shortcut probe reports
 `NOT_APPLICABLE` before it runs.
 
@@ -196,12 +196,12 @@ linearly with it. So sweep it ([`results/cost_sensitivity.json`](results/cost_se
 | flag_everything | 314.0 | 314.0 | **314.0** | 314.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
-The crossover is exact rather than bisected: Assay's loss is linear in `C` while `flag_everything`
-never misses and does not move with `C` at all, so they cross at `120 × 314 / 40 = 942`. **The
-shipped value is 120. The crossover is 942.** The headline survives a **685% error** in a constant
-nobody derives — a margin that was 21% before the two Harbor misses were closed, stated plainly
-because the earlier number was the sharpest criticism of this work and the one that changed most.
-A claim about a specific cost regime, not about detectors in general.
+The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
+misses and does not move with `C` at all, so they cross at `120 × 314 / 40 = 942`. **The shipped
+value is 120. The crossover is 942.** The headline survives a **685% error** in a constant nobody
+derives — a margin that was 21% before the two Harbor misses were closed, stated plainly because the
+earlier number was the sharpest criticism of this work and the one that changed most. A claim about
+a specific cost regime, not about detectors in general.
 
 ## Does an agent find what a script cannot?
 
@@ -239,16 +239,15 @@ sandbox approval gate **refusing**.
 
 ### The other agent, and the one judgement no script can make
 
-The Challenger story ends with the script winning. **This one cannot end that way**, and it is the
-better answer to the section's question. `docs/COVERAGE.md` records a CRITICAL false positive the
-battery cannot avoid: `inspect_evals/personality_BFI` comes back INVALID with 25 × `INVERT_PASSES`,
-which is mechanically correct and semantically wrong, because a personality inventory *has no
-correct answer* and a format check is the right design. No probe can see that — it is a question
-about meaning, not mechanism.
+The Challenger story ends with a script winning. **This one cannot**, and it is the better answer to
+the section's question. `docs/COVERAGE.md` records a CRITICAL false positive the battery cannot
+avoid: `inspect_evals/personality_BFI` comes back INVALID with 25 × `INVERT_PASSES` — mechanically
+correct and semantically wrong, because a personality inventory *has no correct answer* and a format
+check is the right design. No probe can see that; it is a question about meaning, not mechanism.
 
-`assay audit --auditor` runs a semantic gate that can withhold exactly that verdict. On the
-13-environment set in [`results/semantic_gate.json`](results/semantic_gate.json) — the 12 fixtures
-that do have a correct answer, plus the one that does not:
+`assay audit --auditor` runs a semantic gate that withholds exactly that verdict. On the 13
+environments in [`results/semantic_gate.json`](results/semantic_gate.json) — the 12 that do have a
+correct answer, plus the one that does not:
 
 | backend | withheld the false positive | false overrides | wall clock |
 |---|---|---|---|
@@ -256,22 +255,19 @@ that do have a correct answer, plus the one that does not:
 | `ollama:qwen3:8b` | 0 of 1 | 0 of 12 | 58.5s |
 
 **The interesting half is that the small model could make the observation and could not make the
-decision.** The gate is the conjunction of the model's label and the model's own quoted evidence,
-because each alone fails: `qwen3:8b` labels `personality_BFI` as *having* a correct answer in 3 of
-3 runs, immediately after writing a valid contradicting pair into the evidence field; and deriving
-the verdict from the evidence alone turns **10 of the 12** healthy fixtures into `no_correct_answer`,
-since a model asked whether two answers could both be fair will invent a pair rather than say none.
-So the script owns mechanism and the model owns meaning — the same split this repo argues for
-everywhere, one level down.
+decision.** The gate is the conjunction of the model's label and its own quoted evidence, because
+each alone fails: `qwen3:8b` labels `personality_BFI` as *having* a correct answer in 3 of 3 runs,
+immediately after writing a valid contradicting pair into the evidence field; and reading the
+verdict off the evidence alone turns **10 of the 12** healthy fixtures into `no_correct_answer`. So
+the script owns mechanism and the model owns meaning — this repo's argument, one level down.
 
-It is **off by default and changes none of the numbers above.** The override can only move a
-`verifier_integrity` DEFECT to `NOT_APPLICABLE` — never to PASS, never into another family — and
-each one prints the model that proposed it, the text it quoted, and the verdict it replaced. The
-two designs measured and rejected first are in
-[`docs/changelog/99-semantic-gate.md`](docs/changelog/99-semantic-gate.md); a second Auditor job,
-synthesizing a train split for a probe that declined, **works and still does not rescue
-`inspect_evals/boolq`** ([`docs/changelog/102-na-resolution.md`](docs/changelog/102-na-resolution.md)
-corrects the pre-registered reason for that miss rather than the result).
+It is **off by default and changes none of the numbers above**: the override can only move a
+`verifier_integrity` DEFECT to `NOT_APPLICABLE`, never to PASS, never into another family, and each
+one prints the model, the text it quoted and the verdict it replaced. Two designs were measured and
+rejected first ([`docs/changelog/99-semantic-gate.md`](docs/changelog/99-semantic-gate.md)), and a
+second Auditor job — synthesizing a train split for a probe that declined — **works and still does
+not rescue `inspect_evals/boolq`**, correcting the pre-registered reason for that miss rather than
+the result ([`docs/changelog/102-na-resolution.md`](docs/changelog/102-na-resolution.md)).
 
 ## Where Assay sits in the field
 
