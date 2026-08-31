@@ -143,6 +143,25 @@ Everything above is about mechanisms Assay cannot *reach*. This is worse: a
 family of benchmarks where Assay runs happily, reports a **CRITICAL** defect,
 and is wrong.
 
+**Two environments in the corpus are here, and they are wrong in two different
+ways.** That distinction is why the second one was worth adding: one eval Assay
+misreads is an anecdote about that eval, two misread by different mechanisms is
+a statement about a class.
+
+| env | what the battery reports | why it is wrong |
+|---|---|---|
+| `inspect_evals/personality_BFI` | `INVERT_PASSES` × 25 | the scorer checks response *format*, so no answer can fail |
+| `inspect_evals/stereoset` | `GOLD_FAILS` × 10 | two options are accepted, and the second scorer is a signed *bias measurement* — `{stereotype: 1, anti-stereotype: -1, unrelated: 0}` — so an accepted answer averages to 0.0 and the reference answer reads as failing |
+
+`stereoset` is the sharper case. `personality_BFI` has no correct answer at all;
+`stereoset` has *two*, and the thing Assay misreads is not the absence of a
+grade but the presence of a second scorer that was never a grade. A tool that
+reads "reward" as "correctness" cannot tell those apart, and `docs/METHOD.md`'s
+rule about absence of evidence does not help here — the evidence is present and
+means something else. Both are pinned by tests that establish the upstream half
+with Assay out of the loop: `tests/test_personality_false_positive.py` and
+`tests/test_stereoset_false_positive.py`.
+
 `inspect_evals/personality_BFI` is the Big Five Inventory. Audited with the
 standard battery it returns **verdict INVALID, 25 × `INVERT_PASSES`** — the
 class reserved for "the verifier cannot fail", which is CRITICAL because it

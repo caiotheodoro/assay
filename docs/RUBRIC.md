@@ -80,11 +80,27 @@ the numbers it quotes moved so far that the drift is itself worth reading.
    was then compiled into a scripted policy that finds the same gap in 3.8s instead of
    262s. That is the correct engineering outcome and it is reported as the result
    rather than hidden — but a reviewer counting agency will count less of it here than
-   in a submission that keeps a model on the critical path. The argument for why that
-   is the right trade is in `docs/FOR_AGENTS.md`, and it is an argument, not a defence.
+   in a submission that keeps a model on the critical path.
 
-Also unclosed and published rather than hidden: `inspect_evals/boolq` is still missed
-(structurally — no train split), four of BenchJack's eight flaw classes are uncovered
+   **This deduction is smaller than it was, and the reason is a measurement rather
+   than an argument.** Five judges made the same point: the agent was off by default
+   and changed no number the submission led with. That was true, and it was true for a
+   structural reason — the corpus held no environment the semantic gate could act on,
+   so `assay+auditor` scored exactly `assay` by construction. Environments with no
+   correct answer now sit in the corpus, the deterministic battery pays for them, and
+   turning the model off costs **13.0 of expected loss on an interval that excludes
+   zero**. That figure was written down in `docs/PRE-REGISTRATION-NOANSWER.md` before
+   the environments it acts on existed, together with the prediction that this
+   bootstrap was the thing most likely to fail. It did not.
+
+   What has *not* changed: the shipped default is still deterministic, on purpose, so
+   the headline reproduces with no model and no API spend. And the model Challenger,
+   measured as its own arm, currently makes the tool **worse** — it invents
+   `REWARD_HACKABLE` on environments that plant nothing
+   (`docs/changelog/120-challenger-arm.md`). Both directions are published.
+
+Also unclosed and published rather than hidden: four of BenchJack's eight flaw classes
+are uncovered
 (`docs/COVERAGE.md`), and the GRPO Challenger does not beat the scripted floor. The
 "no hosted demo" item that stood here is closed:
 [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo) runs
