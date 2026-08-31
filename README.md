@@ -55,6 +55,20 @@ The taxonomy went from 14 defect classes to 16 in
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md), worth another **+28** to the floor
 against **+3** to Assay. Of the 351.0, **77.0 is arithmetic and 274.0 is the detector.**
 
+**And the +52 is an increment on a larger standing figure that has never been stated here.**
+Four of the sixteen defect classes — `DIFFICULTY_SATURATED`, `DIFFICULTY_IMPOSSIBLE`,
+`EXCESSIVE_PERMISSIONS`, `EVALUATOR_RCE` — are planted **nowhere in the corpus**, on any of the 28
+environments. `flag_everything` names each of them everywhere regardless, which is `4 × 28 = 112`
+false alarms: **28.4% of its 394.0, on classes no environment can carry and no other arm in the
+table ever names.** Nothing is detected on either side of that 112 — it is not evidence Assay is
+better, it is the floor paying for a taxonomy the corpus does not exercise, and it is a larger
+share of the margin than either number decomposed above. Check it in
+[`results/full_run.json`](results/full_run.json): those four classes never appear in
+`per_env[*].planted`, and `arm_detections` gives `flag_everything` 28 of each against zero for
+every other arm. The fix is corpus, not arithmetic — environments that actually carry a saturated
+difficulty band, an over-permissioned sandbox or an exploitable evaluator — and until that exists
+this is disclosed rather than netted out.
+
 ```bash
 uv sync --extra dev && uv run pytest -q                              # the demo: every planted defect, caught
 uv run --extra tau2 python scripts/tau2_fetch.py                     # the two pinned tau2 snapshots, ~1 min
@@ -75,7 +89,7 @@ ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
 # 2. Recall. The scripted Challenger finds 14 of 25 paws items and cannot reach
 #    the constant-string exploit a human found by hand. A synthesising one can.
 ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
-  python scripts/policy_synthesis.py --k 1 --arms claude   # scripted 14/25, synthesis 24/25
+  python scripts/policy_synthesis.py --k 1 --arms claude   # scripted 14/25, synthesis 24-25/25
 
 # 3. The gate from the CLI, in ten seconds, on a corpus environment: it consults
 #    the model and correctly declines, because this one has a correct answer.
@@ -94,8 +108,8 @@ of this block shipped one that did not.
 
 Without `--auditor-model` the Auditor takes whatever backend it finds; on a machine with
 ollama that is `qwen3:8b`, which [`results/semantic_gate.json`](results/semantic_gate.json)
-measures at 4 of 6 runs with 2 false overrides in 39. The flag exists because that
-difference is the result.
+measures at **6 of 6 runs with 6 false overrides in 54**, against claude-cli's 6 of 6 with
+**0 in 54**. The flag exists because that second column is the result.
 
 **Skip the fetch and you get 26 environments, not 28.** Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable, the corpus is two environments smaller
@@ -105,7 +119,7 @@ and every arm's loss falls — `full_run.py` prints the reason rather than shrin
 
 | | |
 |---|---|
-| **Orientation, 100 lines** | [`AGENTS.md`](AGENTS.md) |
+| **Orientation, 130 lines** | [`AGENTS.md`](AGENTS.md) |
 | **Every claim, with the file that backs it** | [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) |
 | **Every number, with its caveats** | [`docs/RESULTS.md`](docs/RESULTS.md) |
 | **Everything this repo published and took back** | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) |
@@ -238,8 +252,8 @@ the modal run: across six full-corpus runs `harbor/broken-gold` reported a spuri
 
 **3. The corpus is 6 of 28 genuinely third-party, 3 of them externally *labelled*, and that is still
 the ceiling on all of it.** `flag_everything`'s loss is exactly `Σ (16 − |planted|)`, so **every
-clean environment added moves the floor by +16 and Assay by 0** — roughly seven would flip the
-headline with no change to the detector. Hence provenance declared in the registry before the corpus
+clean environment added moves the floor by +16 and Assay by 0** — **22 of them manufacture the whole
+351.0 margin** with no change to the detector. Hence provenance declared in the registry before the corpus
 grows, and every expansion pre-registered first
 ([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md),
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md)).
@@ -307,8 +321,12 @@ is an affine solve rather than a ratio. So sweep it ([`results/cost_sensitivity.
 | flag_everything | 394.0 | 394.0 | **394.0** | 394.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
-The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
-misses and does not move with `C` at all, so they cross at `120 × 394 / 43 = 1173.0`. **The shipped
+The crossover is exact, not bisected. Assay's loss is **affine** in `C` — its one miss scales, its
+three false alarms do not, so `assay(C) = C/3 + 3` — while `flag_everything` never misses and does
+not move with `C` at all. They cross at `3 × (394 − 3) = 1173.0`. **The ratio `120 × 394 / 43` was
+printed here and it is not the solve: it gives 1099.53**
+([`docs/changelog/113-the-crossover-was-a-ratio-not-a-solve.md`](docs/changelog/113-the-crossover-was-a-ratio-not-a-solve.md)
+fixed the artifact and left the formula standing). **The shipped
 value is 120. The crossover is 1173.0.** The headline survives a **878% error** in a constant nobody
 derives — a margin that was 21% before the two Harbor misses were closed and 685% before the
 taxonomy grew, stated plainly because the earliest number was the sharpest criticism of this work and
@@ -378,8 +396,10 @@ variants — the both-labels-at-once class, reached from the task text. Three ru
 because one run of a stochastic attacker reported as a capability is the error this repo is
 about: the spread is 24–25 and the direction is not in doubt. `qwen3:8b` reaching 0 makes
 this a capability threshold rather than a property of the design. **Nothing here is scored by a model:**
-`self_report` records what the challenger claimed and is used for nothing, and it disagreed with
-the deterministic scorer zero times out of 24. The uncomfortable half is that blind scores 23–24
+`self_report` records what the challenger claimed and is used for nothing. On `claude-cli:sonnet` it
+disagreed with the deterministic scorer **0 times in 74 recorded claims**; on `qwen3:8b` it disagreed
+**75 times in 75**, claiming success on every attempt the probe scored as a miss — which is the
+argument for recording it and scoring none of it. The uncomfortable half is that blind scores 23–24
 against 24–25 — nearly all of the win is reading the task, not the verifier
 ([`docs/changelog/100-policy-synthesis.md`](docs/changelog/100-policy-synthesis.md)).
 
@@ -510,7 +530,7 @@ The category is not new and Assay does not claim it is. Static auditors read a b
 ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)), 219 flaws across 10 agent benchmarks, and
 [arXiv 2606.16062](https://arxiv.org/abs/2606.16062), whose gold-sanity gate on SWE-bench Verified
 found **28.5% of 49 tasks hackable**. Partial-input baselines, reward-model overoptimization and
-separability-as-a-metric are ported, not invented. What Assay adds is the **bundle** — nine families
+separability-as-a-metric are ported, not invented. What Assay adds is the **bundle** — eleven families
 in one report under one expected-loss metric — plus **pricing rather than counting** defects, and
 **absence of evidence reported as loudly as evidence**. Papers, numbers, the head-to-head against
 BenchGuard's own scorer and the full novelty claim: [`docs/RESULTS.md`](docs/RESULTS.md); what

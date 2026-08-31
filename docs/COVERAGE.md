@@ -175,15 +175,19 @@ capability an eval can withhold — "this environment has no correct answer".
 **That capability now exists, and this paragraph said it did not for longer
 than that was true.** `assay audit --auditor` runs a semantic gate that can
 move a `verifier_integrity` DEFECT to `NOT_APPLICABLE` — never to PASS, never
-into another family — and on the 13-environment set in
-`results/semantic_gate.json` a `claude-cli:sonnet` backend withholds the
-`personality_BFI` verdict 1 of 1 with 0 false positives on the 12 environments
-that do have a correct answer. It is **off by default** and changes none of the
-headline numbers. `qwen3:8b` fires on nothing, which is the honest form of the
-same measurement: the gate is the conjunction of the model's label and the
-model's evidence, and a model that cannot hold both together produces no
-override at all. `docs/changelog/99-semantic-gate.md` has the two designs that
-were measured and rejected first.
+into another family — and on the 20-environment set in
+`results/semantic_gate.json` — 2 with no correct answer, 18 with one, three runs
+each per backend — a `claude-cli:sonnet` backend withholds the `personality_BFI`
+verdict in **3 of 3 runs**, and `toy-triage/preference`, the other environment with
+no correct answer, in 3 of 3 as well — **6 of 6 positive runs, with 0 false
+overrides in 54 negative ones**. It is **off by default**
+and changes none of the headline numbers. `qwen3:8b` matches it on the positives
+and pays **6 false overrides in 54**, which is the worse failure: a false override
+hides a real defect, where a miss only leaves one reported. That is why
+`--auditor-model` exists. `docs/changelog/99-semantic-gate.md` has the two designs
+that were measured and rejected first, and
+`docs/changelog/109-gate-was-reading-the-verifier.md` the two ways this feature was
+caught being wrong on the Harbor negatives.
 
 Found while triaging candidates for the corpus. `personality_BFI` is
 deliberately **not** added: an environment the tool is wrong about does not

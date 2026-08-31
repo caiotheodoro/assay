@@ -114,8 +114,10 @@ and leaving a field out does not hide a probe — it prints the omission.
 
 - **Single-turn, string-answer environments only.** Multi-turn shell
   environments — where the interesting exploits live — need Docker, which this
-  Space does not have. `harbor/self-graded`, the one environment in the corpus
-  that Assay itself misses, cannot be expressed in this format.
+  Space does not have. `harbor/self-graded`, the exploit that took an agent to
+  find, cannot be expressed in this format. (The one environment in the corpus
+  Assay itself misses is `inspect_evals/boolq`, and the miss is structural: no
+  train split, so the shortcut probe reports `NOT_APPLICABLE` before it runs.)
 - The **difficulty-band** probe needs a rollout sampler and always reports
   `NOT_APPLICABLE` here.
 - Caps: 200 tasks, 2,000 split items, 20,000 characters per item.

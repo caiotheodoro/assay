@@ -94,10 +94,12 @@ def _auditor_client(args):
     """The backend the Auditor asks, or None to let it choose.
 
     `--auditor-model` exists because the default order tries ollama first, and
-    `results/semantic_gate.json` measures qwen3:8b at 0 of 1 on the one job the
-    Auditor has. A flag that silently selects the backend the repo's own
-    measurement says cannot do the task is a flag that reports a capability
-    nobody has.
+    `results/semantic_gate.json` (20 environments, k=3) measures qwen3:8b at
+    **6 false overrides in 54 negative runs** against claude-cli's **0 in 54**,
+    with both at 6 of 6 on the positives. A false override hides a real defect,
+    so the column that matters is the second one, and a flag that silently
+    selects the backend the repo's own measurement says gets it wrong is a flag
+    that reports a capability nobody has.
     """
     name = getattr(args, "auditor_model", None)
     if not name:
@@ -362,9 +364,10 @@ def main(argv: list[str] | None = None) -> int:
         "--auditor-model", metavar="NAME", default=None,
         help="which backend the Auditor asks: an ollama tag, or 'claude' for the "
              "Claude CLI. Worth setting deliberately -- results/semantic_gate.json "
-             "measures qwen3:8b at 0 of 1 on the semantic gate and claude-cli at 1 "
-             "of 1, so the default backend order will silently pick the weaker one "
-             "wherever ollama is running.",
+             "(20 environments, k=3) measures qwen3:8b at 6 false overrides in 54 "
+             "negative runs against claude-cli's 0 in 54, both at 6 of 6 on the "
+             "positives, so the default backend order will silently pick the one "
+             "that hides real defects wherever ollama is running.",
     )
     p.add_argument(
         "--auditor", action="store_true",

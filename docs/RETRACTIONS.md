@@ -23,7 +23,7 @@ same method, three of them while collecting this file.
 > retraction is kept in the record. Full prior art with the papers and their numbers:
 > [Prior art](../README.md#prior-art).
 
-The full text of that retraction is entry 14 below. Live claim: `README.md` §Prior art.
+The full text of that retraction is entry 16 below. Live claim: `README.md` §Prior art.
 
 ---
 
@@ -52,7 +52,7 @@ something the incumbent does.
 > on the current corpus, every deterministic arm came back byte-identical and
 > only the two LLM rows moved.
 
-Live claim: every arm in `README.md`'s headline table is measured on the same 26
+Live claim: every arm in `README.md`'s headline table is measured on the same 28
 environments in `results/full_run.json`, with intervals from the same bootstrap.
 `tests/test_published_claims.py::test_the_llm_baseline_rows_match_the_measured_file`
 is the gate that stops it recurring. Write-up: `docs/changelog/91-llm-arms.md`.
@@ -83,7 +83,7 @@ by `test_the_llm_baseline_arm_survives_an_adapter_that_refuses_verify`.
 > `results/intervals.json` and the sentence directly beneath it. Corrected above
 > from the measured file; the paired differences below were always right.
 
-Live claim: `check_env` scores **3056.0, [1960, 4272], recall 0.040** in
+Live claim: `check_env` scores **3216.0, [2104, 4448], recall 0.037** in
 `README.md`'s headline table, read from `results/intervals.json`.
 
 ---
@@ -112,8 +112,10 @@ and `scripts/corpus_splits.py` shipped the same wrong string into
 external control from 2 to 4 (`docs/changelog/77-external-corpus.md`, Slice 26b).
 The number was corrected in the tables and not in the prose or the script.
 
-Live claim: **4 of 26**, in `README.md`, `AGENTS.md`, `results/corpus_splits.json`
-and `test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have`, which
+Live claim: **6 of 28** — the two τ² domains took it from 4 to 6 under
+`docs/PRE-REGISTRATION-TAU2.md` — in `README.md`, `AGENTS.md`,
+`results/corpus_splits.json` (`"n_external": 6`) and
+`test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have`, which
 fails if it moves again.
 
 ---
