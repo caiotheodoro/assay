@@ -493,3 +493,27 @@ def test_every_cited_path_is_actually_in_the_repository_a_judge_clones():
         + "\n  ".join(untracked)
         + "\n\nA reviewer clones the repository. Either `git add` these paths or stop citing them."
     )
+
+
+def test_the_externally_labelled_count_is_the_one_in_the_registry():
+    """"Third-party" and "labelled by a third party" are different claims.
+
+    Six of the 28 environments are `EnvAuthor.EXTERNAL`. Only three carry
+    ground truth this repository did not produce -- `openenv/textarena-wordle`
+    and the two tau2 domains, whose labels come from a diff of two pinned
+    upstream revisions. The other three are external environments that *we*
+    hand-triaged, which is a weaker thing and reads as a stronger one.
+
+    The README said two. It was neither the registry's number nor any split's
+    number, and nothing was checking it.
+    """
+    splits = json.loads((ROOT / "results" / "corpus_splits.json").read_text())
+    prov = splits["provenance"]
+    external = [k for k, v in prov.items() if v["env_author"] == "external"]
+    derived = [k for k, v in prov.items() if v["label_source"] == "externally_derived"]
+
+    claim = f"{len(external)} of {len(prov)} genuinely third-party, {len(derived)} of them externally"
+    assert claim in README, (
+        f"the README does not carry the registry's own counts: expected "
+        f"{claim!r} (external={sorted(external)}, externally_derived={sorted(derived)})"
+    )

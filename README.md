@@ -189,7 +189,7 @@ nothing else", and `Outcome.spurious` cannot tell those apart. Separately, the o
 the modal run: across six full-corpus runs `harbor/broken-gold` reported a spurious `NONDETERMINISM`
 **once**.
 
-**3. The corpus is 6 of 28 genuinely third-party, 2 of them externally *labelled*, and that is still
+**3. The corpus is 6 of 28 genuinely third-party, 3 of them externally *labelled*, and that is still
 the ceiling on all of it.** `flag_everything`'s loss is exactly `Σ (16 − |planted|)`, so **every
 clean environment added moves the floor by +16 and Assay by 0** — roughly seven would flip the
 headline with no change to the detector. Hence provenance declared in the registry before the corpus

@@ -44,7 +44,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   closed: [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo)
   runs the battery in the browser. It does not lift the score, because it audits submitted
   specs rather than reproducing the headline — Docker and Ollama are still what that wants.)
-- **End to End Quality, 15 → 16.** The suite is now **742 passed / 0 skipped**
+- **End to End Quality, 15 → 16.** The suite is now **743 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
   by the two things below.
