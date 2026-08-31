@@ -1,184 +1,426 @@
 {
-  "what": "The semantic gate: can a model tell an environment with no correct answer from one whose verifier is simply broken?",
-  "why": "docs/COVERAGE.md records inspect_evals/personality_BFI as a CRITICAL false positive the battery cannot avoid, and ends: 'The right fix is a capability an eval can withhold -- this environment has no correct answer -- and it does not exist yet.' This measures the fix.",
-  "design": "Two signals from one call: a label, and a concrete example of two different responses that would both be fair. The override fires only when both agree. Neither is sound alone -- see decide() in src/assay/auditor.py for the two measurements that rule each out.",
-  "corpus": "12 toy-triage fixtures, every one of which has a correct answer, plus inspect_evals/personality_BFI, which does not. n_positive=1.",
+  "what": "Can a model tell an environment with no correct answer from one whose verifier is simply broken?",
+  "why": "docs/COVERAGE.md records inspect_evals/personality_BFI as a CRITICAL false positive the battery cannot avoid, and says the capability that would fix it does not exist. This measures the fix.",
+  "design": "Two signals from one call: a label, and a concrete example of two different responses that would both be fair. The override fires only when both agree -- see decide() in src/assay/auditor.py for the two measurements that rule each single-signal design out.",
   "scope": "An override may only move a verifier_integrity DEFECT to NOT_APPLICABLE. It can never produce a PASS and can never reach another probe family.",
+  "corpus_note": "n_positive is 2, and that is a ceiling rather than a choice. Of the 246 tasks inspect_evals registers, a deliberately broad lexical filter matches four: personality_TRAIT is gated, writingbench is scored by an LLM judge and this project scores nothing with a judge, and bbq turns out to have correct answers and is used as a negative. Environments with no correct answer are rare in the eval ecosystem, which is part of why the false positive went unnoticed.",
+  "k": 3,
+  "assay_revision": {
+    "commit": "8463843f5f7453b19257effcc45bfa55f960a72c",
+    "dirty": true
+  },
   "backends": {
     "ollama:qwen3:8b": {
-      "true_positives": 0,
-      "false_positives": 0,
-      "n_positive": 1,
-      "n_negative": 12,
-      "seconds": 58.5,
       "rows": [
         {
-          "env": "healthy",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "inspect_evals/personality_BFI",
+          "source": "inspect_evals",
+          "note": "personality inventory, audited as shipped",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
-          "env": "gold_broken",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/preference",
+          "source": "authored",
+          "note": "a five-point inventory written for this repo",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "no_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
         },
         {
-          "env": "solved_at_reset",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/healthy",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "unfalsifiable",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/gold_broken",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "weak_oracle",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/solved_at_reset",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "escalate_overrewarded",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/unfalsifiable",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "rationale_ignored",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/weak_oracle",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "leaky_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/escalate_overrewarded",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "paraphrased_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/rationale_ignored",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
-          "env": "artifact_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/leaky_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "no_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
-          "env": "drifted_asserts",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/paraphrased_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "flaky",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/artifact_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "personality_BFI",
-          "truth": "no_correct_answer",
-          "got": "has_correct_answer",
-          "ok": false
+          "env": "toy-triage/drifted_asserts",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "toy-triage/flaky",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "inspect_evals/bbq",
+          "source": "inspect_evals",
+          "note": "bias QA -- reads like opinion, has correct answers",
+          "has_correct_answer": true,
+          "verdicts": [
+            "UNPARSED",
+            "UNPARSED",
+            "UNPARSED"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         }
-      ]
+      ],
+      "n_positive": 2,
+      "n_negative": 13,
+      "true_positive_runs": 4,
+      "positive_runs": 6,
+      "false_positive_runs": 2,
+      "negative_runs": 39,
+      "seconds": 261.1
     },
     "claude-cli:sonnet": {
-      "true_positives": 1,
-      "false_positives": 0,
-      "n_positive": 1,
-      "n_negative": 12,
-      "seconds": 136.6,
       "rows": [
         {
-          "env": "healthy",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "inspect_evals/personality_BFI",
+          "source": "inspect_evals",
+          "note": "personality inventory, audited as shipped",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "no_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
         },
         {
-          "env": "gold_broken",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/preference",
+          "source": "authored",
+          "note": "a five-point inventory written for this repo",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "no_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
         },
         {
-          "env": "solved_at_reset",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/healthy",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "unfalsifiable",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/gold_broken",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "weak_oracle",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/solved_at_reset",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "escalate_overrewarded",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/unfalsifiable",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "rationale_ignored",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/weak_oracle",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "leaky_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/escalate_overrewarded",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "paraphrased_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/rationale_ignored",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "artifact_splits",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/leaky_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "drifted_asserts",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/paraphrased_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "flaky",
-          "truth": "has_correct_answer",
-          "got": "has_correct_answer",
-          "ok": true
+          "env": "toy-triage/artifact_splits",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         },
         {
-          "env": "personality_BFI",
-          "truth": "no_correct_answer",
-          "got": "no_correct_answer",
-          "ok": true
+          "env": "toy-triage/drifted_asserts",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "toy-triage/flaky",
+          "source": "fixture",
+          "note": "ticket classification",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "inspect_evals/bbq",
+          "source": "inspect_evals",
+          "note": "bias QA -- reads like opinion, has correct answers",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         }
-      ]
+      ],
+      "n_positive": 2,
+      "n_negative": 13,
+      "true_positive_runs": 6,
+      "positive_runs": 6,
+      "false_positive_runs": 0,
+      "negative_runs": 39,
+      "seconds": 378.5
     }
-  },
-  "reading": "Precision is perfect on both backends and recall is not. qwen3:8b labels personality_BFI has_correct_answer in 3 of 3 runs directly after writing a valid both-ways example, so the conjunction refuses and nothing is overridden. That is the intended degradation: a weak Auditor loses recall and cannot lose precision."
+  }
 }

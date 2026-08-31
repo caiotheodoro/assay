@@ -347,8 +347,15 @@ correct answer, plus the one that does not:
 
 | backend | withheld the false positive | false overrides | wall clock |
 |---|---|---|---|
-| `claude-cli:sonnet` | **1 of 1** | **0 of 12** | 136.6s |
-| `ollama:qwen3:8b` | 0 of 1 | 0 of 12 | 58.5s |
+| `claude-cli:sonnet` | **6 of 6 runs** | **0 of 39 runs** | 378.5s |
+| `ollama:qwen3:8b` | 4 of 6 runs | **2 of 39 runs** | 261.1s |
+
+15 environments — 2 with no correct answer, 13 with one — at three runs each per
+backend. **An earlier version of this table said 1-of-1 and 0-of-1 at k=1, and it was
+wrong in both directions about the weak backend:** `qwen3:8b` withholds more often than
+one run suggested, and it also produces false overrides, which one run did not show at
+all. Reporting a stochastic classifier from a single draw is the error this repo is
+about, and it took a judge to point out that it was happening here.
 
 **The interesting half is that the small model could make the observation and could not make the
 decision.** The gate is the conjunction of the model's label and its own quoted evidence, because
