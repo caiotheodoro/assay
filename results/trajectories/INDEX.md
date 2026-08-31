@@ -11,7 +11,16 @@ on an adversarial run the interesting part is usually the turns where the
 agent was wrong.
 
 **No model scored anything in any of these runs.** Every number in a
-`reported` or `outcome` field comes from a deterministic program.
+`reported` or `outcome` field comes from a deterministic program. That
+holds for the two Auditor runs as well: the model is asked a question about
+an environment and its reply is turn 1, but the verdict in turn 2 is settled
+by `decide()`, which is code. 9 and 10 are shipped as a pair to locate a capability
+threshold: both backends reach the same verdict on an unambiguous environment,
+and only the stronger one reaches it on the real case that motivated the whole
+feature. Neither trajectory runs on `inspect_evals/personality_BFI` itself,
+because its items are third-party content and no trajectory here redistributes
+any; `results/semantic_gate.json` carries that measurement as verdicts and
+counts.
 
 | # | Agent | Role | Environment | Outcome | What it shows | Read |
 |---|---|---|---|---|---|---|
@@ -23,6 +32,8 @@ agent was wrong.
 | 6 | `direct_prompt[ollama:qwen3:8b]` | baseline | `toy-triage/weak_oracle` | reported TRIVIAL_FLOOR_BREACH, not an exact match | one prompt, everything a careful human reviewer could read, one answer. It gets the exact defect taxonomy Assay reports against and the same source access Assay has. It never gets the planted ground truth -- that is recorded in the outcome after the fact, so a reader can see whether it was right. | [md](06-baseline-direct-prompt-toy-triage-weak-oracle.md) · [json](06-baseline-direct-prompt-toy-triage-weak-oracle.json) |
 | 7 | `agent_with_tools[ollama:qwen3:8b]` | baseline | `toy-triage/weak_oracle` | reported TRIVIAL_FLOOR_BREACH, not an exact match | the same brief, plus turns in which it may actually run things in the environment. Every turn it sees the tool output and the score the environment gave, and that feedback is all it has to reason from. | [md](07-baseline-agent-with-tools-toy-triage-weak-oracle.md) · [json](07-baseline-agent-with-tools-toy-triage-weak-oracle.json) |
 | 8 | `sandbox approval gate` | human_checkpoint | `harbor/self-graded` | 1 approved, 1 refused | **the human checkpoint.** The identical request is put to two approvers: the default refuses and nothing runs, an explicit standing approval carrying a reason lets it through. Nothing in Assay executes untrusted environment code without one of these. | [md](08-sandbox-approval-gate-harbor-self-graded.md) · [json](08-sandbox-approval-gate-harbor-self-graded.json) |
+| 9 | `auditor[ollama:qwen3:8b]` | auditor | `toy-triage/preference` | **withheld**, INVALID → DEFECTIVE, 2 findings | **the whole mechanism, on a local 8B.** Turn 1 is the model's raw reply; turn 2 is `decide()` -- a program -- requiring the label and the worked example to agree before anything moves. They do, so two verifier-integrity findings are withheld and the remaining real ones stay. **This environment is unambiguous.** On the subtle real case the same backend writes a valid example and then contradicts it with its label in 3 of 3 runs, the conjunction refuses, and nothing is overridden. | [md](09-auditor-ollama-qwen3-8b-preference-withheld.md) · [json](09-auditor-ollama-qwen3-8b-preference-withheld.json) |
+| 10 | `auditor[claude-cli:sonnet]` | auditor | `toy-triage/preference` | **withheld**, INVALID → DEFECTIVE, 2 findings | **the same run on the stronger backend, and the same answer.** Shipped beside 9 to locate the capability threshold honestly: it is not the task, it is the ambiguity. Both backends handle a clear-cut preference inventory; only this one handles `inspect_evals/personality_BFI`, whose items read like factual statements. `results/semantic_gate.json` carries that measurement -- 1 true positive and 0 false for claude-cli, 0 and 0 for qwen3:8b. | [md](10-auditor-claude-cli-preference-withheld.md) · [json](10-auditor-claude-cli-preference-withheld.json) |
 
 ## Agents with no trajectory here, and why
 
