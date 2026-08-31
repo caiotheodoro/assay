@@ -13,7 +13,7 @@ artifacts disagree. Corrections this repository has had to publish are in
 
 ## The run
 
-28 environments, 54 planted defects. Needs Docker for the Harbor tasks. No GPU
+32 environments, 54 planted defects. Needs Docker for the Harbor tasks. No GPU
 and no API key.
 
 ```bash
@@ -105,8 +105,9 @@ each class independently at that class's corpus base rate, drawing one
 `rng.random()` per class per environment in enum order, so adding two defect
 classes to the taxonomy reshuffled its whole seeded sequence and cost it **+878
 with no change to the corpus, the policy or the detector**. Against the policy's
-closed-form expectation rather than one draw of it — **2474.3** — `direct_prompt`
-at 2454.0 is a tie, which is the same answer the bootstrap gives. The arithmetic
+closed-form expectation rather than one draw of it — **2575.8** — `direct_prompt`
+at 2299.0 is inside the policy's own spread, which is the same answer the bootstrap
+gives. The arithmetic
 and the prediction that preceded it are in
 [`docs/PRE-REGISTRATION-TAU2.md`](PRE-REGISTRATION-TAU2.md).
 
@@ -117,7 +118,7 @@ probes. Neither LLM arm has been shown to beat the random policy, and the random
 policy has not been shown to beat them.
 
 The third row of that table is the one worth reading twice. The two arms are 282.0
-apart on a 28-environment corpus, on an interval that crosses zero: **giving the
+apart on a 32-environment corpus, on an interval that crosses zero: **giving the
 model a tool loop bought nothing measurable**. Recorded that way rather than as a
 ranking, because reporting `agent_with_tools` as "the better LLM arm" on a
 difference that small would be exactly the unfalsifiable claim this project exists
@@ -149,7 +150,8 @@ model's two hits is `fixture/flaky`, planted here.
 
 ## The corpus is almost entirely our own work, and the split is unflattering
 
-The 28 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`, 2
+The 32 environments are 12 in-process `fixture/*`, 3 authored with no correct answer
+(`toy-triage/preference`, `noanswer/ranking`, `noanswer/openended`), 5 `harbor/`, 5 `inspect/`, 3
 `openenv/`, 2 `inspect_evals/`, 2 `tau2/`. Split on **who wrote the environment**, not on
 the id prefix:
 
@@ -174,7 +176,7 @@ two τ² environments drop out and the script recomputes every split on 26.
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 28 | 43.0 | 394.0 | assay, by 351 |
+| all (published) | 32 | 56.0 | 458.0 | assay, by 402 |
 | our content, third-party format | 10 | 0.0 | 132.0 | assay |
 | genuinely external | 6 | 43.0 | 89.0 | assay — and all four of its errors are here |
 | in-process fixtures | 12 | 0.0 | 173.0 | assay — asserted, not measured |
@@ -246,7 +248,7 @@ one.
 
 `flag_everything`'s loss is exactly `Σ_env (16 − |planted_env|)`, so **every clean
 environment added moves the floor by +16 and Assay by 0**. At that rate **22 clean
-third-party environments manufacture the entire published margin of 351.0** with
+third-party environments manufacture most of the published margin of 402.0** with
 the detector unchanged, and seven of them manufacture 112 of it. That is why
 provenance is declared before the corpus grows, and why any
 expansion has to pre-register the expected mechanical shift — otherwise a bigger
@@ -255,9 +257,9 @@ corpus is a manufactured win.
 **The same arithmetic runs the other way, and it has never been stated in full.**
 Four of the sixteen classes in the taxonomy — `DIFFICULTY_SATURATED`,
 `DIFFICULTY_IMPOSSIBLE`, `EXCESSIVE_PERMISSIONS` and `EVALUATOR_RCE` — occur
-**nowhere in the corpus**: zero planted across all 28 environments. `flag_everything`
+**nowhere in the corpus**: zero planted across all 32 environments. `flag_everything`
 names each of them on every environment anyway, which is `4 × 28 = 112` false
-alarms, **28.4% of its 394.0**, on classes no other arm in the table ever names
+alarms, **27.9% of its 458.0**, on classes no other arm in the table ever names
 and no environment in the corpus can carry. Nothing is being detected on either
 side of that 112: it
 is not evidence Assay is better, it is the floor paying for a taxonomy the corpus
@@ -334,7 +336,7 @@ differences drawn on a shared resample:
 | assay vs `stratified_random` | 2750.0 | [1716, 3926] | **separated** |
 | assay vs `direct_prompt` | 2411.0 | [1587, 3343] | **separated** |
 | assay vs `agent_with_tools` | 2693.0 | [1711, 3799] | **separated** |
-| **assay vs `flag_everything`** | **351.0** | **[263, 404]** | **separated** |
+| **assay vs `flag_everything`** | **402.0** | **[315, 456]** | **separated** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
 
 The two LLM rows are the ones that carry "reading an environment is not auditing
@@ -384,12 +386,12 @@ reported here rather than left for a reader to derive.
 Running only the flattering cost model would be its own kind of dishonesty, so here is
 every profile shipped, not the one that reads best.
 
-| profile | assay | flag_everything | saved | |
-|---|---|---|---|---|
-| `flat` | **4.0** | 394.0 | 390.0 | separated, [371, 408] |
-| `research-run` | **43.0** | 394.0 | 351.0 | separated, [263, 404] |
-| `production-training` | **246.0** | 788.0 | 542.0 | separated, [46, 808] |
-| `benchmark-publication` | **624.0** | 3152.0 | 2528.0 | separated, [1264, 3232] |
+| profile | assay | assay+auditor | flag_everything | saved | |
+|---|---|---|---|---|---|
+| `flat` | **17.0** | 4.0 | 458.0 | 441.0 | separated, [420, 460] |
+| `research-run` | **56.0** | 43.0 | 458.0 | 402.0 | separated, [315, 456] |
+| `production-training` | **272.0** | 246.0 | 916.0 | 644.0 | separated, [150, 912] |
+| `benchmark-publication` | **728.0** | 624.0 | 3664.0 | 2936.0 | separated, [1680, 3648] |
 
 **Assay now wins all four and separates on all four** — but read
 `production-training` carefully before crediting it. Its interval was

@@ -41,7 +41,7 @@ ASSAY_APPROVE_ALL="reproduction" uv run --extra adapters --extra openenv \
   --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json
 ```
 
-Skip the fetch and you get 26 environments, not 28. Neither τ² snapshot is redistributed here, so
+Skip the fetch and you get 30 environments, not 32. Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable and every arm's loss falls.
 `full_run.py` prints the reason rather than shrinking quietly.
 

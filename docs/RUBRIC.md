@@ -28,13 +28,13 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
   submission. The margin against `flag_everything` went 50.0 → 36.0 → 326.0 → **351.0**,
   and it is now **statistically separated**: 95% CI [263, 404], resampling environments
-  (n=28) rather than defects. The cost crossover moved 145 → 942 → **1173.0**, so the
+  (n=32) rather than defects. The cost crossover moved 145 → 942 → **1326.0**, so the
   headline survives an 878% error in the one number that was openly a guess. Four cost
   profiles are swept; Assay wins all four and **separates on all four**. Not 15/15, and
-  the reasons got sharper rather than softer: the corpus is still only 6 genuinely
-  third-party environments out of 28, only 3 of those 6 carry ground truth decided
-  elsewhere, and **77.0 of the 351.0 margin is arithmetic rather than detection** —
-  two probe families and two τ² environments made the floor worse, which is a different
+  the reasons got sharper rather than softer: the corpus is still only 7 genuinely
+  third-party environments out of 32, only 3 of those 7 carry ground truth decided
+  elsewhere, and **141.0 of the 402.0 margin is arithmetic rather than detection** —
+  probe families and clean environments made the floor worse, which is a different
   fact from the detector getting better. Against the taxonomy and corpus this was first
   measured on, the comparable margin is 274.0.
 - **Reproducibility, 10 → 12.** The blocker at 10 was that there was no address
@@ -49,7 +49,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   closed: [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo)
   runs the battery in the browser. It does not lift the score, because it audits submitted
   specs rather than reproducing the headline — Docker and Ollama are still what that wants.)
-- **End to End Quality, 15 → 16.** The suite is now **765 passed / 0 skipped**
+- **End to End Quality, 15 → 16.** The suite is now **796 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
   by the two things below.

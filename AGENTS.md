@@ -37,11 +37,12 @@ environments with no correct answer now sit in the corpus, so the deterministic 
 pays 16 false positives where it used to pay 3, and the semantic gate recovers 13 of
 them while leaving the 3 τ² findings standing — the right answer on all 16.
 
-**Seventy-seven of that 351.0 is arithmetic, not detection.** `flag_everything` flags
+**141.0 of that 402.0 is arithmetic, not detection.** `flag_everything` flags
 every class in the taxonomy on every environment, so its loss gets worse whenever the
 taxonomy or the corpus grows and no detector is involved: two probe families added two
-defect classes (+52) and two τ² environments added 28 more free false alarms while
-costing Assay 3. Against the taxonomy and corpus this was first measured on, the
+defect classes (+52), two τ² environments added 28 more free false alarms while costing
+Assay 3, and the four environments with no correct answer added 64 more while costing
+Assay 13. Against the taxonomy and corpus this was first measured on, the
 comparable margin is **274.0**. `docs/PRE-REGISTRATION-TAU2.md` predicted both figures
 before the corpus grew.
 
@@ -54,7 +55,7 @@ separation.
 Recall is 0.9815 and **precision is 0.9464** — no longer 1.000. Three spurious findings
 remain and all three are on the two τ² environments.
 
-Intervals resample **environments** (n=28), not defects — `results/intervals.json`
+Intervals resample **environments** (n=32), not defects — `results/intervals.json`
 carries a `"why"` field saying so.
 
 ## What is deliberately published as a weakness
@@ -63,7 +64,7 @@ carries a `"why"` field saying so.
   split, so the contamination probe has nothing to compare.
 - Four of BenchJack's eight flaw classes are uncovered (`docs/COVERAGE.md`, written
   in *their* vocabulary, not ours).
-- Only **6 of 28** corpus environments are genuinely third-party, and only **3 of those
+- Only **7 of 32** corpus environments are genuinely third-party, and only **3 of those
   6** carry ground truth this repository did not decide. The split is published because
   it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative
@@ -104,14 +105,14 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 765 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 796 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **765 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **796 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

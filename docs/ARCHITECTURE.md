@@ -7,11 +7,10 @@ a stranger find the result.
 
 Everything below was checked against the code, not against the write-ups.
 `uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q`
-is green before and after every change here. At the time of the review the
-command named here carried neither `--extra tau2` nor `--extra space` and gave
-493 passed and 18 skipped; the 18 wanted the pinned tau2 snapshots, which
-`scripts/tau2_fetch.py` supplies. With both extras and the fetch run first the
-current suite is **765 passed, 0 skipped, 0 failures, exit 0** in 128 s. The
+is green before and after every change here. The command named here carried neither
+`--extra tau2` nor `--extra space` at the time of the review, and gave 493 passed;
+the 18 skipped wanted the pinned tau2 snapshots, which `scripts/tau2_fetch.py` supplies. With both extras and the fetch run first the
+current suite is **796 passed, 0 skipped, 0 failures, exit 0** in 128 s. The
 extras are not decoration: without `space` the seven Gradio tests are not
 collected, and the 0-skipped claim was only ever reachable on a machine that
 already had gradio from outside any documented command.

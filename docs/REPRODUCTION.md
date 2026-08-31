@@ -107,7 +107,7 @@ re-run writes a `full_run.json` with those two arms absent rather than an identi
 file. That is the check that caught them being
 three environments out of date.
 
-28 environments across six ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
+32 environments across seven ecosystems: 12 fixture, 3 no-answer, 5 harbor, 5 inspect, 3
 openenv, 2 inspect_evals, 2 tau2, **54 planted defects**. Skip
 `scripts/tau2_fetch.py` and you get 26 and 50 instead, because neither τ²
 snapshot is redistributed here — `full_run.py` prints the reason rather than
@@ -226,7 +226,7 @@ uv run --extra tau2 python scripts/tau2_fetch.py
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q
 ```
 
-**Measured: 765 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
+**Measured: 796 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
 An earlier revision of this guide claimed 275 collected; the suite has roughly
 doubled since and that number was never re-measured. That count and the 128 s are
 one measurement of this command on one machine — an earlier revision quoted 594
@@ -235,7 +235,7 @@ in 82 s, and the wall clock is hardware, not a property of the suite.
 **`--extra tau2` is load-bearing on the test line too**, and this guide previously
 omitted it there. Without the snapshots `tests/test_tau2_adapter.py` skips (18 skips,
 measured); without the extra it *fails*, on `No module named 'loguru'`. Both were
-verified from a fresh tree with no `.venv`: the command above gives 765 passed, 0
+verified from a fresh tree with no `.venv`: the command above gives 796 passed, 0
 failed, exit 0, and dropping `--extra tau2` from it gives 7 failures. The
 fresh-tree timing that used to sit here (87 s) is dropped rather than carried
 over: the count was re-measured when the suite grew and that number was not.

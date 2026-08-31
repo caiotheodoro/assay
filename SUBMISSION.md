@@ -30,7 +30,7 @@ Published artifacts: [collection](https://huggingface.co/collections/caiotheodor
 
 ## The main result
 
-28 environments, 10,000 resamples, seed 11,
+32 environments, 10,000 resamples, seed 11,
 resampled over environments.
 
 | arm | expected loss | 95% CI |
@@ -77,11 +77,13 @@ the script now finds it in two seconds because the discovery was written down.
 
 ## Before you run it
 
-- The minimal install is honest about what it skips: `uv sync --extra dev && uv run pytest -q`
-  gives **430 passed, 56 skipped, 0 failed**. The full optional set collects 594.
+- The documented command installs every extra it names and gives **796 passed, 0 skipped,
+  0 failed**. The minimal `uv sync --extra dev` install is honest about what it skips: the
+  tests wanting Docker, Ollama, the pinned τ² snapshots and the optional providers announce
+  a reason rather than failing.
 - The whole result rests on one constant nothing derives: a missed critical defect priced at
   120 engineer-hours. The ranking only flips at
-  1173 — 9.78× larger.
+  1326 — 11.05× larger.
 - The hosted demo is [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo),
   which runs the battery in the browser under Pyodide. It audits a spec you paste in; it does not
   reproduce the headline, because that still wants Docker and Ollama. `space/app.py`, the Gradio

@@ -73,8 +73,29 @@ def test_a_malformed_answer_is_still_rejected():
         assert _score(bad, "ABCDE") == INCORRECT
 
 
-def test_personality_is_not_in_the_scored_corpus():
-    """An environment the tool is wrong about must not measure the tool."""
+def test_personality_is_in_the_scored_corpus_and_plants_nothing():
+    """This asserted the opposite, correctly, until the premise changed.
+
+    "An environment the tool is wrong about must not measure the tool" held
+    while nothing could withhold the false positive: the only options were to
+    label a correctly-designed eval defective, which is false, or clean and eat
+    a penalty measuring nothing but our own blind spot. `--auditor` supplies a
+    third -- label it clean, which is *true*, and score both arms on it.
+
+    So the environment is now in the corpus carrying `frozenset()`, the
+    deterministic battery pays the false positive, and the semantic gate is what
+    recovers it. `docs/PRE-REGISTRATION-NOANSWER.md` predicted that arithmetic
+    before the entry existed, and `docs/COVERAGE.md` records the reversal rather
+    than deleting the original argument.
+    """
     from assay.corpus import scored_ground_truth
 
-    assert not [e for e in scored_ground_truth() if "personality" in e]
+    truth = scored_ground_truth()
+    entry = [e for e in truth if "personality" in e]
+    assert entry == ["inspect_evals/personality_BFI"], (
+        f"expected exactly the Big Five inventory in the scored corpus, got {entry}"
+    )
+    assert truth[entry[0]] == frozenset(), (
+        "it must plant nothing -- it is registered to measure a false positive, "
+        "and planting anything would make it measure a detection instead"
+    )
