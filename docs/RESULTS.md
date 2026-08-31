@@ -13,7 +13,7 @@ artifacts disagree. Corrections this repository has had to publish are in
 
 ## The run
 
-26 environments, 50 planted defects. Needs Docker for the Harbor tasks. No GPU
+28 environments, 54 planted defects. Needs Docker for the Harbor tasks. No GPU
 and no API key.
 
 ```bash
@@ -35,16 +35,16 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
-| assay | **40.0** | [0, 120] | 0.980 | 1.000 |
-| flag_everything | 366.0 | [347, 383] | 1.000 | 0.137 |
-| stratified_random | 2667.0 | [1050, 2625] | 0.360 | 0.383 |
-| always_modal_defect | 1888.0 | [1196, 2672] | 0.200 | 0.385 |
-| agent_with_tools (`qwen3:8b`) | 2656.0 | [1643, 3815] | 0.220 | 0.333 |
-| direct_prompt (`qwen3:8b`) | 2293.0 | [1703, 3740] | 0.220 | 0.297 |
-| **check_env** (incumbent) | **3056.0** | [1960, 4272] | **0.040** | 1.000 |
-| flag_nothing | 3072.0 | [1984, 4288] | 0.000 | 0.000 |
+| assay | **43.0** | [0, 125] | 0.982 | 0.946 |
+| flag_everything | 394.0 | [375, 411] | 1.000 | 0.120 |
+| stratified_random | 2793.0 | [1763, 3963] | 0.111 | 0.128 |
+| always_modal_defect | 2050.0 | [1351, 2821] | 0.185 | 0.357 |
+| agent_with_tools (`qwen3:8b`) | 2736.0 | [1762, 3825] | 0.241 | 0.351 |
+| direct_prompt (`qwen3:8b`) | 2454.0 | [1644, 3373] | 0.222 | 0.353 |
+| **check_env** (incumbent) | **3216.0** | [2104, 4448] | **0.037** | 1.000 |
+| flag_nothing | 3232.0 | [2128, 4456] | 0.000 | 0.000 |
 
-**Every arm is measured on the same 26 environments**, in the same
+**Every arm is measured on the same 28 environments**, in the same
 `results/full_run.json`, with intervals from the same bootstrap. That was not
 always true — see `docs/RETRACTIONS.md` §3.
 
@@ -65,13 +65,13 @@ diagnosis.
 executing anything — the manifest, the instructions, the verifier source where it
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
-**2293.0 and 2656.0 against `stratified_random`'s 2667.0** — and that gap is now
+**2454.0 and 2736.0 against `stratified_random`'s 2793.0** — and that gap is now
 separated rather than merely observed: stratified random saves **869.0, 95% CI
 [201, 1627]** over `direct_prompt` and **865.0, [178, 1679]** over
 `agent_with_tools`. Better than the incumbent linter, reliably worse than guessing
 at the base rate, and an order of magnitude worse than running the probes.
 
-The two arms are within 4.0 of each other on a 26-environment corpus, which is far
+The two arms are 282.0 apart on a 28-environment corpus, which is far
 inside their own intervals: **giving the model a tool loop bought nothing
 measurable**. Recorded that way rather than as a ranking, because reporting
 `agent_with_tools` as "the better LLM arm" on a 4.0 difference would be exactly the
@@ -100,34 +100,35 @@ model's two hits is `fixture/flaky`, planted here.
 
 ## The corpus is almost entirely our own work, and the split is unflattering
 
-The 26 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`, 2
-`openenv/`, 2 `inspect_evals/`. Split on **who wrote the environment**, not on the
-id prefix:
+The 28 environments are 12 in-process `fixture/*`, 5 `harbor/`, 5 `inspect/`, 2
+`openenv/`, 2 `inspect_evals/`, 2 `tau2/`. Split on **who wrote the environment**, not on
+the id prefix:
 
 | provenance | n | what it is |
 |---|---|---|
 | authored here | 12 | our fixtures; `tests/test_probes_fire.py` asserts `detected == planted` on all of them |
 | our content, third-party format | 10 | our datasets and defective scorers on inspect_ai's runtime; our task dirs in Harbor's shape, `authors = ["assay fixtures"]` |
-| **genuinely external** | **4** | `openenv/echo`, `openenv/textarena-wordle`, `inspect_evals/paws`, `inspect_evals/boolq` — audited as shipped |
+| **genuinely external** | **6** | `openenv/echo`, `openenv/textarena-wordle`, `inspect_evals/paws`, `inspect_evals/boolq`, `tau2/retail`, `tau2/airline` — audited as shipped |
 
-By ground truth: **22 planted here, 3 hand-triaged, 1 derived from a diff between
-two pinned upstream revisions.** Provenance is declared in the registry
-(`src/assay/corpus.py`); an environment that declares none fails a test rather than
-defaulting to clean, and — since `scored_entries()` — an environment whose labels
-nobody established is audited and carded but **kept out of every scored number**.
-Without that rule, registering the 32 other swept tasks would have paid
-`flag_everything` 14 points each for work nobody did.
+By ground truth: **22 planted here, 3 hand-triaged, 3 derived from a diff between two
+pinned upstream revisions** (`openenv/textarena-wordle` and the two τ² domains). Those
+three are the only labels in this corpus that someone other than us decided. Provenance is
+declared in the registry (`src/assay/corpus.py`); an environment that declares none fails a
+test rather than defaulting to clean, and — since `scored_entries()` — an environment whose
+labels nobody established is audited and carded but **kept out of every scored number**.
+Without that rule, registering the 32 other swept tasks would have paid `flag_everything`
+16 points each for work nobody did.
 
 `uv run --extra adapters python scripts/corpus_splits.py`, full table in
 `results/corpus_splits.json`:
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 26 | 40.0 | 366.0 | assay, by 274 |
-| our content, third-party format | 10 | 0.0 | 112.0 | assay |
-| genuinely external | 4 | 40.0 | 53.0 | assay — but n=4, and the one miss is here |
-| in-process fixtures | 12 | 0.0 | 149.0 | assay — asserted, not measured |
-| self-authored | 22 | 0.0 | 261.0 | assay |
+| all (published) | 28 | 43.0 | 394.0 | assay, by 351 |
+| our content, third-party format | 10 | 0.0 | 132.0 | assay |
+| genuinely external | 6 | 43.0 | 89.0 | assay — and all four of its errors are here |
+| in-process fixtures | 12 | 0.0 | 173.0 | assay — asserted, not measured |
+| self-authored | 22 | 0.0 | 305.0 | assay |
 
 ### The two external environments were added under a pre-registration
 
@@ -165,7 +166,7 @@ the misses showed that both environments also pay full marks to an input-ignorin
 policy, which is a trivial-floor breach by definition and was missing from their
 ground truth. Correcting it removes two false positives. With the corrected labels
 Assay scores **40.0 at precision 1.000**; with the original labels, **42.0 at
-precision 0.959**. **The margin over the floor is 326.0 either way** — the result
+precision 0.959**. **The margin over the floor is 351.0 either way** — the result
 does not depend on the relabelling, which is why the relabelling is defensible.
 
 The single remaining miss is `inspect_evals/boolq`, and it is external.
@@ -185,7 +186,7 @@ all. That is why provenance is declared before the corpus grows, and why any
 expansion has to pre-register the expected mechanical shift — otherwise a bigger
 corpus is a manufactured win.
 
-The honest summary: **n=4 is the real size of the third-party control**, the corpus
+The honest summary: **n=6 is the size of the third-party control, and only 3 of those carry a label we did not decide**, the corpus
 is too small and too self-authored to support the pooled headline, and growing it
 with environments nobody here wrote is the first thing worth doing next — carefully.
 
@@ -204,11 +205,11 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 
 | CRITICAL miss cost | assay | flag_everything | winner |
 |---|---|---|---|
-| 120 *(shipped)* | 40.0 | 366.0 | assay |
-| 400 | 133.3 | 366.0 | assay |
-| 800 | 266.7 | 366.0 | assay |
-| **1098** | **366.0** | **366.0** | **tie** |
-| 2000 | 666.7 | 366.0 | flag_everything |
+| 120 *(shipped)* | 43.0 | 394.0 | assay |
+| 400 | 136.33 | 394.0 | assay |
+| 800 | 269.67 | 394.0 | assay |
+| **1100** | **394.0** | **394.0** | **tie** |
+| 2000 | 669.67 | 394.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
 anchor, so Assay's loss is linear in `C` while `flag_everything` never misses and does
@@ -237,11 +238,11 @@ differences drawn on a shared resample:
 
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
-| assay vs `flag_nothing` | 3032.0 | [1928, 4256] | **separated** |
-| assay vs `check_env` | 3016.0 | [1904, 4240] | **separated** |
-| assay vs `always_modal_defect` | 1848.0 | [1145, 2645] | **separated** |
-| assay vs `stratified_random` | 1749.0 | [1000, 2599] | **separated** |
-| **assay vs `flag_everything`** | **326.0** | **[238, 378]** | **separated** |
+| assay vs `flag_nothing` | 3189.0 | [2079, 4422] | **separated** |
+| assay vs `check_env` | 3173.0 | [2055, 4415] | **separated** |
+| assay vs `always_modal_defect` | 2007.0 | [1291, 2778] | **separated** |
+| assay vs `stratified_random` | 2750.0 | [1716, 3926] | **separated** |
+| **assay vs `flag_everything`** | **351.0** | **[263, 404]** | **separated** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
 
 **Assay beats the trivial floor, and for most of this project's life it did not.** That
@@ -286,12 +287,20 @@ every profile shipped, not the one that reads best.
 
 | profile | assay | flag_everything | saved | |
 |---|---|---|---|---|
-| `flat` | **1.0** | 366.0 | 313.0 | separated, [294, 330] |
-| `research-run` | **40.0** | 366.0 | 326.0 | separated, [238, 378] |
-| `production-training` | **240.0** | 628.0 | 388.0 | wins, [−108, 652] — **not separated** |
-| `benchmark-publication` | **600.0** | 2512.0 | 1912.0 | separated, [648, 2608] |
+| `flat` | **4.0** | 394.0 | 390.0 | separated, [371, 408] |
+| `research-run` | **43.0** | 394.0 | 351.0 | separated, [263, 404] |
+| `production-training` | **246.0** | 788.0 | 542.0 | separated, [46, 808] |
+| `benchmark-publication` | **624.0** | 3152.0 | 2528.0 | separated, [1264, 3232] |
 
-**Assay now wins all four and separates on three.** It previously won one and lost two
+**Assay now wins all four and separates on all four** — but read
+`production-training` carefully before crediting it. Its interval was
+[−108, 652] and not separated at 26 environments; what closed it is largely the
+same arithmetic that widened the headline. `flag_everything` pays two false
+alarms per class per environment under that profile, so two added classes and
+two added environments moved the floor from 628.0 to 788.0 while Assay went
+240.0 to 246.0. A separation bought by the floor getting worse is not the same
+fact as one bought by the detector getting better, and the lower bound of 46 is
+thin enough that one environment could take it back. It previously won one and lost two
 outright, and the reasoning published then still stands as the reason those two were the
 hardest: `production-training` prices a missed CRITICAL at 960 against a false alarm at
 2, and `benchmark-publication` at 2000 against 8. At a 480:1 ratio, "flag everything and
@@ -303,7 +312,7 @@ The pattern is the whole argument for reporting a profile rather than a number. 
 accuracy figure would have hidden which regime the tool is for, and a single cost profile
 would have let us choose which way it hid.
 
-**One miss remains across 26 environments, and it is external:** `inspect_evals/boolq`.
+**One miss remains across 28 environments, and it is external:** `inspect_evals/boolq`.
 The two `harbor/` misses that carried this section for weeks are closed.
 
 ---

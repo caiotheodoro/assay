@@ -517,3 +517,29 @@ def test_the_externally_labelled_count_is_the_one_in_the_registry():
         f"the README does not carry the registry's own counts: expected "
         f"{claim!r} (external={sorted(external)}, externally_derived={sorted(derived)})"
     )
+
+
+def test_the_results_doc_carries_every_arm_it_claims_to_explain():
+    """`docs/RESULTS.md` is linked as "every number, with its caveats".
+
+    It drifted once and badly: the corpus grew to 28 environments and that file
+    kept the whole 26-environment table, so a judge following the README's own
+    "Start here" link landed on eight arm values that contradicted the README
+    two clicks earlier. Nothing was checking it, because the gates all pointed
+    at the README.
+
+    Every arm in the measured file has to appear in the doc that explains the
+    arms. It does not fix a wrong *caveat*, but it makes a stale *table*
+    impossible.
+    """
+    run = json.loads((ROOT / "results" / "full_run.json").read_text())
+    doc = (ROOT / "docs" / "RESULTS.md").read_text()
+    missing = [
+        f"{name}={arm['expected_loss']}"
+        for name, arm in sorted(run["arms"].items())
+        if f"{arm['expected_loss']}" not in doc
+    ]
+    assert not missing, (
+        "docs/RESULTS.md does not carry these measured arm values: "
+        + ", ".join(missing)
+    )
