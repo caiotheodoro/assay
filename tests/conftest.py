@@ -61,3 +61,20 @@ def _sandbox_containers_do_not_outlive_the_suite():
             "should use `with HarborAdapter(...)` or `try/finally: close_adapter(...)`.",
             stacklevel=1,
         )
+
+
+@pytest.fixture(autouse=True)
+def _tmp_path_can_be_mounted_into_a_sandbox(tmp_path):
+    """Make `tmp_path` traversable by a container that has dropped every capability.
+
+    `tmp_path` comes from `tempfile.mkdtemp`, which is 0700. The sandbox runs
+    with `--cap-drop ALL`, and the capability that goes with it is
+    `CAP_DAC_OVERRIDE` -- the one root uses to ignore file modes. A container
+    handed a 0700 host directory therefore cannot read it *even as root*, and
+    every test that mounts `tmp_path` fails with `Permission denied`.
+
+    Only on Linux. Docker Desktop on macOS presents bind-mounted files as owned
+    by the container user and never consults the mode, so the suite was green
+    on the only machine it had ever run on while CI was red on every push.
+    """
+    tmp_path.chmod(0o755)

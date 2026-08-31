@@ -60,6 +60,28 @@ from ..types import (
 _FILENAME = re.compile(r"\b([\w-]+\.[A-Za-z0-9]{1,6})\b")
 
 
+def _mount_dir(prefix: str) -> Path:
+    """A scratch directory the sandbox can actually read once it is mounted.
+
+    `tempfile.mkdtemp` makes 0700 directories, and the sandbox drops every
+    capability -- including `CAP_DAC_OVERRIDE`, which is the one root uses to
+    ignore file modes. So a container running as root still cannot traverse
+    into a 0700 directory owned by the host user, and every task mounted this
+    way fails with `Permission denied` on Linux.
+
+    It never failed on macOS: Docker Desktop's bind mounts present host files
+    as owned by the container user, so the mode is not consulted. The suite was
+    only ever run there, and CI has been red since the day it was added.
+
+    0755 is safe for what goes in here -- benchmark fixtures and their logs,
+    already world-readable in the repo -- and it is the mode the container
+    needs to read a directory this process owns and is about to hand it.
+    """
+    path = Path(tempfile.mkdtemp(prefix=prefix))
+    path.chmod(0o755)
+    return path
+
+
 def _filenames_in(instruction: str) -> list[str]:
     seen, out = set(), []
     for name in _FILENAME.findall(instruction or ""):
@@ -219,8 +241,8 @@ class HarborAdapter(BaseAdapter):
         twentieth of the cost.
         """
         if self._live is None:
-            self._work_host = Path(tempfile.mkdtemp(prefix="assay-work-"))
-            self._logs_host = Path(tempfile.mkdtemp(prefix="assay-logs-"))
+            self._work_host = _mount_dir("assay-work-")
+            self._logs_host = _mount_dir("assay-logs-")
             self._live = SandboxSession(
                 self.sandbox,
                 self._policy(task),

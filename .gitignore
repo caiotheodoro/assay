@@ -56,3 +56,6 @@ results/agentic_runs/
 video/node_modules/
 video/out/
 video/.remotion/
+
+# macOS finder droppings
+.DS_Store

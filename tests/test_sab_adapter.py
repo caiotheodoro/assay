@@ -14,6 +14,13 @@ from __future__ import annotations
 
 import pytest
 
+# The adapter reads SAB's splits through pandas and huggingface_hub, both in
+# `--extra sab`. Without them this module raised ModuleNotFoundError on a
+# `uv sync --extra dev` clone instead of skipping, so the first command in the
+# README reported a failure that is really a missing optional dependency.
+pytest.importorskip("pandas", reason="needs --extra sab")
+pytest.importorskip("huggingface_hub", reason="needs --extra sab")
+
 from assay.adapter import NotSupported
 from assay.adapters.scienceagentbench import (
     SPLITS,
