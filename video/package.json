@@ -1,0 +1,27 @@
+{
+  "name": "assay-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Solution video for Assay. Every on-screen number is imported from ../results/*.json.",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render Assay out/assay.mp4",
+    "slice": "remotion render Assay out/slice.mp4 --frames=0-1799",
+    "still": "remotion still Assay",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.515",
+    "@remotion/google-fonts": "4.0.515",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "recharts": "^3.10.1",
+    "remotion": "4.0.515"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "typescript": "^5.7.3"
+  }
+}

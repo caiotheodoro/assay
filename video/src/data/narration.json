@@ -1,0 +1,269 @@
+{
+  "_comment": "Narration, single source. `text` is the caption and the on-screen wording; `spoken` overrides it for TTS only, and is present only where the two must differ -- an identifier the voice should not read literally, or a form that mispronounces. capture/generate-voice.mjs reads `spoken ?? text`; captions always use `text`. A cue tagged with `beat` starts a new sub-beat and is generated after a paragraph break, so the pause is real rather than punctuation-dependent. startMs/endMs are written by capture/retime-captions.mjs from the audio -- never hand-edit.",
+  "problem": [
+    {
+      "startMs": 350,
+      "endMs": 5203,
+      "text": "Labs and vendors buy reinforcement learning environments as products. Nobody QAs them.",
+      "spoken": "Labs and vendors buy reinforcement learning environments as products. Nobody Q-A's them."
+    },
+    {
+      "startMs": 5343,
+      "endMs": 12171,
+      "beat": "define",
+      "text": "So we built Assay. It tries to break an environment before you trust its numbers, and returns a verdict tied to evidence.",
+      "spoken": "So we built Ass-ay. It tries to break an environment before you trust its numbers, and returns a verdict tied to evidence."
+    },
+    {
+      "startMs": 12311,
+      "endMs": 19986,
+      "beat": "receipt",
+      "text": "Here is why it needs to exist. This scorer marks an answer correct if the target appears anywhere inside it. The targets are Yes and No."
+    },
+    {
+      "startMs": 20126,
+      "endMs": 26672,
+      "text": "So the single string \"yesno\" contains both. Eight thousand out of eight thousand, for a model that answered nothing.",
+      "spoken": "So the single string yes-no contains both. Eight thousand out of eight thousand, for a model that answered nothing."
+    },
+    {
+      "startMs": 26812,
+      "endMs": 34543,
+      "beat": "openenv",
+      "text": "And it is not one scorer. OpenEnv's word game accepts a seed and ignores it. Six resets at the same seed give six different secret words.",
+      "spoken": "And it is not one scorer. Open env's word game accepts a seed and ignores it. Six resets at the same seed give six different secret words."
+    },
+    {
+      "startMs": 34683,
+      "endMs": 40270,
+      "beat": "manual",
+      "text": "When a benchmark breaks, the fix is people. Ninety-three developers went through SWE-bench by hand.",
+      "spoken": "When a benchmark breaks, the fix is people. Ninety-three developers went through S-W-E bench by hand."
+    },
+    {
+      "startMs": 40410,
+      "endMs": 46392,
+      "text": "The only automated tool asks whether your trainer will crash. Not whether the benchmark measures anything.",
+      "beat": "baseline"
+    }
+  ],
+  "execution": [
+    {
+      "startMs": 350,
+      "endMs": 5135,
+      "beat": "define",
+      "text": "So: nine probe families. The card says valid, invalid, or unverified."
+    },
+    {
+      "startMs": 5275,
+      "endMs": 12418,
+      "text": "Unverified exits nonzero, the same as a failure. An empty card must not read as a clean bill of health."
+    },
+    {
+      "startMs": 12558,
+      "endMs": 13668,
+      "beat": "run",
+      "text": "Here is one run."
+    },
+    {
+      "startMs": 13808,
+      "endMs": 18039,
+      "beat": "probes",
+      "text": "Does gold pass. Does a no-op fail. Can this eval fail at all.",
+      "spoken": "Does gold pass. Does a no op fail. Can this eval fail at all."
+    },
+    {
+      "startMs": 18179,
+      "endMs": 23866,
+      "text": "The ninth is the agentic one. A Challenger that scores well without doing the job."
+    },
+    {
+      "startMs": 24006,
+      "endMs": 30109,
+      "beat": "gate",
+      "text": "Nothing runs untrusted code unless an approver says yes. The default refuses everything."
+    },
+    {
+      "startMs": 30249,
+      "endMs": 36768,
+      "beat": "exploit",
+      "text": "It wrote the same wrong answer into the output, and into the file the verifier checks against."
+    },
+    {
+      "startMs": 36908,
+      "endMs": 39752,
+      "text": "It completed nothing, and scored perfect."
+    },
+    {
+      "startMs": 39892,
+      "endMs": 48284,
+      "beat": "card",
+      "text": "So the card does not say pass. It says invalid, on a critical defect. And it lists five probes that could not run at all."
+    },
+    {
+      "startMs": 48424,
+      "endMs": 55914,
+      "beat": "choices",
+      "text": "Three choices did that. An independent verifier. A sandbox that denies by default. And deterministic probes."
+    }
+  ],
+  "comparison": [
+    {
+      "startMs": 350,
+      "endMs": 1766,
+      "text": "So what is that worth?"
+    },
+    {
+      "startMs": 1906,
+      "endMs": 5767,
+      "beat": "arms",
+      "text": "Every arm on the same corpus, priced by the same cost model."
+    },
+    {
+      "startMs": 5907,
+      "endMs": 10154,
+      "text": "Assay at forty. Flagging everything at three hundred and fourteen.",
+      "spoken": "Ass-ay at forty. Flagging everything at three hundred and fourteen."
+    },
+    {
+      "startMs": 10294,
+      "endMs": 18338,
+      "text": "check_env is up here with the arms that barely try. It saves sixteen against doing nothing, on an interval that touches zero.",
+      "spoken": "The incumbent is up here with the arms that barely try. It saves sixteen against doing nothing, on an interval that touches zero."
+    },
+    {
+      "startMs": 18478,
+      "endMs": 22404,
+      "beat": "paired",
+      "text": "So the floor is not the incumbent. It is flagging everything."
+    },
+    {
+      "startMs": 22544,
+      "endMs": 26856,
+      "text": "Catch every defect by construction, and pay for it in false alarms."
+    },
+    {
+      "startMs": 26996,
+      "endMs": 33367,
+      "text": "For most of this project Assay did not clear that floor. It does now, and the interval clears zero.",
+      "spoken": "For most of this project Ass-ay did not clear that floor. It does now, and the interval clears zero."
+    },
+    {
+      "startMs": 33507,
+      "endMs": 40779,
+      "beat": "profiles",
+      "text": "Four cost profiles, pricing a missed critical defect from a hundred and twenty engineer-hours up to two thousand."
+    },
+    {
+      "startMs": 40919,
+      "endMs": 47419,
+      "text": "Wins all four. Separates on three. Production training still crosses zero, and it stays on the chart."
+    },
+    {
+      "startMs": 47559,
+      "endMs": 60558,
+      "beat": "crossover",
+      "text": "All of it rests on one number nobody derived. We price a missed critical defect at a hundred and twenty engineer-hours. That constant would have to be nearly eight times larger before the ranking flips."
+    }
+  ],
+  "changelog": [
+    {
+      "startMs": 350,
+      "endMs": 6599,
+      "text": "Every experiment that moved a number has a row. What we tried, the evidence, what we decided next."
+    },
+    {
+      "startMs": 6739,
+      "endMs": 11266,
+      "text": "The ones that failed are in there too. That is the point of keeping it."
+    },
+    {
+      "startMs": 11406,
+      "endMs": 14211,
+      "text": "Two of those rows matter more than the rest."
+    }
+  ],
+  "contributed": [
+    {
+      "startMs": 350,
+      "endMs": 3321,
+      "text": "The change that contributed most was not the agent."
+    },
+    {
+      "startMs": 3461,
+      "endMs": 10102,
+      "text": "We read someone else’s published taxonomy of benchmark flaws, and wrote two of its classes as four lines of shell."
+    },
+    {
+      "startMs": 10242,
+      "endMs": 16009,
+      "beat": "delta",
+      "text": "That closed the last two misses. Before it, Assay was not distinguishable from flagging everything.",
+      "spoken": "That closed the last two misses. Before it, Ass-ay was not distinguishable from flagging everything."
+    },
+    {
+      "startMs": 16149,
+      "endMs": 23081,
+      "text": "The agent found that exploit first. The script finds it in two seconds, because the agent’s discovery was written down."
+    }
+  ],
+  "removed": [
+    {
+      "startMs": 350,
+      "endMs": 1563,
+      "text": "And one we removed."
+    },
+    {
+      "startMs": 1703,
+      "endMs": 9622,
+      "text": "ScienceAgentBench publishes enough metadata that instruction defects look rule-detectable. One rule recovered five of seven.",
+      "spoken": "Science Agent Bench publishes enough metadata that instruction defects look rule detectable. One rule recovered five of seven."
+    },
+    {
+      "startMs": 9762,
+      "endMs": 15957,
+      "beat": "reject",
+      "text": "It also fired on sixty-one of a hundred and two tasks. Flag-everything wearing a rule’s clothing."
+    },
+    {
+      "startMs": 16097,
+      "endMs": 20248,
+      "text": "Our own trivial-floor check caught it. Rejected, and kept as one."
+    }
+  ],
+  "close": [
+    {
+      "startMs": 350,
+      "endMs": 5007,
+      "beat": "repro",
+      "text": "All of it reproduces from a clean checkout. One sync, then one command per result."
+    },
+    {
+      "startMs": 5147,
+      "endMs": 7703,
+      "beat": "selfaudit",
+      "text": "Then we pointed the same probes at ourselves."
+    },
+    {
+      "startMs": 7843,
+      "endMs": 12613,
+      "text": "An auditing tool is not exempt from the thing it audits. Twelve of our claims broke."
+    },
+    {
+      "startMs": 12753,
+      "endMs": 16671,
+      "text": "The external number was chance. Half the corpus was our own fixtures."
+    },
+    {
+      "startMs": 16811,
+      "endMs": 21922,
+      "beat": "hottake",
+      "text": "Every probe here is a deterministic program. The only model in the system is the attacker."
+    },
+    {
+      "startMs": 22062,
+      "endMs": 26378,
+      "text": "The only defence is to run the audit on yourself, and publish what it finds."
+    }
+  ]
+}

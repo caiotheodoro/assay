@@ -1,0 +1,3 @@
+{"version":2,"width":120,"height":28,"timestamp":1788118835,"command":"uv run --extra adapters assay selftest","title":"every probe family fires","env":{"SHELL":"/bin/zsh"}}
+[0.876798, "o", "selftest ok: 12 fixtures, every family fires\r\n"]
+[0.885583, "x", "0"]

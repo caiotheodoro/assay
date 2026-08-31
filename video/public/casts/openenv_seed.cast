@@ -1,0 +1,12 @@
+{"version":2,"width":120,"height":28,"timestamp":1788139082,"command":"uv run --extra adapters --extra openenv pytest tests/test_openenv_ground_truth.py -p no:warnings","title":"a seed accepted and dropped","env":{"SHELL":"/bin/zsh"}}
+[2.170206, "o", "\u001b[32m.\u001b[0m"]
+[2.171059, "o", "\u001b[32m.\u001b[0m"]
+[2.464991, "o", "\u001b[32m.\u001b[0m"]
+[2.483543, "o", "\u001b[32m.\u001b[0m"]
+[2.488731, "o", "\u001b[32m.\u001b[0m"]
+[2.786128, "o", "\u001b[32m.\u001b[0m"]
+[3.077862, "o", "\u001b[32m.\u001b[0m"]
+[3.11843, "o", "\u001b[32m                                                                                                          [100%]\u001b[0m"]
+[3.118832, "o", "\r\n"]
+[3.118888, "o", "\u001b[32m\u001b[32m\u001b[1m7 passed\u001b[0m\u001b[32m in 2.97s\u001b[0m\u001b[0m\r\n"]
+[3.311485, "x", "0"]

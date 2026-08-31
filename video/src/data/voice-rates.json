@@ -1,0 +1,12 @@
+{
+  "_comment": "Words per minute measured per block for V7Voice (NOpBlnGInO9m6vDvFkFC), eleven_multilingual_v2. Per-block, not averaged: the spread is 113-145 wpm and is driven by fragment density, not by the voice. A flat rate under-predicted the script by ~30s and would have pushed it over the cap. Used only to PREDICT cue times before the audio exists; capture/retime-captions.mjs overwrites them with measured values the moment an mp3 is on disk.",
+  "wpm": {
+    "problem": 118.4,
+    "execution": 125.3,
+    "comparison": 143.7,
+    "changelog": 140.3,
+    "contributed": 127.6,
+    "removed": 113.3,
+    "close": 127.7
+  }
+}

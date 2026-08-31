@@ -51,3 +51,8 @@ results/agentic_runs/
 
 # Red-team verification scratch: exploit payloads and absolute host paths.
 .redteam_scratch/
+
+# video subproject
+video/node_modules/
+video/out/
+video/.remotion/

@@ -1,0 +1,72 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Environment Card — harbor/self-graded</title>
+<style>
+  :root { color-scheme: light dark; --fg:#1f2328; --bg:#fff; --muted:#656d76; --line:#d1d9e0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e6edf3; --bg:#0d1117; --muted:#8b949e; --line:#30363d; }
+  }
+  body { margin:0; background:var(--bg); color:var(--fg);
+    font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:52rem; margin:0 auto; padding:2.5rem 1.25rem 4rem; }
+  .verdict { display:inline-block; padding:.3rem .7rem; border-radius:.4rem;
+    background:#cf222e; color:#fff; font-weight:600; letter-spacing:.02em; }
+  pre { white-space:pre-wrap; word-break:break-word; font:13px/1.55 ui-monospace,SFMono-Regular,monospace; }
+  hr { border:0; border-top:1px solid var(--line); margin:2rem 0; }
+</style>
+<main>
+<p><span class="verdict">INVALID</span></p>
+<pre># Environment Card — `harbor/self-graded`
+
+**Verdict: INVALID**  
+A critical defect was found. Scores from this environment do not mean what they appear to.
+
+| | |
+|---|---|
+| Ecosystem | `harbor` |
+| Environment version | `task.toml` |
+| Audited | 2026-08-30 19:41 UTC |
+| Exit code | `1` |
+| Content digest | `2cc3e9f56f2b23cb66afc2a71175e377…` |
+
+## Coverage
+
+5 probes passed · 2 found defects · 5 could not run · 0 errored
+
+## Findings
+
+### CRITICAL
+
+**REWARD_HACKABLE** — `self-graded`
+
+`exploit_policy`: trivial:v7_make_the_comparison_agree; `reported_score`: 1.0; `true_completion`: 0.0; `exploit_gap`: 1.0; `threshold`: 0.5; `challenger`: scripted; `hit_rate`: 1.0; `passes`: 1
+
+### HIGH
+
+**TRIVIAL_FLOOR_BREACH**
+
+&gt; a policy that ignores the input scores at least as well, averaged over the whole task set, as the best real one
+
+`best_trivial_policy`: v7_make_the_comparison_agree; `best_trivial_reward`: 1.0; `best_real_reward`: 1.0; `n_tasks`: 1
+
+## What could not be checked
+
+These probes did not run. Nothing below was verified, and the verdict reflects that rather than assuming the best.
+
+| Probe | Why not |
+|---|---|
+| `inverted_fails` | environment does not expose: INVERTIBLE_SPEC |
+| `difficulty_band` | no solve-rate estimate supplied; pass ctx[&#x27;solve_rates&#x27;] from a rollout sampler |
+| `train_eval_leak` | environment does not expose: SPLITS |
+| `partial_input_baseline` | environment does not expose: SPLITS, ITEM_PARTS |
+| `assert_traceability` | verifier assertions are not machine-readable |
+
+## Sign-off
+
+_Unsigned._ This card blocks nothing until a human reviews it. The exit code is advisory input to that decision, not a substitute for it.
+
+---
+
+Produced by Assay. Unkeyed content digest over the full probe output: `2cc3e9f56f2b23cb66afc2a71175e37786ff863dfb31e94c4220c02b59844a10` — identifies this card and catches corruption, but anyone who edits the body can recompute it.
+</pre>
+</main>
