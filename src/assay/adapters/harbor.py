@@ -85,6 +85,28 @@ def _mount_dir(prefix: str) -> Path:
     return path
 
 
+def _make_writable(root: Path) -> None:
+    """Let the container modify its own workspace.
+
+    `shutil.copytree` preserves the repo's modes, so the task files arrive 0644
+    owned by the host user. The sandbox drops `CAP_DAC_OVERRIDE`, so container
+    root cannot write to a file it does not own however permissive the others
+    bits are -- and rewriting a reachable verifier is precisely what the V1 and
+    V7 trivial policies exist to attempt. Without this they fail to write and
+    the probe reads that as an environment that held, which is a false PASS.
+
+    /work is the agent's workspace by design; making it writable is restoring
+    the intended semantics, not loosening them. /suite stays read-only and
+    /logs is separate.
+    """
+    root.chmod(0o777)
+    for path in root.rglob("*"):
+        try:
+            path.chmod(0o777 if path.is_dir() else 0o666)
+        except OSError:
+            pass
+
+
 def _filenames_in(instruction: str) -> list[str]:
     seen, out = set(), []
     for name in _FILENAME.findall(instruction or ""):
@@ -375,6 +397,7 @@ class HarborAdapter(BaseAdapter):
         # read-only /suite mount at verification time.
         if task.environment_mode == "shared" and task.tests.exists():
             shutil.copytree(task.tests, self._work_host / "tests", dirs_exist_ok=True)
+        _make_writable(self._work_host)
         self._current = task_id
         return Observation(ok=True, data={"instruction": task.instruction})
 
