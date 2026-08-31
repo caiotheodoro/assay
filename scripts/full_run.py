@@ -123,6 +123,36 @@ def _eco(env_id: str) -> str:
     return env_id.split("/", 1)[0]
 
 
+def _refuse_to_shrink(path: Path, arms: dict) -> None:
+    """Never let a reproduction run delete evidence from the file it replaces.
+
+    The command quoted in every document is `scripts/full_run.py` with no
+    `--out`, so it writes `results/full_run.json` in place. That file carries
+    eight arms; the quoted command produces six, because the two LLM baselines
+    need `--llm-arms` and a live Ollama. A judge reproducing the headline
+    therefore *destroyed* the baseline evidence for the section they had just
+    read -- 523 deletions, 0 insertions -- and nothing said so.
+
+    Refuse instead. The number is reproducible either way; what is not
+    recoverable is an arm nobody re-ran.
+    """
+    if not path.exists():
+        return
+    try:
+        previous = json.loads(path.read_text()).get("arms", {})
+    except (OSError, ValueError):
+        return
+    lost = sorted(set(previous) - set(arms))
+    if lost:
+        raise SystemExit(
+            f"refusing to overwrite {path}: it has {len(previous)} arms and this run "
+            f"produced {len(arms)}, which would delete {lost}.\n"
+            "Re-run with the missing arms, or write somewhere else:\n"
+            f"  --llm-arms qwen3:8b        # restores {lost}\n"
+            "  --out /tmp/check.json      # compare without replacing the artifact"
+        )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results")
@@ -304,6 +334,7 @@ def main() -> int:
             for eco in sorted({_eco(o.env_id) for o in arms[label].outcomes})
         },
     }
+    _refuse_to_shrink(target, payload["arms"])
     target.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
     width = max(len(n) for n in rows)

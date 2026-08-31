@@ -84,7 +84,7 @@ their `importorskip` is at module scope.
 ## The headline comparison
 
 ```bash
-ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py --out /tmp/check.json
 uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py --resamples 10000 --seed 11
 ```
 
