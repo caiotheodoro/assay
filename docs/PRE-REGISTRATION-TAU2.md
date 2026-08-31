@@ -260,3 +260,181 @@ rather than hand-triaged here.** Predicted `external-envs` at `research-run`: `a
 
 Measured results go in `docs/changelog/100-tau2-corpus.md` next to these numbers, whichever way
 they come out.
+
+---
+
+# Result — measured 2026-08-31
+
+`ASSAY_APPROVE_ALL=... uv run --extra dev --extra adapters --extra sweep --extra openenv
+--extra tau2 python scripts/full_run.py --llm-arms qwen3:8b`, then `scripts/intervals.py
+--resamples 10000 --seed 11`, `scripts/corpus_splits.py`, `scripts/cost_sensitivity.py`.
+
+## Every deterministic prediction held exactly. One arithmetic prediction was wrong. One falsification criterion fired.
+
+| research-run | committed (14 classes) | predicted | **measured** |
+|---|---|---|---|
+| corpus size | 26 | 28 | **28** |
+| planted defects | 50 | 54 | **54** |
+| `assay` | 40.0 | 43.0 | **43.0** |
+| `flag_everything` | 314.0 | 394.0 | **394.0** |
+| `check_env` | 3056.0 | 3216.0 | **3216.0** |
+| `flag_nothing` | 3072.0 | 3232.0 | **3232.0** |
+| `always_modal_defect` | 1888.0 | 2050.0 | **2050.0** |
+| `stratified_random` | 1789.0 | 2793.0 | **2793.0** |
+| margin over floor | 274.0 | 351.0 | **351.0** |
+| `assay` normalised | 0.1274 | 0.1091 | **0.1091** |
+| `assay` recall | 0.980 | 0.9815 | **0.9815** |
+| `assay` precision | 1.000 | 0.9464 | **0.9464** |
+| floor arm | flag_everything | flag_everything | **flag_everything** |
+
+All four profiles, predicted then measured — identical in every cell:
+
+| profile | assay pred / meas | best trivial arm pred / meas |
+|---|---|---|
+| `research-run` | 43.0 / **43.0** | 394.0 / **394.0** (`flag_everything`) |
+| `flat` | 4.0 / **4.0** | 54.0 / **54.0** (`flag_nothing`) |
+| `production-training` | 246.0 / **246.0** | 788.0 / **788.0** (`flag_everything`) |
+| `benchmark-publication` | 624.0 / **624.0** | 3152.0 / **3152.0** (`flag_everything`) |
+
+Per environment, both exactly as written, including which classes are spurious:
+
+- `tau2/retail` — detected `{GOLD_FAILS, KNOWN_WRONG_PASSES, NOOP_PASSES, SPEC_VERIFIER_MISMATCH}`;
+  **2 caught, 2 spurious, 0 missed**, cost 2.0.
+- `tau2/airline` — detected `{KNOWN_WRONG_PASSES, NOOP_PASSES, SPEC_VERIFIER_MISMATCH}`;
+  **2 caught, 1 spurious, 0 missed**, cost 1.0.
+
+`verifier_static_analysis` and `declared_permissions` both returned **NOT_APPLICABLE** on both
+domains, for the predicted reasons (`environment does not expose: VERIFIER_SOURCE` /
+`SANDBOX_POSTURE`). The corpus miss set is still exactly
+`{"inspect_evals/boolq": ["SHORTCUT_LEAK"]}` — the brief that commissioned this work expected that
+assertion in `tests/test_published_claims.py` to break, and it was predicted here not to, and it
+did not.
+
+### The prediction that was wrong
+
+**`external-envs` `flag_everything`: predicted 81.0, measured 89.0.** The split is right — 4 → **6**
+environments, 3 → **7** planted defects, `assay` **43.0** as predicted — but the floor figure was
+computed by adding τ²'s 28 to the *committed* 53.0, which is a 14-class number. At 16 classes the
+four pre-existing external environments are worth `4 × 16 − 3 = 61`, not 53, so the correct
+arithmetic is `61 + 28 = 89`. A pre-registration whose whole subject is a 14→16 confound made the
+14→16 mistake in one of its own rows. Left in place above rather than corrected in situ, because
+editing a prediction after the measurement is the thing pre-registration exists to prevent.
+
+### The falsification criterion that fired
+
+> **`direct_prompt` falling below `stratified_random`.** … If the order flips, the README sentence
+> saying the LLM baseline does not beat flagging at base rates must flip with it, and so must the
+> assertion in `tests/test_published_claims.py`.
+
+It flipped, and for both LLM arms: `direct_prompt` **2454.0** and `agent_with_tools` **2736.0**
+against `stratified_random` **2793.0**. It was 2658.0 / 2654.0 against 1789.0.
+
+**It is mostly not the LLM arms moving.** Decomposed:
+
+| | 26 envs, 14 classes | 26 envs, 16 classes | 28 envs, 16 classes |
+|---|---|---|---|
+| `stratified_random`, seeded draw | 1789.0 | 2667.0 | **2793.0** |
+| `stratified_random`, closed-form `E[loss]` | — | 2298.3 | **2474.3** |
+| `direct_prompt` | 2658.0 | *(re-sampled)* | **2454.0** |
+
+`stratified_random` flags each class independently at its corpus base rate and draws one
+`rng.random()` per class per environment in enum order, so adding two classes to the taxonomy
+reshuffles the entire seeded sequence: **+878 with no change to the corpus, the policy or the
+detector.** `docs/changelog/97-dead-zone-probes.md` recorded that at the time and did not regenerate
+any results file; this is the first run that banks it.
+
+So the honest statement is neither the old one nor its negation. Against the *policy's actual mean*
+rather than one draw of it, `direct_prompt` at 2454.0 and `stratified_random` at 2474.3 are a tie,
+and the paired bootstrap agrees: **339.0, 95% CI [−244, 942] — not separated**
+(`results/intervals.json`). The old claim was "the LLM arms lose to flagging at base rates,
+separated, 869.0 [201, 1627]". The new one is that they are indistinguishable from it. Both the
+README sentence and the test assertion are rewritten to say that.
+
+## What the reviewer found that the pre-registration got wrong
+
+The mapping was sent to a fresh context with the spec and the artifacts and no access to this
+document's reasoning. Four findings survived checking, and all four are recorded rather than
+quietly fixed.
+
+**1. The `SPEC_VERIFIER_MISMATCH` tick is earned by a probe that is below chance on retail, and
+every worked example above is a task Assay misses.** `assert_traceability` alone on retail is
+precision **0.2143** against a base rate of 35/114 = **0.3070**. `retail/{0,1,2}` and
+`airline/{12,15}` — the five fixes this document uses to argue the rule — are *all* in
+`results/tau2_recall.json`'s missed lists, while all three of the answer-key examples
+(`retail/{12,18}`, `airline/2`) are detected. The environment-level union erases that split: 5 of 27
+retail brief-only tasks detected reads as one green tick. **The label is sound; the `caught` is
+doing work the evidence does not support**, and the per-task figure (0.185 / 0.200) is the one that
+is true.
+
+**2. The exclusion table's price was stated one-sided.** The document said `GOLD_FAILS` is
+"excluded, and it costs us" — 3.0 points. It did not state the other side. Summing
+`DEFAULT_SEVERITY` over the fourteen excluded classes gives **752 per environment**; had all
+fourteen been claimed on both, Assay would have missed all but the three it reports, for
+**1384 points** under `research-run`, and the margin would be **−1384 rather than +25**. So the
+fourteen paragraphs are worth roughly **460× more to Assay in avoided misses than the 3.0 they
+cost**. That is the number a reader should be given first.
+
+**3. …and the reason it is nevertheless not the adversarial optimum is arithmetic, not sentiment.**
+For one environment, moving a class the detector *already reports* from excluded to planted lowers
+`flag_everything`'s loss by exactly one `false_alarm` and Assay's spurious count by exactly one.
+**The margin is invariant.** Checked: labelling both domains with everything Assay reports gives
+`(16−4) + (16−3) = 25` for the floor and 0.0 for Assay — margin **25**, identical to the registered
+mapping's `28 − 3 = 25`. Moving in a class the detector does *not* report costs the margin
+`false_alarm + miss`. So inclusion buys nothing and exclusion is the only lever — which is exactly
+why the fourteen reasons carry the weight, and why two of them were rewritten below.
+
+**4. Two exclusion reasons used the wrong standard of evidence.** Fixed in
+`tau2_truth.EXCLUDED_DEFECT_CLASSES`, in this commit's parent:
+
+- `NOOP_PASSES` said "8 of its 9 findings land on tasks the third party left alone", which is
+  evidence of absence — the same move the `NONDETERMINISM` row two lines below explicitly refuses.
+  The real reason was found by checking: `Tau2Adapter.verify` scores two of tau2's three conjuncts
+  and drops the LLM-judged `nl_assertions`, so on the **9** tasks whose gold action list is empty
+  after `_gold()` — `retail/{24,57}`, `airline/{0,10,26,28,31,34,46}`, verified against the
+  snapshots — an empty transcript scores 1.0 by construction. Those nine are exactly `noop_fails`'
+  nine findings. The probe is measuring our missing conjunct, not tau2's environment.
+- `GOLD_FAILS` argued only from `retail/{64,105}` being untouched, and said nothing about
+  `retail/{18,91}`, which are positives whose pre-fix gold *also* fails. Both readings are true
+  there. The reason now says so, and says the thing that actually exculpates the exclusion:
+  **claiming `GOLD_FAILS` would turn a spurious into a caught and save Assay a point.**
+
+The same check turned up a **live defect in `Tau2Adapter.known_wrong_actions`**, whose docstring
+claimed "a clean task cannot produce a finding here by accident". It can: on those same 9 no-gold
+tasks the probe is handed `[]`, scores an empty transcript, and reports `KNOWN_WRONG_PASSES` on a
+task with no policy violation — **2 of retail's 6 and 6 of airline's 13 `known_wrong_fails`
+findings, and the whole of that probe's false-positive column on both domains.** The docstring now
+states this instead of denying it. It is **not** fixed here: the fix is a probe-contract change and
+doing it inside a corpus-label change would move a published recall measurement for an unrelated
+reason. The environment-level `KNOWN_WRONG_PASSES` tick survives it — 4 genuine retail and 6 genuine
+airline findings remain — but `results/tau2_recall.json`'s `by_probe` and `each_probe_alone` tables
+are partly this artifact and should be read knowing it.
+
+## The direction, restated against the measurement
+
+- **Expected loss got worse and precision left 1.000**: 40.0 → 43.0, precision 1.000 → **0.9464**,
+  three spurious findings across 28 environments. The README's "zero false positives anywhere" is
+  gone.
+- **And the precision drop is not comparable to the number it replaces.** These are the only two
+  environments in the corpus with an **open-world** label. Everywhere else `frozenset()` means "we
+  planted nothing else"; here it means "the revision diff establishes nothing else", and the fork's
+  own paper says more τ² tasks are under-specified than it changed. `Outcome.spurious` cannot
+  represent that, so part of the 0.9464 is the label being a lower bound rather than Assay being
+  wrong. Stated in both directions because either alone is misleading.
+- **The margin got better, and it is arithmetic**: +25.0 on two environments, because each one hands
+  `flag_everything` `16 − 2 = 14` free false alarms. Reported next to the arithmetic that produces
+  it and not claimed as detection.
+- **What was actually bought**: `external-envs` 4 → **6** environments and 3 → **7** planted
+  defects, and the first two entries in the registry carrying `LabelSource.EXTERNALLY_DERIVED` — a
+  label an outside organisation published at a commit, rather than one a person here worked out by
+  driving upstream's scorer.
+
+## Considered and not done
+
+**Registering four environments instead of two** — `tau2/retail:answer-key` (8 tasks),
+`tau2/retail:brief-only` (27), and the airline pair — each with a single-class label. The adapter
+already takes `task_ids` and `task_defect_classes` already returns per-task labels, so it is cheap,
+and it would fix finding 1: `SPEC_VERIFIER_MISMATCH` could only be `caught` if the probe fired
+*inside* the brief-only tasks. Declined for now because it hands `flag_everything` `4 × 15 = 60`
+of free floor instead of 28, which is the corpus-inflation lever this document exists to guard, and
+doing it in the same change that introduces the mapping would make the two effects impossible to
+separate. It is the right next step and it needs its own pre-registration.
