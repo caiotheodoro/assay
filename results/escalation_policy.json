@@ -1,0 +1,147 @@
+{
+  "what": "When is a second, expensive attacker worth running at all?",
+  "why": "A model Challenger costs minutes where the scripted one costs about two seconds. Escalating everywhere is not a design, it is a bill. This measures how selective the policy actually is on the shipped corpus.",
+  "policy": "Escalate only where the scripted attacker returned PASS and the environment declares fewer than 5 trivial policies, so the silence is thin evidence rather than a saturated floor.",
+  "n_environments": 26,
+  "escalates": 12,
+  "refuses": 14,
+  "refusal_reasons": {
+    "already found an exploit": 10,
+    "repertoire wide enough": 2,
+    "probe did not run": 2
+  },
+  "rows": [
+    {
+      "env": "fixture/healthy",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/gold_broken",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/solved_at_reset",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "fixture/unfalsifiable",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/weak_oracle",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "fixture/escalate_overrewarded",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "fixture/rationale_ignored",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/leaky_splits",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/paraphrased_splits",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/artifact_splits",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/drifted_asserts",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "fixture/flaky",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "harbor/healthy",
+      "escalate": false,
+      "why": "the declared repertoire is 5 policies, which is wide enough that finding nothing is evidence rather than silence"
+    },
+    {
+      "env": "harbor/vacuous-tests",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "harbor/broken-gold",
+      "escalate": false,
+      "why": "the declared repertoire is 5 policies, which is wide enough that finding nothing is evidence rather than silence"
+    },
+    {
+      "env": "harbor/shared-tests",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "harbor/self-graded",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "inspect/healthy",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "inspect/always-correct",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "inspect/effort-scorer",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "inspect/constant-score",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "inspect/leaky-split",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "inspect_evals/paws",
+      "escalate": false,
+      "why": "the scripted attacker already found an exploit here; a second one can only match it or add false positives"
+    },
+    {
+      "env": "inspect_evals/boolq",
+      "escalate": true,
+      "why": "the scripted attacker found nothing with only 3 declared policies, so the silence is weak evidence"
+    },
+    {
+      "env": "openenv/echo",
+      "escalate": false,
+      "why": "the probe did not run (NOT_APPLICABLE); nothing to escalate"
+    },
+    {
+      "env": "openenv/textarena-wordle",
+      "escalate": false,
+      "why": "the probe did not run (NOT_APPLICABLE); nothing to escalate"
+    }
+  ],
+  "reading": "The refusals are the point. The largest bucket is environments where the scripted attacker already found the exploit -- there a second attacker cannot add information, because CompositeChallenger concatenates and the hackability probe takes the max gap. docs/changelog/84-agentic-remeasured.md established that as an argument; this is the code that acts on it.",
+  "honesty": "This is a cost-control policy and its effect on detection is NOT measured here. Whether escalation finds anything depends on what it escalates to, and that is results/policy_synthesis.json, not this file."
+}

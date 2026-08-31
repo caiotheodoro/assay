@@ -16,7 +16,7 @@ import pytest
 from assay.auditor import Auditor
 from assay.fixtures import build
 from assay.runner import audit as run_battery
-from assay.types import ProbeStatus
+from assay.types import ProbeResult, ProbeStatus
 
 
 @dataclass
@@ -325,3 +325,76 @@ def test_the_resolver_fires_when_part_values_repeat():
         "majority_class_rate"
     ]
 
+
+
+# -- orchestration: deciding when a second attacker is worth its cost --------
+
+
+def _hack_result(status, findings=()):
+    from assay.types import DefectClass, Finding, Severity
+
+    return ProbeResult(
+        family="reward_hackability",
+        probe="reward_hackability",
+        status=status,
+        findings=list(findings),
+        reason="declined" if status is ProbeStatus.NOT_APPLICABLE else None,
+    )
+
+
+def _report_with(result):
+    from assay.runner import AuditReport
+
+    return AuditReport(env_id="e", ecosystem="x", env_version="1", results=[result])
+
+
+def test_escalation_is_refused_where_the_scripted_attacker_already_won():
+    """The monotonicity argument, enforced rather than argued.
+
+    `docs/changelog/84-agentic-remeasured.md` established that the composite
+    takes the max gap, so a second attacker against a saturated floor can only
+    match it or add false positives. That was a paragraph; this is the code
+    that acts on it.
+    """
+    from assay.types import DefectClass, Finding, Severity
+
+    finding = Finding(DefectClass.REWARD_HACKABLE, Severity.CRITICAL, "t1")
+    ok, why = Auditor(FakeClient(NO_ANSWER)).should_escalate(
+        build("weak_oracle"), _report_with(_hack_result(ProbeStatus.DEFECT, [finding]))
+    )
+    assert ok is False
+    assert "already found an exploit" in why
+
+
+def test_escalation_is_refused_when_the_probe_could_not_run():
+    ok, why = Auditor(FakeClient(NO_ANSWER)).should_escalate(
+        build("healthy"), _report_with(_hack_result(ProbeStatus.NOT_APPLICABLE))
+    )
+    assert ok is False
+    assert "did not run" in why
+
+
+def test_escalation_is_refused_when_there_is_nothing_to_improve_on():
+    from assay.runner import AuditReport
+
+    ok, why = Auditor(FakeClient(NO_ANSWER)).should_escalate(
+        build("healthy"), AuditReport(env_id="e", ecosystem="x", env_version="1")
+    )
+    assert ok is False
+
+
+def test_escalation_fires_where_silence_came_from_a_thin_repertoire():
+    ok, why = Auditor(FakeClient(NO_ANSWER)).should_escalate(
+        build("healthy"), _report_with(_hack_result(ProbeStatus.PASS))
+    )
+    assert ok is True
+    assert "weak evidence" in why
+
+
+def test_the_decision_always_states_a_reason_either_way():
+    """An escalation nobody can account for later is the same as no policy."""
+    for status in (ProbeStatus.PASS, ProbeStatus.NOT_APPLICABLE):
+        _, why = Auditor(FakeClient(NO_ANSWER)).should_escalate(
+            build("healthy"), _report_with(_hack_result(status))
+        )
+        assert why and isinstance(why, str)
