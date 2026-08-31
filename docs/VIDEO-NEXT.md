@@ -53,8 +53,8 @@ removed. Every one has a beat below.
 > that cannot beat "assume every environment is broken" has not earned its
 > runtime.
 >
-> Twenty-eight environments, fifty-four planted defects, one cost model. Flag
-> everything scores 394. Assay scores 43. The saving is 351, separated at 95% — the interval is
+> Thirty-two environments, fifty-four planted defects, one cost model. Flag
+> everything scores 458. Assay scores 56. The saving is 402, separated at 95% — the interval is
 > bootstrapped over environments, not defects, because a verifier that always
 > passes fails six probes at once and resampling defects would count that six
 > times.
@@ -90,8 +90,17 @@ removed. Every one has a beat below.
 
 > The largest single improvement was not a probe. It was pricing — moving from
 > "how many defects did you find" to expected loss under a cost model, which is
-> what took the margin from 50 to 351 and made it separate at all. Seventy-seven
-> of that 351 is arithmetic rather than detection, and the write-up says which.
+> what took the margin from 50 to 402 and made it separate at all. A hundred and
+> forty-one of that 402 is arithmetic rather than detection, and the write-up
+> says which.
+>
+> The second one is that the agent stopped being decoration. Four environments in
+> the corpus have no correct answer, so every finding the deterministic battery
+> reports on them is a false positive — sixteen where there used to be three. The
+> semantic gate withholds thirteen of them and leaves the three real ones
+> standing. Turning the model off costs thirteen points of expected loss, on an
+> interval that excludes zero. That number was written down before the
+> environments it acts on existed.
 >
 > The most *interesting* change is newer, and it is where the agent lives now.
 
@@ -184,8 +193,8 @@ quote that justifies it printed on the card.
 |---|---|---|
 | 1 | three citations | `README.md` § the problem |
 | 2 | `assay audit harbor/self-graded` → exit 1 | live terminal, approval prompt un-cut |
-| 3 | arms table, 394 vs 43 | `results/full_run.json` |
-| 4 | corpus split, 22 of 28 | `results/corpus_splits.json` |
+| 3 | arms table, 458 vs 56 vs 43 | `results/full_run.json` |
+| 4 | corpus split, 25 of 32 | `results/corpus_splits.json` |
 | 5 | Environment Card | `assay audit --card` |
 | 6 | `personality_BFI` INVALID → withheld | `--auditor`, both takes |
 | 7 | semantic gate table | `results/semantic_gate.json` |
