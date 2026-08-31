@@ -124,6 +124,6 @@ nonzero exit is what blocks a training run. That is why it is separated by `;` a
 | Scored against the hackathon rubric, by us | `docs/RUBRIC.md` |
 | What existed before the competition | `docs/LINEAGE.md` |
 | Arithmetic committed before the corpus grew | `docs/PRE-REGISTRATION.md` |
-| Two unfiled upstream disclosures | `docs/disclosures/` |
+| Two upstream disclosures, both filed | `docs/disclosures/` |
 
 Apache-2.0. Code: `github.com/caiotheodoro/assay`.
