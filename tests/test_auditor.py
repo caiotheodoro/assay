@@ -560,3 +560,41 @@ def test_each_withheld_family_gives_its_own_reason():
     assert len(set(reasons.values())) == len(reasons), reasons
     assert "no grading to separate" in reasons["separability"]
     assert "format check" in reasons["spec_verifier_match"]
+
+
+def test_the_corpus_now_contains_environments_the_gate_can_act_on():
+    """The structural reason the agent changed no number, closed.
+
+    Five judges made the same deduction on the 30-point Agent row: the agent is
+    off by default and changes nothing the submission leads with. That was true
+    for a structural reason -- the corpus held no environment without a correct
+    answer, so there was never anything for the gate to withhold and
+    `assay+auditor` scored exactly `assay` by construction.
+
+    Four environments now carry `frozenset()` and mean it: nothing is planted,
+    every finding the battery reports on them is a false positive, and they are
+    scored. `docs/PRE-REGISTRATION-NOANSWER.md` predicted the arithmetic before
+    they existed.
+    """
+    from assay.corpus import entries, ground_truth, provenance
+
+    ids = {env_id for env_id, _, _ in entries()}
+    expected = {
+        "toy-triage/preference",
+        "noanswer/ranking",
+        "noanswer/openended",
+        "inspect_evals/personality_BFI",
+    }
+    missing = expected - ids
+    assert not missing, f"no-correct-answer environments missing from the corpus: {missing}"
+
+    truth, declared = ground_truth(), provenance()
+    for env_id in expected:
+        assert truth[env_id] == frozenset(), (
+            f"{env_id} must plant nothing -- it is registered to measure a false "
+            "positive, and planting anything would make it measure a detection"
+        )
+        note = declared[env_id].note
+        assert note and len(note) > 40, (
+            f"{env_id} carries an empty defect set and must say on what basis"
+        )

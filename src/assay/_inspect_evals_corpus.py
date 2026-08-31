@@ -57,6 +57,26 @@ CATALOG: dict[str, tuple[frozenset[DefectClass], str]] = {
         "reproducibility, so the defect is absent from the environment audited "
         "here and scoring against it would be planting a defect and deleting it.",
     ),
+    "personality_BFI": (
+        frozenset(),
+        "third-party eval audited as shipped, and the only environment in the "
+        "corpus registered because Assay is WRONG about it. The Big Five "
+        "Inventory has no correct answer: five responses are equally valid and "
+        "the trait score comes from `answer_mapping` metadata, not from "
+        "grading. Its scorer's own docstring says it 'checks for response "
+        "format rather than factual correctness', so a format check is the "
+        "right design. The battery returns INVALID with INVERT_PASSES anyway -- "
+        "mechanically correct, semantically wrong -- and that finding is scored "
+        "as the false positive it is. Pinned by "
+        "tests/test_personality_false_positive.py, which establishes the "
+        "upstream half with Assay out of the loop: every offered letter is "
+        "accepted, and appending to the target does not invalidate gold. "
+        "docs/COVERAGE.md argued this environment OUT of the corpus, correctly, "
+        "on the grounds that adding it labelled either way would corrupt the "
+        "number -- true while nothing could withhold the false positive, and "
+        "no longer true now that `--auditor` can. The premise changed, so the "
+        "decision did; see docs/PRE-REGISTRATION-NOANSWER.md.",
+    ),
     "boolq": (
         frozenset({DefectClass.SHORTCUT_LEAK}),
         "third-party eval audited as shipped; label established through "
