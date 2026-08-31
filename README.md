@@ -717,8 +717,18 @@ back, the feedback that shaped its next step, and every human approval.
 Failed turns and malformed replies are kept. Three of the eight are Challenger
 **misses**, one of those is the same `claude-cli` arm failing on the task it
 cracks in another run, and one is the sandbox approval gate **refusing** —
-`DenyAll` is the default, and nothing executes untrusted environment code
-without an approver who leaves a reason.
+nothing executes untrusted environment code without an approver who leaves a
+reason.
+
+`assay audit` asks before it runs anything, and shows you the image, the
+command, every mount, the network state and every resource cap before asking.
+With no terminal to ask at it refuses and exits 3; `--yes`, or
+`ASSAY_APPROVE_ALL="<reason>"` for CI and batch scripts, is the explicit escape,
+and the Environment Card records that the audit ran unattended and on whose
+say-so. That was not true until `docs/changelog/98-approval-gate.md`: the corpus
+built every Harbor environment with a standing approval hard-coded into
+`_harbor_corpus.py`, so the shipped path ran containers nobody had approved
+while this paragraph said otherwise.
 
 ```bash
 uv run --extra adapters python scripts/export_trajectories.py
