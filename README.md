@@ -16,8 +16,20 @@ until you know what missing it costs against what a false alarm costs.
 | `check_env` — the incumbent linter | 3216.0 | [2104, 4448] |
 | `flag_everything` — **the floor that had to be beaten** | 394.0 | [375, 411] |
 | **Assay** | **43.0** | **[0, 125]** |
+| `assay+auditor` — *the same battery, agent on* | 43.0 | — |
 
 Assay saves **351.0 against `flag_everything`, 95% CI [263, 404] — separated.**
+**The agent is in this table, and it changes nothing.** `assay+auditor` runs the same
+battery with the Auditor reading the results before the verdict is recorded
+([`results/auditor_arm.json`](results/auditor_arm.json),
+`scripts/full_run.py --auditor-arm`), and it scores 43.0 on every figure — identical
+recall, precision, misses and spurious. That is the honest result: the corpus contains
+no environment without a correct answer, so the gate has nothing to act on, and the
+claim is that it does no *harm* rather than that it does good. It did do harm, until
+recently: this arm is what caught the gate at **163.0**, deleting real findings, and the
+evidence that it helps is measured off-corpus in
+[`results/semantic_gate.json`](results/semantic_gate.json).
+
 **Seventy-seven of that 351.0 is arithmetic, not detection**, and it is decomposed rather
 than banked. `flag_everything` flags every class in the taxonomy on every environment, so
 its loss is `Σ_env (n_classes − |planted_env|) × false_alarm` — it gets worse whenever the
@@ -56,9 +68,9 @@ Both agent results are opt-in and neither touches the headline above.
 
 ```bash
 # 1. Precision. The battery calls a correctly-designed eval critically broken.
-#    15 environments, 2 of which have no correct answer, 3 runs each.
+#    20 environments, 2 of which have no correct answer, 3 runs each.
 ASSAY_APPROVE_ALL="demo" uv run --extra adapters --extra sweep \
-  python scripts/semantic_gate.py --k 3 --arms claude      # tp 6/6, fp 0/39
+  python scripts/semantic_gate.py --k 3 --arms claude      # tp 6/6, fp 0/54
 
 # 2. Recall. The scripted Challenger finds 14 of 25 paws items and cannot reach
 #    the constant-string exploit a human found by hand. A synthesising one can.
@@ -378,8 +390,8 @@ avoid: `inspect_evals/personality_BFI` comes back INVALID with 25 × `INVERT_PAS
 correct and semantically wrong, because a personality inventory *has no correct answer* and a format
 check is the right design. No probe can see that; it is a question about meaning, not mechanism.
 
-`assay audit --auditor` runs a semantic gate that withholds exactly that verdict. On the 15
-environments in [`results/semantic_gate.json`](results/semantic_gate.json) — the 13 that do have a
+`assay audit --auditor` runs a semantic gate that withholds exactly that verdict. On the 20
+environments in [`results/semantic_gate.json`](results/semantic_gate.json) — the 18 that do have a
 correct answer, plus the 2 that do not:
 
 | backend | withheld the false positive | false overrides | wall clock |
@@ -387,12 +399,12 @@ correct answer, plus the 2 that do not:
 | `claude-cli:sonnet` | **6 of 6 runs** | **0 of 54 runs** | 1733.2s |
 | `ollama:qwen3:8b` | 6 of 6 runs | **6 of 54 runs** | 217.4s |
 
-18 environments — 2 with no correct answer, 16 with one — at three runs each per backend.
+20 environments — 2 with no correct answer, 18 with one — at three runs each per backend.
 **Read the second column, not the first.** A false override hides a real defect, which is
 worse than missing one, so `qwen3:8b` is not a backend to run this with; `--auditor-model`
 exists to say which one you mean.
 
-Five of the sixteen negatives are Harbor environments, and they are there because they
+Five of the eighteen negatives are Harbor environments, and they are there because they
 caught this feature being wrong twice. First the gate was reading `describe()` — which
 carries the verifier's source and the fixture's own metadata — and on
 `harbor/vacuous-tests` both backends read *"The verifier always exits 0"* and concluded

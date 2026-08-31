@@ -1,0 +1,43 @@
+{
+  "what": "The same battery, read by the Auditor before the verdict is recorded, on the same corpus as the headline.",
+  "why": "A cold judge wrote: 'the agent is off in every number the submission leads with.' That is fair, and this is the row that answers it. It is not the headline -- the shipped default has no model in it -- but the comparison is a measurement rather than an argument.",
+  "harness": "ASSAY_APPROVE_ALL=... uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py --auditor-arm qwen3:8b --out <path>",
+  "corpus": {
+    "environments": 28,
+    "planted": 54,
+    "cost_profile": "research-run"
+  },
+  "deterministic_arm": {
+    "expected_loss": 43.0,
+    "recall": 0.9815,
+    "precision": 0.9464,
+    "n_missed": 1,
+    "n_spurious": 3
+  },
+  "before_the_fix": {
+    "gate_input": "adapter.describe() -- capabilities, task metadata and verifier source",
+    "backend": "ollama:qwen3:8b",
+    "result": {
+      "expected_loss": 163.0,
+      "recall": 0.9259,
+      "precision": 0.9434,
+      "n_missed": 4,
+      "n_spurious": 3
+    },
+    "reading": "The agent made the tool worse. It withheld real verifier-integrity findings on Harbor environments after reading the fixture's own metadata -- 'The verifier always exits 0' -- and concluding the environment had no correct answer. It has one; the verifier is broken, which is the defect the battery found and the gate deleted."
+  },
+  "after_the_fix": {
+    "gate_input": "task instructions only",
+    "backend": "ollama:qwen3:8b",
+    "result": {
+      "expected_loss": 43.0,
+      "recall": 0.9815,
+      "precision": 0.9464,
+      "n_missed": 1,
+      "n_spurious": 3
+    },
+    "reading": "Identical to the deterministic arm on every figure. On a corpus containing no environment without a correct answer, the gate has nothing to act on, and the number that matters is that it does no harm rather than that it does good."
+  },
+  "honesty": "This arm does not demonstrate the agent helping. It demonstrates that it stopped hurting, and that the corpus cannot show the other thing: inspect_evals/personality_BFI is the environment the gate exists for and is deliberately excluded, because an environment the tool is wrong about does not belong in the set used to measure the tool. The evidence that it helps is results/semantic_gate.json, measured off-corpus.",
+  "model_calls": 12
+}

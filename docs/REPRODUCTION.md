@@ -340,7 +340,7 @@ is `scripted`.
 
 ```bash
 # The semantic gate: does the model know when there is no right answer?
-# 15 environments, 2 of which have none, k runs each per backend.
+# 20 environments, 2 of which have none, k runs each per backend.
 ASSAY_APPROVE_ALL="semantic gate" uv run --extra adapters --extra sweep \
     python scripts/semantic_gate.py --k 3          # -> results/semantic_gate.json
 ```

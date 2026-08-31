@@ -36,8 +36,8 @@ So a quote that is the entire prompt is now treated as no evidence at all, and
 the gate abstains and says so. The rule is deterministic and is not tuned to this
 corpus: the quote must be shorter than the body it came from.
 
-**Evidence.** `results/semantic_gate.json` — 18 environments, 2 with no correct
-answer, at three runs each.
+**Evidence.** `results/semantic_gate.json` — 20 environments, 2 with no correct
+answer and 18 with one, at three runs each.
 
 | backend | true positives | false positives |
 |---|---|---|
