@@ -130,11 +130,19 @@ true, it is already published, and this document is not a reason to stop quoting
 
 ### Provenance
 
-`EnvAuthor.EXTERNAL` + `LabelSource.EXTERNALLY_DERIVED` — the strongest pair the vocabulary has,
-and the first use of `EXTERNALLY_DERIVED` in the registry. `inspect_evals/{paws,boolq}` are
-`EXTERNAL` + `HAND_TRIAGED`: external environments whose labels a person here established by
-driving upstream's scorer. These are external environments whose labels a *different organisation*
-published, in a repository, at a commit.
+`EnvAuthor.EXTERNAL` + `LabelSource.EXTERNALLY_DERIVED` — the strongest pair the vocabulary has.
+`inspect_evals/{paws,boolq}` are `EXTERNAL` + `HAND_TRIAGED`: external environments whose labels a
+person here established by driving upstream's scorer. These are external environments whose labels a
+*different organisation* published, in a repository, at a commit.
+
+**Correction, added after `tests/test_published_claims.py` caught it.** This section first said
+these were the first use of `EXTERNALLY_DERIVED` in the registry. That is false:
+`openenv/textarena-wordle` has carried it since the OpenEnv corpus landed. The surviving
+distinction is narrower and worth stating exactly — wordle's label was derived outside Assay but
+*decided* here, by reading TextArena's own game state and judging the result a defect; nobody here
+decided which τ² tasks are wrong. The gate that caught it is the same shape as the one this
+document is written under, and it caught an overclaim in the write-up of a change whose whole
+subject is not overclaiming.
 
 ## The fourteen classes that are excluded, and why
 

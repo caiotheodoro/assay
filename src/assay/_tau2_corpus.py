@@ -3,9 +3,17 @@
 These are the only environments in the corpus whose ground truth was
 established by **another organisation**, in a repository, at a commit.
 `inspect_evals/{paws,boolq}` next door are external environments whose labels a
-person here worked out by driving upstream's own scorer; `openenv/*` likewise.
-This is `EnvAuthor.EXTERNAL` + `LabelSource.EXTERNALLY_DERIVED`, and it is the
-first use of `EXTERNALLY_DERIVED` in the registry.
+person here worked out by driving upstream's own scorer.
+
+`EnvAuthor.EXTERNAL` + `LabelSource.EXTERNALLY_DERIVED`, which is the strongest
+pair the vocabulary has -- but **not the first use of it**, and the first draft
+of this file claimed it was. `openenv/textarena-wordle` has carried the same
+pair since the OpenEnv corpus landed. The difference worth stating is narrower
+than "first": wordle's label was *derived* outside Assay but decided here, by
+reading TextArena's own game state and judging the result a defect. Nobody here
+decided which tau2 tasks are wrong; `amazon-agi` did, and published the
+corrected files. Both are honest uses of the enum and only one of them involves
+no judgement call of ours at all.
 
 `docs/ARCHITECTURE.md` said for three slices why this could not be registered:
 tau2's ground truth is task-level *"this record differs between two pinned

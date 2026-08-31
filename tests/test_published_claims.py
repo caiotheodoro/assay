@@ -83,9 +83,13 @@ def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
 
     The second assertion is the one that matters more. `EXTERNAL` says this repo
     did not write the environment; it says nothing about who decided what is
-    wrong with it. Only `EXTERNALLY_DERIVED` does, and until tau2 was registered
-    nothing in the corpus carried it -- every "external" label was still a
-    judgement made here, by hand, against somebody else's scorer.
+    wrong with it. `EXTERNALLY_DERIVED` is the stronger claim, and this assertion
+    exists because the first draft of the tau2 write-up said tau2 was the first
+    use of it and that was **false** -- `openenv/textarena-wordle` has carried it
+    since the OpenEnv corpus landed. The three are not the same kind of evidence
+    and the README must not flatten them: wordle's label was derived here, by
+    reading TextArena's own game state; tau2's was published by another
+    organisation, as corrected task files, at a commit nobody here chose.
     """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
@@ -100,10 +104,10 @@ def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
         for env, p in d["provenance"].items()
         if p["label_source"] == "externally_derived"
     )
-    assert derived == ["tau2/airline", "tau2/retail"], (
-        f"environments whose labels a third party established: {derived}. The README "
-        "distinguishes these from the hand-triaged ones and must be corrected if the "
-        "set changes."
+    assert derived == ["openenv/textarena-wordle", "tau2/airline", "tau2/retail"], (
+        f"environments whose labels were not decided by a judgement call here: {derived}. "
+        "The README distinguishes these from the hand-triaged ones and must be corrected "
+        "if the set changes."
     )
     assert "the twelve environments this repo did not write" not in README
 
@@ -243,11 +247,26 @@ def test_the_llm_baseline_rows_match_the_measured_file():
         assert name in iv["arms"], f"{name} has no bootstrap interval"
         assert iv["arms"][name]["expected_loss"]["ci95"], f"{name} has an empty CI"
 
-    # The claim the rows are there to support.
-    assert arms["direct_prompt"]["expected_loss"] > arms["stratified_random"]["expected_loss"], (
-        "the LLM arm now beats flagging at base rates -- the README says it "
-        "does not, and must be updated with this"
+    # The claim the rows are there to support. It USED to be
+    # `direct_prompt > stratified_random` -- the LLM arm losing outright to
+    # flagging at base rates, separated at [201, 1627]. That flipped when the
+    # taxonomy went 14 -> 16 classes: `stratified_random` draws one
+    # `rng.random()` per class per environment in enum order, so two more
+    # classes reshuffled its whole seeded sequence and cost it +878 with no
+    # change to the corpus, the policy or the detector.
+    #
+    # The honest claim is now the weaker one, and it is what the README says:
+    # the two are not distinguishable. Asserted on the paired bootstrap rather
+    # than on the point estimates, because that is the claim -- and because
+    # asserting the new ordering would be asserting one draw of a stochastic
+    # baseline, which is the substitution this repo objects to elsewhere.
+    paired = iv["arms"]["direct_prompt"]["loss_saved_vs"]["stratified_random"]
+    assert not paired["separated"], (
+        f"direct_prompt vs stratified_random has separated ({paired['point']} "
+        f"{paired['ci95']}); the README says the two are indistinguishable and must "
+        "be corrected in whichever direction this went"
     )
+    assert "indistinguishable from" in README
 
 
 def test_the_method_protocol_quotes_numbers_that_still_hold():

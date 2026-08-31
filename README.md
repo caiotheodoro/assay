@@ -184,10 +184,12 @@ grows, and every expansion pre-registered first
 `uv run --extra adapters --extra tau2 python scripts/corpus_splits.py`, full table in
 [`results/corpus_splits.json`](results/corpus_splits.json). **n=6 is the real size of the third-party
 control.** It went 4 → 6 by registering τ²-bench's retail and airline domains, whose ground truth
-`amazon-agi/tau2-bench-verified` published at a commit — the first two entries in the registry
-carrying `LabelSource.EXTERNALLY_DERIVED` rather than a label somebody here worked out by hand. The
-mapping from "this task record differs between two pinned revisions" onto `DefectClass` is two rules
-and fourteen written exclusions, and it is the part worth attacking:
+`amazon-agi/tau2-bench-verified` published at a commit. Three of the six now carry
+`LabelSource.EXTERNALLY_DERIVED`, and they are not the same kind of evidence:
+`openenv/textarena-wordle`'s label was derived outside Assay but *decided* here, by reading
+TextArena's own game state; **nobody here decided which τ² tasks are wrong.** The mapping from "this
+task record differs between two pinned revisions" onto `DefectClass` is two rules and fourteen
+written exclusions, and it is the part worth attacking:
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md).
 
 **And read that row's `by 46` with the arithmetic next to it.** Two environments carrying 2 planted

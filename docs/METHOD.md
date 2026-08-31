@@ -147,7 +147,12 @@ error** in a number somebody guessed. That was the sharpest criticism of this
 work, and it was only sayable because we ran the sweep.
 
 *(After later work closed two detector misses the crossover moved to 942, a 685%
-margin. The check did not change; the tool did.)*
+margin. The check did not change; the tool did. It then moved again, to **1100**
+— an 816% margin — and that time the tool did not change either: the crossover's
+numerator is `flag_everything`'s loss, and two probe families added to the
+taxonomy plus two τ² environments added to the corpus raised it. A safety margin
+that widens because the floor got worse is a different fact from one that widens
+because the detector got better, and only the second is a result.)*
 
 **The check.** The crossover is analytic, not a bisection: if your detector's
 loss is all misses and the floor's is all false alarms, they cross at
@@ -256,19 +261,33 @@ second kind.
 
 It does not make the tool better at finding defects. On that axis we are behind
 the field and say so — ABA audits 34,285 tasks, BenchJack 219 flaws across ten
-benchmarks, and our corpus is 26 environments of which **4** are genuinely
-third-party.
+benchmarks, and our corpus is 28 environments of which **6** are genuinely
+third-party. Two of those six are τ²-bench domains whose ground truth another
+organisation published at a commit, and on those 164 tasks, *per task*, our
+recall is 0.339 and does not beat flagging at random.
 
 What it buys is that every number here can be interpreted. When we say the
-detector separates from its floor — 274.0 saved, 95% CI [186, 326] — that
+detector separates from its floor — 351.0 saved, 95% CI [263, 404] — that
 sentence has a floor behind it, a cost sweep, a provenance split, a
 pre-registration, and an adversary who tried to break it and is quoted where it
-succeeded.
+succeeded. It also has a decomposition: of that 351.0, **77.0 is the taxonomy
+and the corpus growing and 274.0 is the detector**, and the first number is
+published because nothing forced it to be.
 
 **Two rules underneath all six.** Absence of evidence is reported as loudly as
 evidence: a check that could not run must never read as a check that passed. And
 a correction that improves your own score carries the burden of proof — when
 relabelling two fixtures lifted our precision from 0.959 to 1.000, the labels
 were re-derived from the environments' own scripts with our tool out of the
-loop, and **both numbers were published**, because the margin was 274.0 either
-way and the result had to be shown not to depend on it.
+loop, and **both numbers were published**, because the margin was 274.0 at the
+time either way and the result had to be shown not to depend on it.
+
+That 1.000 no longer holds and the rule is why we can say so cleanly. Precision
+is **0.9464**: registering two τ²-bench domains under a label an outside
+organisation published cost three spurious findings, because an externally
+derived label is a lower bound on what is wrong with an environment and
+`Outcome.spurious` scores everything outside it as a false alarm. The
+same burden applies with the sign flipped — the easy fix would have been to
+widen the label until the false alarms disappeared, and that is the move
+`docs/PRE-REGISTRATION-TAU2.md` was written to make visible rather than
+available.
