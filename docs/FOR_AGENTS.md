@@ -15,7 +15,7 @@
   "margin_that_is_not_detection": "77.0 of the 351.0 is arithmetic — two defect classes and two environments added to the floor, not detection. Against the taxonomy and corpus this was first measured on the margin is 274.0 (docs/PRE-REGISTRATION-TAU2.md)",
   "cost_crossover": "1099.53h vs shipped 120h — survives 816% error",
   "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (751 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
-  "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
+  "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 3.8s vs 261.7s (results/scripted_floor.json))",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
     "code_and_changelog": "shipped — docs/CHANGELOG.md, 58 fragments",
@@ -130,7 +130,7 @@ The Challenger's job is to find a way to score well without doing the task. In t
 found the exploit — writing `expected.txt` to match its own output — at turn 8, in 262s.
 That exploit class was then written down (against BenchJack's V7/V1 taxonomy) as a
 scripted policy, and the current 6-policy scripted Challenger finds the same gap of
-1.00 in about **2 seconds**.
+1.00 in **3.8 seconds** ([`results/scripted_floor.json`](../results/scripted_floor.json)).
 
 **Compiling a discovery into a cheap deterministic check is what a good agentic
 workflow is supposed to produce.** The agent did the search; the script now holds the

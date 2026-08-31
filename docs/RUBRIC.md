@@ -77,7 +77,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 2. **The agentic surface is small, at an agentic-workflows hackathon.** 10 of the 11
    probe families are deterministic programs. The Challenger found the reward-hack
    exploit class that a scripted attacker and `qwen3:8b` both missed, and that class
-   was then compiled into a scripted policy that finds the same gap in ~2s instead of
+   was then compiled into a scripted policy that finds the same gap in 3.8s instead of
    262s. That is the correct engineering outcome and it is reported as the result
    rather than hidden — but a reviewer counting agency will count less of it here than
    in a submission that keeps a model on the critical path. The argument for why that

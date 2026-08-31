@@ -822,4 +822,22 @@ def test_the_agent_measurements_are_gated_like_every_other_number():
         ROOT / "README.md"
     ).read_text(), f"the README does not carry the scripted floor of {floor}/25"
 
+    # The scripted floor's timing was invented once and lived in four documents
+    # (docs/changelog/108). It is measured now, so nothing may quote the old one.
+    floor_secs = json.loads((ROOT / "results" / "scripted_floor.json").read_text())
+    measured = floor_secs["measured"]["seconds"]
+    retracted = re.compile(r"~2s|\b2s vs 26\ds\b|about \*\*2 seconds\*\*")
+    for name in live + ["docs/RUBRIC.md"]:
+        path = ROOT / name
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            if any(m in line.lower() for m in historical):
+                continue
+            if retracted.search(line):
+                bad.append(
+                    f"{name}: quotes the retracted ~2s scripted floor; "
+                    f"results/scripted_floor.json measured {measured}s"
+                )
+
     assert not bad, "agent measurements misstated:\n  " + "\n  ".join(bad)

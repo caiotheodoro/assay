@@ -79,7 +79,7 @@ hackability. That is the design, and there are two agents around them, both opt-
 The **Challenger** (`--challenger`) found the reward-hack exploit class
 (`claude-cli`, turn 8, 262s) where a scripted attacker and `qwen3:8b` both missed;
 that class was then written down as a policy, and the scripted Challenger now finds
-the same gap in ~2s. Compiling a discovery into a cheap deterministic check is what
+the same gap in 3.8s (`results/scripted_floor.json`). Compiling a discovery into a cheap deterministic check is what
 the workflow is for — and it means the agent is not load-bearing here.
 
 The **Auditor** (`--auditor`) is the case where no script can take over. It withholds
