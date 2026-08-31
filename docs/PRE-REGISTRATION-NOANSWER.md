@@ -119,3 +119,45 @@ environment is an anchor, not a sample. It claims a specific false-positive
 class exists, that the deterministic battery pays for it, and that the gate
 recovers it — measured on a set assembled to contain that class, and reported
 with the authored share separated out.
+
+---
+
+## Addendum — corrections to this document, added after the run
+
+The predictions above are left exactly as committed. Two claims in them were
+wrong, and both are recorded rather than edited.
+
+**1. "of the 246 tasks `inspect_evals` registers, a deliberately broad lexical
+filter matches four".** True, and it does not support the sentence it was used
+to support. The filter reads task *names*, so it cannot match `stereoset`,
+`bold`, `novelty_bench`, `moru`, `anima`, `tac_welfare`, `ape_eval` or
+`make_me_pay`. "One survives" was a fact about the filter presented as a fact
+about the ecosystem, and it excused a positive set that is three-quarters
+authored here. Withdrawn as `docs/RETRACTIONS.md` entry 21.
+
+**2. Falsification criterion 1 appeared to fire, and had not.** The first run of
+the auditor arm returned **51.0** rather than the predicted 43.0, with
+`openenv/textarena-wordle` reporting no defects at all in the `assay+auditor`
+arm and `NONDETERMINISM` in `assay`.
+
+It does not reproduce. Traced first: the Auditor never touched that environment
+— `wordle` appears nowhere in the arm's decision log, `determinism` is not in
+`SEMANTIC_SCOPE`, and `Auditor.audit()` runs the identical battery. Then
+measured: the determinism probe fires 20 of 20 standalone, the full battery over
+all 32 environments twice in one process is identical on every environment and
+every probe status, the Auditor wrapper preserves the finding 3 of 3 with zero
+model calls, and a second arm run returned **43.0** with the defect present in
+both arms.
+
+So one measurement in one run disagreed with four subsequent ones and no
+mechanism was found. It is reported because a number that cannot be explained is
+worth more as a published anomaly than as a rerun that happened to agree, and
+because it is the argument for the repeat gate that now exists.
+
+**What the criteria did catch.** Criterion 1 sent us looking, and what the search
+found was a real defect one layer away: the corpus scorer had no state for a
+probe that declined to run, so `inspect_evals/boolq` was charged a full miss for
+`SHORTCUT_LEAK` on a probe that returns `NOT_APPLICABLE` for want of a train
+split. Assay's only published miss was never a miss. That is fixed, and no
+headline number improved as a result — an unchecked defect is priced exactly as
+a missed one.

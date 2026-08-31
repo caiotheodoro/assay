@@ -138,14 +138,17 @@ def main() -> int:
         "scope": "An override may only move a verifier_integrity DEFECT to "
                  "NOT_APPLICABLE. It can never produce a PASS and can never reach "
                  "another probe family.",
-        "corpus_note": "n_positive is 2, and that is a ceiling rather than a choice. Of "
-                       "the 246 tasks inspect_evals registers, a deliberately broad "
-                       "lexical filter matches four: personality_TRAIT is gated, "
-                       "writingbench is scored by an LLM judge and this project scores "
-                       "nothing with a judge, and bbq turns out to have correct answers "
-                       "and is used as a negative. Environments with no correct answer "
-                       "are rare in the eval ecosystem, which is part of why the "
-                       "false positive went unnoticed.",
+        "corpus_note": (
+            "n_positive is 2 here, and that is what one name-only filter found rather "
+            "than a ceiling on the ecosystem. Run over the 246 tasks inspect_evals "
+            "registers, the filter matches bbq, personality_BFI, personality_TRAIT and "
+            "writingbench, and it cannot match stereoset, bold, novelty_bench, moru, "
+            "anima, tac_welfare, ape_eval or make_me_pay, whose names carry none of its "
+            "words. personality_TRAIT is gated, writingbench is scored by an LLM judge "
+            "and this project scores nothing with a judge, and bbq turns out to have "
+            "correct answers and is used as a negative. An earlier revision called 2 a "
+            "ceiling; see docs/RETRACTIONS.md entry 21."
+        ),
         "k": args.k,
         "assay_revision": _revision(),
         "backends": {},

@@ -12,7 +12,7 @@ twelve of them: a correction that lands one document downstream of the one peopl
 read is how a broken benchmark stays broken. A repository arguing that unaudited
 numbers are the problem does not get to delete its own.
 
-Twenty entries. Twelve are the red-team's; the other eight were found afterwards by the
+Twenty-one entries. Twelve are the red-team's; the rest were found afterwards by the
 same method, three of them while collecting this file.
 
 ---
@@ -341,10 +341,40 @@ and no `before_the_fix` figure.
 
 ---
 
+## 21. "n_positive is 2, and that is a ceiling rather than a choice"
+
+> "n_positive is 2, and that is a ceiling rather than a choice. Of the 246 tasks
+> inspect_evals registers, a deliberately broad lexical filter matches four"
+
+Published in `results/semantic_gate.json` and repeated in
+`scripts/semantic_gate.py` and `docs/PRE-REGISTRATION-NOANSWER.md`, where it did
+real work: it excused a corpus of environments with no correct answer that was
+three-quarters written here, on the grounds that the ecosystem had no more to
+offer.
+
+The filter is applied to task **names** and nothing else. Run over all 246
+registered tasks it matches `bbq`, `personality_BFI`, `personality_TRAIT` and
+`writingbench` — and cannot match `stereoset`, `bold`, `novelty_bench`, `moru`,
+`anima`, `tac_welfare`, `ape_eval` or `make_me_pay`, none of which carries a
+matching word in its name. `stereoset` is the clearest case: its
+`multiple_choice_scorer` accepts two of the options as correct and its real
+signal is a signed bias metric over metadata, which is the same shape as
+`personality_BFI`.
+
+So two is a ceiling **of the filter**, not of the ecosystem, and the sentence
+asserted the second while having measured only the first. The honest version of
+the claim was always available: a name-only filter found one usable external
+example, and no one had looked past it.
+
+Live claim: the corpus note states what the filter searched, and the count of
+external no-answer environments is whatever the corpus actually holds.
+
+---
+
 ## What this list is evidence of
 
 Twelve of these were found by turning this repository's own instruments on itself
-(`docs/RED-TEAM.md`). Eight were found afterwards, by the same method, in the documents
+(`docs/RED-TEAM.md`). Nine were found afterwards, by the same method, in the documents
 that recorded the first twelve — the most recent by an outside judge who went looking
 for the command behind a number and found prose. That rate is the point: **an auditing tool is not
 exempt from the thing it audits, and the only defence is to run the audit on yourself
