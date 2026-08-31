@@ -87,3 +87,44 @@ Two external environments is not a sample. It claims the false-positive class is
 real, is not confined to one eval, and takes more than one mechanical form —
 measured on a set assembled to contain it, with the authored share still stated
 separately.
+
+---
+
+## Measured
+
+Run after this document was committed, with
+`scripts/full_run.py --llm-arms qwen3:8b --auditor-arm claude`.
+
+| | predicted | **measured** |
+|---|---|---|
+| corpus size | 33 | **33** |
+| planted defects | 54 | **54** |
+| `flag_everything` | 474.0 | **474.0** |
+| `assay` | 57.0 | **57.0** |
+| `assay` false positives | 17 | **17** |
+| `assay` precision | 0.7571 | **0.757** |
+| **`assay+auditor`** | **43.0** | **43.0** |
+| `assay+auditor` precision | 0.9464 | **0.946** |
+| recall, both arms | 0.9815 | **0.982** |
+
+**Every row, including the one that was actually at risk.** This document named
+the gate withholding at all as the prediction most likely to fail, for two
+stated reasons: `stereoset` accepts *two* options as correct, so "yes, it has
+correct answers" is a defensible reply, and its prompts are bare context
+sentences short enough that the abstention guard could fire on any worked
+example. Neither happened. The gate withheld the `GOLD_FAILS` finding and the
+arm landed on 43.0, unmoved by adding an environment the deterministic battery
+is wrong about.
+
+**All four falsification criteria pass.** `assay` is 57.0, not something else;
+`assay+auditor` is 43.0; recall did not move; and `GOLD_FAILS` fired 10 times as
+both verification runs said it would.
+
+**What this now supports, and what it still does not.** Two external
+environments, wrong by two mechanisms — a format-only scorer producing
+`INVERT_PASSES`, and a bias metric read as a grade producing `GOLD_FAILS` — and
+the same gate recovers both without touching the three τ² findings, which are
+real. That is a class rather than an anecdote. It is still two environments, it
+is still a set assembled to contain the thing the gate fixes, and the three
+authored no-answer environments still carry most of the arithmetic. None of that
+changed.
