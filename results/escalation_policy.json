@@ -2,13 +2,19 @@
   "what": "When is a second, expensive attacker worth running at all?",
   "why": "A model Challenger costs minutes where the scripted one costs about two seconds. Escalating everywhere is not a design, it is a bill. This measures how selective the policy actually is on the shipped corpus.",
   "policy": "Escalate only where the scripted attacker returned PASS and the environment declares fewer than 5 trivial policies, so the silence is thin evidence rather than a saturated floor.",
-  "n_environments": 26,
+  "harness": "uv run --extra adapters --extra openenv --extra tau2 python scripts/escalation_policy.py",
+  "assay_revision": {
+    "commit": "79e75fc1f84699be56b5c7c6597492ca38fd0e4a",
+    "dirty": false
+  },
+  "model_calls": 0,
+  "n_environments": 28,
   "escalates": 12,
-  "refuses": 14,
+  "refuses": 16,
   "refusal_reasons": {
     "already found an exploit": 10,
-    "repertoire wide enough": 2,
-    "probe did not run": 2
+    "probe did not run": 4,
+    "repertoire wide enough": 2
   },
   "rows": [
     {
@@ -140,8 +146,16 @@
       "env": "openenv/textarena-wordle",
       "escalate": false,
       "why": "the probe did not run (NOT_APPLICABLE); nothing to escalate"
+    },
+    {
+      "env": "tau2/retail",
+      "escalate": false,
+      "why": "the probe did not run (NOT_APPLICABLE); nothing to escalate"
+    },
+    {
+      "env": "tau2/airline",
+      "escalate": false,
+      "why": "the probe did not run (NOT_APPLICABLE); nothing to escalate"
     }
-  ],
-  "reading": "The refusals are the point. The largest bucket is environments where the scripted attacker already found the exploit -- there a second attacker cannot add information, because CompositeChallenger concatenates and the hackability probe takes the max gap. docs/changelog/84-agentic-remeasured.md established that as an argument; this is the code that acts on it.",
-  "honesty": "This is a cost-control policy and its effect on detection is NOT measured here. Whether escalation finds anything depends on what it escalates to, and that is results/policy_synthesis.json, not this file."
+  ]
 }
