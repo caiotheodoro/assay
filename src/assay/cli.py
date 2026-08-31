@@ -10,7 +10,7 @@ from . import audit
 from .adapter import close_adapter
 from .corpus import entries
 from .fixtures import CATALOG, build
-from .probes import all_probes
+from .probes import FAMILIES_NOT_PLANTED_IN_FIXTURES, all_probes
 
 
 def _selftest(args) -> int:
@@ -25,7 +25,9 @@ def _selftest(args) -> int:
         for r in audit(build(variant)).results
         if r.findings
     }
-    never = sorted({p.family for p in all_probes()} - fired - {"difficulty_band"})
+    never = sorted(
+        {p.family for p in all_probes()} - fired - set(FAMILIES_NOT_PLANTED_IN_FIXTURES)
+    )
     for variant, diff in failures:
         print(f"MISMATCH {variant}: {diff}", file=sys.stderr)
     if never:

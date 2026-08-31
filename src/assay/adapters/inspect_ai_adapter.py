@@ -158,6 +158,13 @@ class InspectAdapter(BaseAdapter):
         # which needs at least two distinct targets to draw from.
         if len({self._target_text(s) for s in self._samples}) > 1:
             caps.add(Capability.GRADED_POLICIES)
+        # Declared only when every scorer's source is actually obtainable. A
+        # scorer defined in a REPL, a C extension, or behind a decorator that
+        # discards `__wrapped__` has no source to read, and claiming the
+        # capability anyway would put the refusal at the probe instead of in the
+        # manifest where a caller can see it before running anything.
+        if self._scorer_sources() is not None:
+            caps.add(Capability.VERIFIER_SOURCE)
         if self._train:
             caps.add(Capability.SPLITS)
             if any(self._parts(s) for s in self._train):
@@ -284,6 +291,49 @@ class InspectAdapter(BaseAdapter):
         if not self._train:
             raise NotSupported("suite ships no separate train split to compare against")
         return self._items(self._samples, "eval")
+
+    def verifier_source(self, task_id: str) -> str:
+        """Every scorer's own source, concatenated, for family 11 to parse.
+
+        Per-suite rather than per-task: an inspect_ai `Task` has one scorer list
+        for the whole dataset, so every sample returns the same text and the
+        probe deduplicates on it.
+
+        Refuses the whole thing if any one scorer's source cannot be read.
+        Handing back the readable half would let a verifier pass a static scan
+        by having its dangerous part live somewhere `getsource` cannot reach,
+        which is the one shape this check must not be able to miss.
+        """
+        sources = self._scorer_sources()
+        if sources is None:
+            raise NotSupported(
+                "at least one scorer's source could not be read, so the verifier "
+                "cannot be analysed in full; a partial scan would report a clean "
+                "result over source nobody saw"
+            )
+        return "\n\n".join(sources)
+
+    def _scorer_sources(self) -> list[str] | None:
+        """Dedented source for each scorer, or None if any is unavailable.
+
+        Each block is prefixed with the scorer's qualified name as a comment, so
+        a finding's line number points somewhere a reader can find. Line numbers
+        are within this text, not within the original file.
+        """
+        import inspect as pyinspect
+        import textwrap
+
+        if not self._scorers:
+            return None
+        out = []
+        for fn in self._scorers:
+            try:
+                source = pyinspect.getsource(fn)
+            except (OSError, TypeError):
+                return None
+            name = getattr(fn, "__qualname__", "scorer")
+            out.append(f"# scorer: {name}\n{textwrap.dedent(source)}")
+        return out
 
     def verifier_asserts(self, task_id: str) -> list[str]:
         """Only when the suite states them. A generic 'output matches target'

@@ -13,8 +13,8 @@
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
   "result": "assay 40.0 vs flag_everything 314.0, saved 274.0 [186, 326] separated, wins 4/4 cost profiles, separates 3/4",
   "cost_crossover": "942h vs shipped 120h — survives 685% error",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (594 passed, 0 skipped) + uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key)",
-  "agentic_core": "8 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (650 passed, 0 skipped) + uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key)",
+  "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
     "code_and_changelog": "shipped — docs/CHANGELOG.md, 49 fragments",
@@ -37,8 +37,8 @@
 
 - **Problem:** Labs buy RL envs/evals as products. Nobody QAs them. Fixes are 93 devs hand-triaging (SWE-bench) or never finding out.
 - **Incumbent ceiling:** `env_checker` catches 1 of 4 planted defects (`results/real_check_env.json`), 2 of 50 on corpus. It checks "will it crash", never "does it measure".
-- **Assay:** Point at env → 9 probe families run → `Environment Card` with `VALID / INVALID / UNVERIFIED` + exit code + every claim tied to evidence.
-- **Why the alternatives don't cover it:** static tools read files, dynamic tools run one check; none bundles 9 families under one expected-loss metric with `could-not-run` reported as loudly as defects. Matrix below.
+- **Assay:** Point at env → 11 probe families run → `Environment Card` with `VALID / INVALID / UNVERIFIED` + exit code + every claim tied to evidence.
+- **Why the alternatives don't cover it:** static tools read files, dynamic tools run one check; none bundles 11 families under one expected-loss metric with `could-not-run` reported as loudly as defects. Matrix below.
 
 ---
 
@@ -82,7 +82,7 @@ nothing. The arm that had to be beaten is `flag_everything`, which catches every
 by construction. For most of this project's life, Assay did not beat it.
 
 ### 03. Does the agent solve it well?
-**Nine probe families** (`README.md` § *The probes*) — 8 deterministic programs + 1 Challenger:
+**Eleven probe families** (`README.md` § *The probes*) — 10 deterministic programs + 1 Challenger:
 
 | Family | Asks | Miss = |
 |---|---|---|
@@ -103,7 +103,7 @@ actually stopping things, and a cost table. One command per result:
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 594 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 650 passed, 0 skipped
 uv run --extra adapters --extra openenv python scripts/full_run.py   # headline: 26 envs, 50 defects, 22s, no GPU/key
 uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code
 ```
@@ -116,7 +116,7 @@ Video numbers are data-bound, not transcribed: `video/src/data/results.ts` impor
 ## Where the agent actually is
 
 This is the question a reviewer should press hardest at an *agentic workflows*
-hackathon, so it is answered here rather than buried: **8 of the 9 probe families are
+hackathon, so it is answered here rather than buried: **10 of the 11 probe families are
 deterministic programs, and only the Challenger is an agent.** That is the design, and
 the history behind it is the interesting part.
 
@@ -242,7 +242,7 @@ about this repository, not as a comparison against work not seen.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 594 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 650 passed, 0 skipped
 uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
@@ -251,7 +251,7 @@ uv run --extra adapters assay audit harbor/self-graded --card /tmp/c.html; head 
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **594 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **650 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

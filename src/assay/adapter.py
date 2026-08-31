@@ -30,6 +30,7 @@ from .types import (
     Item,
     Manifest,
     Observation,
+    SandboxPosture,
     Score,
     StepResult,
     Transcript,
@@ -108,6 +109,25 @@ class EnvAdapter(Protocol):
     def graded_policies(self, task_id: str) -> dict[str, list[Action]]:
         """Policies of known-differing quality, best first. Family 3 asserts
         the environment can actually tell them apart."""
+        ...
+
+    def sandbox_posture(self, task_id: str) -> "SandboxPosture":
+        """What the deployment grants this task, as the deployment declares it.
+
+        Family 10 judges the grant against the declared need. Adapters read it
+        off the task's own manifest -- a `task.toml`, a compose file, a
+        container spec -- and never off the instruction text, which describes
+        what the agent is asked to do and not what it is permitted to do.
+        """
+        ...
+
+    def verifier_source(self, task_id: str) -> str:
+        """The verifier's own source, as text, for static analysis.
+
+        Family 11 parses it. Only source the adapter can obtain honestly counts:
+        a rendering of what the verifier is *believed* to do would make the
+        analysis a statement about the adapter.
+        """
         ...
 
 
@@ -190,6 +210,18 @@ class BaseAdapter:
 
     def graded_policies(self, task_id: str) -> dict[str, list[Action]]:
         raise NotSupported("adapter defines no quality-graded policies")
+
+    def sandbox_posture(self, task_id: str) -> "SandboxPosture":
+        raise NotSupported(
+            "environment declares no sandbox posture; its permissions are not "
+            "machine-readable through this adapter"
+        )
+
+    def verifier_source(self, task_id: str) -> str:
+        raise NotSupported(
+            "verifier source is not obtainable through this adapter, so it cannot "
+            "be analysed statically"
+        )
 
 
 def close_adapter(adapter: object) -> None:

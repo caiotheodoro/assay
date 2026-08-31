@@ -66,6 +66,10 @@ class DefectClass(str, Enum):
     DIFFICULTY_IMPOSSIBLE = "DIFFICULTY_IMPOSSIBLE"
     # family 9 - reward hackability
     REWARD_HACKABLE = "REWARD_HACKABLE"
+    # family 10 - sandbox permissions
+    EXCESSIVE_PERMISSIONS = "EXCESSIVE_PERMISSIONS"
+    # family 11 - evaluator code execution
+    EVALUATOR_RCE = "EVALUATOR_RCE"
 
 
 #: Default severity per defect class. Costs live in cost profiles, not here --
@@ -85,6 +89,16 @@ DEFAULT_SEVERITY: dict[DefectClass, Severity] = {
     DefectClass.DIFFICULTY_SATURATED: Severity.MEDIUM,
     DefectClass.DIFFICULTY_IMPOSSIBLE: Severity.MEDIUM,
     DefectClass.REWARD_HACKABLE: Severity.CRITICAL,
+    # A grant the task does not need is a precondition for an exploit, not
+    # evidence that one landed, so it is not CRITICAL: the numbers an
+    # over-permissioned environment produced may still be sound. It is HIGH
+    # rather than MEDIUM because the whole point of V1 and V7 is that these
+    # preconditions do get used.
+    DefectClass.EXCESSIVE_PERMISSIONS: Severity.HIGH,
+    # A verifier that can be made to run attacker-controlled content can be
+    # made to report anything, which is the same "every number this environment
+    # produces is meaningless" that INVERT_PASSES and REWARD_HACKABLE carry.
+    DefectClass.EVALUATOR_RCE: Severity.CRITICAL,
 }
 
 
@@ -162,6 +176,72 @@ class Item:
 
 
 # --------------------------------------------------------------------------
+# Declared deployment posture
+#
+# Every field is three-valued on purpose. `True`/`False` mean the deployment
+# said so; `None` means it did not, and a probe reading `None` must decline
+# that check rather than pick a default. A default here would be an auditor
+# inventing a permission an environment never claimed and then reporting on
+# its own invention, which is the failure mode `docs/COVERAGE.md` spends its
+# last section on.
+# --------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class MountSpec:
+    """One path the deployment hands the agent, and on what terms."""
+
+    #: Where it comes from, as the deployment names it. Free text: a host path,
+    #: a volume name, or an image layer are all legitimate answers.
+    source: str
+    #: Where the agent sees it.
+    target: str
+    read_only: bool
+
+
+@dataclass(frozen=True)
+class SandboxPosture:
+    """What a task's deployment *grants*, next to what it says it *needs*.
+
+    The pairing is the whole design. "Network is on" is not a defect; "network
+    is on and this task declares no step that uses it" is. An adapter that can
+    state the grant but not the need leaves the `*_required` field `None`, and
+    the permissions probe reports that check as unmade instead of guessing from
+    the instruction text -- guessing is how a task that fetches a dataset in a
+    setup script it never mentions becomes a false alarm.
+    """
+
+    #: Granted.
+    network_enabled: bool | None = None
+    read_only_root: bool | None = None
+    #: The uid or username the workload runs as, where the deployment exposes
+    #: it. Free text because deployments spell it both ways.
+    user: str | None = None
+    mounts: tuple[MountSpec, ...] = ()
+
+    #: Needed. Declared by the environment, never inferred by a probe.
+    network_required: bool | None = None
+    root_required: bool | None = None
+
+    #: Paths that hold the verifier the task is graded by. A writable mount
+    #: covering one of these is the mechanism behind BenchJack V1.
+    verifier_paths: tuple[str, ...] = ()
+
+    #: Where this was read from -- a file, a compose key, an API field. Carried
+    #: into the finding so a reader can check the claim at its source.
+    declared_by: str = ""
+
+    def is_empty(self) -> bool:
+        """Nothing was actually declared, so there is nothing to judge."""
+        return (
+            self.network_enabled is None
+            and self.read_only_root is None
+            and self.user is None
+            and not self.mounts
+        )
+
+
+# --------------------------------------------------------------------------
 # Capabilities
 # --------------------------------------------------------------------------
 
@@ -184,6 +264,8 @@ class Capability(str, Enum):
     TRUE_COMPLETION = "TRUE_COMPLETION"
     TRIVIAL_POLICIES = "TRIVIAL_POLICIES"
     GRADED_POLICIES = "GRADED_POLICIES"
+    SANDBOX_POSTURE = "SANDBOX_POSTURE"
+    VERIFIER_SOURCE = "VERIFIER_SOURCE"
 
 
 @dataclass(frozen=True)

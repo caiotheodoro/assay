@@ -84,6 +84,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator
 
 from .adapters.inspect_ai_adapter import ANSWER_TOOL, InspectAdapter
+from .astscan import dotted
 from .types import Action, Capability, Score, Transcript
 
 # --------------------------------------------------------------------------
@@ -511,13 +512,18 @@ def state_reads(fn: Any) -> set[str]:
     reads: set[str] = set()
 
     def chain(node: ast.AST) -> str | None:
-        parts: list[str] = []
-        while isinstance(node, ast.Attribute):
-            parts.append(node.attr)
-            node = node.value
-        if isinstance(node, ast.Name) and node.id == state_name:
-            return ".".join(["state", *reversed(parts)])
-        return None
+        """The dotted chain, but only when it is rooted in the state argument,
+        and renamed to `state` so the allow-list reads the same whatever the
+        scorer called its parameter. `astscan.dotted` does the flattening --
+        `probes/evaluator.py` needs the identical primitive and there is no
+        second copy of it."""
+        path = dotted(node)
+        if path is None:
+            return None
+        root, sep, rest = path.partition(".")
+        if root != state_name:
+            return None
+        return f"state.{rest}" if sep else "state"
 
     def visit(node: ast.AST) -> None:
         if isinstance(node, ast.Attribute):

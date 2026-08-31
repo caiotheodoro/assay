@@ -54,7 +54,7 @@ carries a `"why"` field saying so.
 
 ## Where the agent is
 
-8 of the 9 probe families are deterministic programs; only the Challenger is an
+10 of the 11 probe families are deterministic programs; only the Challenger is an
 agent. That is the design. The agent found the reward-hack exploit class
 (`claude-cli`, turn 8, 262s) where a scripted attacker and `qwen3:8b` both missed;
 that class was then written down as a policy, and the scripted Challenger now finds
@@ -65,14 +65,14 @@ the workflow is for. No LLM judges any verdict anywhere in Assay.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 594 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 650 passed, 0 skipped
 uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --card /tmp/c.html; head -40 /tmp/c.html
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **594 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **650 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

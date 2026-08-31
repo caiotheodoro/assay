@@ -26,7 +26,7 @@ training run. The card carries a content digest, and an HMAC signature when
 corruption; it is not tamper-evidence, because anyone editing the body can
 recompute it.
 
-> **Status: early.** All nine probe families and six adapters — inspect_ai,
+> **Status: early.** All eleven probe families and six adapters — inspect_ai,
 > Harbor, OpenEnv, submitted specs, τ²-bench and ScienceAgentBench — are
 > implemented and tested. The corpus spans four ecosystems; the wild sweep
 > covers 246 registered `inspect_evals` tasks. The GRPO-trained Challenger
@@ -36,7 +36,7 @@ recompute it.
 
 ### What the agent actually does here
 
-Eight of the nine probe families are deterministic programs; only the Challenger is an
+Ten of the eleven probe families are deterministic programs; only the Challenger is an
 agent, and no LLM judges any verdict anywhere in Assay. That is the design, and the
 history is the argument for it: the Challenger found the reward-hack exploit class that
 a scripted attacker and `qwen3:8b` both missed, and that class was then written down as
@@ -395,6 +395,21 @@ the table above is after.) `paws` was detected; `boolq` was missed, structurally
 `NOT_APPLICABLE` before it runs and the verdict is `UNVERIFIED`, not clean.
 Assay had previously called `boolq` clean, and it is in the corpus because of
 that false negative rather than despite it.
+
+**The same lever runs the other way, and it has since been pulled.** That
+formula has two inputs and the pre-registration only guarded one. `|planted|`
+is the corpus; the `14` is the size of `DefectClass`, so **adding a defect class
+makes `flag_everything` worse by one point per environment** — for a class no
+environment can even be labelled with. Adding the V8 and V3 families took the
+taxonomy to 16, and a re-run of `scripts/full_run.py` now puts the floor at
+**366.0 against the published 314.0**: +52, exactly 26 × 2, with Assay's own
+40.0 and every `per_env` row unchanged. The published saving would grow 274.0 →
+326.0 without the tool detecting anything new. **No results file was
+regenerated on that basis**; the arithmetic is written up in
+[`docs/changelog/97-dead-zone-probes.md`](docs/changelog/97-dead-zone-probes.md),
+and whether the floor should range over the whole taxonomy or only over the
+classes the corpus can carry is an open question about the metric, not something
+to settle by re-running the script.
 
 `research-run`; the other three profiles are in the file.
 
@@ -839,8 +854,17 @@ measured; it is now a number.
 | Determinism | Same seed, same result? | every comparison is partly noise |
 | Difficulty band | Is the solve rate in a learnable range? | it contributes noise, not learning |
 | Reward hackability | Can a policy score well without doing the job? | training on it teaches the exploit |
+| Sandbox permissions | Does the deployment grant more than the task needs? | an exploit needs no cleverness, only the manifest |
+| Evaluator code execution | Can the verifier be made to run what it is grading? | the agent writes a sentence instead of a solution |
 
-Families 1–8 are deterministic programs. Family 9 is an adversarial
+The last two close BenchJack's V8 and V3, and they are the newest and the least
+proven: **no shipped adapter declares `SANDBOX_POSTURE`**, so the permissions
+family is `NOT_APPLICABLE` on all 26 corpus environments, and the static scan
+needs Python source, which only `InspectAdapter` can hand over.
+[`docs/COVERAGE.md`](docs/COVERAGE.md) says what that costs and names the one
+corpus environment that would fire.
+
+Families 1–8, 10 and 11 are deterministic programs. Family 9 is an adversarial
 **Challenger** agent -- scripted, prompted, or GRPO-trained. **No LLM judge
 scores anything inside Assay.** The Challenger only ever proposes actions; every
 one of them is scored by a program, and the ground truth it is scored against
