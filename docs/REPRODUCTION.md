@@ -322,6 +322,46 @@ mid-session leaves its container behind, `assay reap --dry-run` lists it as
 `ORPHANED`, `assay reap` removes exactly it, and containers belonging to other
 live pids are left alone.
 
+## The two agent measurements
+
+Both are opt-in, both are non-deterministic, and both have a committed producer
+so the JSON in `results/` is not something you have to take on trust. Neither
+touches the headline: `--auditor` is off by default and the shipped Challenger
+is `scripted`.
+
+```bash
+# The semantic gate: does the model know when there is no right answer?
+# 15 environments, 2 of which have none, k runs each per backend.
+ASSAY_APPROVE_ALL="semantic gate" uv run --extra adapters --extra sweep \
+    python scripts/semantic_gate.py --k 3          # -> results/semantic_gate.json
+```
+
+Roughly 6 minutes for `qwen3:8b` and 20 for `claude-cli` at `--k 3`. Needs the
+network on the first run, because two of the environments are published
+`inspect_evals` tasks and their datasets are fetched from the Hub. `--arms
+ollama` alone skips the slow half.
+
+Read the *negatives* first. A false override hides a real defect, which is worse
+than missing one, so the thing to check is `false_positive_runs` — and note that
+`inspect_evals/bbq` is in there deliberately: it reads like a matter of opinion
+and has documented correct answers, so it is where a gate that pattern-matches
+on subject matter would show.
+
+```bash
+# Policy synthesis: can a Challenger propose the exploit a human found?
+ASSAY_APPROVE_ALL="policy synthesis" uv run --extra adapters --extra sweep \
+    python scripts/policy_synthesis.py --k 1       # -> results/policy_synthesis.json
+```
+
+About 3 minutes for the scripted floor plus `qwen3:8b`, and roughly 16 minutes
+per `claude-cli` run — which is why the committed file is `--k 1` and says so.
+The `blind` arm is the one worth reading: it withholds the verifier source, and
+it scores 22 against the full arm's 24.
+
+Both write a `assay_revision` block recording the commit they ran at and whether
+the tree was dirty, because a measurement from an uncommitted tree is not a
+measurement anybody else can repeat.
+
 ## The Challenger ablation
 
 ```bash
