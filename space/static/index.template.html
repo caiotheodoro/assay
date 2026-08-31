@@ -159,8 +159,11 @@ spec that shows what happens when there is nothing to check.</p>
 <ul class="limits">
   <li><b>Single-turn, string-answer environments only.</b> Multi-turn shell
     environments — where the interesting exploits live — need Docker.
-    <code>harbor/self-graded</code>, the one environment in the corpus that Assay
-    itself misses, cannot be expressed in this format.</li>
+    <code>harbor/self-graded</code>, the exploit that took an agent to find,
+    cannot be expressed in this format. (The one environment in the corpus Assay
+    itself misses is <code>inspect_evals/boolq</code>, and the miss is
+    structural: no train split, so the shortcut probe reports
+    <code>NOT_APPLICABLE</code> before it runs.)</li>
   <li>The <b>difficulty-band</b> probe needs a rollout sampler and always reports
     <code>NOT_APPLICABLE</code> here, so no submission can reach
     <code>VALID</code> on this page however good it is. The banner says so when
