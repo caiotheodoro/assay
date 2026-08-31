@@ -192,7 +192,7 @@ with environments nobody here wrote is the first thing worth doing next — care
 
 ---
 
-## The headline survives a 815% error in one made-up number
+## The headline survives an 816% error in one made-up number
 
 Every expected-loss figure is denominated in "engineer-hours-equivalent", and
 `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect at
@@ -213,18 +213,21 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
 anchor, so Assay's loss is linear in `C` while `flag_everything` never misses and does
-not move with `C` at all. They cross at `120 × 366 / 40 = 1098`.
+not move with `C` at all. They cross at `120 × 394 / 43 = 1099.53`.
 
-**The shipped value is 120. The crossover is 1098.** That margin was **21%** before the
-two Harbor misses were closed — the crossover sat at 145 against the same shipped 120.
-Worth stating plainly because the earlier number was the sharpest criticism of this work
-and it is the one that changed most.
+**The shipped value is 120. The crossover is 1099.53.** That margin was **21%** before
+the two Harbor misses were closed — the crossover sat at 145 against the same shipped
+120 — and **685%** before the taxonomy grew from 14 defect classes to 16. Worth stating
+plainly because the earliest number was the sharpest criticism of this work and it is
+the one that changed most. Note what moved it last: the numerator is
+`flag_everything`'s loss, so the margin widened because the floor got worse, not because
+the detector got better.
 
 That is not a reason to distrust the ranking so much as a statement of what the ranking
 is: a claim about a specific cost regime, not about detectors in general. The one anchor
 available is that SWE-bench Verified needed **93 developers** reading tasks by hand —
 the observed price of finding these defects the other way, and why a miss is priced far
-above a false alarm rather than near it. It does not pin 120 versus 1098.
+above a false alarm rather than near it. It does not pin 120 versus 1099.53.
 
 Reported here rather than left for a reader to derive, because a paragraph saying "costs
 are illustrative" would have hidden that the margin was ever 21%.

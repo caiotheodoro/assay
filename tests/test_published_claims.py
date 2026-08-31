@@ -171,9 +171,31 @@ def test_the_cost_crossover_matches_what_the_readme_claims():
     # Strip markdown emphasis: the README bolds the figure, and a test that
     # breaks on asterisks tests the formatting rather than the claim.
     plain = README.replace("*", "")
-    assert f"survives a {margin_pct}% error" in plain, (
-        f"computed margin is {margin_pct}% and the README does not say so"
-    )
+    assert f"survives a {margin_pct}% error" in plain or (
+        f"survives an {margin_pct}% error" in plain
+    ), f"computed margin is {margin_pct}% and the README does not say so"
+
+    # And nowhere else may say a different one. This gate pointed only at the
+    # README, so `docs/FOR_AGENTS.md`, `docs/METHOD.md` and `docs/RUBRIC.md` all
+    # went on quoting a 942 crossover and an 815% margin after the taxonomy grew
+    # -- three documents, none of them checked, one of them the file written to
+    # be lifted by somebody else.
+    others = re.compile(r"survives (?:a|an) ([0-9]{1,4})% error")
+    wrong = []
+    for doc in ("AGENTS.md", "llms.txt", "docs/FOR_AGENTS.md", "docs/METHOD.md",
+                "docs/RUBRIC.md", "docs/RESULTS.md", "docs/REPRODUCTION.md"):
+        path = ROOT / doc
+        if not path.exists():
+            continue
+        for line in path.read_text().replace("*", "").splitlines():
+            low = line.lower()
+            # METHOD.md narrates the sequence 21% -> 685% -> 816% on purpose.
+            if "moved" in low or "was " in low or "before" in low:
+                continue
+            for found in others.findall(line):
+                if int(found) != margin_pct:
+                    wrong.append(f"{doc}: says {found}%, the sweep says {margin_pct}%")
+    assert not wrong, "stale cost-margin claims:\n  " + "\n  ".join(wrong)
 
 
 def test_the_video_script_carries_no_retracted_claim():
