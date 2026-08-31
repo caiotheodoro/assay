@@ -300,9 +300,8 @@ ships the planted-defect ground truth and the full Environment Card. For the
 **which probes could not run and why** — and nothing else. See
 [What is not here](#what-is-not-here-and-why).
 
-The source repository is not public at the time of writing, so this card links
-to no repository rather than to one that 404s. Every command below is quoted in
-full so it can be run from a checkout.
+The source repository is [github.com/caiotheodoro/assay](https://github.com/caiotheodoro/assay).
+Every command below is quoted in full so it can be run from a checkout.
 
 > **Synthetic data.** Every environment here is a constructed fixture with
 > defects planted on purpose, not an observation of a production system.
@@ -318,26 +317,29 @@ differences on a shared resample, {ev.intervals['research-run']['resamples']:,}
 resamples at seed {ev.intervals['research-run']['seed']}, resampling over
 environments (n = {n}).
 
-**1. Assay does not separate from `flag_everything`.** Under the
-`research-run` cost profile the loss it saves against a policy that flags every
-environment unread is
-**{ci(rr['assay']['loss_saved_vs']['flag_everything'])}** — the interval
-overlaps zero. By this project's own rule, that advantage is **not established
-on this corpus**.
+**1. Most of the margin's growth is arithmetic, not detection.** Assay does now
+separate from `flag_everything` under `research-run` —
+**{ci(rr['assay']['loss_saved_vs']['flag_everything'])}**, and this card used to
+say it did not. But `flag_everything`'s loss is `Σ_env (n_classes − |planted|)`,
+so it gets worse every time the taxonomy or the corpus grows and a truthful
+detector gains nothing: two probe families added two defect classes and two τ²
+environments were added, worth **+77** to the margin between them. Against the
+taxonomy and corpus this was first measured on the comparable figure is
+**274.0**. A margin that widens because the floor got worse is not the same
+evidence as one that widens because the detector got better.
 
-**2. Under `production-training`, `flag_everything` beats Assay outright.**
-Expected loss {pt['flag_everything']['expected_loss']['point']:g} against
-Assay's {pt['assay']['expected_loss']['point']:g}. That is the correct answer
-to the question that profile asks: when a missed defect costs 480x a false
-alarm and review is nearly free, review everything. Assay's single CRITICAL
-miss costs {pt['assay']['expected_loss']['point']:g}; 250 false alarms cost 2
-each. The paired difference is
-{ci(pt['assay']['loss_saved_vs']['flag_everything'])}, so the *loss* is not
-separated either — the point estimate favours `flag_everything` and the
-interval spans both.
+**2. Under `production-training` the same caveat decides the row.** Expected
+loss {pt['flag_everything']['expected_loss']['point']:g} for `flag_everything`
+against Assay's {pt['assay']['expected_loss']['point']:g}, paired difference
+{ci(pt['assay']['loss_saved_vs']['flag_everything'])}. That row previously
+favoured `flag_everything` outright, and what moved it was the floor paying for
+two more classes per environment — not a detection change. At that profile's
+480x ratio "flag everything and read the cards" is a genuinely good policy, and
+Assay earns its place only where false alarms have real cost.
 
-Assay earns its place only where false alarms have real cost, i.e. where nobody
-can triage 250 spurious findings.
+**And precision is no longer 1.000.** Three spurious findings remain, all three
+on the two τ² environments — the only ones in the corpus whose ground truth was
+decided by another organisation.
 
 ## What is in the corpus
 
@@ -656,10 +658,13 @@ as much, every time, and it stays unsigned until a human signs it.
 
 ## What it is measured at
 
-On a {ACCOUNT}-authored corpus of environments with planted ground truth,
-Assay **does not separate from a policy that flags every environment unread**,
-and under a production-training cost profile that policy beats it outright.
-Both numbers, with intervals, are on the dataset:
+On a corpus that is mostly {ACCOUNT}-authored, with planted ground truth, Assay
+separates from a policy that flags every environment unread on all four cost
+profiles — but **a large part of that margin is arithmetic and not detection**:
+flagging everything pays a false alarm for every defect class on every
+environment, so the floor got worse when two classes and two environments were
+added, and a truthful detector gained nothing from either. Every number, with
+intervals and that decomposition, is on the dataset:
 [`{DATASET_REPO}`](https://huggingface.co/datasets/{DATASET_REPO}).
 
 The trained adversarial Challenger is a **negative result** and is published as
@@ -1028,10 +1033,13 @@ much, every time, and it stays unsigned until a human signs it.
 
 ## What it is measured at
 
-On a {ACCOUNT}-authored corpus of environments with planted ground truth,
-Assay **does not separate from a policy that flags every environment unread**,
-and under a production-training cost profile that policy beats it outright.
-Both numbers, with intervals, are on the dataset:
+On a corpus that is mostly {ACCOUNT}-authored, with planted ground truth, Assay
+separates from a policy that flags every environment unread on all four cost
+profiles — but **a large part of that margin is arithmetic and not detection**:
+flagging everything pays a false alarm for every defect class on every
+environment, so the floor got worse when two classes and two environments were
+added, and a truthful detector gained nothing from either. Every number, with
+intervals and that decomposition, is on the dataset:
 [`{DATASET_REPO}`](https://huggingface.co/datasets/{DATASET_REPO}).
 
 The trained adversarial Challenger is a **negative result** and is published as
