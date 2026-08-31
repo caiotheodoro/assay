@@ -192,7 +192,7 @@ with environments nobody here wrote is the first thing worth doing next — care
 
 ---
 
-## The headline survives an 816% error in one made-up number
+## The headline survives an 878% error in one made-up number
 
 Every expected-loss figure is denominated in "engineer-hours-equivalent", and
 `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect at
@@ -208,14 +208,14 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 | 120 *(shipped)* | 43.0 | 394.0 | assay |
 | 400 | 136.33 | 394.0 | assay |
 | 800 | 269.67 | 394.0 | assay |
-| **1099.53** | **394.0** | **394.0** | **tie** |
+| **1173.0** | **394.0** | **394.0** | **tie** |
 | 2000 | 669.67 | 394.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
 anchor, so Assay's loss is linear in `C` while `flag_everything` never misses and does
-not move with `C` at all. They cross at `120 × 394 / 43 = 1099.53`.
+not move with `C` at all. They cross at `120 × 394 / 43 = 1173.0`.
 
-**The shipped value is 120. The crossover is 1099.53.** That margin was **21%** before
+**The shipped value is 120. The crossover is 1173.0.** That margin was **21%** before
 the two Harbor misses were closed — the crossover sat at 145 against the same shipped
 120 — and **685%** before the taxonomy grew from 14 defect classes to 16. Worth stating
 plainly because the earliest number was the sharpest criticism of this work and it is
@@ -227,7 +227,7 @@ That is not a reason to distrust the ranking so much as a statement of what the 
 is: a claim about a specific cost regime, not about detectors in general. The one anchor
 available is that SWE-bench Verified needed **93 developers** reading tasks by hand —
 the observed price of finding these defects the other way, and why a miss is priced far
-above a false alarm rather than near it. It does not pin 120 versus 1099.53.
+above a false alarm rather than near it. It does not pin 120 versus 1173.0.
 
 Reported here rather than left for a reader to derive, because a paragraph saying "costs
 are illustrative" would have hidden that the margin was ever 21%.

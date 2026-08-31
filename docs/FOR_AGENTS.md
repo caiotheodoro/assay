@@ -13,7 +13,7 @@
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
   "result": "assay 43.0 vs flag_everything 394.0, saved 351.0 [263, 404] separated, wins 4/4 cost profiles, separates 4/4",
   "margin_that_is_not_detection": "77.0 of the 351.0 is arithmetic — two defect classes and two environments added to the floor, not detection. Against the taxonomy and corpus this was first measured on the margin is 274.0 (docs/PRE-REGISTRATION-TAU2.md)",
-  "cost_crossover": "1099.53h vs shipped 120h — survives 816% error",
+  "cost_crossover": "1173.0h vs shipped 120h — survives 878% error",
   "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (751 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 3.8s vs 261.7s (results/scripted_floor.json))",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
@@ -156,7 +156,7 @@ model is on the Hub labelled as a negative result.
 | **ABA** | static | 34k tasks, 14k major issues | count | no | no | 168 benchmarks, static only |
 | **BenchJack** | dynamic (agent-driven) | 219 flaws, adversarial patch loop | hackable-task ratio | no | no | 10 agent benchmarks |
 | **arXiv 2606.16062** | dynamic | SWE-bench gold-sanity | 28.5% hackable | no | no | SWE-bench only |
-| **Assay** | **dynamic, 11 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (43.0 [0, 125] vs 394.0 [375, 411]), saved 351.0 [263, 404]**, 4 cost profiles | **yes — 120→1099.53 crossover, 816% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
+| **Assay** | **dynamic, 11 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (43.0 [0, 125] vs 394.0 [375, 411]), saved 351.0 [263, 404]**, 4 cost profiles | **yes — 120→1173.0 crossover, 878% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
 
 **The gap Assay fills:** no other tool (a) bundles verifier + contamination + shortcut
 + separability + difficulty + reward-hack in one report, (b) prices misses against false
@@ -208,8 +208,8 @@ loses. The one remaining miss is external — `inspect_evals/boolq`, no train sp
 `NOT_APPLICABLE` — and all three spurious findings are external too, both τ² domains.
 
 **Q: Is the 120h miss cost made up?**
-Yes, and it is labelled a guess. It was swept: the crossover is at **1099.53**
-(`results/cost_sensitivity.json`), so the headline survives a 816% error in it. Before
+Yes, and it is labelled a guess. It was swept: the crossover is at **1173.0**
+(`results/cost_sensitivity.json`), so the headline survives a 878% error in it. Before
 the Harbor misses were closed the margin was 21%, and before the taxonomy grew it was
 685%; all three are published. The last move is not a detection result — the crossover's
 numerator is `flag_everything`'s loss, and two probe families plus two environments

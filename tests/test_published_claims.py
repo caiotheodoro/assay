@@ -189,7 +189,7 @@ def test_the_cost_crossover_matches_what_the_readme_claims():
             continue
         for line in path.read_text().replace("*", "").splitlines():
             low = line.lower()
-            # METHOD.md narrates the sequence 21% -> 685% -> 816% on purpose.
+            # METHOD.md narrates the sequence 21% -> 685% -> 878% on purpose.
             if "moved" in low or "was " in low or "before" in low:
                 continue
             for found in others.findall(line):

@@ -11,12 +11,12 @@
       2000
     ]
   ],
-  "exact_crossover_critical_cost": 1099.53,
+  "exact_crossover_critical_cost": 1173.0,
   "margin": {
     "shipped": 120.0,
-    "crossover": 1099.53,
-    "ratio": 9.163,
-    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 1099.53. The shipped profile says 120. The headline therefore survives a 816% error in a constant nothing derives, and no more."
+    "crossover": 1173.0,
+    "ratio": 9.775,
+    "reading": "Assay beats flag_everything only while a missed CRITICAL is priced below 1173.0. The shipped profile says 120. The headline therefore survives a 878% error in a constant nothing derives, and no more."
   },
   "assay_beats_flag_everything_when_critical_at_least": 1,
   "rows": [

@@ -297,18 +297,19 @@ ten-rung bootstrap lattice a corpus this size actually supports — are in
 before it runs. **Three spurious findings remain and all three are on τ².**
 
 **And the whole ranking rests on one made-up number.** `research-run.yaml` prices a missed CRITICAL
-defect at **120** engineer-hours-equivalent; nothing derives that 120, and every figure above scales
-linearly with it. So sweep it ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
+defect at **120** engineer-hours-equivalent; nothing derives that 120. Every *miss* above scales
+linearly with it and the three false alarms do not, which is the whole reason the crossover
+is an affine solve rather than a ratio. So sweep it ([`results/cost_sensitivity.json`](results/cost_sensitivity.json)):
 
-| CRITICAL miss cost | 120 *(shipped)* | 800 | **1099.53** | 2000 |
+| CRITICAL miss cost | 120 *(shipped)* | 800 | **1173.0** | 2000 |
 |---|---|---|---|---|
 | assay | 43.0 | 269.7 | **394.0** | 669.7 |
 | flag_everything | 394.0 | 394.0 | **394.0** | 394.0 |
 | winner | assay | assay | **tie** | flag_everything |
 
 The crossover is exact, not bisected: Assay's loss is linear in `C` while `flag_everything` never
-misses and does not move with `C` at all, so they cross at `120 × 394 / 43 = 1099.53`. **The shipped
-value is 120. The crossover is 1099.53.** The headline survives a **816% error** in a constant nobody
+misses and does not move with `C` at all, so they cross at `120 × 394 / 43 = 1173.0`. **The shipped
+value is 120. The crossover is 1173.0.** The headline survives a **878% error** in a constant nobody
 derives — a margin that was 21% before the two Harbor misses were closed and 685% before the
 taxonomy grew, stated plainly because the earliest number was the sharpest criticism of this work and
 the one that changed most. Note what moved it this time: the numerator is `flag_everything`, and two

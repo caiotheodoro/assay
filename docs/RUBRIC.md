@@ -28,8 +28,8 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
   submission. The margin against `flag_everything` went 50.0 → 36.0 → 326.0 → **351.0**,
   and it is now **statistically separated**: 95% CI [263, 404], resampling environments
-  (n=28) rather than defects. The cost crossover moved 145 → 942 → **1099.53**, so the
-  headline survives an 816% error in the one number that was openly a guess. Four cost
+  (n=28) rather than defects. The cost crossover moved 145 → 942 → **1173.0**, so the
+  headline survives an 878% error in the one number that was openly a guess. Four cost
   profiles are swept; Assay wins all four and **separates on all four**. Not 15/15, and
   the reasons got sharper rather than softer: the corpus is still only 6 genuinely
   third-party environments out of 28, only 3 of those 6 carry ground truth decided

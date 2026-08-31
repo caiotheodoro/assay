@@ -149,17 +149,30 @@ error** in a number somebody guessed. That was the sharpest criticism of this
 work, and it was only sayable because we ran the sweep.
 
 *(After later work closed two detector misses the crossover moved to 942, a 685%
-margin. The check did not change; the tool did. It then moved again, to **1100**
-— an 816% margin — and that time the tool did not change either: the crossover's
+margin. The check did not change; the tool did. It then moved again, to **1173.0**
+— an 878% margin — and that time the tool did not change either: the crossover's
 numerator is `flag_everything`'s loss, and two probe families added to the
 taxonomy plus two τ² environments added to the corpus raised it. A safety margin
 that widens because the floor got worse is a different fact from one that widens
 because the detector got better, and only the second is a result.)*
 
-**The check.** The crossover is analytic, not a bisection: if your detector's
-loss is all misses and the floor's is all false alarms, they cross at
-`shipped × floor / yours`. Publish it. "Costs are illustrative" hides whether
-the margin is 21% or 816%.
+**The check.** The crossover is analytic, not a bisection — but it is an
+**affine** solve and we got that wrong for a while, which is worth more than the
+number. Only the *miss* half of your detector's loss scales with the cost
+constant; its false alarms do not move at all. So the line is
+`yours(C) = (yours(shipped) − fa) × C / shipped + fa`, and they cross at
+`shipped × (floor − fa) / (yours(shipped) − fa)`.
+
+The published derivation was `shipped × floor / yours`, which is the `fa = 0`
+special case. It was exactly right for as long as the detector had perfect
+precision and went wrong silently the moment three false alarms arrived with the
+τ² environments — printing 1099.53 where the truth is **1173.0**, and a "tie" row
+at a cost where the detector is actually at 369.5 against 394.0. A judge derived
+`C/3 + 3` from the published rows and caught it.
+
+Publish the crossover. "Costs are illustrative" hides whether the margin is 21%
+or 878% — and publishing the rows is what let someone check the formula against
+them.
 
 `scripts/cost_sensitivity.py`
 

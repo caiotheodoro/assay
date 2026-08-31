@@ -84,24 +84,34 @@ def main() -> int:
             }
         )
 
-    # The crossover is analytic, not a bisection artefact. Assay's only errors
-    # are misses, so its loss is (n_critical_misses * C); flag_everything's is
-    # all false alarms and does not move with C at all. They cross where
-    # n_misses * C == flag_everything's constant loss.
-    # The crossover is analytic for any mix of severities, not just an
-    # all-CRITICAL one. `scaled()` moves every severity by the same factor
-    # about the CRITICAL anchor, so assay's loss is linear in C:
-    #   loss(C) = loss(shipped) * C / shipped
-    # flag_everything never misses, so its loss is pure false alarms and does
-    # not move with C at all. They cross where those are equal. The earlier
-    # version only handled the case where every miss was CRITICAL, and went
-    # silent the moment the corpus had one HIGH miss left -- which is exactly
-    # when the number became interesting.
+    # The crossover is analytic, not a bisection artefact -- but it is an
+    # affine solve, not a proportional one, and getting that wrong is what this
+    # block used to do.
+    #
+    # `scaled()` moves every severity by the same factor about the CRITICAL
+    # anchor, so the part of Assay's loss that comes from *misses* is linear in
+    # C. The part that comes from *false alarms* is not: it is
+    # `n_spurious * false_alarm` and does not move with C at all. So
+    #
+    #     assay(C) = (assay(shipped) - fa) * C / shipped + fa
+    #
+    # and the old `assay(shipped) * C / shipped` was the fa = 0 special case.
+    # It held for as long as Assay had perfect precision and broke silently the
+    # moment the tau2 environments introduced three false alarms -- reporting a
+    # crossover of 1099.53 where the true one is 1173.0, and printing a "tie"
+    # row at a cost where Assay is actually at 369.5 against 394.0.
+    #
+    # flag_everything never misses, so its loss is pure false alarms and is
+    # constant in C. They cross where the line above meets that constant.
     crossover = None
-    if "flag_everything" in arms and arms["assay"].expected_loss(base) > 0:
+    if "flag_everything" in arms:
         shipped_c = base.miss[Severity.CRITICAL]
         fe = arms["flag_everything"].expected_loss(base)
-        crossover = round(shipped_c * fe / arms["assay"].expected_loss(base), 2)
+        assay_arm = arms["assay"]
+        fa = sum(len(o.spurious) for o in assay_arm.outcomes) * base.false_alarm
+        miss_component = assay_arm.expected_loss(base) - fa
+        if miss_component > 0:
+            crossover = round(shipped_c * (fe - fa) / miss_component, 2)
 
     winners = [r["winner"] for r in rows]
     flips = [
