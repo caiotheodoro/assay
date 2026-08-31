@@ -89,6 +89,23 @@ Either one is recorded on the Environment Card, so a reader can see the audit
 ran without a human in the loop."""
 
 
+def _auditor_client(args):
+    """The backend the Auditor asks, or None to let it choose.
+
+    `--auditor-model` exists because the default order tries ollama first, and
+    `results/semantic_gate.json` measures qwen3:8b at 0 of 1 on the one job the
+    Auditor has. A flag that silently selects the backend the repo's own
+    measurement says cannot do the task is a flag that reports a capability
+    nobody has.
+    """
+    name = getattr(args, "auditor_model", None)
+    if not name:
+        return None
+    from .llm import ClaudeCLIClient, OllamaClient
+
+    return ClaudeCLIClient() if name == "claude" else OllamaClient(name)
+
+
 def _build_challenger(args):
     """The Challenger the audit runs with, or None for the scripted default.
 
@@ -152,7 +169,7 @@ def _audit(args) -> int:
         if args.auditor:
             from .auditor import Auditor
 
-            auditor = Auditor()
+            auditor = Auditor(_auditor_client(args))
             report = auditor.audit(adapter, ctx)
         else:
             report = audit(adapter, ctx)
@@ -162,6 +179,28 @@ def _audit(args) -> int:
     for line in _approval_summary(report):
         print(line, file=sys.stderr)
 
+    # Report what the Auditor did even when it did nothing. A run that leaves
+    # no trace is indistinguishable from one that never happened, which is the
+    # failure mode this tool exists to find in other people's environments.
+    for decision in auditor.decisions if auditor else []:
+        asked = decision["consulted"] or "no backend"
+        print(
+            f"auditor: asked {asked} -> {decision['outcome']}: {decision['why']}",
+            file=sys.stderr,
+        )
+        if decision.get("model_said") and decision["outcome"] == "withheld":
+            print(
+                f"auditor: the model's own label was {decision['model_said']!r}; "
+                "the verdict follows the conjunction of label and evidence, "
+                "not the label",
+                file=sys.stderr,
+            )
+    if auditor and not auditor.decisions:
+        print(
+            "auditor: ran, and was not consulted -- the battery flagged nothing "
+            "in verifier_integrity, which is the only family it may touch",
+            file=sys.stderr,
+        )
     for override in auditor.overrides if auditor else []:
         print(
             f"auditor: {override.probe} {override.was} -> {override.now} "
@@ -289,6 +328,14 @@ def main(argv: list[str] | None = None) -> int:
              "substituted for it.",
     )
     p.add_argument("--challenger-model", default="qwen3:8b", metavar="NAME")
+    p.add_argument(
+        "--auditor-model", metavar="NAME", default=None,
+        help="which backend the Auditor asks: an ollama tag, or 'claude' for the "
+             "Claude CLI. Worth setting deliberately -- results/semantic_gate.json "
+             "measures qwen3:8b at 0 of 1 on the semantic gate and claude-cli at 1 "
+             "of 1, so the default backend order will silently pick the weaker one "
+             "wherever ollama is running.",
+    )
     p.add_argument(
         "--auditor", action="store_true",
         help="read the battery's results with a model before reporting them. It may "

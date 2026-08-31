@@ -306,6 +306,11 @@ class Auditor:
         self._by_shape: dict[str, dict[str, Any]] = {}
         #: every model call this Auditor has made, for cost reporting.
         self.calls = 0
+        #: one line per environment it looked at, including the ones it
+        #: declined to touch. An Auditor that runs and reports nothing is
+        #: indistinguishable from one that did not run, which is the
+        #: failure this repo audits environments for.
+        self.decisions: list[dict[str, Any]] = []
         #: env_id -> what was concluded there. The memory lever, and the thing
         #: that makes a second environment cheaper to judge than the first.
         self.seen: dict[str, dict[str, Any]] = {}
@@ -421,15 +426,41 @@ class Auditor:
             "classified": (answer or {}).get("verdict", "unknown"),
             "flagged_by_battery": len(flagged),
         }
+        who = getattr(self.client, "name", None)
         if answer is None or answer.get("verdict") != "no_correct_answer":
             # Fail closed: the deterministic verdict stands. This is also the
-            # path taken when no model is reachable at all.
+            # path taken when no model is reachable at all -- and the two are
+            # reported differently, because "asked and was told no" and "could
+            # not ask" are not the same fact about a verdict.
+            self.decisions.append({
+                "env_id": report.env_id,
+                "consulted": who,
+                "outcome": "declined" if answer is not None else (
+                    "no model reachable" if who is None else "reply unusable"
+                ),
+                "why": (
+                    "the environment has a correct answer, so the "
+                    "verifier-integrity findings stand"
+                    if answer is not None else
+                    "nothing was overridden; the deterministic verdict is unchanged"
+                ),
+                "model_said": (answer or {}).get("model_said"),
+                "findings_left_standing": sum(len(r.findings) for r in flagged),
+            })
             return report
 
-        who = getattr(self.client, "name", "unknown")
+        who = who or "unknown"
         report.results = [
             self._withhold(r, answer, who) if r in flagged else r for r in report.results
         ]
+        self.decisions.append({
+            "env_id": report.env_id,
+            "consulted": who,
+            "outcome": "withheld",
+            "why": "this environment has no correct answer",
+            "model_said": answer.get("model_said"),
+            "findings_withheld": sum(len(r.findings) for r in flagged),
+        })
         return report
 
     # -- resolving what the battery could not run ----------------------------
