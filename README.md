@@ -227,7 +227,9 @@ a specific cost regime, not about detectors in general.
 
 ## Does an agent find what a script cannot?
 
-**It did. Then a better script found it too, and that is the more useful result.**
+**Yes, in two places, and the honest history is that the first one did not survive contact
+with a better script.** The two that hold are below; the one that did not is kept because it
+is the reason the other two were built where they were.
 
 Ten of the eleven probe families are deterministic programs, and the history is the argument for
 that design. The `claude-cli` Challenger found a reward-hack exploit class at turn 8 in 262s that a
@@ -258,6 +260,33 @@ makes it weaker than it reads, is
 [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md) has one representative run per
 agent, readable end to end — failed turns kept, three of the eight Challenger misses, one the
 sandbox approval gate **refusing**.
+
+### The exploit a human found, found by an agent
+
+`README.md` records the one place this tool lost to a person: it flagged 14 of 25 sampled
+`paws` items and **did not** find the `"yesno"` case — hand triage did — because the scripted
+Challenger can only replay policies the adapter *declared*, and none of them names both labels
+at once. That split is pinned as a test so it cannot quietly close.
+
+Given the job a fixed repertoire structurally cannot have — **proposing** a policy rather than
+replaying one — the Challenger closes it. On the same pinned subsample
+([`results/policy_synthesis.json`](results/policy_synthesis.json)):
+
+| arm | detected | beyond the floor |
+|---|---|---|
+| scripted floor | 14 / 25 | — |
+| `claude-cli:sonnet`, sees the verifier | **24 / 25** | **+11** |
+| `claude-cli:sonnet`, blind to the verifier | 22 / 25 | +8 |
+| `ollama:qwen3:8b` | 0 / 25 | −14 |
+
+The policies it proposed are the point, not the count: `'Yes No'`, `'Yes/No'` and their newline
+variants — the both-labels-at-once class, reached from the task text. One run per arm, so
+distrust the exact 24 and not the direction; `qwen3:8b` reaching 0 makes this a capability
+threshold rather than a property of the design. **Nothing here is scored by a model:**
+`self_report` records what the challenger claimed and is used for nothing, and it disagreed with
+the deterministic scorer zero times out of 24. The uncomfortable half is that blind scores 22
+against 24 — most of the win is reading the task, not defeating the scorer
+([`docs/changelog/100-policy-synthesis.md`](docs/changelog/100-policy-synthesis.md)).
 
 ### The other agent, and the one judgement no script can make
 
