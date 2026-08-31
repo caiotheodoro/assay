@@ -33,21 +33,49 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - name: Fetch the tau2 snapshots the README tells you to fetch
+        continue-on-error: true
+        run: uv run --extra tau2 python scripts/tau2_fetch.py
       - name: The command the README gives a newcomer
         env:
           ASSAY_APPROVE_ALL: "ci: the readme's own command, .github/workflows/ci.yml"
+        # --allow-reduced because this runner genuinely cannot install every
+        # provider: `openenv` pulls two git subdirectories and `tau2` needs a
+        # snapshot fetch that can fail offline. The refusal that flag lifts is
+        # correct and stays on for humans; what this job checks is narrower and
+        # is the thing that actually broke.
         run: |
           uv run --extra adapters --extra openenv --extra tau2 --extra sweep \
-            python scripts/full_run.py --out /tmp/readme_run.json
-      - name: It must not have been a reduced corpus
+            python scripts/full_run.py --allow-reduced --out /tmp/readme_run.json
+      - name: The extras in the command must reach the providers they name
         run: |
           uv run python - <<'PY'
           import json, sys
           run = json.load(open("/tmp/readme_run.json"))
           committed = json.load(open("results/full_run.json"))
-          print(f"corpus {run['corpus_size']} vs committed {committed['corpus_size']}")
-          if run["corpus_size"] != committed["corpus_size"]:
-              sys.exit("the README's command produced a different corpus than the artifact")
+          got = set(run["per_env"])
+          want = set(committed["per_env"])
+
+          # The bug this job exists for: the documented command omitted
+          # `--extra sweep`, so the two inspect_evals environments -- including
+          # `boolq`, the only miss in the whole corpus -- silently vanished and
+          # the run reported a *better* number. Those install from PyPI and are
+          # reachable here, so their absence is a command defect, not a runner
+          # limitation.
+          missing = {e for e in want if e.startswith("inspect_evals/")} - got
+          if missing:
+              sys.exit(f"the README's command did not reach {sorted(missing)}")
+
+          drift = [e for e in sorted(got & want)
+                   if run["per_env"][e]["assay_detected"]
+                   != committed["per_env"][e]["assay_detected"]]
+          print(f"{len(got)} environments, {len(got & want)} shared, {len(drift)} drifted")
+          if drift:
+              sys.exit(f"detections drifted on {drift}")
+
+          # Whatever could not be installed has to be *named*, never silent.
+          for name, reason in (run.get("unavailable") or {}).items():
+              print(f"unavailable on this runner: {name} -- {reason}")
           PY
 
   results-are-reproducible:
@@ -79,7 +107,10 @@ jobs:
         # either one is recorded on the Environment Card.
         env:
           ASSAY_APPROVE_ALL: "ci: unattended corpus reproduction, .github/workflows/ci.yml"
-        run: uv run python scripts/full_run.py --out /tmp/ci_run.json
+        # --allow-reduced is deliberate here: this job compares only the
+        # environments both runs contain, which is what the comparison below
+        # does, and Docker/openenv/tau2 are not all reachable on a runner.
+        run: uv run python scripts/full_run.py --allow-reduced --out /tmp/ci_run.json
       - name: Compare against the committed arms
         run: |
           uv run python - <<'PY'
