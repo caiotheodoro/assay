@@ -94,11 +94,13 @@ An empty defect set is what a verified-clean environment carries **and** what on
 nobody looked at carries. They are the same value and not the same claim.
 
 **Why it matters more than it sounds.** On a per-defect-class loss,
-`flag_everything` costs `Σ_env (14 − |planted_env|)`. Every clean environment
-added moves the trivial floor by `14 × false_alarm` and a truthful detector by
-**zero** — `+14` on our research profile, **`+112`** on the publication profile.
-Roughly eight unlabelled environments flip a headline with no change to the
-detector at all. Worse, `normalized_loss` divides by `min(trivial_arms)`, so
+`flag_everything` costs `Σ_env (n_classes − |planted_env|)`. Every clean
+environment added moves the trivial floor by `n_classes × false_alarm` and a
+truthful detector by **zero** — at our 16 classes that is `+16` on the research
+profile and **`+128`** on the publication profile. Roughly seven unlabelled
+environments flip a headline with no change to the detector at all. The
+taxonomy is the other lever on the same quantity, and it moved: going from 14
+classes to 16 handed the floor `+2` per environment and us nothing. Worse, `normalized_loss` divides by `min(trivial_arms)`, so
 growth improves the normalised figure almost unconditionally: simulated,
 **+100 clean environments takes 0.828 → 0.142**.
 
@@ -157,7 +159,7 @@ because the detector got better, and only the second is a result.)*
 **The check.** The crossover is analytic, not a bisection: if your detector's
 loss is all misses and the floor's is all false alarms, they cross at
 `shipped × floor / yours`. Publish it. "Costs are illustrative" hides whether
-the margin is 21% or 815%.
+the margin is 21% or 816%.
 
 `scripts/cost_sensitivity.py`
 
