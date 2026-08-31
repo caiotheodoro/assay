@@ -5,9 +5,10 @@ environment; it runs a battery of probes and emits an **Environment Card** — a
 validity verdict where every claim is tied to a probe result, plus machine-readable
 JSON and a nonzero exit code that blocks a training run.
 
-`README.md` is long (~970 lines) because it carries the full argument and its
-evidence. This file is the short path. **`docs/FOR_AGENTS.md` is the next stop** —
-the same claims with a citation on each.
+`README.md` is ~360 lines: the argument and the headline numbers, with the detail
+moved into `docs/RESULTS.md` and every retraction collected in
+`docs/RETRACTIONS.md`. This file is the shorter path. **`docs/FOR_AGENTS.md` is the
+next stop** — the same claims with a citation on each.
 
 ## The claim, in one line
 
