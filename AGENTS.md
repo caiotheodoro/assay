@@ -46,8 +46,10 @@ carries a `"why"` field saying so.
   published because it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative
   result, published as one.
-- There is no hosted demo: Hugging Face returns HTTP 402 for a Gradio Space on the
-  free tier. `space/app.py` runs locally. The solution video is hosted instead:
+- The hosted demo runs the battery **in the browser**:
+  [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo), a free
+  static Space with Pyodide. Hugging Face still returns HTTP 402 for a *Gradio* Space on the
+  free tier, so `space/app.py` runs locally only. Also hosted: the solution video,
   [4:36, h264+aac](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4).
 - **12 of this repository's own published claims broke** when its instruments were
   turned on itself, and 3 real behavioural bugs fell out. Unedited in

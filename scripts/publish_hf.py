@@ -45,6 +45,28 @@ DATASET_REPO = f"{ACCOUNT}/assay-corpus"
 SPACE_REPO = f"{ACCOUNT}/assay"
 MODEL_REPO = f"{ACCOUNT}/assay-challenger-grpo"
 
+#: The Space that actually deploys. `SPACE_REPO` is the Gradio app, which this
+#: account cannot host: `/api/repos/create` returns 402 for a Gradio Space on
+#: free `cpu-basic`. A **static** Space is free, and the probe battery runs in
+#: the visitor's browser under Pyodide instead of on a server. Separate repo,
+#: not a replacement -- pushing a static build over a repo created with
+#: `--space-sdk gradio` would leave the SDK in the front matter disagreeing
+#: with what is in the tree.
+DEMO_REPO = f"{ACCOUNT}/assay-demo"
+
+#: Pinned, and pinned exactly. The rest of this script refuses to cite `main`;
+#: a demo whose runtime is whatever `stable` resolved to that morning is the
+#: same defect with a CDN in front of it. Bump deliberately -- the
+#: `demo: pyodide is pinned and resolves` gate fetches this exact URL.
+PYODIDE_VERSION = "314.0.6"
+PYODIDE_URL = f"https://cdn.jsdelivr.net/pyodide/v{PYODIDE_VERSION}/full/pyodide.js"
+
+#: Which of `space/examples.json` the demo opens on, matching `PRELOADED` in
+#: `space/app.py` -- an empty box asks a visitor to supply the argument for the
+#: tool before they have seen it make one, and this example *is* the argument.
+#: A gate checks the two agree rather than trusting this comment.
+PRELOADED_INDEX = 2
+
 #: Every card cites this, never `main`. Section 12.1: "no card cites main".
 TAG = "v0.1.0"
 
@@ -533,12 +555,11 @@ Related: [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}) is a **negative
 result** — a GRPO-trained adversarial Challenger that did not learn —
 published so the ablation row is checkable.
 
-The interactive Space that audits a submitted environment is **not deployed**.
-Hugging Face requires a paid plan to host a Gradio Space, and this account does
-not have one. The app is in the repository under `space/` and runs locally with
-`python space/app.py`. Linking to a Space that does not exist would be a dead
-citation in a published card, which is the class of defect this dataset is
-about.
+Audit an environment yourself: [`{DEMO_REPO}`](https://huggingface.co/spaces/{DEMO_REPO})
+runs this probe battery **in your browser**, under WebAssembly CPython, with no
+server. The Gradio version of the same app is in the repository under `space/`
+and is not deployed — Hugging Face requires a paid plan for a Gradio Space —
+so the hosted demo is the static one.
 """
 
 
@@ -923,6 +944,208 @@ def stage_space(out: Path) -> None:
     )
 
 
+# --------------------------------------------------------------------------
+# the static Space -- the one that actually deploys
+# --------------------------------------------------------------------------
+
+
+def demo_card() -> str:
+    """Front matter for a **static** Space. `sdk: static` is the whole trick.
+
+    The reasoning that concluded a hosted demo was impossible was right about
+    every step it took and never took one more: a static Space serves files and
+    runs no compute, so it cannot run the battery *server-side* -- and the
+    battery does not have to run server-side. It runs in the visitor's browser.
+    """
+    return f"""---
+title: Assay
+emoji: "\N{MICROSCOPE}"
+colorFrom: indigo
+colorTo: gray
+sdk: static
+app_file: index.html
+pinned: false
+license: apache-2.0
+short_description: Audit an RL environment in your browser, no server
+tags:
+  - evaluation
+  - benchmark-auditing
+  - reward-hacking
+  - pyodide
+---
+
+# Assay — in your browser
+
+Submit an environment. Get an Environment Card back: a validity verdict where
+every claim is tied to a probe result, **and a list of every probe that could
+not run and why**.
+
+That second half is the point. A card with no findings is not a clean bill of
+health, and this page refuses to render one as if it were.
+
+## Where the audit runs
+
+This is a **static** Space. Hugging Face serves these files and runs no
+compute — which is why it is free where a Gradio Space is not. The probe
+battery still runs, in the visitor's tab, in a WebAssembly CPython
+(Pyodide {PYODIDE_VERSION}) against the vendored `assay` package in
+`assay.zip`. Nothing a visitor pastes is uploaded, because there is nowhere to
+upload it to.
+
+That works because Assay's audit path is **pure standard library**. The package
+declares one runtime dependency, `pyyaml`, and only `assay.costs` reaches it —
+no probe does. So the page needs no `micropip`, no wheel index and no network
+beyond its own files.
+
+The seven bundled examples are **pre-rendered into the page at build time** by
+the same renderer the button calls, so the page is readable before the runtime
+loads and stays readable if it never does.
+
+## What it cannot check here
+
+- **Single-turn, string-answer environments only.** Multi-turn shell
+  environments — where the interesting exploits live — need Docker.
+  `harbor/self-graded`, the one environment in the corpus that Assay itself
+  misses, cannot be expressed in this format.
+- The difficulty-band probe needs a rollout sampler and always reports
+  `NOT_APPLICABLE` here, so no submission can reach `VALID` on this page.
+- `verifier: "regex"` is **refused rather than degraded**. `assay.safe_regex`
+  bounds a submitted pattern by matching it in a subprocess under a wall clock,
+  because Python's engine backtracks and `(a+)+$` against 31 characters takes
+  about 100 seconds. WebAssembly has no subprocesses, and falling back to a
+  bare `re.search` would reinstate that denial of service on the one page it
+  was about.
+- Caps: 200 tasks, 2,000 split items, 20,000 characters per item.
+
+## Synthetic data, and not production-validated
+
+The bundled examples are **synthetic** fixtures with defects planted on
+purpose. Neither this Space nor the tool behind it is
+**production-validated**: it has been measured against defects its own authors
+planted, which is a lower bar than defects found in the wild. Do not use a
+`VALID` verdict here as sign-off on anything that matters. The card says as
+much, every time, and it stays unsigned until a human signs it.
+
+## What it is measured at
+
+On a {ACCOUNT}-authored corpus of environments with planted ground truth,
+Assay **does not separate from a policy that flags every environment unread**,
+and under a production-training cost profile that policy beats it outright.
+Both numbers, with intervals, are on the dataset:
+[`{DATASET_REPO}`](https://huggingface.co/datasets/{DATASET_REPO}).
+
+The trained adversarial Challenger is a **negative result** and is published as
+one: [`{MODEL_REPO}`](https://huggingface.co/{MODEL_REPO}).
+
+Apache-2.0. Version `{TAG}`.
+
+The `assay` package is **vendored** into this Space at commit `{git_sha()}`,
+not installed from a remote — this checkout has none. That commit is the only
+way to tell which code produced the card you are looking at.
+"""
+
+
+def _example_block(index: int, name: str, spec: dict, report) -> str:
+    """One pre-rendered example: its spec, and the card the battery produced.
+
+    The card half is `web.card(report)` -- the identical call the button makes
+    once Pyodide is up, not a screenshot or a hand-written mock-up of one. A
+    gate asserts the two agree.
+    """
+    from assay.card import web
+
+    colour = web.VERDICT_COLOUR[report.verdict]
+    pretty = json.dumps(spec, indent=2)
+    return f"""<article class="example">
+  <header>
+    <h3>{web.escape(name)}</h3>
+    <span>
+      <span class="badge" style="background:{colour}">{web.escape(report.verdict)}</span>
+      <button class="ghost" data-load="{index}">Load into the auditor</button>
+      <a class="ghost" href="cards/{index + 1}.html">Full card</a>
+    </span>
+  </header>
+  <div class="body">
+    <div class="spec"><pre><code>{web.escape(pretty)}</code></pre></div>
+    <div class="card">{web.card(report)}</div>
+  </div>
+</article>"""
+
+
+def _zip_package(dest: Path) -> None:
+    """The `assay` tree the browser unpacks, byte-for-byte the tree the Gradio
+    Space vendors. Fixed timestamps so a rerun that changed nothing produces an
+    identical archive rather than a new upload."""
+    import zipfile
+
+    src = ROOT / "src"
+    files = sorted(
+        p for p in (src / "assay").rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"
+    )
+    with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as zf:
+        for path in files:
+            info = zipfile.ZipInfo(str(path.relative_to(src)), date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            zf.writestr(info, path.read_bytes())
+
+
+def stage_demo(out: Path) -> None:
+    from assay.adapters.spec import build
+    from assay.card import to_html, web
+    from assay.runner import audit
+
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "cards").mkdir(exist_ok=True)
+
+    examples = json.loads((ROOT / "space" / "examples.json").read_text())
+
+    blocks, options, data = [], [], []
+    preloaded_card = preloaded_spec = ""
+    for i, ex in enumerate(examples):
+        spec_text = json.dumps(ex["spec"], indent=2)
+        report = audit(build(spec_text))
+        blocks.append(_example_block(i, ex["name"], ex["spec"], report))
+        options.append(
+            f'<option value="{i}"{" selected" if i == PRELOADED_INDEX else ""}>'
+            f"{web.escape(ex['name'])}</option>"
+        )
+        data.append({"name": ex["name"], "spec": spec_text})
+        # A full standalone Environment Card per example, from the renderer the
+        # CLI's `--card` flag uses. This is the artifact the tool actually
+        # produces; the page shows a fragment of it.
+        (out / "cards" / f"{i + 1}.html").write_text(to_html(report))
+        if i == PRELOADED_INDEX:
+            preloaded_card, preloaded_spec = web.card(report), spec_text
+
+    # `<` inside a <script> block would end it early no matter the JSON escaping
+    # rules, and the examples are ours only until someone adds one.
+    examples_json = json.dumps(data).replace("<", "\\u003c")
+
+    template = (ROOT / "space" / "static" / "index.template.html").read_text()
+    page = template
+    for key, value in {
+        "CARD_CSS": web.CSS,
+        "PICKER_OPTIONS": "".join(options),
+        "PRELOADED_SPEC": web.escape(preloaded_spec),
+        "PRELOADED_CARD": preloaded_card,
+        "EXAMPLES": "\n".join(blocks),
+        "EXAMPLES_JSON": examples_json,
+        "PYODIDE_URL": PYODIDE_URL,
+        "DATASET_REPO": DATASET_REPO,
+        "MODEL_REPO": MODEL_REPO,
+        "TAG": TAG,
+        "COMMIT": git_sha(),
+    }.items():
+        page = page.replace("{{" + key + "}}", value)
+
+    (out / "index.html").write_text(page)
+    (out / "README.md").write_text(demo_card())
+    _copy(ROOT / "space" / "static" / "browser.py", out / "browser.py")
+    _zip_package(out / "assay.zip")
+
+
 def stage_model(out: Path, cache: Path) -> dict[str, Path]:
     """Fetch the two runs' adapters from the bucket they were written to.
 
@@ -1024,6 +1247,149 @@ def _space_behaviour_gates(sp: Path) -> list[tuple[str, bool, str]]:
     return out
 
 
+def _demo_gates(dp: Path) -> list[tuple[str, bool, str]]:
+    """What has to be true of a page nobody will run a server for.
+
+    The Gradio Space's gates could lean on importing `app.py` and calling it.
+    Half of this artifact is a *document* -- seven cards baked into the HTML --
+    and the other half is Python that only ever executes inside a browser. So
+    these gates do both: they read the built page for the properties a visitor
+    with JavaScript switched off still depends on, and they import the staged
+    `browser.py` and drive it, because the escaping and the regex refusal are
+    behaviour, not text.
+
+    What they cannot check is that Pyodide boots. That needs a browser, and it
+    was checked in one before this shipped -- but a gate that cannot run is a
+    gate that must not claim to have run, so it is absent rather than faked.
+    """
+    import importlib.util
+    import json as _json
+    import zipfile
+
+    out = []
+    index = dp / "index.html"
+    if not index.exists():
+        return [gate("demo: index.html exists", False, "missing; a static Space serves nothing")]
+    page = index.read_text()
+
+    # A `{{PLACEHOLDER}}` that survived staging is a hole in a published page.
+    holes = re.findall(r"\{\{[A-Z_]+\}\}", page)
+    out.append(gate("demo: template fully substituted", not holes,
+                    ", ".join(sorted(set(holes))) or f"{len(page):,} bytes, no placeholders left"))
+
+    # Names carry an em dash and other characters `escape` rewrites, so compare
+    # on the escaped form -- the form actually in the file.
+    from assay.card import web
+
+    examples = _json.loads((ROOT / "space" / "examples.json").read_text())
+    baked = [ex["name"] for ex in examples if web.escape(ex["name"]) in page]
+    out.append(gate("demo: every example is pre-rendered",
+                    len(baked) == len(examples),
+                    f"{len(baked)}/{len(examples)} in the static HTML"))
+
+    # The property the whole page is built around, checked where it matters
+    # most: in the bytes a visitor sees before any script has run.
+    out.append(gate("demo: skipped probes are in the static HTML",
+                    "could not be checked" in page,
+                    "a thin spec's skip table is baked in, not fetched"))
+
+    out.append(gate("demo: pyodide is pinned, not floating",
+                    PYODIDE_URL in page and "/stable/" not in page
+                    and "/latest/" not in page,
+                    f"v{PYODIDE_VERSION}"))
+
+    # A standalone Environment Card per example, from `card/render.py` -- the
+    # artifact the CLI writes with `--card`, one click from the fragment.
+    cards = sorted((dp / "cards").glob("*.html"))
+    out.append(gate("demo: a full card per example", len(cards) == len(examples),
+                    f"{len(cards)} standalone cards"))
+
+    zpath = dp / "assay.zip"
+    try:
+        with zipfile.ZipFile(zpath) as zf:
+            names = set(zf.namelist())
+    except Exception as exc:  # noqa: BLE001
+        names = set()
+        out.append(gate("demo: ships the package it runs", False, f"{type(exc).__name__}: {exc}"))
+    if names:
+        needed = {"assay/runner.py", "assay/adapters/spec.py", "assay/card/web.py",
+                  "assay/probes/__init__.py", "assay/types.py"}
+        missing = sorted(needed - names)
+        pyc = [n for n in names if n.endswith(".pyc") or "__pycache__" in n]
+        out.append(gate("demo: ships the package it runs", not missing and not pyc,
+                        ", ".join(missing + pyc)
+                        or f"{len(names)} files, {zpath.stat().st_size / 1024:.0f}KB"))
+
+    # ---- behaviour: import the staged browser module and drive it ----------
+    try:
+        spec = importlib.util.spec_from_file_location("staged_demo_browser", dp / "browser.py")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["staged_demo_browser"] = mod
+        spec.loader.exec_module(mod)
+    except Exception as exc:  # noqa: BLE001
+        out.append(gate("demo: browser module imports", False, f"{type(exc).__name__}: {exc}"))
+        return out
+
+    payload = '<img src=x onerror="alert(1)">'
+    hostile = _json.dumps({
+        "env_id": "gate/hostile",
+        "verifier": "includes",
+        "tasks": [{"task_id": payload, "instruction": "Answer Yes or No",
+                   "target": "Yes", "gold": "Yes", "known_wrong": "No"}],
+    })
+    rendered = _json.loads(mod.audit(hostile))["html"]
+    clean = "<img src=x" not in rendered and "&lt;img src=x" in rendered
+    out.append(gate("demo: escapes submitted text", clean,
+                    "a hostile task id renders escaped" if clean
+                    else "SUBMITTED HTML REACHED THE PAGE"))
+
+    # The one thing that genuinely cannot work in a browser has to fail by
+    # saying so, not by erroring eight probes out one at a time.
+    rx = _json.loads(mod.audit(_json.dumps({
+        "env_id": "gate/regex", "verifier": "regex",
+        "tasks": [{"task_id": "q1", "instruction": "i", "target": "Yes"}],
+    })))["html"]
+    refused = "subprocess" in rx and "assay-error" in rx
+    out.append(gate("demo: refuses the regex verifier", refused,
+                    "explained, not degraded to an unguarded re.search" if refused
+                    else "the regex verifier was not refused"))
+
+    # The gallery is not a mock-up: the card baked into the page for the
+    # example the box opens on is byte-identical to what the button produces.
+    live = _json.loads(mod.audit(_json.dumps(examples[PRELOADED_INDEX]["spec"], indent=2)))["html"]
+    out.append(gate("demo: the baked card is the live card", live in page,
+                    "identical bytes" if live in page
+                    else "the pre-rendered card does not match a live audit"))
+
+    # ...and it opens on the same example the Gradio app opens on, so the two
+    # front doors argue the same thing.
+    import ast
+
+    app_src = (ROOT / "space" / "app.py").read_text()
+    m = re.search(r"^PRELOADED = (\".*\")$", app_src, flags=re.M)
+    # `literal_eval` rather than a string compare: the name is written with a
+    # literal em dash here and was written `—` before, and a gate that
+    # broke on that spelling change would be measuring the wrong thing.
+    same = bool(m) and ast.literal_eval(m.group(1)) == examples[PRELOADED_INDEX]["name"]
+    out.append(gate("demo: opens on the Gradio app's example", same,
+                    examples[PRELOADED_INDEX]["name"][:52]))
+
+    import urllib.error
+    import urllib.request
+
+    try:
+        urllib.request.urlopen(
+            urllib.request.Request(PYODIDE_URL, method="HEAD",
+                                   headers={"User-Agent": "assay-publish"}),
+            timeout=15,
+        )
+        out.append(gate("demo: the pinned runtime resolves", True, PYODIDE_URL))
+    except Exception as exc:  # noqa: BLE001
+        out.append(gate("demo: the pinned runtime resolves", False,
+                        f"{PYODIDE_URL} -> {type(exc).__name__}: {exc}"))
+    return out
+
+
 def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str, bool, str]]:
     from assay.publish import verify_no_redistribution
 
@@ -1069,6 +1435,15 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
             meta = metadata_load(str(readme)) or {}
             out.append(gate(f"{kind}: metadata valid", "license" in meta,
                             f"keys={sorted(meta)[:6]}"))
+            # The Hub's own limits, checked here rather than discovered by the
+            # upload rejecting the commit. `short_description` over 60
+            # characters is a `ValueError` from `upload_folder` after every
+            # gate has printed PASS -- which is the same blind spot as the
+            # `--space-sdk` one: a dry run that cannot fail the way the real
+            # run fails.
+            brief = str(meta.get("short_description", ""))
+            out.append(gate(f"{kind}: short_description within the Hub limit",
+                            len(brief) <= 60, f"{len(brief)}/60 chars"))
         except Exception as exc:
             out.append(gate(f"{kind}: metadata valid", False, f"{type(exc).__name__}: {exc}"))
 
@@ -1119,6 +1494,7 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         for url in urls:
             if url.startswith(("https://huggingface.co/datasets/" + DATASET_REPO,
                                "https://huggingface.co/spaces/" + SPACE_REPO,
+                               "https://huggingface.co/spaces/" + DEMO_REPO,
                                "https://huggingface.co/" + MODEL_REPO)):
                 skipped += 1  # published by this very run; not live until --push
                 continue
@@ -1176,8 +1552,8 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
     # Section 12.1: LFS configured.
     for kind, path in staged.items():
         ga = path / ".gitattributes"
-        if kind == "space":
-            continue
+        if kind in ("space", "demo"):
+            continue  # neither Space ships a large file; nothing to track
         out.append(gate(f"{kind}: LFS configured", ga.exists() and "jsonl" in ga.read_text(),
                         ga.read_text().strip().replace("\n", " | ") if ga.exists() else "missing"))
 
@@ -1198,6 +1574,10 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
         # function and asserts the skipped-probe table is in the output --
         # a gate that can only pass if the behaviour it names actually happens.
         out.extend(_space_behaviour_gates(sp))
+
+    dp = staged.get("demo")
+    if dp:
+        out.extend(_demo_gates(dp))
 
     return out
 
@@ -1223,9 +1603,9 @@ def human(n: int) -> str:
     return f"{n}"
 
 
-def report(staged: dict[str, Path], repos: dict[str, tuple[str, str]]) -> None:
+def report(staged: dict[str, Path], repos: dict[str, tuple[str, str, str | None]]) -> None:
     for kind, path in staged.items():
-        repo, repo_type = repos[kind]
+        repo, repo_type, _ = repos[kind]
         files = tree(path)
         total = sum(s for _, s in files)
         print(f"\n{'=' * 78}")
@@ -1245,7 +1625,7 @@ def report(staged: dict[str, Path], repos: dict[str, tuple[str, str]]) -> None:
 # --------------------------------------------------------------------------
 
 
-def push(repo: str, repo_type: str, path: Path, message: str) -> None:
+def push(repo: str, repo_type: str, path: Path, message: str, sdk: str | None = None) -> None:
     subprocess.run(
         ["hf", "repos", "create", repo, "--type", repo_type, "--exist-ok"]
         # `--space-sdk`, not `--sdk`. The CLI rejects the short form outright
@@ -1253,13 +1633,31 @@ def push(repo: str, repo_type: str, path: Path, message: str) -> None:
         # not have, because nothing ran it until the first real --push. Every
         # one of the 26 gates passed while it was broken: they check what is
         # staged, not that it can be uploaded.
-        + (["--space-sdk", "gradio"] if repo_type == "space" else []),
+        #
+        # And the SDK is per-repo, not per-type. `gradio` is what returns 402
+        # on a free account; `static` is what does not, which is the entire
+        # reason there is a hosted demo to click.
+        + (["--space-sdk", sdk or "gradio"] if repo_type == "space" else []),
         check=True,
     )
-    subprocess.run(
-        ["hf", "upload", repo, str(path), ".", "--type", repo_type,
-         "--commit-message", message],
-        check=True,
+    # `hf upload` calls `/api/repos/create` again on its way in, and has no
+    # `--space-sdk` to pass, so it asks for a **gradio** Space every time. On a
+    # free account that is an HTTP 402 -- for a repo that already exists, as a
+    # static Space, created by the line directly above. The upload never
+    # started; the billing check fires on the SDK in the request before
+    # anything looks at whether the repo is there.
+    #
+    # `upload_folder` is what that CLI command wraps, minus the create. The
+    # create was always redundant here -- this function does it explicitly, and
+    # explicitly is the only way to get the SDK right -- so the fix is to drop
+    # the second one rather than to route around it.
+    from huggingface_hub import HfApi
+
+    HfApi().upload_folder(
+        repo_id=repo,
+        repo_type=repo_type,
+        folder_path=str(path),
+        commit_message=message,
     )
     subprocess.run(
         ["hf", "repos", "tag", "create", repo, TAG, "--type", repo_type,
@@ -1275,11 +1673,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--push", action="store_true",
                     help="upload. Without it, nothing leaves the machine.")
-    ap.add_argument("--only", choices=["dataset", "space", "model"], action="append")
+    ap.add_argument("--only", choices=["dataset", "space", "demo", "model"], action="append")
     ap.add_argument("--out", type=Path, default=BUILD)
     args = ap.parse_args()
 
-    kinds = args.only or ["dataset", "space", "model"]
+    kinds = args.only or ["dataset", "space", "demo", "model"]
     out = args.out
     if out.exists():
         shutil.rmtree(out)
@@ -1295,6 +1693,9 @@ def main() -> int:
     if "space" in kinds:
         staged["space"] = out / "space"
         stage_space(staged["space"])
+    if "demo" in kinds:
+        staged["demo"] = out / "demo"
+        stage_demo(staged["demo"])
     if "model" in kinds:
         staged["model"] = out / "model"
         try:
@@ -1308,10 +1709,13 @@ def main() -> int:
             shutil.rmtree(staged["model"], ignore_errors=True)
             staged.pop("model")
 
+    # (repo, hub repo type, Space SDK). The SDK is the field that decides
+    # whether `repos create` returns a URL or an HTTP 402.
     repos = {
-        "dataset": (DATASET_REPO, "dataset"),
-        "space": (SPACE_REPO, "space"),
-        "model": (MODEL_REPO, "model"),
+        "dataset": (DATASET_REPO, "dataset", None),
+        "space": (SPACE_REPO, "space", "gradio"),
+        "demo": (DEMO_REPO, "space", "static"),
+        "model": (MODEL_REPO, "model", None),
     }
 
     report(staged, repos)
@@ -1345,10 +1749,10 @@ def main() -> int:
     # each result is reported, and the exit code reflects the whole set.
     published, failed = [], []
     for kind, path in staged.items():
-        repo, repo_type = repos[kind]
+        repo, repo_type, sdk = repos[kind]
         print(f"\n--> {repo}")
         try:
-            push(repo, repo_type, path, f"Assay {TAG}")
+            push(repo, repo_type, path, f"Assay {TAG}", sdk=sdk)
             published.append((kind, repo))
         except subprocess.CalledProcessError as exc:
             failed.append((kind, repo, exc))

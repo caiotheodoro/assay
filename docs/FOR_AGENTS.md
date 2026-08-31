@@ -20,13 +20,14 @@
     "code_and_changelog": "shipped — docs/CHANGELOG.md, 49 fragments",
     "reproduction_guide": "shipped — docs/REPRODUCTION.md, cold-cache timings",
     "trajectories": "shipped — 8 runs, 3 misses, 1 gate refusal",
-    "video": "shipped — https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4 , 276.032s = 4:36.03 against the 5:00 cap, h264+aac. The Remotion sources, capture scripts, terminal casts and voice tracks are tracked under video/; only the 24MB render is hosted rather than committed"
+    "video": "shipped — https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4 , 276.032s = 4:36.03 against the 5:00 cap, h264+aac. The Remotion sources, capture scripts, terminal casts and voice tracks are tracked under video/; only the 24MB render is hosted rather than committed",
+    "hosted_demo": "shipped — https://huggingface.co/spaces/caiotheodoro/assay-demo , a free static Space that runs the probe battery in the visitor's browser under Pyodide. All 7 examples are pre-rendered into the page at build time. HF still returns 402 for a Gradio Space on the free tier, so space/app.py is local-only"
   },
   "known_gaps": [
     "inspect_evals/boolq missed — no train split, contamination probe has nothing to compare",
     "4 of BenchJack's 8 flaw classes uncovered (docs/COVERAGE.md)",
     "only 4 of 26 corpus environments are genuinely third-party (README.md, corpus split)",
-    "no hosted demo — HF returns 402 for a Gradio Space on the free tier"
+    "the hosted demo refuses verifier:regex — safe_regex bounds a submitted pattern in a subprocess and WebAssembly has none"
   ]
 }
 ```

@@ -53,6 +53,7 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # the headl
 | Reproduce every number end to end | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
 | An agent run and a sample card, read without executing anything | [`results/trajectories/INDEX.md`](results/trajectories/INDEX.md), [`results/example-card.md`](results/example-card.md) |
 | Architecture, changelog, self-score | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CHANGELOG.md`](docs/CHANGELOG.md), [`docs/RUBRIC.md`](docs/RUBRIC.md) |
+| **Try it, no install** | [**Hosted demo**](https://huggingface.co/spaces/caiotheodoro/assay-demo) — the probe battery, running in your browser |
 | **Published artifacts, all of them** | [**Collection**](https://huggingface.co/collections/caiotheodoro/assay-auditing-rl-environments-with-error-bars-6a946953e05a8669da74ee65) — [code](https://github.com/caiotheodoro/assay), [corpus, cards and arms](https://huggingface.co/datasets/caiotheodoro/assay-corpus), [the GRPO Challenger, **a negative result**](https://huggingface.co/caiotheodoro/assay-challenger-grpo), [the solution video, 4:36](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4) |
 
 > **An auditor is an eval.** If benchmarks ship unchecked because nobody QAs them, nothing makes
@@ -62,9 +63,19 @@ uv run --extra adapters --extra openenv python scripts/full_run.py   # the headl
 > [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md); the unedited breakage is
 > [`docs/RED-TEAM.md`](docs/RED-TEAM.md).
 
-**There is no hosted demo.** `space/app.py` is a finished Gradio app — escapes submitted HTML, 7
-tests, 9 pre-publication gates — but Hugging Face returns HTTP 402 for a Gradio Space on free
-`cpu-basic`, and a static Space cannot serve a server-side probe battery. Run `python space/app.py`.
+**[Audit an environment in your browser →](https://huggingface.co/spaces/caiotheodoro/assay-demo)**
+No signup, no server, nothing uploaded. Paste a spec or load one of seven planted fixtures, press
+Audit, and the probe battery runs *in the tab* — CPython under WebAssembly, against the same
+vendored package the CLI uses. It boots in about three seconds and audits in milliseconds, and all
+seven example cards are rendered into the page ahead of time so it is readable before the runtime
+loads and if it never does.
+
+That works because Assay's audit path is pure standard library, which is what the earlier reasoning
+here missed: Hugging Face does return HTTP 402 for a Gradio Space on free `cpu-basic`, and a static
+Space genuinely cannot serve a *server-side* probe battery — it just does not have to.
+`space/app.py`, the Gradio version, still runs locally with `python space/app.py`. The one thing the
+browser build refuses is `verifier: "regex"`, because `safe_regex` bounds a submitted pattern in a
+subprocess and WebAssembly has none.
 
 ### Who this is for
 

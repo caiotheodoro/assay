@@ -40,7 +40,10 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   `tests/test_published_claims.py` now check that every path cited in the
   reviewer-facing docs resolves, and that the suite size those docs advertise is the
   suite size that ran. Scored **12**, not 13, because the full headline still wants
-  Docker and Ollama up, and there is no hosted demo to fall back on.
+  Docker and Ollama up. (The "no hosted demo to fall back on" half of that reason is
+  closed: [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo)
+  runs the battery in the browser. It does not lift the score, because it audits submitted
+  specs rather than reproducing the headline — Docker and Ollama are still what that wants.)
 - **End to End Quality, 15 → 16.** The suite is now **711 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
@@ -77,9 +80,11 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 
 Also unclosed and published rather than hidden: `inspect_evals/boolq` is still missed
 (structurally — no train split), four of BenchJack's eight flaw classes are uncovered
-(`docs/COVERAGE.md`), the GRPO Challenger does not beat the scripted floor, and there
-is no hosted demo because Hugging Face returns HTTP 402 for a Gradio Space on the free
-tier.
+(`docs/COVERAGE.md`), and the GRPO Challenger does not beat the scripted floor. The
+"no hosted demo" item that stood here is closed:
+[`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo) runs
+the battery in the visitor's browser on a free static Space. HTTP 402 for a *Gradio*
+Space on the free tier is still true and still why `space/app.py` is local-only.
 
 **On the number itself.** 82 is a self-score by the people who wrote the thing, marked
 hard, and an independent reviewer is entitled to a different one. An independent pass
