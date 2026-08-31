@@ -412,6 +412,18 @@ def from_approval_gate(
     and what happened as a result. A refusal is a turn like any other, and it
     is the one that most needs to be readable: a gate nobody can audit later is
     not a gate.
+
+    The outcome names the approvers that actually decided *this* run. It used
+    to carry a fixed `"default_approver": "DenyAll — an unattended Assay
+    executes nothing"` into every trajectory it wrote, which was a claim about
+    `DockerSandbox()` rather than a record of the run, and it went on being
+    exported while `_harbor_corpus.py` was quietly passing `AutoApprove`. A
+    trajectory asserting a policy is worth less than one reporting a fact, and
+    it is worth nothing at all when the assertion is wrong.
+
+    An event may set `"interactive": True` to say a human answered at the time.
+    Absent, it is read as a standing approval, because that is the assumption
+    that under-claims rather than over-claims.
     """
     root = Path(root) if root is not None else None
 
@@ -481,9 +493,31 @@ def from_approval_gate(
             "granted": sum(1 for e in events if e["granted"]),
             "refused": sum(1 for e in events if not e["granted"]),
             "executed_without_approval": 0,
-            "default_approver": "DenyAll — an unattended Assay executes nothing",
+            "approvers": _approver_tally(events),
+            "ran_unattended": not any(
+                e.get("interactive") and e["granted"] for e in events
+            ),
         },
     )
+
+
+def _approver_tally(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Who decided what, in the order they were first asked."""
+    tally: dict[str, dict[str, Any]] = {}
+    for event in events:
+        name = str(event["approver"])
+        row = tally.setdefault(
+            name,
+            {
+                "approver": name,
+                "granted": 0,
+                "refused": 0,
+                "interactive": bool(event.get("interactive", False)),
+            },
+        )
+        row["granted" if event["granted"] else "refused"] += 1
+        row["interactive"] = row["interactive"] or bool(event.get("interactive", False))
+    return list(tally.values())
 
 
 def write_pair(

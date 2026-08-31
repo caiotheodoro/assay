@@ -52,6 +52,10 @@ from .types import Capability, Item, ProbeResult, ProbeStatus, digest
 #: is exactly the presumption that can fail.
 SEMANTIC_SCOPE = "verifier_integrity"
 
+#: How many declared trivial policies count as a repertoire wide enough
+#: that finding nothing means something. Below this, silence is cheap.
+ESCALATION_FLOOR = 5
+
 _SYSTEM = """\
 You read one evaluation environment and answer one concrete question about it:
 
@@ -520,6 +524,52 @@ class Auditor:
             out.append(fresh)
         report.results = out
         return report
+
+    # -- orchestration -------------------------------------------------------
+
+    def should_escalate(self, adapter: EnvAdapter, report: AuditReport) -> tuple[bool, str]:
+        """Is a second, expensive attacker worth running here? Decided in code.
+
+        A model Challenger costs minutes and money where the scripted one costs
+        about two seconds, so escalating everywhere is not a design, it is a
+        bill. The condition that matters is *under-coverage*: the cheap attacker
+        found nothing, and the environment declares a repertoire small enough
+        that finding nothing is weak evidence rather than strong.
+
+        Where the scripted repertoire already saturates -- `harbor/self-graded`
+        since the taxonomy policies landed -- escalation is refused, and that
+        refusal is the point. `docs/changelog/84-agentic-remeasured.md` records
+        why: the composite takes the max gap, so a second attacker on a
+        saturated floor cannot produce information, only cost.
+
+        Returns (escalate, why) and the reason is recorded either way.
+        """
+        hack = [r for r in report.results if r.family == "reward_hackability"]
+        if not hack:
+            return False, "no reward-hackability result to improve on"
+        result = hack[0]
+        if result.status is ProbeStatus.DEFECT:
+            return False, (
+                "the scripted attacker already found an exploit here; a second "
+                "one can only match it or add false positives"
+            )
+        if result.status is not ProbeStatus.PASS:
+            return False, f"the probe did not run ({result.status.value}); nothing to escalate"
+        try:
+            declared = adapter.trivial_policies(next(iter(
+                t.task_id for t in adapter.manifest().tasks
+            )))
+        except Exception:  # noqa: BLE001 - a refusal is an answer
+            return False, "the environment declares no trivial policies to exhaust"
+        if len(declared) >= ESCALATION_FLOOR:
+            return False, (
+                f"the declared repertoire is {len(declared)} policies, which is "
+                "wide enough that finding nothing is evidence rather than silence"
+            )
+        return True, (
+            f"the scripted attacker found nothing with only {len(declared)} "
+            "declared policies, so the silence is weak evidence"
+        )
 
     # -- the whole pass ------------------------------------------------------
 

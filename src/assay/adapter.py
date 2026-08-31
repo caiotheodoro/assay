@@ -222,6 +222,15 @@ class BaseAdapter:
             "verifier source is not obtainable through this adapter, so it cannot "
             "be analysed statically"
         )
+    def approval_log(self) -> list[dict[str, Any]]:
+        """Every execution approval this adapter asked for, granted or refused.
+
+        Empty means it never had to ask -- a fixture adapter is pure Python
+        this repo wrote -- and *not* that a gate was skipped. `runner.audit()`
+        collects this onto the report so the Environment Card can show who said
+        yes to what, and whether anybody was actually there to say it.
+        """
+        return []
 
 
 def close_adapter(adapter: object) -> None:

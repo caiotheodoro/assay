@@ -40,7 +40,13 @@ from pathlib import Path
 from typing import Any
 
 from ..adapter import BaseAdapter, NotSupported
-from ..sandbox import DockerSandbox, Mount, SandboxPolicy, SandboxSession
+from ..sandbox import (
+    ApprovalDenied,
+    DockerSandbox,
+    Mount,
+    SandboxPolicy,
+    SandboxSession,
+)
 from ..types import (
     SANDBOX_TIMEOUT,
     Action,
@@ -215,6 +221,8 @@ class HarborAdapter(BaseAdapter):
         }
         self._env_id = env_id or f"harbor/{self.suite_dir.name}"
         self._live: SandboxSession | None = None
+        #: The message from the first refusal, if there was one. Asked once.
+        self._session_refused: str | None = None
         self._work_host: Path | None = None
         self._logs_host: Path | None = None
         self._current: str | None = None
@@ -229,6 +237,10 @@ class HarborAdapter(BaseAdapter):
 
     def clear_cache(self) -> None:
         self._cache.clear()
+
+    def approval_log(self) -> list[dict[str, Any]]:
+        """Who approved this environment's containers, and who refused."""
+        return list(self.sandbox.decisions)
 
     @staticmethod
     def _key(transcript: Transcript, which: str) -> str:
@@ -265,10 +277,17 @@ class HarborAdapter(BaseAdapter):
         directory gives the same isolation a fresh container would, at a
         twentieth of the cost.
         """
+        # A refusal is remembered. Twelve probes each open the same session, so
+        # without this a `no` at the prompt is followed by eleven more prompts
+        # for the identical request -- which is not a gate, it is an attrition
+        # test, and it ends in a yes. It also stopped the two host tmpdirs
+        # being remade and leaked on every re-ask.
+        if self._session_refused is not None:
+            raise ApprovalDenied(self._session_refused)
         if self._live is None:
             self._work_host = _mount_dir("assay-work-")
             self._logs_host = _mount_dir("assay-logs-")
-            self._live = SandboxSession(
+            session = SandboxSession(
                 self.sandbox,
                 self._policy(task),
                 [
@@ -277,7 +296,12 @@ class HarborAdapter(BaseAdapter):
                     Mount(self.suite_dir, "/suite", read_only=True),
                 ],
                 label=self._env_id,
-            ).start()
+            )
+            try:
+                self._live = session.start()
+            except ApprovalDenied as exc:
+                self._session_refused = str(exc)
+                raise
         return self._live
 
     def close(self) -> None:

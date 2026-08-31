@@ -2,9 +2,24 @@
 
 Chosen as the first real ecosystem because its tasks are plain importable
 Python: `Sample`, `Solver`, `Scorer` are objects, so an auditor can enumerate
-the dataset and call the scorer directly without spinning up a sandbox or
-spending a single token. That makes it the cheapest adapter to write and the
-safest to run -- the two usually trade against each other.
+the dataset and call the scorer directly without spinning up a container or
+spending a single token. That is the cheapest adapter to write, and the
+cheapness is load-bearing -- the wild sweep scores 246 published tasks, which a
+container per scorer call would price out of existence.
+
+It is **not** the safest to run, and this docstring used to say it was. Calling
+`scorer(state, target)` executes somebody else's Python in the auditor's own
+interpreter. Nothing that protects the Harbor path applies: no `--cap-drop
+ALL`, no `--network none`, no read-only root, no wall-clock cap. A scorer that
+opens a socket or reads `~/.ssh` is doing something this adapter cannot see or
+stop.
+
+That is a deliberate trade and it is now an approved one. Scoring asks
+`current_approver()` once per adapter with an `InProcessRequest` that names the
+scorers, says why they are not in a container, and states the exposure; the
+answer is recorded and reaches the Environment Card. Refused, nothing is
+scored. See `docs/changelog/98-approval-gate.md` for why the choice was to gate
+in-process scoring rather than to sandbox it.
 
 The load-bearing property: `scorer(state, target)` takes the target as an
 argument. Pass a different one and you have an inverted-spec probe. An
@@ -19,6 +34,15 @@ from collections import Counter
 from typing import Any
 
 from ..adapter import BaseAdapter, NotSupported
+from ..sandbox import (
+    ApprovalDenied,
+    Approver,
+    InProcessRequest,
+    approver_record,
+    current_approver,
+    describe,
+    summarise,
+)
 from ..types import (
     Action,
     Capability,
@@ -70,7 +94,17 @@ class InspectAdapter(BaseAdapter):
         env_id: str | None = None,
         train_dataset: Any | None = None,
         pass_threshold: float = 1.0,
+        approver: Approver | None = None,
     ) -> None:
+        #: Who says yes to running this task's scorer in the auditor's own
+        #: process. `None` means resolve it at the moment of asking, which is
+        #: how the CLI's `--yes` and `ASSAY_APPROVE_ALL` reach here.
+        self._approver = approver
+        #: None until asked. Asked once per adapter, not once per sample: a
+        #: 25-item probe battery that prompted per call would be answered by
+        #: holding down a key.
+        self._scoring_approved: bool | None = None
+        self._approvals: list[dict[str, Any]] = []
         self._task = task
         self._samples = list(task.dataset)
         self._by_id = {str(s.id or i): s for i, s in enumerate(self._samples)}
@@ -123,7 +157,60 @@ class InspectAdapter(BaseAdapter):
                 return str(action.args.get("answer", ""))
         return ""
 
+    # -- the in-process approval gate --------------------------------------
+
+    def approval_log(self) -> list[dict[str, Any]]:
+        return list(self._approvals)
+
+    def scoring_request(self) -> InProcessRequest:
+        """Exactly what the approver is asked to allow, spelled out."""
+        return InProcessRequest(
+            what=(
+                f"call the scorer(s) of inspect_ai task {self._env_id!r} inside the "
+                "Assay process"
+            ),
+            why_not_sandboxed=(
+                "an inspect_ai scorer is a live Python closure over the task object, "
+                "not a script; running it in a container would mean rebuilding "
+                "inspect_ai's runtime inside the image and re-entering the task "
+                "there. Assay calls it here instead, and asks first"
+            ),
+            callables=[getattr(fn, "__qualname__", repr(fn)) for fn in self._scorers],
+        )
+
+    def authorise_scoring(self) -> None:
+        """Ask before third-party scorer code runs in this interpreter.
+
+        Asked once and remembered, including when the answer was no: a refused
+        gate that re-asks on the next of 25 samples is a gate that wears the
+        person down until they say yes.
+        """
+        if self._scoring_approved:
+            return
+        request = self.scoring_request()
+        if self._scoring_approved is None:
+            approver = self._approver or current_approver()
+            granted = bool(approver(request))
+            self._approvals.append(
+                {
+                    **approver_record(approver),
+                    "granted": granted,
+                    "contained": False,
+                    "what": summarise(request),
+                    "detail": describe(request),
+                }
+            )
+            self._scoring_approved = granted
+        if not self._scoring_approved:
+            raise ApprovalDenied(
+                f"running {self._env_id}'s scorer in the Assay process was not "
+                "approved; nothing was scored. This code is not contained -- pass "
+                "`--yes` or set ASSAY_APPROVE_ALL if you accept that"
+            )
+
     def _score_with(self, sample, answer: str, target_text: str) -> Score:
+        self.authorise_scoring()
+
         from inspect_ai.model import ModelOutput
         from inspect_ai.scorer import Target
         from inspect_ai.solver import TaskState

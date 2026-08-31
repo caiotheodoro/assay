@@ -42,6 +42,14 @@ jobs:
       - name: Sync
         run: uv sync --extra dev --extra adapters --extra openenv
       - name: Re-run the corpus
+        # The corpus executes third-party code and the approval gate fails
+        # closed, so an unattended run has to say so out loud. This is the
+        # explicit escape, not a default: without it the gate finds no terminal
+        # to ask at, refuses, and the job dies rather than quietly running.
+        # `assay audit --yes` is the same decision from a command line, and
+        # either one is recorded on the Environment Card.
+        env:
+          ASSAY_APPROVE_ALL: "ci: unattended corpus reproduction, .github/workflows/ci.yml"
         run: uv run python scripts/full_run.py --out /tmp/ci_run.json
       - name: Compare against the committed arms
         run: |

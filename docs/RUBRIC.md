@@ -193,7 +193,7 @@ read off a file. Those runs are listed in [What was executed](#what-was-executed
 - And then measured for reliability rather than claimed: `README.md:254-259`,
   3 of 4 runs, from `scripts/challenger_reliability.py`.
 - One adapter protocol over four ecosystems — `src/assay/adapters/{inspect_ai_adapter,harbor,openenv,spec,tau2}.py`.
-- `src/assay/sandbox.py:41-79` — the approval gate, fail-closed by default.
+- `src/assay/sandbox.py:194-372` — the approval gate. `current_approver()` is the single place that decides and its default is a prompt showing image, command, mounts, network and every limit before asking; with no terminal to ask at it refuses. Unattended running is an explicit escape (`assay audit --yes`, `ASSAY_APPROVE_ALL=<reason>`) and is stamped on the Environment Card. This used to read "fail-closed by default" while `_harbor_corpus.py` hard-coded `AutoApprove` on the shipped path — see `docs/changelog/98-approval-gate.md`.
 - Invariants enforced as tests that read the source, not as comments: no challenger
   module may reference `true_completion` (`docs/CHANGELOG.md` Slice 4); the scripted
   log may not record a score the attacker never saw (Slice 11b).

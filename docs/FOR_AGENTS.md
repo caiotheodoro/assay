@@ -13,7 +13,7 @@
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
   "result": "assay 40.0 vs flag_everything 314.0, saved 274.0 [186, 326] separated, wins 4/4 cost profiles, separates 3/4",
   "cost_crossover": "942h vs shipped 120h — survives 685% error",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (650 passed, 0 skipped) + uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key)",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (650 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
@@ -94,7 +94,7 @@ by construction. For most of this project's life, Assay did not beat it.
 
 Design choices that matter (rubric: "which choices helped"):
 - **Independent verifier** — Challenger's 1.0 is scored 0.0 by the probe's hidden verifier.
-- **Deny-by-default sandbox** — `DenyAll` is the default approver and executes nothing (`src/assay/sandbox.py:46-50`); containment defaults are `network: bool = False` and `read_only_root: bool = True` (`src/assay/sandbox.py:82,87`, applied at `:142,151`). `results/trajectories/` shows an identical request refused under DenyAll and run under AutoApprove.
+- **Ask-by-default sandbox** — `current_approver()` (`src/assay/sandbox.py:353`) is the one place that decides, and its default is a prompt showing image, command, mounts, network state and every limit *before* asking (`:249`); with no terminal it refuses rather than assuming a yes. Unattended running is explicit — `assay audit --yes` or `ASSAY_APPROVE_ALL="<reason>"` — and the Environment Card says so. A bare `DockerSandbox()` is still `DenyAll` (`:199`). Containment defaults are `network: bool = False` and `read_only_root: bool = True` (`:89,94`, applied at `:424,434`). Third-party `inspect_ai` scorers run **in-process**, uncontained, and go through the same gate as an `InProcessRequest` (`:108`) rather than going unmentioned. This bullet used to claim deny-by-default while `_harbor_corpus.py` hard-coded `AutoApprove` on the shipped path: `docs/changelog/98-approval-gate.md`.
 - **Deterministic probes, stochastic attacker** — no LLM judge scores anything inside Assay. Only the Challenger is agentic, and its contribution is reported as a **rate (3 of 4)**, not as a capability.
 
 ### 04. Can another person reproduce it?
@@ -104,8 +104,8 @@ actually stopping things, and a cost table. One command per result:
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 650 passed, 0 skipped
-uv run --extra adapters --extra openenv python scripts/full_run.py   # headline: 26 envs, 50 defects, 22s, no GPU/key
-uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # headline: 26 envs, 50 defects, 22s, no GPU/key
+uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code; asks before it runs anything, add --yes to skip the prompt
 ```
 
 Video numbers are data-bound, not transcribed: `video/src/data/results.ts` imports
@@ -243,10 +243,10 @@ about this repository, not as a comparison against work not seen.
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 650 passed, 0 skipped
-uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
-uv run --extra adapters assay audit harbor/self-graded --card /tmp/c.html; head -40 /tmp/c.html
+uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
