@@ -318,8 +318,19 @@ class Auditor:
     say so.
     """
 
-    def __init__(self, client: LLMClient | None = None) -> None:
+    def __init__(
+        self, client: LLMClient | None = None, gate_input: str = "instructions"
+    ) -> None:
         self._client = client
+        #: What the semantic gate is allowed to read. "instructions" is the
+        #: shipped behaviour. "describe" restores the pre-fix input, so the
+        #: regression it caused is reproducible on demand rather than only
+        #: narrated -- see `gate_text` and `scripts/auditor_arm.py`.
+        if gate_input not in {"instructions", "describe"}:
+            raise ValueError(
+                f"gate_input must be 'instructions' or 'describe', not {gate_input!r}"
+            )
+        self.gate_input = gate_input
         #: shape signature -> the conclusion reached on the first
         #: environment that had it. The memory lever: two environments
         #: that pose the same question to a reader get one model call
@@ -388,6 +399,19 @@ class Auditor:
             lines.append("")
         return "\n".join(lines).strip() or "(this environment declares no task text)"
 
+    def gate_text(self, adapter: EnvAdapter) -> str:
+        """What the gate actually reads, which is a setting and was once a bug.
+
+        `task_text` is the shipped input and the correct one. `describe` is the
+        input this gate had before the fix, kept reachable because the claim
+        that it scored 163.0 is worth no more than the command that reproduces
+        it. Nothing selects `describe` by default; `scripts/auditor_arm.py
+        --gate-input describe` is the only caller that does.
+        """
+        if self.gate_input == "describe":
+            return adapter.describe()
+        return self.task_text(adapter)
+
 
     @staticmethod
     def shape(adapter: EnvAdapter) -> str:
@@ -415,7 +439,7 @@ class Auditor:
         remembered = self._by_shape.get(signature)
         if remembered is not None:
             return {**remembered, "carried_from": remembered["_env"]}
-        text = self.task_text(adapter)
+        text = self.gate_text(adapter)
         answer = self._ask(_SYSTEM, text)
         if answer is None:
             return None

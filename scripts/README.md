@@ -44,6 +44,18 @@ Implementation details of one section of the README, or of one document in
 - `policy_synthesis.py` — whether a Challenger that *proposes* answer strings finds
   the `inspect_evals/paws` constant-string exploit the scripted repertoire cannot
   name. Writes `results/policy_synthesis.json`; needs `--extra sweep` and a model.
+- `auditor_arm.py` — the same battery with the Auditor reading the results before
+  the verdict is recorded, against the deterministic arm on the same corpus.
+  `--gate-input describe` restores the pre-fix gate input and re-measures the
+  regression it caused, so that number is a command rather than a story. Writes
+  `results/auditor_arm.json`; needs a model.
+- `escalation_policy.py` — where a second, expensive attacker is worth paying for.
+  Runs `Auditor.should_escalate` over the corpus and records the refusals too.
+  Writes `results/escalation_policy.json`; deterministic, needs no backend.
+- `na_resolution.py` — whether the Auditor can rescue a probe that declined for
+  want of a train split, by naming the item's fields and cross-fitting over a
+  split it synthesizes. Writes `results/na_resolution.json`; needs `--extra sweep`
+  and at least one model, and takes more than one so agreement is checkable.
 
 **Against defects this repo did not plant** (README § *Where Assay sits in the field*)
 

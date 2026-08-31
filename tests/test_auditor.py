@@ -477,3 +477,31 @@ def test_the_gate_sees_task_text_and_not_the_verifier():
     assert "declared capabilities" in described
     assert "declared capabilities" not in text
     assert "metadata" not in text
+
+
+def test_the_gate_reads_task_text_by_default_and_describe_only_when_asked():
+    """The pre-fix input is reachable, and reaching it has to be deliberate.
+
+    Handing `describe()` to the semantic gate was a bug with a measurement
+    behind it: the gate read the fixture's own metadata, concluded the
+    environment had no correct answer, and deleted real verifier-integrity
+    findings. `scripts/auditor_arm.py --gate-input describe` re-measures that on
+    demand, which is the only reason the path still exists. If it silently
+    stopped differing from the shipped input, the number it produces would stop
+    meaning anything and nothing else would notice.
+    """
+    adapter = build("solved_at_reset")
+
+    shipped = Auditor()
+    assert shipped.gate_input == "instructions"
+    assert shipped.gate_text(adapter) == Auditor.task_text(adapter)
+
+    pre_fix = Auditor(gate_input="describe")
+    assert pre_fix.gate_text(adapter) == adapter.describe()
+    assert pre_fix.gate_text(adapter) != shipped.gate_text(adapter)
+
+
+def test_an_unknown_gate_input_is_refused_rather_than_silently_ignored():
+    """A typo that falls back to the shipped input would report the wrong arm."""
+    with pytest.raises(ValueError, match="gate_input"):
+        Auditor(gate_input="descibe")

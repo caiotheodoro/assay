@@ -544,7 +544,13 @@ def test_the_externally_labelled_count_is_the_one_in_the_registry():
     derived = [k for k, v in prov.items() if v["label_source"] == "externally_derived"]
 
     claim = f"{len(external)} of {len(prov)} genuinely third-party, {len(derived)} of them externally"
-    assert claim in README, (
+    # Emphasis stripped before matching, like the crossover gate above: the
+    # README bolds the count, and a gate that breaks on an asterisk is testing
+    # the formatting rather than the claim. It caught exactly that when the
+    # README was cut and the sentence came back as
+    # `**...genuinely third-party**, 3 of them externally labelled`.
+    plain_readme = README.replace("*", "")
+    assert claim in plain_readme, (
         f"the README does not carry the registry's own counts: expected "
         f"{claim!r} (external={sorted(external)}, externally_derived={sorted(derived)})"
     )
@@ -989,7 +995,24 @@ def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
         cut = re.search(r"(?im)^#+ .*(historical|superseded).*$", body)
         if cut:
             body = body[: cut.start()]
+        # A list item is a claim boundary. Without this the numbered caveats in
+        # README.md are one paragraph, and `pairs_near` reaches across them:
+        # item 1 says direct_prompt is not separated from stratified_random,
+        # item 2 mentions Assay's precision, and the nearest-two heuristic
+        # reported "assay vs stratified_random not separated" -- a verdict
+        # nobody wrote, assembled from two sentences that were each correct.
+        blocks: list[str] = []
         for paragraph in body.split("\n\n"):
+            current: list[str] = []
+            for line in paragraph.splitlines():
+                if re.match(r"\s*(?:\d+\.|[-*])\s", line) and current:
+                    blocks.append("\n".join(current))
+                    current = []
+                current.append(line)
+            if current:
+                blocks.append("\n".join(current))
+
+        for paragraph in blocks:
             lines = paragraph.splitlines()
             resolved = [(n, ln, pair_on(ln)) for n, ln in enumerate(lines)]
             rows = [(n, ln, r) for n, ln, r in resolved if r]
@@ -1123,3 +1146,82 @@ def test_every_published_artifact_agrees_on_the_size_of_the_corpus():
             if key in payload and payload[key] != want:
                 wrong.append(f"{name}: {key} is {payload[key]}, full_run.json says {want}")
     assert not wrong, "published artifacts disagree about the corpus:\n  " + "\n  ".join(wrong)
+
+
+def test_every_published_artifact_names_a_script_that_produces_it():
+    """A number nothing regenerates is a number that goes stale silently.
+
+    Three artifacts under `results/` were written by hand: `auditor_arm.json`,
+    `escalation_policy.json` and `na_resolution.json`. A cold judge found that
+    out by looking for the producing script and not finding one, and was right
+    to call it: the most-quoted figure in the agent story was a claim with a
+    narrative behind it and no command. `escalation_policy.json` had also gone
+    quietly stale, still reporting 26 environments against a corpus of 28.
+
+    So this walks every artifact that advertises a `harness` and checks the
+    script it names is really there. Existing on disk is not existing in a
+    clone, so it checks `git ls-files` too.
+    """
+    import subprocess
+
+    tracked = set(
+        subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files"],
+            capture_output=True, text=True, timeout=60,
+        ).stdout.split()
+    )
+    if not tracked:
+        pytest.skip("not a git checkout")
+
+    broken = []
+    for path in sorted((ROOT / "results").glob("*.json")):
+        try:
+            payload = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        harness = payload.get("harness")
+        if not isinstance(harness, str):
+            continue
+        named = re.findall(r"scripts/[A-Za-z0-9_./-]+\.py", harness)
+        if not named:
+            broken.append(f"{path.name}: harness names no scripts/*.py -- {harness!r}")
+            continue
+        for script in named:
+            if not (ROOT / script).exists():
+                broken.append(f"{path.name}: harness names {script}, which does not exist")
+            elif script not in tracked:
+                broken.append(f"{path.name}: {script} is untracked; a clone would not have it")
+    assert not broken, (
+        "published artifacts name producing scripts that are not there:\n  "
+        + "\n  ".join(broken)
+    )
+
+
+def test_an_artifact_that_claims_a_producer_says_what_tree_it_ran_on():
+    """Claiming a command and not saying what tree it ran on is the gap.
+
+    Absent provenance where every sibling has it is what exposed the three
+    hand-written artifacts: every script-produced file here stamps
+    `assay_revision`, and the three that nothing produced did not. The rule is
+    the conjunction rather than either half. An artifact with no `harness` is
+    making no claim about being reproducible and is not held to this; one that
+    names a command is, because "run this to regenerate it" is worth nothing
+    without the revision it was last regenerated on.
+    """
+    missing = []
+    for path in sorted((ROOT / "results").glob("*.json")):
+        try:
+            payload = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(payload, dict) or not isinstance(payload.get("harness"), str):
+            continue
+        revision = payload.get("assay_revision")
+        if not isinstance(revision, dict) or "commit" not in revision:
+            missing.append(f"{path.name}: names a harness, carries no assay_revision.commit")
+    assert not missing, (
+        "artifacts claim a producing command but not the tree it ran on:\n  "
+        + "\n  ".join(missing)
+    )

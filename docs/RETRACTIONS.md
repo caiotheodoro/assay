@@ -12,7 +12,7 @@ twelve of them: a correction that lands one document downstream of the one peopl
 read is how a broken benchmark stays broken. A repository arguing that unaudited
 numbers are the problem does not get to delete its own.
 
-Nineteen entries. Twelve are the red-team's; the other seven were found afterwards by the
+Twenty entries. Twelve are the red-team's; the other eight were found afterwards by the
 same method, three of them while collecting this file.
 
 ---
@@ -306,10 +306,46 @@ Live claim: `README.md` §The probes, stated in the narrower form.
 
 ---
 
+## 20. The pre-fix auditor arm scoring 163.0
+
+> "this arm is what caught the gate at **163.0**, deleting real findings"
+
+Published in `README.md` and in `results/auditor_arm.json` as `before_the_fix`,
+where it led the agent paragraph and did more rhetorical work than any other
+number in the submission.
+
+Nothing shipped reproduced it. `results/auditor_arm.json` was written by hand:
+no script emitted it, and unlike every other artifact under `results/` it
+carried no `assay_revision`, so there was not even a tree to point at. A cold
+judge went looking for the producing command, did not find one, and was right to
+call it the weakest claim in the repository. The same was true of
+`results/escalation_policy.json` — which had also gone quietly stale, still
+reporting 26 environments against a corpus of 28 — and `results/na_resolution.json`.
+
+The measurement is now a flag rather than a story: `scripts/auditor_arm.py
+--gate-input describe` restores the pre-fix gate input, and
+`Auditor(gate_input="describe")` is pinned by a test so the path cannot silently
+stop differing from the shipped one. The re-measurement reached 26 of 28
+environments before it was stopped: the pre-fix gate hands `adapter.describe()`
+to the model, which on the two τ² environments means the verifier's source
+against a 4096-token context, and those two did not complete. So the arm is
+reproducible on demand and **has not been reproduced end to end**, and the
+figure is withdrawn until it is. What replaces it is the qualitative finding,
+which the surviving 26 environments do support: reading the fixture's own
+metadata, the gate concluded environments had no correct answer and withheld
+real verifier-integrity findings. That is why the gate now reads task
+instructions only.
+
+Live claim: `results/auditor_arm.json` carries the arms a command regenerates,
+and no `before_the_fix` figure.
+
+---
+
 ## What this list is evidence of
 
 Twelve of these were found by turning this repository's own instruments on itself
-(`docs/RED-TEAM.md`). Seven were found afterwards, by the same method, in the documents
-that recorded the first twelve. That rate is the point: **an auditing tool is not
+(`docs/RED-TEAM.md`). Eight were found afterwards, by the same method, in the documents
+that recorded the first twelve — the most recent by an outside judge who went looking
+for the command behind a number and found prose. That rate is the point: **an auditing tool is not
 exempt from the thing it audits, and the only defence is to run the audit on yourself
 and publish what it finds.**

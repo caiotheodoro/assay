@@ -62,7 +62,9 @@ def run_assay(corpus, ctx: dict | None = None, label: str = "assay") -> ArmResul
     return arm
 
 
-def run_auditor_arm(corpus, client, label: str = "assay+auditor") -> tuple[ArmResult, dict]:
+def run_auditor_arm(
+    corpus, client, label: str = "assay+auditor", gate_input: str = "instructions"
+) -> tuple[ArmResult, dict]:
     """The same battery, read by the Auditor before the verdict is recorded.
 
     This exists to answer one criticism directly: every number this submission
@@ -76,7 +78,7 @@ def run_auditor_arm(corpus, client, label: str = "assay+auditor") -> tuple[ArmRe
     """
     from assay.auditor import Auditor
 
-    auditor = Auditor(client)
+    auditor = Auditor(client, gate_input=gate_input)
     result = ArmResult(label)
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
@@ -86,6 +88,7 @@ def run_auditor_arm(corpus, client, label: str = "assay+auditor") -> tuple[ArmRe
               flush=True)
     return result, {
         "backend": getattr(client, "name", "unknown"),
+        "gate_input": gate_input,
         "model_calls": auditor.calls,
         "decisions": auditor.decisions,
         "overrides": [o.to_dict() for o in auditor.overrides],
