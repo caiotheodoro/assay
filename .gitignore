@@ -62,3 +62,8 @@ video/.remotion/
 
 # agent worktrees
 .claude/worktrees/
+
+# test-run droppings
+_junit*.xml
+_pytest_raw.log
+pytest_out.log
