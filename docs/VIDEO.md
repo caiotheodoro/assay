@@ -11,6 +11,29 @@ the change that contributed most, and one experiment that was removed.
 > This file is not edited to match the current tree, because a shooting script
 > revised after the shoot is a description of a video nobody made.
 
+> ### Erratum — the shipped cut understates one result
+>
+> At 2:47 the video says **"Wins all four. Separates on three. Production
+> training still crosses zero."** That was true when it was shot and is no
+> longer: `production-training` now separates, at **542.0, 95% CI [46, 808]**,
+> so Assay separates on **all four** profiles
+> ([`results/corpus_splits.json`](../results/corpus_splits.json)).
+>
+> It moved for a reason worth stating, because the video's caution was the
+> better instinct: the floor pays two false alarms per class per environment
+> under that profile, so two defect classes and two τ² environments took it from
+> 628.0 to 788.0 while Assay went 240.0 to 246.0. **The separation was bought by
+> the floor getting worse, not by the detector getting better**, and the lower
+> bound of 46 is thin enough that one environment could take it back.
+>
+> The narration and `video/src/scenes/SceneComparison.tsx:213` are left alone.
+> Editing the source without re-rendering would desync them from the published
+> 4:36 cut, and a script that no longer describes the video it produced is the
+> failure this file's own history is about. The error understates rather than
+> overstates, which is the direction to be wrong in.
+>
+> The re-record is scripted in [`VIDEO-NEXT.md`](VIDEO-NEXT.md) and not shot.
+
 **Status: recorded and hosted.**
 [assay.mp4](https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4)
 — 276.032 s = **4:36.03** against the 5:00 cap, h264 with an AAC track. The
