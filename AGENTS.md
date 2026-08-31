@@ -5,7 +5,7 @@ environment; it runs a battery of probes and emits an **Environment Card** — a
 validity verdict where every claim is tied to a probe result, plus machine-readable
 JSON and a nonzero exit code that blocks a training run.
 
-`README.md` is ~560 lines: the argument and the headline numbers, with the detail
+`README.md` is ~575 lines: the argument and the headline numbers, with the detail
 moved into `docs/RESULTS.md` and every retraction collected in
 `docs/RETRACTIONS.md`. This file is the shorter path. **`docs/FOR_AGENTS.md` is the
 next stop** — the same claims with a citation on each.
@@ -97,14 +97,14 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 751 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 754 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **751 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **754 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

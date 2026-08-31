@@ -119,7 +119,7 @@ and every arm's loss falls — `full_run.py` prints the reason rather than shrin
 
 | | |
 |---|---|
-| **Orientation, 100 lines** | [`AGENTS.md`](AGENTS.md) |
+| **Orientation, 130 lines** | [`AGENTS.md`](AGENTS.md) |
 | **Every claim, with the file that backs it** | [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) |
 | **Every number, with its caveats** | [`docs/RESULTS.md`](docs/RESULTS.md) |
 | **Everything this repo published and took back** | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) |
