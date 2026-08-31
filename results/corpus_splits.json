@@ -5,7 +5,7 @@
   "resampling_unit": "environment",
   "read_this_one": "external-envs",
   "n_external": 6,
-  "caveat": "in-process-fixtures is not a measurement: tests/test_probes_fire.py asserts detected == planted on exactly those twelve environments, so a loss above zero there is a failing build. And external-envs is n=4, which is not a measurement either -- it is the honest size of the third-party control this corpus currently has.",
+  "caveat": "in-process-fixtures is not a measurement: tests/test_probes_fire.py asserts detected == planted on exactly those 12 environments, so a loss above zero there is a failing build. And external-envs is n=6, which is not a measurement either -- it is the honest size of the third-party control this corpus currently has.",
   "provenance": {
     "fixture/artifact_splits": {
       "env_author": "authored_here",

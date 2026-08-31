@@ -134,19 +134,24 @@ def main() -> int:
         )
         out[split] = row
 
+    n_fixtures = len(out.get("in-process-fixtures", {}).get("environments", []))
+    n_external = len(out.get("external-envs", {}).get("environments", []))
     body = {
         "measurement": "expected loss by corpus provenance",
         "resamples": args.resamples,
         "seed": args.seed,
         "resampling_unit": "environment",
         "read_this_one": "external-envs",
-        "n_external": len(out.get("external-envs", {}).get("environments", [])),
+        "n_external": n_external,
+        # Counted, not typed. This sentence said "n=4" for two corpus revisions
+        # after the field above it said 6, because the number was prose and the
+        # number beside it was computed.
         "caveat": (
             "in-process-fixtures is not a measurement: tests/test_probes_fire.py "
-            "asserts detected == planted on exactly those twelve environments, so a "
-            "loss above zero there is a failing build. And external-envs is n=4, "
-            "which is not a measurement either -- it is the honest size of the "
-            "third-party control this corpus currently has."
+            f"asserts detected == planted on exactly those {n_fixtures} environments, so "
+            f"a loss above zero there is a failing build. And external-envs is n="
+            f"{n_external}, which is not a measurement either -- it is the honest size "
+            "of the third-party control this corpus currently has."
         ),
         "provenance": {
             env: {
