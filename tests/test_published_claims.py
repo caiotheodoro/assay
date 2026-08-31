@@ -1093,3 +1093,33 @@ def test_the_retracted_k1_semantic_gate_figures_are_gone_including_from_help():
         f"results/semantic_gate.json measures k={gate['k']} over {sized} "
         "environments:\n  " + "\n  ".join(offences)
     )
+
+
+def test_every_published_artifact_agrees_on_the_size_of_the_corpus():
+    """A results file two corpus generations old is still a published claim.
+
+    `results/baselines.json` sat at 24 environments and 14 defect classes while
+    the headline was 28 and 16, and it was cited in prose for a 16-class claim.
+    It is uploaded to the Hugging Face dataset with everything else, so a reader
+    who fetched it got numbers no document in the repo agreed with.
+
+    Nothing regenerates these together, so this checks they were.
+    """
+    run = json.loads((ROOT / "results" / "full_run.json").read_text())
+    from assay.types import DefectClass
+
+    expected = {
+        "n_environments": run["corpus_size"],
+        "n_planted_defects": run["total_planted_defects"],
+        "n_defect_classes": len(DefectClass),
+    }
+    wrong = []
+    for name in ("baselines.json",):
+        path = ROOT / "results" / name
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text())
+        for key, want in expected.items():
+            if key in payload and payload[key] != want:
+                wrong.append(f"{name}: {key} is {payload[key]}, full_run.json says {want}")
+    assert not wrong, "published artifacts disagree about the corpus:\n  " + "\n  ".join(wrong)
