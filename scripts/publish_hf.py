@@ -966,7 +966,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: apache-2.0
-short_description: Audit an RL environment in your browser, no server, no signup
+short_description: Audit an RL environment in your browser, no server
 tags:
   - evaluation
   - benchmark-auditing
@@ -1435,6 +1435,15 @@ def run_gates(ev: Evidence, staged: dict[str, Path], payload) -> list[tuple[str,
             meta = metadata_load(str(readme)) or {}
             out.append(gate(f"{kind}: metadata valid", "license" in meta,
                             f"keys={sorted(meta)[:6]}"))
+            # The Hub's own limits, checked here rather than discovered by the
+            # upload rejecting the commit. `short_description` over 60
+            # characters is a `ValueError` from `upload_folder` after every
+            # gate has printed PASS -- which is the same blind spot as the
+            # `--space-sdk` one: a dry run that cannot fail the way the real
+            # run fails.
+            brief = str(meta.get("short_description", ""))
+            out.append(gate(f"{kind}: short_description within the Hub limit",
+                            len(brief) <= 60, f"{len(brief)}/60 chars"))
         except Exception as exc:
             out.append(gate(f"{kind}: metadata valid", False, f"{type(exc).__name__}: {exc}"))
 
