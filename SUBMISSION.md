@@ -80,6 +80,7 @@ the script now finds it in two seconds because the discovery was written down.
 - The whole result rests on one constant nothing derives: a missed critical defect priced at
   120 engineer-hours. The ranking only flips at
   1173 — 9.78× larger.
-- There is no hosted demo. `space/app.py` is finished and gated, but Hugging Face returns
-  HTTP 402 for a Gradio Space on the free tier, so it runs locally instead. A decision,
-  documented rather than hidden.
+- The hosted demo is [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo),
+  which runs the battery in the browser under Pyodide. It audits a spec you paste in; it does not
+  reproduce the headline, because that still wants Docker and Ollama. `space/app.py`, the Gradio
+  build, stays local: Hugging Face returns HTTP 402 for a Gradio Space on the free tier.

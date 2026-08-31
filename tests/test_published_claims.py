@@ -382,6 +382,7 @@ def test_the_coverage_matrix_agrees_with_the_shipped_miss():
 DOCS_THAT_CITE_PATHS = (
     "README.md",
     "AGENTS.md",
+    "SUBMISSION.md",
     "docs/FOR_AGENTS.md",
     "docs/RUBRIC.md",
 )
@@ -444,6 +445,7 @@ def test_the_suite_size_the_docs_advertise_is_the_suite_size_that_ran(request):
     live_docs = (
         "README.md",
         "AGENTS.md",
+        "SUBMISSION.md",
         "docs/FOR_AGENTS.md",
         "docs/REPRODUCTION.md",
         "docs/ARCHITECTURE.md",
@@ -649,6 +651,7 @@ def test_every_assay_audit_command_in_a_live_doc_names_a_real_environment():
 LIVE_DOCS = (
     "README.md",
     "AGENTS.md",
+    "SUBMISSION.md",
     "llms.txt",
     "docs/FOR_AGENTS.md",
     "docs/RESULTS.md",
@@ -781,7 +784,14 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
             priced = _arms_priced_on(line, context, arm_res)
             if not priced:
                 continue
-            written = {n for n in _LOSS.findall(line) if "." in n or len(n) >= 3}
+            # A confidence interval is not a price. `| **assay** | 43 | [0, 125] |`
+            # states the point estimate and its interval, and both are correct;
+            # the gate read 125 as the claim because the point estimate 43 is
+            # two digits and the filter below keeps only 3+ digits or decimals.
+            # Strip bracketed spans first -- an interval is always reported
+            # beside a point estimate, never instead of one.
+            bare = re.sub(r"\[[^\]]*\]", " ", line)
+            written = {n for n in _LOSS.findall(bare) if "." in n or len(n) >= 3}
             if not written:
                 continue
             measured = {
@@ -1254,3 +1264,67 @@ def test_an_artifact_that_claims_a_producer_says_what_tree_it_ran_on():
         "artifacts claim a producing command but not the tree it ran on:\n  "
         + "\n  ".join(missing)
     )
+
+
+# --- The gate that stops the next SUBMISSION.md -------------------------------
+#
+# Four hand-maintained tuples in this file name the reviewer-facing documents:
+# DOCS_THAT_CITE_PATHS, the suite-size gate's `live_docs`, the `assay audit`
+# sweep's `live`, and LIVE_DOCS. `SUBMISSION.md` -- the document a judge opens
+# first -- was in none of them, so it sat two generations stale ("430 passed",
+# "collects 594") and claimed there was no hosted demo months after the Space
+# went up. Every individual gate was green the whole time.
+#
+# Adding it to the tuples fixes that document. This fixes the class: a new
+# reviewer-facing document must be claimed by a gate or explicitly exempted with
+# a reason, and there is no third option that quietly does nothing.
+
+#: Documents exempt from the live-claim gates, each for a stated reason. A
+#: record of what was true when it was written is not a promise about now.
+HISTORICAL_DOCS = {
+    "docs/RED-TEAM.md": "a log of claims broken on a dated tree",
+    "docs/RETRACTIONS.md": "the register of withdrawn claims; its numbers are the point",
+    "docs/PRE-REGISTRATION.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-TAU2.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-NOANSWER.md": "a prediction, fixed at the moment it was committed",
+    "docs/VIDEO.md": "the script as recorded, matching a video that cannot be edited",
+    "docs/LINEAGE.md": "attribution of borrowed work, not a claim about this suite",
+    "docs/SCIENCEAGENTBENCH.md": "an adapter note about an ecosystem not in the corpus",
+    "docs/VIDEO-NEXT.md": "a draft script for a cut that has not been recorded",
+}
+
+
+def test_every_reviewer_facing_document_is_claimed_by_a_gate_or_exempted():
+    """A new document must be gated or exempted -- never silently neither."""
+    import subprocess
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.split()
+
+    # Only the reviewer-facing surface: the repo root and docs/. Trajectories,
+    # disclosures, fixture instructions and vendored trees are not claims about
+    # this suite.
+    def reviewer_facing(name: str) -> bool:
+        if name.startswith("docs/"):
+            return name.count("/") == 1
+        return "/" not in name
+
+    gated = set(DOCS_THAT_CITE_PATHS) | set(LIVE_DOCS)
+    unclaimed = [
+        name
+        for name in sorted(tracked)
+        if reviewer_facing(name) and name not in gated and name not in HISTORICAL_DOCS
+    ]
+    assert not unclaimed, (
+        "reviewer-facing documents claimed by no gate and exempted by none:\n  "
+        + "\n  ".join(unclaimed)
+        + "\n\nAdd each to LIVE_DOCS (its claims get checked) or to HISTORICAL_DOCS "
+        "with the reason it records rather than promises."
+    )
+
+
+def test_the_historical_exemptions_all_name_a_real_file():
+    """An exemption for a file that no longer exists is a hole, not a decision."""
+    missing = [name for name in HISTORICAL_DOCS if not (ROOT / name).exists()]
+    assert not missing, f"HISTORICAL_DOCS names files that do not exist: {missing}"

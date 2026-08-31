@@ -141,15 +141,50 @@ class EnvSpec:
             )
         return tuple(out)
 
+    @staticmethod
+    def _load(raw: str) -> Any:
+        """JSON first, then YAML -- the CLI has advertised both since it shipped.
+
+        `cli.py` accepts `.yaml` and `.yml`, its error text says "A spec is JSON
+        or YAML", and its usage line says `.json/.yaml`. Only JSON parsed, so a
+        user following the message got `not valid JSON` from a file the same
+        message told them was fine.
+
+        JSON is tried first and its error is what survives when both fail,
+        because a broken JSON spec deserves the JSON parser's column number
+        rather than YAML's account of the same byte.
+
+        The yaml import is inside the branch on purpose. `adapters.spec.build()`
+        is the audit path the browser demo runs under Pyodide, which is
+        deliberately stdlib-only; importing yaml at module scope would load it
+        for every JSON spec and break that build for a dependency almost no
+        caller reaches.
+        """
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as exc:
+            json_error = exc
+        try:
+            import yaml
+        except ImportError:
+            raise SpecError(f"not valid JSON: {json_error}") from json_error
+        try:
+            loaded = yaml.safe_load(raw)
+        except yaml.YAMLError:
+            # Not valid as either. The JSON error is the more useful of the two:
+            # it points at a byte, where YAML tends to report a structural
+            # surprise several lines later.
+            raise SpecError(f"not valid JSON or YAML: {json_error}") from json_error
+        if loaded is None:
+            raise SpecError("the spec is empty")
+        return loaded
+
     @classmethod
     def parse(cls, raw: str | dict[str, Any]) -> EnvSpec:
         if isinstance(raw, str):
-            try:
-                raw = json.loads(raw)
-            except json.JSONDecodeError as exc:
-                raise SpecError(f"not valid JSON: {exc}") from exc
+            raw = cls._load(raw)
         if not isinstance(raw, dict):
-            raise SpecError("the spec must be a JSON object")
+            raise SpecError("the spec must be a JSON or YAML mapping")
 
         env_id = str(raw.get("env_id") or "").strip()
         if not env_id:
