@@ -162,8 +162,27 @@ def findings(report) -> str:
                 for k, v in f.evidence.items()
                 if k not in {"note", "attacker_trace"}
             )
+            # Parity with `render.py`. A finding the probe itself calls advisory
+            # has to say so, and this is the renderer behind `space/app.py` and
+            # the live Pyodide demo -- so the visitor most likely to be reading
+            # a heuristic finding as an executed one was the one not being told.
+            # `render.py` gained this and `web.py` did not, which is the same
+            # two-copies-of-one-renderer split that caused an injection bug here
+            # once already.
+            confidence = str(f.evidence.get("confidence", ""))
+            advisory = confidence.startswith("advisory")
+            mark = " <em>(advisory)</em>" if advisory else ""
+            caveat = (
+                "<blockquote>Advisory: surfaced by a heuristic for a human to "
+                "check, not established by execution. This repo excludes this "
+                "probe from its own external recall measurement "
+                "(<code>results/tau2_recall.json</code>), so weigh it "
+                "accordingly.</blockquote>"
+                if advisory
+                else ""
+            )
             items.append(
-                f"<li><b>{escape(f.defect.value)}</b>{where}"
+                f"<li><b>{escape(f.defect.value)}</b>{where}{mark}{caveat}"
                 + (f"<blockquote>{note}</blockquote>" if note else "")
                 + (f"<div class='assay-ev'>{ev}</div>" if ev else "")
                 + "</li>"

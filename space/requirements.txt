@@ -5,5 +5,10 @@
 # The Space needs python 3.11 -- `assay.adapters.harbor` imports `tomllib` at
 # module level, and the Spaces gradio default image is 3.10. That is pinned in
 # the README front matter, not here, because pip cannot express it.
+# Pinned for the Space image. The test suite installs gradio from the
+# `space` extra in pyproject.toml instead, at >=6.26 -- deliberately not the
+# same pin: this file describes what the deployed app runs, the extra
+# describes what `pytest` needs, and conflating them is why the suite size
+# was a property of the developer's venv.
 gradio==5.49.1
 pyyaml>=6.0

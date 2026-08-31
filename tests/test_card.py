@@ -90,3 +90,28 @@ def test_an_executed_finding_carries_no_advisory_marker():
     card = to_markdown(audit(build("gold_broken")))
     assert "GOLD_FAILS" in card
     assert "*(advisory)*" not in card
+
+
+def test_both_renderers_mark_an_advisory_finding():
+    """`web.py` is the renderer behind the Gradio app and the live Pyodide demo.
+
+    `render.py` gained the advisory marker and `web.py` did not, so the visitor
+    most likely to read a heuristic finding as an executed one -- someone
+    clicking the hosted demo, with no repo to check against -- was the one not
+    being told. Two copies of one renderer drifting apart is also what caused an
+    escaping bug here once already, which is why `web.py` exists at all.
+    """
+    from assay.card import to_markdown
+    from assay.card.web import findings as web_findings
+    from assay.fixtures import build
+    from assay.runner import audit
+
+    report = audit(build("drifted_asserts"))
+    md, html = to_markdown(report), web_findings(report)
+    assert "*(advisory)*" in md
+    assert "(advisory)" in html
+    assert "not established by execution" in md
+    assert "not established by execution" in html
+
+    clean = audit(build("gold_broken"))
+    assert "(advisory)" not in web_findings(clean)

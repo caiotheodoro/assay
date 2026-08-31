@@ -90,9 +90,12 @@ uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py
 
 **Measured: 15–39 s and about 1 s** on an idle machine, 33–44 s for
 `full_run.py` with other work contending for the Docker daemon. Most of it is
-container startup. `--extra sweep` is not needed here — it is for the wild sweep
-below — and leaving it out gives a byte-identical `results/full_run.json`,
-checked by diffing the two.
+container startup. `--extra sweep` **is** needed: without it the two `inspect_evals`
+environments drop out, and `scripts/full_run.py` refuses to write a headline
+from a reduced corpus rather than reporting the flattering smaller number. An
+earlier revision of this guide said the opposite and said it had been checked by
+diffing; it had been checked on a machine where `inspect_evals` was already
+installed.
 
 Re-running these two commands on a clean clone reproduces **every deterministic
 arm** of the committed `results/*.json` with no diff at all — verified from a fresh
@@ -224,7 +227,7 @@ uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q
 
 **Measured: 760 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
 An earlier revision of this guide claimed 275 collected; the suite has roughly
-doubled since and that number was never re-measured. The 650 and the 128 s are
+doubled since and that number was never re-measured. That count and the 128 s are
 one measurement of this command on one machine — an earlier revision quoted 594
 in 82 s, and the wall clock is hardware, not a property of the suite.
 

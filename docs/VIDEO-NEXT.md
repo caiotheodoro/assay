@@ -53,16 +53,17 @@ removed. Every one has a beat below.
 > that cannot beat "assume every environment is broken" has not earned its
 > runtime.
 >
-> Twenty-six environments, fifty planted defects, one cost model. Flag everything
-> scores 366. Assay scores 40. The saving is separated at 95% — the interval is
+> Twenty-eight environments, fifty-four planted defects, one cost model. Flag
+> everything scores 394. Assay scores 43. The saving is 351, separated at 95% — the interval is
 > bootstrapped over environments, not defects, because a verifier that always
 > passes fails six probes at once and resampling defects would count that six
 > times.
 
 **Say the weakness out loud, on screen:**
 
-> Twenty-two of those twenty-six environments are ours. The four that are not are
-> named, and the split is published. This is a controlled experiment, and it is
+> Twenty-two of those twenty-eight environments are ours. Six are not, and only
+> three of those carry a label somebody outside this repo decided. The split is
+> published. This is a controlled experiment, and it is
 > labelled as one.
 
 ## 1:10–2:25 — One realistic execution, end to end
@@ -89,7 +90,8 @@ removed. Every one has a beat below.
 
 > The largest single improvement was not a probe. It was pricing — moving from
 > "how many defects did you find" to expected loss under a cost model, which is
-> what took the margin from 50 to 274 and made it separate at all.
+> what took the margin from 50 to 351 and made it separate at all. Seventy-seven
+> of that 351 is arithmetic rather than detection, and the write-up says which.
 >
 > The most *interesting* change is newer, and it is where the agent lives now.
 
@@ -106,8 +108,11 @@ quote that justifies it printed on the card.
 
 > That is the division the whole repo now argues for. **The script owns
 > mechanism. The model owns meaning.** And it is measured, not asserted:
-> `results/semantic_gate.json`, twelve environments that have a correct answer
-> plus the one that does not. Zero false positives on both backends.
+> `results/semantic_gate.json`, twenty environments at three runs each: eighteen
+> that have a correct answer and two that do not. Claude-cli withholds the false
+> positive in six runs of six, with zero false overrides in fifty-four. Qwen3:8b
+> matches the recall and produces six false overrides, so it is not a backend to
+> run this with.
 
 ## 3:15–4:00 — What was removed, and what failed
 
@@ -179,8 +184,8 @@ quote that justifies it printed on the card.
 |---|---|---|
 | 1 | three citations | `README.md` § the problem |
 | 2 | `assay audit harbor/self-graded` → exit 1 | live terminal, approval prompt un-cut |
-| 3 | arms table, 366 vs 40 | `results/full_run.json` |
-| 4 | corpus split, 22 of 26 | `results/corpus_splits.json` |
+| 3 | arms table, 394 vs 43 | `results/full_run.json` |
+| 4 | corpus split, 22 of 28 | `results/corpus_splits.json` |
 | 5 | Environment Card | `assay audit --card` |
 | 6 | `personality_BFI` INVALID → withheld | `--auditor`, both takes |
 | 7 | semantic gate table | `results/semantic_gate.json` |
