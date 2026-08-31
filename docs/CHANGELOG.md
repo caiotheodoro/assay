@@ -5,16 +5,24 @@ Evidence is a command anyone can rerun.
 
 ## Baseline → Final
 
-Same corpus, same cost profile, both reproducible in one command each:
-`scripts/full_run.py` then `scripts/intervals.py`. 26 environments, 50 planted
-defects, `research-run` profile.
+Same corpus, same cost profile, 28 environments, 54 planted defects,
+`research-run` profile. Every row below is reproducible, but not in one command:
+the two τ² environments are not redistributed here, so the snapshot fetch comes
+first or the corpus is 26 and every arm's loss falls.
+
+```bash
+uv run --extra tau2 python scripts/tau2_fetch.py
+ASSAY_APPROVE_ALL="changelog" \
+  uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py
+uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py
+```
 
 | | Expected loss | Recall | Precision | Normalized loss |
 |---|---|---|---|---|
-| **Baseline** — `check_env`, the incumbent structural linter | 3056 | 0.040 | 1.000 | 9.73 |
-| **Baseline** — `flag_nothing`, the honest null | 3072 | 0.000 | 0.000 | 9.78 |
-| **The floor to beat** — `flag_everything` | 314 | 1.000 | 0.137 | 1.00 |
-| **Final** — Assay | **40.0** | **0.980** | **1.000** | **0.127** |
+| **Baseline** — `check_env`, the incumbent structural linter | 3216 | 0.037 | 1.000 | 8.16 |
+| **Baseline** — `flag_nothing`, the honest null | 3232 | 0.000 | 0.000 | 8.20 |
+| **The floor to beat** — `flag_everything` | 394 | 1.000 | 0.121 | 1.00 |
+| **Final** — Assay | **43.0** | **0.982** | **0.946** | **0.109** |
 
 The incumbent scores within half a percent of doing nothing. It is not a weak
 detector of these defects; it is not a detector of them. That gap is the
@@ -23,23 +31,35 @@ opportunity, and reproducing it needs no LLM.
 **The comparison that actually decides it is the third row, not the first.**
 `flag_everything` catches every defect by construction, so an auditor that
 cannot beat it is an expensive way to say "check everything" — and for most of
-this project's life Assay did not beat it. It now does: **274.0 loss saved,
-95% CI [186, 326], separated**, from a paired bootstrap over 10,000 resamples
+this project's life Assay did not beat it. It now does: **351.0 loss saved,
+95% CI [263, 404], separated**, from a paired bootstrap over 10,000 resamples
 of *environments* rather than defects, because a verifier that always passes
 fails six probes at once and resampling defects would report an interval far
 tighter than the data supports. Assay wins all four cost profiles and separates
-on three.
+on all four.
+
+**77.0 of that 351.0 is arithmetic, not detection, and it is decomposed rather
+than banked.** `flag_everything` flags every class in the taxonomy on every
+environment, so its loss is `Σ_env (n_classes − |planted_env|) × false_alarm`
+and it gets worse whenever the taxonomy or the corpus grows with no detector
+involved: two probe families added two defect classes (+52) and two τ²
+environments added 28 more free false alarms while costing Assay 3. Against the
+taxonomy and corpus this was first measured on, the comparable margin is
+**274.0** — predicted before the corpus grew, in
+`docs/PRE-REGISTRATION-TAU2.md`.
 
 **What it still cannot do**, at the same volume as the wins: one miss remains
-(`inspect_evals/boolq` — structural, no train split, so the contamination probe
-has nothing to compare); four of BenchJack's eight flaw classes are uncovered,
-named in *their* vocabulary in `docs/COVERAGE.md`; the corpus is authored here,
-a lower bar than defects found in the wild; and the cost constant is bounded
-rather than derived — 120 sits inside a 0.04–850 engineer-hour range
-(`results/cost_unit.json`) whose top is still below the 942 crossover, so every
-cost belief the bound supports is one where Assay wins.
+(`inspect_evals/boolq` — structural, no train split, so the shortcut probe has
+nothing to compare); precision is **0.946**, not 1.000, with three spurious
+findings and all three on τ²; four of BenchJack's eight flaw classes are
+uncovered, named in *their* vocabulary in `docs/COVERAGE.md`; 22 of the 28
+environments are authored here, a lower bar than defects found in the wild; and
+the cost constant is bounded rather than derived — 120 sits inside a 0.04–850
+engineer-hour range (`results/cost_unit.json`) whose top is still below the
+1099.53 crossover, so every cost belief the bound supports is one where Assay
+wins.
 
-## Every slice
+## Every slice — the historical record
 
 | Stage | What was tried and why | Evidence | Decision / learning |
 |---|---|---|---|
@@ -78,6 +98,66 @@ cost belief the bound supports is one where Assay wins.
 | Slice 6 | With the loop fixed, `exploit_gap` still reported 0.0 on a run that had visibly scored 1.0 on a wrong answer. | `tests/test_exploit_gap_replay.py` — three tests that failed before the fix | **The measurement was broken, not the attacker.** `HarborAdapter.step` returned `done=True` after every shell command and `run_policy` breaks on `done`, so replaying a nine-action transcript executed action one — `ls -la` — and scored that. Silent, because a truncated replay is still a valid scoreable policy; just not the one recorded. Fixed in three places: a shell command no longer ends an episode, `run_policy` takes `stop_on_done`, and replays run in full. |
 | Slice 6a | Challenger ablation on `harbor/self-graded`, whose verifier reads its expectation from a file the agent can overwrite. | `results/challenger_ablation.json` | **A clean capability ladder.** scripted: missed, gap 0.00, 4 attempts. `qwen3:8b`: missed, gap 0.00, 10 attempts. `claude-cli`: **FOUND, gap 1.00** at turn 8 — after seven turns of real reconnaissance (hunting the verifier, listing `/logs`, checking permissions, trying to write `reward.txt` directly) it wrote `banana` to both the answer and the file the verifier compares against, and was scored 1.0 while completing nothing. The exploit is findable; this is where the threshold sits. |
 | Slice 6b | Kept the scripted and 8B misses in the table rather than reporting only the arm that worked. | same file | **The misses are the result.** An ablation showing only the successful arm says nothing about how hard the problem is. The gap between "scripted finds nothing" and "a frontier model finds it on turn 8" is the measurement. |
+<!-- from 100-policy-synthesis.md -->
+## Slice 42e: the exploit a human found, found by an agent
+
+**What and why.** `README.md` pins the one place this repo could name where the
+tool lost to a person:
+
+> Assay flagged 14 of 25 sampled `paws` items as `REWARD_HACKABLE`. It did
+> **not** find the `"yesno"` case; hand triage did. The scripted Challenger's
+> repertoire is the adapter's trivial policies, and none of them names both
+> labels at once.
+
+That is pinned as a test so it cannot quietly close. It is also the clearest
+statement in the repo of what a fixed repertoire *cannot* do: the exploit is one
+string, and no amount of replaying declared policies produces a string nobody
+declared. So the Challenger was given the one job a script structurally cannot
+have — **proposing** policies rather than replaying them.
+
+**Evidence.** `results/policy_synthesis.json`, `inspect_evals/paws`, the same
+pinned 25-item subsample the corpus row uses.
+
+| arm | detected | beyond the floor | wall clock |
+|---|---|---|---|
+| scripted floor | 14 / 25 | — | ~0s |
+| `claude-cli:sonnet`, sees the verifier | **24 / 25** | **+11** | 976.6s |
+| `claude-cli:sonnet`, blind to the verifier | 22 / 25 | +8 | 490.8s |
+| `ollama:qwen3:8b`, sees the verifier | 0 / 25 | −14 | 197.1s |
+| `ollama:qwen3:8b`, blind | 2 / 25 | −12 | 173.3s |
+
+**The policies it proposed are the point**, not the count:
+
+```
+synthesis:'Yes No'   synthesis:'Yes/No'   synthesis:'Yes\nNo'   synthesis:'Yes\n\nNo'
+```
+
+That is the both-labels-at-once class, arrived at from the task text and the
+verifier source. The scripted floor's 14 are exactly the `No`-target items,
+credited to `always_escalate` because *"I cannot determine the answer."* contains
+`no` inside `cannot`. The agent found the other eleven.
+
+**What is not claimed.** One run per arm, not three — each `claude-cli` run is
+about sixteen minutes. Distrust the exact 24, not the direction. `qwen3:8b`
+reaches 0 and 2, so this is a **capability threshold**, the same shape as the
+semantic gate in `99-semantic-gate.md`, and not a property of the design.
+
+Nothing here is scored by a model. `self_report` records what the challenger
+claimed about its own success and is used for **nothing**; every detection was
+scored by the deterministic `exploit_gap` machinery, and the model's claims
+disagreed with that machinery **zero** times out of 24.
+
+**Decision.** Kept, opt-in, and it changes none of the headline numbers — the
+corpus row for `paws` is unchanged and the shipped default is still `scripted`.
+What it changes is the answer to the section this repo named *"Does an agent find
+what a script cannot?"*, which until now was "it did once, and then a better
+script found it too."
+
+**What it cost to learn.** The blind arm scoring 22 against the full arm's 24 is
+the uncomfortable part: most of the win comes from reading the task, not from
+reading the verifier. The obvious story — *the agent studied the scorer and
+defeated it* — is not what the numbers say, and the eight-item gap between blind
+and floor is the honest size of "reading the instructions carefully" as an attack.
 <!-- from 102-na-resolution.md -->
 ## Slice 42b: the split can be synthesized, and boolq is still missed
 
@@ -221,6 +301,61 @@ produces.
 | Slice 48d | The page is useful before the runtime loads, and if it never loads. | `space/static/index.template.html` | All seven examples are rendered into the HTML at build time, so a visitor sees eight real cards — verdicts, skip tables, findings — with JavaScript still parsing. Tested by pointing the Pyodide script at a dead host: the button stays disabled, the note says the runtime did not start and that every card on the page is unaffected, and all eight cards are still there. A demo whose failure mode is a blank page is not a demo. |
 | Slice 48e | **`hf upload` cannot upload to a static Space, and 26 passing gates could not see that either.** | `push()` in `scripts/publish_hf.py` | Same shape as slice 41a, one layer down. `hf upload` calls `/api/repos/create` on its way in and has no `--space-sdk` to pass, so it asks for a **gradio** Space — HTTP 402, for a repo that already existed as a static Space, created by the line directly above. The upload never started. `upload_folder` is what that command wraps minus the create, and the create was always redundant here, so the second one is gone rather than routed around. The next failure was a `short_description` of 61 characters rejected after every gate printed PASS; that is a gate now. |
 | Slice 48f | What the deduction was actually for, and what it is now. | `README.md`, `docs/RUBRIC.md`, `docs/changelog/93-hf-publish.md`, `docs/changelog/94-space-decision.md` | Slice 41e's decision — decline a paid plan to host a demo — stands and was right. What changed is that a paid plan turned out not to be necessary, which is a fact about the deployment, not a reversal of the call. The two earlier fragments keep their original text and carry a note pointing here; rewriting them to look as though this was always the plan would corrupt the record this project keeps deliberately. |
+<!-- from 106-disclosures-filed.md -->
+## Slice 43: both disclosures filed, and what the second reader caught
+
+**What and why.** Two defects in software shipping today have been in this repo
+since the wild sweep found them, written up as drafts and never sent. Two model
+judges named that independently as the gap between this submission and a higher
+score: *"no real user touched it — disclosures drafted, not filed, so the
+strongest possible value proof (an upstream maintainer confirming) does not
+exist."*
+
+Filed 2026-08-31:
+
+| Finding | Upstream | Issue |
+|---|---|---|
+| `paws` `includes()` scorer: the constant string `"yesno"` scores 8000/8000 | `UKGovernmentBEIS/inspect_evals` | [#2331](https://github.com/UKGovernmentBEIS/inspect_evals/issues/2331) |
+| `textarena_env.reset()` accepts a `seed` and discards it | `huggingface/OpenEnv` | [#1102](https://github.com/huggingface/OpenEnv/issues/1102) |
+
+**`docs/disclosures/README.md` named two prerequisites and they were done first**
+— re-check the line references, and get a second reader, because neither draft
+had been read by anyone but its author. The second reader was given the drafts
+and told to be adversarial, and it was not a formality. Three findings, any one
+of which would have got a correct report closed as noise:
+
+1. **The reproduction pointed at a file that does not contain the result.** The
+   draft said the 8000/8000 figure was pinned in `tests/test_wild_findings.py`.
+   That file's own docstring says the full-dataset numbers are not in it — they
+   need the Hub — and `results/wild_sweep.json` is gitignored. There was no
+   committed, runnable reproducer for the headline number anywhere public. The
+   filed issue carries the whole snippet inline instead.
+2. **The version claim was superseded that morning.** `inspect_evals` 0.19.0
+   was released 2026-08-31T03:56Z, hours before filing. Checked the tag: the bug
+   is live in it. "You are reporting against a version we shipped past" is the
+   cheapest way to have an issue closed.
+3. **The suggested fix was partly wrong and partly harmful.** Rejecting
+   completions containing *both* labels — my own first instinct — would mark
+   correct answers wrong, because the `paws` prompt template *itself* says
+   "Answer Yes … If they are not, answer No". Any model that echoes the
+   instruction or reasons out loud contains both labels. That would penalise
+   verbose models, which is the mirror of the bias the report complains about.
+
+Every replacement was re-measured here before it went out rather than taken on
+the reviewer's word — which caught one wrong cell in its own table
+(`"no idea"` under `match(location="end")` is 0.0%, not 55.8%) and confirmed the
+rest exactly, including 4464 `No` targets of 8000 and the anchored pattern
+taking a constant string to 0.0%.
+
+**Decision.** Filed. No maintainer has replied yet, and the reply — whichever way
+it goes — is the strongest evidence this repository can ever carry that any of
+this matters outside it. It goes in the README when it arrives.
+
+**What it cost to learn.** The drafts had sat finished for days, and the thing
+stopping them was labelled a decision. Two of the three defects above are the
+kind you only find by having someone else read the thing you are about to say in
+public, which is exactly the argument this repo makes about benchmarks and had
+not applied to its own outgoing mail.
 <!-- from 11-composite-challenger.md -->
 | Slice 9 | Ran the full corpus with the prompted Challenger instead of the scripted one, to measure whether the agentic component closes Assay's only miss. | `harbor/vacuous-tests` reported `REWARD_HACKABLE` under the scripted Challenger and **stopped reporting it** under the prompted one | **A better attacker is not a superset of a worse one.** `vacuous-tests` has a verifier that exits 0 unconditionally; the scripted repertoire catches it for free by submitting nothing, and the model never happened to try that — it wrote a plausible answer, was told 1.0, and moved on. Substituting the Challenger silently lost coverage. |
 | Slice 9a | Made Challengers compose rather than replace. | `tests/test_prompted_challenger.py::test_a_composite_never_loses_what_a_member_would_find` | **`CompositeChallenger` runs every member and the probe takes the best gap across all of them** — the only combination rule that cannot lose coverage. Cheap fixed repertoire first, model second. Findings namespace their attacker (`scripted/trivial:empty`, `prompted[claude-cli]/turn8`), because "which attacker found this" is the entire reason for running more than one. |

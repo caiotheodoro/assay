@@ -458,8 +458,11 @@ limitation before it was measured; now a number.
 | Sandbox permissions | Does the deployment grant more than the task needs? | an exploit needs no cleverness, only the manifest |
 | Evaluator code execution | Can the verifier be made to run what it is grading? | the agent writes a sentence instead of a solution |
 
-Families 1–8 are deterministic programs. Family 9 is the adversarial **Challenger** — scripted,
-prompted, or GRPO-trained. **No model ever scores a probe:** the Challenger only proposes actions,
+Ten of the eleven families above are deterministic programs — 1–8 and 10–11. Family 9, reward
+hackability, is the adversarial **Challenger** — scripted, prompted, or GRPO-trained. The two at
+the bottom of the table are the newest: sandbox permissions and evaluator code execution were added
+in [`docs/changelog/97-dead-zone-probes.md`](docs/changelog/97-dead-zone-probes.md), and they are
+what took the taxonomy from 14 defect classes to 16. **No model ever scores a probe:** the Challenger only proposes actions,
 every one is scored by a program, and the ground truth is held by the probe and never shown to the
 attacker. A model can *withhold* a verdict — that is the `--auditor` gate above, off by default,
 and it can only turn a DEFECT into `NOT_APPLICABLE`. It can never assert one.

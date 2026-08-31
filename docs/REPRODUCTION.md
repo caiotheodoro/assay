@@ -84,8 +84,8 @@ their `importorskip` is at module scope.
 ## The headline comparison
 
 ```bash
-ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py
-uv run --extra adapters python scripts/intervals.py --resamples 10000 --seed 11
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py
+uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py --resamples 10000 --seed 11
 ```
 
 **Measured: 15–39 s and about 1 s** on an idle machine, 33–44 s for
@@ -104,45 +104,52 @@ re-run writes a `full_run.json` with those two arms absent rather than an identi
 file. That is the check that caught them being
 three environments out of date.
 
-26 environments across five ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
-openenv, 2 inspect_evals, **50 planted defects**. `intervals.py` adds 95%
-bootstrap CIs and paired differences; read those, not the point estimates.
+28 environments across six ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
+openenv, 2 inspect_evals, 2 tau2, **54 planted defects**. Skip
+`scripts/tau2_fetch.py` and you get 26 and 50 instead, because neither τ²
+snapshot is redistributed here — `full_run.py` prints the reason rather than
+shrinking quietly. `intervals.py` adds 95% bootstrap CIs and paired
+differences; read those, not the point estimates.
 
 Expect exactly this, under `research-run`:
 
 | arm | expected loss | recall | precision |
 |---|---|---|---|
-| assay | 40.0 | 0.980 | 1.000 |
-| flag_everything | 366.0 | 1.000 | 0.137 |
-| stratified_random | 2667.0 | 0.360 | 0.383 |
-| always_modal_defect | 1888.0 | 0.200 | 0.385 |
-| check_env | 3056.0 | 0.040 | 1.000 |
-| flag_nothing | 3072.0 | 0.000 | 0.000 |
+| assay | 43.0 | 0.982 | 0.946 |
+| flag_everything | 394.0 | 1.000 | 0.120 |
+| always_modal_defect | 2050.0 | 0.185 | 0.357 |
+| direct_prompt | 2454.0 | 0.222 | 0.353 |
+| agent_with_tools | 2736.0 | 0.241 | 0.351 |
+| stratified_random | 2793.0 | 0.111 | 0.128 |
+| check_env | 3216.0 | 0.037 | 1.000 |
+| flag_nothing | 3232.0 | 0.000 | 0.000 |
 
 Exactly **one** environment is missed corpus-wide — `inspect_evals/boolq`,
-`SHORTCUT_LEAK` — and there are zero false positives. If you see two Harbor
-misses instead, you are on a revision before the taxonomy-derived policies
-landed; see `docs/changelog/79-taxonomy-policies.md`.
+`SHORTCUT_LEAK` — and there are **three** spurious findings, all three on the
+two τ² environments, which is why precision is 0.946 and no longer 1.000. If
+you see two Harbor misses instead, you are on a revision before the
+taxonomy-derived policies landed; see `docs/changelog/79-taxonomy-policies.md`.
 
 `check_env` — a model of what `gymnasium.utils.env_checker` and
-`stable_baselines3.common.env_checker` actually assert — detects 2 of 50, both
+`stable_baselines3.common.env_checker` actually assert — detects 2 of 54, both
 `NONDETERMINISM`, which is the only class it can return. It does not score
 identically to `flag_nothing`; an earlier revision of this guide said so and
 was wrong, because the model omitted the determinism check that gymnasium
 1.3.0 does perform. One of its two hits is `fixture/flaky`, planted here.
 
-The gap to `flag_nothing` is 16.0 of 3072.0. Whether that counts as
+The gap to `flag_nothing` is 16.0 of 3232.0. Whether that counts as
 "distinguishable" is not settled by the interval the README quotes: `check_env`
 emits no false positives and detects a subset of what is planted, so the paired
 difference is >= 0 by construction and the CI can never exclude zero from
 above. On a one-sided reading it is p ~ 0.13 -- the chance neither
-`NONDETERMINISM` environment is drawn, (24/26)^26.
+`NONDETERMINISM` environment is drawn, (26/28)^28.
 
 Expect also that Assay **does** separate from `flag_everything` — paired
-difference **326.0, 95% CI [238, 378]** — and that it now wins all four cost
-profiles, separating on three. Under `--profile production-training` it wins
-240.0 to 628.0 but the interval crosses zero, so that one is a lead rather than
-a result. An earlier revision of this guide told you to expect the opposite on
+difference **351.0, 95% CI [263, 404]** — and that it now wins all four cost
+profiles and separates on all four. Under `--profile production-training` it
+wins 246.0 to 788.0, saving 542.0 on [46, 808]; that row separated only when
+the taxonomy grew to 16 classes, which raised the floor rather than the
+detector. An earlier revision of this guide told you to expect the opposite on
 both counts; it was correct when written, and closing the two Harbor misses is
 what changed it.
 
@@ -152,10 +159,10 @@ what changed it.
 uv run --extra adapters python scripts/export_trajectories.py --model qwen3:8b
 ```
 
-Writes `results/trajectories/` — eight runs, JSON and markdown, plus an index.
-Five are live on this machine (Docker plus `ollama pull qwen3:8b`); two replay
-committed Claude CLI ablation runs, so they reproduce with no CLI installed;
-one is the sandbox approval gate.
+Writes `results/trajectories/` — ten runs, JSON and markdown, plus an index.
+Most are live on this machine (Docker plus `ollama pull qwen3:8b`); the Claude
+CLI ones replay committed ablation runs, so they reproduce with no CLI
+installed; one is the sandbox approval gate.
 
 Arms whose runtime is missing skip with a reason and are listed in `INDEX.md`
 rather than dropped, in the same way as every other comparison here. The
@@ -263,7 +270,9 @@ those were observed; treat the collected/skipped counts as needing a re-run.
 The Docker row used to be the one worth reading twice, and it is worth reading
 for a different reason now. It once dropped Assay's expected loss from 240.0 to
 **0.0** — a perfect score bought by deleting the five environments it did worst
-on. Measured today: **corpus 21 / 38 defects, expected loss 40.0, unchanged.**
+on. Measured at an earlier revision, on the 26-environment corpus: **21 / 38
+defects, expected loss 40.0, unchanged** — the shape of the result, not a
+current figure.
 The degradation no longer flatters, because the one environment Assay misses is
 `inspect_evals/boolq` and Docker has nothing to do with it.
 

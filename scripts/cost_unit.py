@@ -3,8 +3,9 @@
 
 `research-run.yaml` prices a missed CRITICAL defect at 120 engineer-hours and
 nothing derived it. `cost_sensitivity.py` already answered the question that
-matters most -- the ranking survives from 9 to 942, so it is a property of the
-detectors rather than of the constant -- but "the answer does not depend on it"
+matters most -- the ranking survives across three orders of magnitude, up to the
+crossover that script computes, so it is a property of the detectors rather than
+of the constant -- but "the answer does not depend on it"
 is not the same as "the number is defensible", and a reader is entitled to ask
 where it came from.
 
@@ -40,8 +41,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "results" / "cost_unit.json"
+SENSITIVITY = ROOT / "results" / "cost_sensitivity.json"
 
 SHIPPED = 120.0
+
+
+def crossover() -> float:
+    """Read it from the sweep, never from memory.
+
+    This was a literal `942` in four places here, and it went stale the moment
+    the taxonomy grew: the crossover's numerator is `flag_everything`'s loss, so
+    it moves whenever the corpus or the defect taxonomy does. A published
+    artifact then carried a number no artifact supported -- the exact failure
+    this repository audits environments for, happening in the script that
+    publishes the honesty argument.
+    """
+    return float(json.loads(SENSITIVITY.read_text())["exact_crossover_critical_cost"])
 
 # --- measured in this repo -------------------------------------------------
 # docs/CHANGELOG.md: "Two spot runs of ~16 minutes each: g5.xlarge at
@@ -105,6 +120,7 @@ def ceiling_hours() -> list[dict]:
 
 
 def main() -> int:
+    cross = crossover()
     floor = floor_hours()
     ceiling = ceiling_hours()
     lo = min(r["engineer_hours"] for r in floor)
@@ -134,8 +150,8 @@ def main() -> int:
             "rows": ceiling,
         },
         "shipped_sits_inside_the_bound": lo <= SHIPPED <= ceil_hi,
-        "crossover_from_cost_sensitivity": 942,
-        "crossover_is_above_the_ceiling": 942 > ceil_hi,
+        "crossover_from_cost_sensitivity": cross,
+        "crossover_is_above_the_ceiling": cross > ceil_hi,
         "reading": (
             f"The floor is {lo}-{hi} engineer-hours: compute alone, and BELOW the shipped "
             f"{SHIPPED:.0f} in every cell. That is the honest result rather than a "
@@ -145,14 +161,15 @@ def main() -> int:
             f"field has published against it. The shipped {SHIPPED:.0f} sits inside that "
             "range.\n\n"
             "The crossover is what makes the bound worth computing. Assay beats "
-            "flag-everything for every missed-CRITICAL cost BELOW 942 (`cost_sensitivity."
-            f"json`), and the top of this bound is {ceil_hi:.0f}. So the entire range a "
-            "defensible cost belief can occupy -- from 'a wasted GPU-month is all it "
-            "costs' to 'it costs a full SWE-bench-Verified-scale re-annotation' -- lies "
-            "on the side where Assay wins. Reaching the crossover would require valuing "
-            "one missed critical defect at MORE than re-annotating an entire published "
-            "benchmark. The headline does not rest on the constant being 120; it rests "
-            "on the constant being under 942, and nothing in this bound gets near it."
+            f"flag-everything for every missed-CRITICAL cost BELOW {cross:g} "
+            f"(`cost_sensitivity.json`), and the top of this bound is {ceil_hi:.0f}. So "
+            "the entire range a defensible cost belief can occupy -- from 'a wasted "
+            "GPU-month is all it costs' to 'it costs a full SWE-bench-Verified-scale "
+            "re-annotation' -- lies on the side where Assay wins. Reaching the crossover "
+            "would require valuing one missed critical defect at MORE than re-annotating "
+            "an entire published benchmark. The headline does not rest on the constant "
+            f"being 120; it rests on the constant being under {cross:g}, and nothing in "
+            "this bound gets near it."
         ),
         "what_this_does_not_do": (
             "It does not derive 120. Nothing here can: the quantity is an organisation's "
@@ -164,10 +181,10 @@ def main() -> int:
     OUT.write_text(json.dumps(body, indent=2) + "\n")
     print(f"floor   {lo:>8.2f} - {hi:>8.2f} engineer-hours   (GPU only, measured spot rate)")
     print(f"shipped {SHIPPED:>8.2f}                          (research-run.yaml)")
-    print(f"crossover  {942:>6}                             (cost_sensitivity.py)")
+    print(f"crossover {cross:>9.2f}                          (cost_sensitivity.py)")
     print(f"ceiling {ceil_lo:>8.1f} - {ceil_hi:>8.1f} engineer-hours   (benchmark repair, cited)")
     print(f"\nshipped inside the bound: {body['shipped_sits_inside_the_bound']}")
-    print(f"crossover above the ceiling: {942 > ceil_hi}  "
+    print(f"crossover above the ceiling: {cross > ceil_hi}  "
           f"-- assay wins across the whole defensible range")
     print(f"wrote {OUT.relative_to(ROOT)}")
     return 0

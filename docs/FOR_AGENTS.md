@@ -11,22 +11,24 @@
   "category": "agentic workflows — QA for evals",
   "user": "researcher about to spend GPU on an env they didn't write, or maintainer about to publish one",
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
-  "result": "assay 40.0 vs flag_everything 366.0, saved 326.0 [238, 378] separated, wins 4/4 cost profiles, separates 3/4",
-  "cost_crossover": "942h vs shipped 120h — survives 815% error",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (745 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv python scripts/full_run.py (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
+  "result": "assay 43.0 vs flag_everything 394.0, saved 351.0 [263, 404] separated, wins 4/4 cost profiles, separates 4/4",
+  "margin_that_is_not_detection": "77.0 of the 351.0 is arithmetic — two defect classes and two environments added to the floor, not detection. Against the taxonomy and corpus this was first measured on the margin is 274.0 (docs/PRE-REGISTRATION-TAU2.md)",
+  "cost_crossover": "1099.53h vs shipped 120h — survives 816% error",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q (745 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 2s vs 262s)",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
-    "code_and_changelog": "shipped — docs/CHANGELOG.md, 49 fragments",
+    "code_and_changelog": "shipped — docs/CHANGELOG.md, 58 fragments",
     "reproduction_guide": "shipped — docs/REPRODUCTION.md, cold-cache timings",
-    "trajectories": "shipped — 8 runs, 3 misses, 1 gate refusal",
+    "trajectories": "shipped — 10 runs, 3 misses, 1 gate refusal",
     "video": "shipped — https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4 , 276.032s = 4:36.03 against the 5:00 cap, h264+aac. The Remotion sources, capture scripts, terminal casts and voice tracks are tracked under video/; only the 24MB render is hosted rather than committed",
     "hosted_demo": "shipped — https://huggingface.co/spaces/caiotheodoro/assay-demo , a free static Space that runs the probe battery in the visitor's browser under Pyodide. All 7 examples are pre-rendered into the page at build time. HF still returns 402 for a Gradio Space on the free tier, so space/app.py is local-only"
   },
   "known_gaps": [
     "inspect_evals/boolq missed — no train split, contamination probe has nothing to compare",
+    "precision is 0.9464, not 1.000 — three spurious findings, all three on the two tau2 environments",
     "4 of BenchJack's 8 flaw classes uncovered (docs/COVERAGE.md)",
-    "only 4 of 26 corpus environments are genuinely third-party (README.md, corpus split)",
+    "only 6 of 28 corpus environments are genuinely third-party, and only 3 of those 6 carry ground truth decided elsewhere (README.md, corpus split)",
     "the hosted demo refuses verifier:regex — safe_regex bounds a submitted pattern in a subprocess and WebAssembly has none"
   ]
 }
@@ -37,7 +39,7 @@
 ## 10-Second Parse
 
 - **Problem:** Labs buy RL envs/evals as products. Nobody QAs them. Fixes are 93 devs hand-triaging (SWE-bench) or never finding out.
-- **Incumbent ceiling:** `env_checker` catches 1 of 4 planted defects (`results/real_check_env.json`), 2 of 50 on corpus. It checks "will it crash", never "does it measure".
+- **Incumbent ceiling:** `env_checker` catches 1 of 4 planted defects (`results/real_check_env.json`), 2 of 54 on corpus. It checks "will it crash", never "does it measure".
 - **Assay:** Point at env → 11 probe families run → `Environment Card` with `VALID / INVALID / UNVERIFIED` + exit code + every claim tied to evidence.
 - **Why the alternatives don't cover it:** static tools read files, dynamic tools run one check; none bundles 11 families under one expected-loss metric with `could-not-run` reported as loudly as defects. Matrix below.
 
@@ -70,11 +72,13 @@ out of the loop (`README.md` § *Two real defects, in software shipping today*):
 - `inspect_evals/paws` 0.18.0: `includes()` substring against Yes/No → `"yesno"` scores **8000/8000**
 - `openenv/textarena_env`: `reset(seed=1234)` ×6 → 6 different words (seed ignored)
 
-Both are written up as unfiled disclosure drafts in `docs/disclosures/`.
+Both are written up in `docs/disclosures/` and both were filed upstream on 2026-08-31
+([inspect_evals#2331](https://github.com/UKGovernmentBEIS/inspect_evals/issues/2331),
+[OpenEnv#1102](https://github.com/huggingface/OpenEnv/issues/1102)).
 
 Incumbent `gymnasium`+`stable_baselines3` checkers: `scripts/real_check_env.py` →
-**1 of 4** detected on purpose-built shims. On corpus: `check_env` 3056.0 [1960, 4272]
-vs `flag_nothing` 3072.0 [1984, 4288], saved 16.0 [0, 40] **overlaps zero** — not
+**1 of 4** detected on purpose-built shims. On corpus: `check_env` 3216.0 [2104, 4448]
+vs `flag_nothing` 3232.0 [2128, 4456], saved 16.0 [0, 40] **overlaps zero** — not
 distinguishable from doing nothing.
 
 That last number is the one that matters, and it cuts against the easy story: beating
@@ -105,7 +109,7 @@ actually stopping things, and a cost table. One command per result:
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 745 passed, 0 skipped
-ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # headline: 26 envs, 50 defects, 22s, no GPU/key
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py   # headline: 28 envs, 54 defects, 22s, no GPU/key
 uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code; asks before it runs anything, add --yes to skip the prompt
 ```
 
@@ -152,7 +156,7 @@ model is on the Hub labelled as a negative result.
 | **ABA** | static | 34k tasks, 14k major issues | count | no | no | 168 benchmarks, static only |
 | **BenchJack** | dynamic (agent-driven) | 219 flaws, adversarial patch loop | hackable-task ratio | no | no | 10 agent benchmarks |
 | **arXiv 2606.16062** | dynamic | SWE-bench gold-sanity | 28.5% hackable | no | no | SWE-bench only |
-| **Assay** | **dynamic, 11 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (40.0 [0, 120] vs 366.0 [347, 383]), saved 326.0 [238, 378]**, 4 cost profiles | **yes — 120→1098 crossover, 815% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
+| **Assay** | **dynamic, 11 families** | verifier + trivial + separability + contamination + shortcut + spec + determinism + difficulty + **Challenger** | **expected loss (43.0 [0, 125] vs 394.0 [375, 411]), saved 351.0 [263, 404]**, 4 cost profiles | **yes — 120→1099.53 crossover, 816% margin** | **yes — always renders `What could not be checked`** (`video/src/components/Panels.tsx:254-285`) | **6 adapters, 4 ecosystems** (`src/assay/adapters/`) |
 
 **The gap Assay fills:** no other tool (a) bundles verifier + contamination + shortcut
 + separability + difficulty + reward-hack in one report, (b) prices misses against false
@@ -179,7 +183,7 @@ perfectly; its verifier is still reward-hackable via `expected.txt`.
 (`video/public/casts/audit.cast` is the recorded session.)
 
 **Q: Isn't `env_checker` enough?**
-`results/real_check_env.json` — 1 of 4 planted defects caught. 2 of 50 on corpus, both
+`results/real_check_env.json` — 1 of 4 planted defects caught. 2 of 54 on corpus, both
 determinism. Silent on the other 8 families. `src/assay/baselines/structural.py` models
 it; `scripts/real_check_env.py` runs the real one.
 
@@ -196,15 +200,20 @@ See *Where the agent actually is* above.
 
 **Q: Is the corpus too self-authored?**
 Yes, and the split is published because it is unflattering: 12 fixtures + 10
-our-content/third-party-format + **4 genuinely external** (n=4). Pre-registered before
-`paws`/`boolq` were added (`docs/PRE-REGISTRATION.md`); `results/corpus_splits.json`
-shows where it wins and loses. The one remaining miss is external —
-`inspect_evals/boolq`, no train split → `NOT_APPLICABLE`.
+our-content/third-party-format + **6 genuinely external** (n=6), of which only 3 carry
+ground truth decided outside this repository. Pre-registered before `paws`/`boolq` were
+added (`docs/PRE-REGISTRATION.md`) and again before the two τ² domains
+(`docs/PRE-REGISTRATION-TAU2.md`); `results/corpus_splits.json` shows where it wins and
+loses. The one remaining miss is external — `inspect_evals/boolq`, no train split →
+`NOT_APPLICABLE` — and all three spurious findings are external too, both τ² domains.
 
 **Q: Is the 120h miss cost made up?**
-Yes, and it is labelled a guess. It was swept: the crossover is at **1098**
-(`results/cost_sensitivity.json`), so the headline survives a 815% error in it. Before
-the Harbor misses were closed the margin was 21%; both are published.
+Yes, and it is labelled a guess. It was swept: the crossover is at **1099.53**
+(`results/cost_sensitivity.json`), so the headline survives a 816% error in it. Before
+the Harbor misses were closed the margin was 21%, and before the taxonomy grew it was
+685%; all three are published. The last move is not a detection result — the crossover's
+numerator is `flag_everything`'s loss, and two probe families plus two environments
+raised it.
 
 ---
 
@@ -224,16 +233,16 @@ about this repository, not as a comparison against work not seen.
    It exists because a fabricated card once survived render and a 7-point sweep — every
    prior check compared the video to itself.
 
-3. **A deterministic core with the stochastic edge isolated.** 8 probes are programs, 1 is
-   an attacker; `docs/ARCHITECTURE.md:32-52` names the single remaining leak between them,
-   and `:114-137` documents a capability wired but dead.
+3. **A deterministic core with the stochastic edge isolated.** 10 of the 11 probe
+   families are programs, 1 is an attacker; `docs/ARCHITECTURE.md:32-52` names the single
+   remaining leak between them, and `:114-137` documents a capability wired but dead.
 
 4. **The correct bootstrap unit.** `results/intervals.json` resamples **environments**
-   (n=26), not defects, and carries a `"why"` field saying so. Resampling defects would
+   (n=28), not defects, and carries a `"why"` field saying so. Resampling defects would
    report an interval far too tight. Paired differences on a shared resample: assay vs
-   `flag_everything` **326.0 [238, 378] separated**; assay vs `check_env` **3016.0 [1904, 4240]**.
+   `flag_everything` **351.0 [263, 404] separated**; assay vs `check_env` **3173.0 [2055, 4415]**.
 
-5. **Trajectories that include the misses.** `results/trajectories/INDEX.md` — 8 runs,
+5. **Trajectories that include the misses.** `results/trajectories/INDEX.md` — 10 runs,
    3 Challenger misses, 1 sandbox gate refusal, unparseable replies kept rather than
    pruned.
 
@@ -244,7 +253,7 @@ about this repository, not as a comparison against work not seen.
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
 uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 745 passed, 0 skipped
-ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv python scripts/full_run.py   # 22s; compare results/full_run.json
+ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 python scripts/full_run.py   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended

@@ -171,9 +171,31 @@ def test_the_cost_crossover_matches_what_the_readme_claims():
     # Strip markdown emphasis: the README bolds the figure, and a test that
     # breaks on asterisks tests the formatting rather than the claim.
     plain = README.replace("*", "")
-    assert f"survives a {margin_pct}% error" in plain, (
-        f"computed margin is {margin_pct}% and the README does not say so"
-    )
+    assert f"survives a {margin_pct}% error" in plain or (
+        f"survives an {margin_pct}% error" in plain
+    ), f"computed margin is {margin_pct}% and the README does not say so"
+
+    # And nowhere else may say a different one. This gate pointed only at the
+    # README, so `docs/FOR_AGENTS.md`, `docs/METHOD.md` and `docs/RUBRIC.md` all
+    # went on quoting a 942 crossover and an 815% margin after the taxonomy grew
+    # -- three documents, none of them checked, one of them the file written to
+    # be lifted by somebody else.
+    others = re.compile(r"survives (?:a|an) ([0-9]{1,4})% error")
+    wrong = []
+    for doc in ("AGENTS.md", "llms.txt", "docs/FOR_AGENTS.md", "docs/METHOD.md",
+                "docs/RUBRIC.md", "docs/RESULTS.md", "docs/REPRODUCTION.md"):
+        path = ROOT / doc
+        if not path.exists():
+            continue
+        for line in path.read_text().replace("*", "").splitlines():
+            low = line.lower()
+            # METHOD.md narrates the sequence 21% -> 685% -> 816% on purpose.
+            if "moved" in low or "was " in low or "before" in low:
+                continue
+            for found in others.findall(line):
+                if int(found) != margin_pct:
+                    wrong.append(f"{doc}: says {found}%, the sweep says {margin_pct}%")
+    assert not wrong, "stale cost-margin claims:\n  " + "\n  ".join(wrong)
 
 
 def test_the_video_script_carries_no_retracted_claim():
@@ -580,3 +602,165 @@ def test_every_assay_audit_command_in_a_live_doc_names_a_real_environment():
                 if env not in known:
                     bad.append(f"{name}: `assay audit {env}` -- not a registered environment")
     assert not bad, "commands a reader cannot run:\n  " + "\n  ".join(bad)
+
+
+# --- The gate for the failure that has now happened twice ---------------------
+#
+# The corpus went 26 -> 28 and the taxonomy 14 -> 16. `README.md` and
+# `docs/RESULTS.md` were corrected; six other reader-facing documents were not,
+# and a judge reading cold landed on them by following the README's own "Start
+# here" table -- which sends you to two documents that contradict the README's
+# headline. The sibling gate above fixed exactly one of those documents, by name.
+# This one takes the general case: any live document that puts a number next to
+# an arm has to put the measured one there.
+
+# The documents a reader is sent to. Records are excluded wholesale -- their old
+# numbers are the point of keeping them: `docs/RED-TEAM.md`,
+# `docs/RETRACTIONS.md`, `docs/history/`, `docs/changelog/` and both
+# pre-registrations, which are predictions made before the numbers moved and must
+# never be rewritten to match them. `docs/CHANGELOG.md` is listed rather than
+# excluded because its Baseline -> Final table is a live claim; everything below
+# its "Every slice -- the historical record" heading is retired by the heading
+# rule, the same way `docs/RUBRIC.md` retires its superseded scorecard.
+LIVE_DOCS = (
+    "README.md",
+    "AGENTS.md",
+    "llms.txt",
+    "docs/FOR_AGENTS.md",
+    "docs/RESULTS.md",
+    "docs/METHOD.md",
+    "docs/RUBRIC.md",
+    "docs/ARCHITECTURE.md",
+    "docs/REPRODUCTION.md",
+    "docs/COVERAGE.md",
+    "docs/CHANGELOG.md",
+    "space/app.py",
+    "space/static/index.template.html",
+)
+
+# The suite-size gate's list, plus the phrasings this sweep actually found in
+# use. A sentence that says when it was true is a record, not a promise.
+RETIRED = (
+    "at the time",
+    "an earlier",
+    "earlier revision",
+    "before the suite grew",
+    "previously",
+    "historical",
+    "superseded",
+    "used to",
+    "at that revision",
+    "it originally",
+    "prediction held",
+    "predicted",
+)
+
+# A number in the shape a loss is written in. Two digits are not enough to be one
+# of these losses, and one decimal place is as far as any of these documents goes.
+_LOSS = re.compile(r"(?<![\w.])(\d{1,4}(?:\.\d)?)(?![\w.\d])")
+# `flag_everything` **394.0** -- the arm, then punctuation, then its number.
+_QUOTES_IT = re.compile(r"[`*\s:=,—-]{1,4}\*{0,2}\d")
+# "assay vs `flag_everything` 351.0" prices the *difference*, not the arm named
+# second, and "`check_env` saves 16.0" prices a saving. Neither is a claim about
+# that arm's own expected loss, and reading them as one turns every paired
+# difference table in docs/RESULTS.md into a false alarm.
+_OTHER_HALF = re.compile(r"(?:vs|versus|against|saved|saves|over|than)\W{0,8}$", re.I)
+_THE_SAVING = re.compile(r"^[`*\s,]{0,4}(?:saves?|saved)\b", re.I)
+
+
+def _arms_priced_on(line: str, context: str, arm_res: dict) -> set[str]:
+    """Arms this line gives a loss to, as opposed to arms it merely names."""
+    low, ctx = line.lower(), context.lower()
+    offset = len(ctx) - len(low)
+    priced: set[str] = set()
+
+    def its_own(m: "re.Match[str]") -> bool:
+        before = ctx[max(0, offset + m.start() - 20) : offset + m.start()]
+        return not _OTHER_HALF.search(before) and not _THE_SAVING.match(low[m.end() :])
+
+    cells = [c.strip() for c in line.split("|")] if line.lstrip().startswith("|") else []
+    # A table row whose first cell is a short label naming one arm is that arm's
+    # row. The length cap is load-bearing: `docs/ARCHITECTURE.md` has a review
+    # table whose first cell is a paragraph that happens to say "Assay".
+    if len(cells) >= 3 and len(cells[1]) <= 80 and " vs " not in cells[1].lower():
+        for arm, rx in arm_res.items():
+            if rx.search(cells[1].lower()):
+                priced.add(arm)
+    for arm, rx in arm_res.items():
+        for m in rx.finditer(low):
+            if its_own(m) and _QUOTES_IT.match(low[m.end() :]):
+                priced.add(arm)
+    # A sentence that says "expected loss" out loud is quoting one whether or not
+    # the number sits against the name: `llms.txt` said "Assay scores an expected
+    # loss of 40.0" with six words in between, and nothing caught it.
+    if "expected loss" in low:
+        for arm, rx in arm_res.items():
+            if any(its_own(m) for m in rx.finditer(low)):
+                priced.add(arm)
+    return priced
+
+
+def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured():
+    """Every reader-facing document, checked against `results/full_run.json`.
+
+    This is the recurring failure in this repository and no person has ever
+    caught it: a measurement moves, the README is corrected, and the documents
+    downstream of it keep the old figure until somebody reads them cold. It
+    happened at 24 -> 26 (`docs/CHANGELOG.md` slice 22f: three claims corrected
+    in one place and left standing in the document people actually read) and
+    again at 26 -> 28, across six documents at once -- including the required
+    improvement changelog and the deployed demo, which was still telling
+    visitors the trivial floor beat the tool outright.
+
+    The rule is narrow on purpose, because a gate that cries wolf gets deleted:
+    a line that puts a loss-shaped number against an arm's name must put the
+    measured one there. It does not police paired differences, per-profile rows
+    or intervals -- those have their own artifacts and their own gates -- and it
+    retires a line the moment the prose says when it was true, using the marker
+    list and heading rule the suite-size gate already uses. Whole documents that
+    exist to hold old numbers are excluded by not being listed.
+    """
+    run = json.loads((ROOT / "results" / "full_run.json").read_text())
+    current = {name: arm["expected_loss"] for name, arm in run["arms"].items()}
+    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in current}
+    # Prose calls the arm under test "Assay", which is also the tool's own name.
+    arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
+
+    stale: list[str] = []
+    for doc in LIVE_DOCS:
+        path = ROOT / doc
+        if not path.exists():
+            continue
+        previous = ""
+        for number, line in enumerate(path.read_text().splitlines(), 1):
+            low = line.lower()
+            if low.startswith("#") and ("historical" in low or "superseded" in low):
+                break
+            # Two lines of context, because a sentence that retires its own
+            # numbers often wraps before it reaches them, and because a bullet
+            # can put "assay vs" on one line and the figure on the next.
+            context, previous = f"{previous} {line}", line
+            if "→" in context:
+                continue  # "290.0 → 316.0" records a move; it does not claim one
+            if any(marker in context.lower() for marker in RETIRED):
+                continue
+            priced = _arms_priced_on(line, context, arm_res)
+            if not priced:
+                continue
+            written = {n for n in _LOSS.findall(line) if "." in n or len(n) >= 3}
+            if not written:
+                continue
+            measured = {
+                s for a in priced for s in (f"{current[a]:.1f}", f"{current[a]:.0f}")
+            }
+            if written & measured:
+                continue
+            stale.append(
+                f"{doc}:{number}: prices {', '.join(sorted(priced))} at "
+                f"{sorted(written)}; the measured value is {sorted(measured)}"
+                f"  --  {line.strip()[:90]}"
+            )
+    assert not stale, (
+        "live documents quoting an arm value results/full_run.json does not "
+        "support:\n  " + "\n  ".join(stale)
+    )

@@ -26,12 +26,17 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 **What moved, and why.**
 
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
-  submission. The margin against `flag_everything` went 50.0 → 36.0 → **326.0**, and
-  it is now **statistically separated**: 95% CI [238, 378], resampling environments
-  (n=26) rather than defects. The cost crossover moved 145 → **942**, so the headline
-  survives a 815% error in the one number that was openly a guess. Four cost profiles
-  are swept; Assay wins all four and separates on three. Not 15/15: the corpus is
-  still only 4 genuinely third-party environments out of 26.
+  submission. The margin against `flag_everything` went 50.0 → 36.0 → 326.0 → **351.0**,
+  and it is now **statistically separated**: 95% CI [263, 404], resampling environments
+  (n=28) rather than defects. The cost crossover moved 145 → 942 → **1099.53**, so the
+  headline survives an 816% error in the one number that was openly a guess. Four cost
+  profiles are swept; Assay wins all four and **separates on all four**. Not 15/15, and
+  the reasons got sharper rather than softer: the corpus is still only 6 genuinely
+  third-party environments out of 28, only 3 of those 6 carry ground truth decided
+  elsewhere, and **77.0 of the 351.0 margin is arithmetic rather than detection** —
+  two probe families and two τ² environments made the floor worse, which is a different
+  fact from the detector getting better. Against the taxonomy and corpus this was first
+  measured on, the comparable margin is 274.0.
 - **Reproducibility, 10 → 12.** The blocker at 10 was that there was no address
   to clone — that is fixed; `scripts/full_run.py` reproduces every deterministic arm of
   `results/full_run.json` byte-identically (verified from a fresh tree; the two LLM

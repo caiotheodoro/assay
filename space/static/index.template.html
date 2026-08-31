@@ -177,12 +177,14 @@ spec that shows what happens when there is nothing to check.</p>
 
 <h2>Synthetic, and not production-validated</h2>
 <p class="sub">The examples are synthetic fixtures with defects planted on
-purpose. Assay is <b>not production-validated</b> — it has been measured against
-defects its own authors planted, which is a lower bar than defects found in the
-wild. On that corpus it <b>does not separate from a policy that flags every
-environment unread</b>, and under a production-training cost profile that policy
-beats it outright. Both numbers, with 95% intervals, are on
-<a href="https://huggingface.co/datasets/{{DATASET_REPO}}">{{DATASET_REPO}}</a>.
+purpose. Assay is <b>not production-validated</b> — 22 of the 28 corpus
+environments were written here, which is a lower bar than defects found in the
+wild. It does now separate from a policy that flags every environment unread, on
+all four cost profiles — but <b>77 of that 351 margin is arithmetic and not
+detection</b>: two defect classes and two environments were added to the
+taxonomy and the corpus, and flagging everything pays for both while a truthful
+detector does not. Every number, with 95% intervals and that decomposition, is
+on <a href="https://huggingface.co/datasets/{{DATASET_REPO}}">{{DATASET_REPO}}</a>.
 A <code>VALID</code> verdict here is not sign-off on anything that matters. The
 card stays unsigned until a human signs it.</p>
 
