@@ -123,11 +123,13 @@ and leaving a field out does not hide a probe — it prints the omission.
 ### Synthetic, and not production-validated
 
 The examples are synthetic fixtures with defects planted on purpose. Assay is
-**not production-validated** — it has been measured against defects its own
-authors planted, which is a lower bar than defects found in the wild. On that
-corpus it **does not separate from a policy that flags every environment
-unread**, and under a production-training cost profile that policy beats it
-outright. Both numbers, with 95% intervals, are on
+**not production-validated** — 22 of the 28 corpus environments were written
+here, which is a lower bar than defects found in the wild. It does now separate
+from a policy that flags every environment unread, on all four cost profiles —
+but **77 of that 351 margin is arithmetic and not detection**: two defect
+classes and two environments were added to the taxonomy and the corpus, and
+flagging everything pays for both while a truthful detector does not. Every
+number, with 95% intervals and that decomposition, is on
 [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus).
 
 A `VALID` verdict here is not sign-off on anything that matters. The card stays
