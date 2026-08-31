@@ -6,11 +6,13 @@ by running the task's own scripts, not by asking Assay what it thinks.
 
 from __future__ import annotations
 
-import shutil
-import tempfile
 from pathlib import Path
 from typing import Any
 
+# The staging helper only, never the adapter class: which adapter builds these
+# environments stays the caller's choice, which is what makes the registry
+# testable with a stand-in.
+from .adapters.harbor import stage_suite
 from .corpus import CorpusEntry, EnvAuthor, LabelSource, Provenance, register
 from .types import DefectClass
 
@@ -79,8 +81,7 @@ CATALOG: dict[str, frozenset[DefectClass]] = {
 def build_harbor_environments(adapter_cls, sandbox_factory) -> list[tuple[str, Any, frozenset]]:
     def factory(name: str):
         def make():
-            root = Path(tempfile.mkdtemp(prefix=f"assay-harbor-{name}-"))
-            shutil.copytree(SUITE / name, root / name)
+            root = stage_suite(SUITE / name, f"assay-harbor-{name}-")
             return adapter_cls(root, sandbox=sandbox_factory(), env_id=f"harbor/{name}")
 
         return make

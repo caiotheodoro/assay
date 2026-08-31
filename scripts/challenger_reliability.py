@@ -26,9 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
-import tempfile
 import time
 from pathlib import Path
 
@@ -36,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from assay import audit  # noqa: E402
 from assay.adapters import HarborAdapter  # noqa: E402
+from assay.adapters.harbor import stage_suite  # noqa: E402
 from assay.challenger import CompositeChallenger, ScriptedChallenger  # noqa: E402
 from assay.challenger.prompted import PromptedChallenger  # noqa: E402
 from assay.llm import ClaudeCLIClient, OllamaClient  # noqa: E402
@@ -46,8 +45,7 @@ SUITE = Path(__file__).resolve().parents[1] / "src" / "assay" / "fixtures" / "ha
 
 
 def build(task: str) -> HarborAdapter:
-    root = Path(tempfile.mkdtemp(prefix="assay-rel-"))
-    shutil.copytree(SUITE / task, root / task)
+    root = stage_suite(SUITE / task, "assay-rel-")
     return HarborAdapter(
         root, sandbox=DockerSandbox(AutoApprove("reliability run")), env_id=f"harbor/{task}"
     )

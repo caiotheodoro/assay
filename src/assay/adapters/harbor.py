@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 import shutil
 import tempfile
 import tomllib
@@ -83,6 +84,33 @@ def _mount_dir(prefix: str) -> Path:
     path = Path(tempfile.mkdtemp(prefix=prefix))
     path.chmod(0o777)
     return path
+
+
+def stage_suite(source: Path, prefix: str) -> Path:
+    """Copy one task directory into a scratch suite the sandbox can read.
+
+    Five callers build the suite the adapter mounts at `/suite` -- the corpus
+    and four scripts -- and all five wrote the same two lines, `mkdtemp` then
+    `copytree`. `mkdtemp` is 0700, so the same capability story as `_mount_dir`
+    applies one level up and is worse: `/suite` is where the verifier lives.
+    Container root without `CAP_DAC_OVERRIDE` cannot even list a 0700 directory
+    owned by the host user, so `sh /suite/<task>/tests/test.sh` fails to open,
+    the exit code says non-zero, and `_run_verifier` scores that 0. Every
+    `separate`-mode task then reports GOLD_FAILS, SEPARABILITY_LOSS and
+    TRIVIAL_FLOOR_BREACH -- an auditor confidently describing a healthy
+    environment as broken because it could not run the check.
+
+    Invisible on macOS, where Docker Desktop presents bind-mounted files as
+    owned by the container user and never consults the mode.
+
+    0755, not the 0777 of `_mount_dir`: `/suite` is mounted read-only and the
+    container only ever reads it. What goes in is benchmark fixture content
+    that is already world-readable in the repo.
+    """
+    root = Path(tempfile.mkdtemp(prefix=prefix))
+    root.chmod(0o755)
+    shutil.copytree(source, root / source.name)
+    return root
 
 
 def _make_writable(root: Path) -> None:
@@ -218,6 +246,10 @@ class HarborAdapter(BaseAdapter):
         self._work_host: Path | None = None
         self._logs_host: Path | None = None
         self._current: str | None = None
+        #: Verifier scripts already confirmed readable inside the container.
+        #: Session-scoped: the mounts are what decide, and they are created and
+        #: destroyed with the session.
+        self._readable: set[str] = set()
         # Every container start costs about a second, and the probe battery
         # replays the same policies several times over. Caching a verification
         # keyed on (task, exact action sequence, which verifier) is sound
@@ -297,6 +329,7 @@ class HarborAdapter(BaseAdapter):
                 if path:
                     shutil.rmtree(path, ignore_errors=True)
             self._work_host = self._logs_host = None
+            self._readable.clear()
 
     def __enter__(self) -> "HarborAdapter":
         return self
@@ -322,10 +355,69 @@ class HarborAdapter(BaseAdapter):
             return float(match.group()) if match else None
         return None
 
+    def _clear_verifier_logs(self, session: SandboxSession) -> None:
+        """Empty /logs/verifier, and be certain it is empty.
+
+        This was one `rmtree(..., ignore_errors=True)`, and on Linux it removed
+        nothing. The verifier writes `/logs/verifier/reward.txt` as container
+        root; without `CAP_DAC_OVERRIDE` the host user cannot unlink a
+        root-owned file out of a root-owned directory, and `ignore_errors=True`
+        swallowed the `Permission denied`. So a verifier that writes no reward
+        file -- exactly what the V1 policy produces when it neuters `test.sh`
+        into `exit 0` -- had `_parse_reward` read the *previous* episode's
+        score and report it as this one's.
+
+        That is the auditor mis-reporting a reward, which is the failure this
+        tool exists to find. It now fails loudly instead: two removals, by
+        whichever side owns what is there, and a check that the directory is
+        actually gone before anything is scored.
+
+        The directory is then re-created by the host, so the reward file the
+        verifier writes into it next lands somewhere the host can empty on its
+        own -- unlink permission comes from the directory, not the file.
+        """
+        assert self._logs_host is not None
+        verifier = self._logs_host / "verifier"
+        shutil.rmtree(verifier, ignore_errors=True)
+        if verifier.exists():
+            session.exec(["rm", "-rf", "/logs/verifier"], workdir="/")
+        if verifier.exists():
+            raise RuntimeError(
+                f"could not clear {verifier}; a reward file left by the previous "
+                "episode would be read as this one's score"
+            )
+        verifier.mkdir()
+        verifier.chmod(0o777)
+
+    def _assert_readable(self, session: SandboxSession, script_path: str) -> None:
+        """A verifier that cannot be opened is a broken harness, not a score of 0.
+
+        `_run_verifier` falls back to the exit code when no reward file is
+        written, and `sh` exits non-zero whether the script ran and failed or
+        could never be read. Those are not the same claim, and collapsing them
+        is how a `/suite` the container could not list read as five environments
+        that fail their own gold. Checked once per script per session, so the
+        cost is two `docker exec` calls per environment.
+        """
+        if script_path in self._readable:
+            return
+        probe = session.exec(["sh", "-c", f"test -r {shlex.quote(script_path)}"], workdir="/")
+        if not probe.ok:
+            raise RuntimeError(
+                f"the verifier {script_path} cannot be read inside the sandbox. "
+                "The container is root with --cap-drop ALL, so it has no "
+                "CAP_DAC_OVERRIDE and file modes are enforced against it: a mount "
+                "whose source directory the host user owns 0700 is unreadable "
+                "however permissive it looks from outside. Refusing to score "
+                "a verifier that never ran as a failing one."
+            )
+        self._readable.add(script_path)
+
     def _run_verifier(self, task: HarborTaskDir, script_path: str) -> tuple[float, dict[str, Any]]:
         session = self._session(task)
         assert self._logs_host is not None
-        shutil.rmtree(self._logs_host / "verifier", ignore_errors=True)
+        self._assert_readable(session, script_path)
+        self._clear_verifier_logs(session)
         result = session.exec(["sh", script_path], workdir="/work")
         reward = self._parse_reward(self._logs_host)
         from_file = reward is not None
