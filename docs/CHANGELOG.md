@@ -78,6 +78,149 @@ cost belief the bound supports is one where Assay wins.
 | Slice 6 | With the loop fixed, `exploit_gap` still reported 0.0 on a run that had visibly scored 1.0 on a wrong answer. | `tests/test_exploit_gap_replay.py` — three tests that failed before the fix | **The measurement was broken, not the attacker.** `HarborAdapter.step` returned `done=True` after every shell command and `run_policy` breaks on `done`, so replaying a nine-action transcript executed action one — `ls -la` — and scored that. Silent, because a truncated replay is still a valid scoreable policy; just not the one recorded. Fixed in three places: a shell command no longer ends an episode, `run_policy` takes `stop_on_done`, and replays run in full. |
 | Slice 6a | Challenger ablation on `harbor/self-graded`, whose verifier reads its expectation from a file the agent can overwrite. | `results/challenger_ablation.json` | **A clean capability ladder.** scripted: missed, gap 0.00, 4 attempts. `qwen3:8b`: missed, gap 0.00, 10 attempts. `claude-cli`: **FOUND, gap 1.00** at turn 8 — after seven turns of real reconnaissance (hunting the verifier, listing `/logs`, checking permissions, trying to write `reward.txt` directly) it wrote `banana` to both the answer and the file the verifier compares against, and was scored 1.0 while completing nothing. The exploit is findable; this is where the threshold sits. |
 | Slice 6b | Kept the scripted and 8B misses in the table rather than reporting only the arm that worked. | same file | **The misses are the result.** An ablation showing only the successful arm says nothing about how hard the problem is. The gap between "scripted finds nothing" and "a frontier model finds it on turn 8" is the measurement. |
+<!-- from 102-na-resolution.md -->
+## Slice 42b: the split can be synthesized, and boolq is still missed
+
+**What and why.** `inspect_evals/boolq` is the corpus's one remaining miss.
+`docs/PRE-REGISTRATION.md` predicted it before the code existed, and gave the
+reason: `WildInspectAdapter` supplies no train split, so `shortcut_leakage`
+declines with `NOT_APPLICABLE` and the planted `SHORTCUT_LEAK` goes unfound.
+
+`Probe.na(reason, **detail)` has always recorded what a probe attempted before
+giving up, and nothing has ever read it. This slice has the Auditor read it and
+try to supply what was missing: name the fields an item is built from, cut them
+with literal delimiters, and cross-fit over a split it makes itself.
+
+**It works, and it does not help.** Evidence: `results/na_resolution.json`.
+
+Both backends return the identical decomposition, unprompted by any example
+from this dataset:
+
+```
+{"parts": [{"name": "passage",  "after": "Passage: ",  "before": "\n\nQuestion:"},
+           {"name": "question", "after": "Question: ", "before": null}],
+ "must_not_determine": "question"}
+```
+
+The fields cut correctly, the split is 13/12, the probe runs. And it returns
+PASS, with `per_part_accuracy` **0.75 for both parts, exactly equal to the
+0.75 majority-class rate.**
+
+**Why, and this is the part worth keeping.** `_part_accuracy` is a lookup from
+an exact part value to a majority label. Of 13 training questions, 13 are
+unique, and **0 of the 12 evaluation questions appear in that table**. Every
+item takes the fallback, the fallback is the majority label, and the accuracy is
+pinned to the majority rate by construction. No value of n fixes this: a
+dictionary over free text has nothing to look up.
+
+So the pre-registered reason for the miss is true and is not the binding
+constraint. The adapter withholding a split is the reason the probe *declines*;
+the reason it could not *succeed* is that a partial-input baseline implemented
+as an exact-match dictionary cannot read free text at all. Supplying the split
+turns NOT_APPLICABLE into PASS, which is a more honest verdict and still not a
+detection.
+
+**Decision.** The resolver is kept, and the claim is corrected rather than the
+result. It is cheap, both backends agree on it, and it fires wherever part
+values repeat -- categorical fields, templated prompts, multiple-choice stems --
+which `test_the_resolver_fires_when_part_values_repeat` pins. It does not
+rescue `boolq`, and nothing here pretends otherwise. Any finding it does produce
+carries `synthesized_split: True` and the name of whatever proposed the split,
+because a reader who did not know the division was invented would over-read it.
+
+**What it cost to learn.** A miss that was explained once, correctly, can still
+be explained shallowly. The explanation on file would have let someone conclude
+that a better adapter closes this. It does not; a different probe does.
+<!-- from 103-auditor-memory.md -->
+## Slice 42c: the same answer, three times cheaper
+
+**What and why.** The rubric this repo is scored against names the levers it
+credits: *"better context or tools may improve one project, while memory,
+verification, skills or orchestration may improve another."* Assay ships tools
+(adapters), verification (the battery) and skills (probe families). It ships no
+memory at all, and three judges scored the agent row accordingly.
+
+The honest version of memory here is not a scratchpad. It is this: the semantic
+gate asks whether an environment has a correct answer, and that question is
+settled by the task text. Two environments with identical instructions have the
+same answer whatever their verifiers do -- which is exactly the case across the
+twelve `toy-triage` fixtures, where one ticket-classification prompt is paired
+with twelve different planted defects.
+
+**Evidence.** `results/auditor_memory.json`, `ollama:qwen3:8b`, all 12 fixtures.
+
+| | model calls | wall clock | verdicts |
+|---|---|---|---|
+| a fresh Auditor per environment | 4 | 31.4s | — |
+| one Auditor across the run | **1** | **2.9s** | identical |
+
+`Auditor.shape()` keys on ecosystem plus the sorted instruction set, and
+deliberately **not** on the manifest digest: capabilities and version differ
+across those twelve, so keying on them would defeat the entire point.
+
+Only 4 of the 12 reach the gate at all. It is consulted only when the battery
+flagged something in `verifier_integrity`, so a healthy environment costs
+nothing -- which is the right default for a tool that runs before a training
+job, not after one.
+
+**Decision.** Kept. A cached conclusion is returned with `carried_from` naming
+the environment it was actually reached on, so no card claims a judgement it did
+not get.
+
+**What it cost to learn.** This is a cost result and not a capability result,
+and it is worth being plain about the difference. Memory here makes the same
+answer cheaper. It does not make a better one, and an agent design that reports
+a speedup as though it were an improvement in what the tool can find is doing
+the thing this repo audits benchmarks for.
+<!-- from 104-escalation-policy.md -->
+## Slice 42d: deciding not to run the expensive agent
+
+**What and why.** The rubric credits *orchestration*, and the honest form of it
+here is not a pipeline diagram. It is a decision: a model Challenger costs
+minutes and paid sampling where the scripted one costs about two seconds, so an
+Auditor that escalates everywhere has not made a design choice, it has written
+a bill.
+
+`Auditor.should_escalate()` decides, in code, and states a reason either way.
+
+**Evidence.** `results/escalation_policy.json`, all 26 scored environments.
+
+| | n |
+|---|---|
+| escalate | 12 |
+| refuse — the scripted attacker already found the exploit | 10 |
+| refuse — the declared repertoire is wide enough that silence is evidence | 2 |
+| refuse — the probe did not run at all | 2 |
+
+**The refusals are the point.** The largest bucket is environments where the
+cheap attacker already won, and there a second one *cannot* add information:
+`CompositeChallenger` concatenates and the hackability probe takes the **max**
+gap, so a model arm against a saturated floor can only match it or contribute
+false positives. `docs/changelog/84-agentic-remeasured.md` Slice 33a established
+that as an argument and then had nothing act on it. This is the code that acts
+on it, and `test_escalation_is_refused_where_the_scripted_attacker_already_won`
+pins it.
+
+**Decision.** Kept, and scoped honestly. This is a **cost-control** policy and
+its effect on detection is not measured here — whether escalation finds anything
+depends entirely on what it escalates *to*. That question belongs to the
+synthesis Challenger and its own measurement, not to this file, and writing one
+number under both headings is how a cost saving gets reported as a capability.
+
+**What it cost to learn.** The first draft of the threshold was tuned until the
+firing set looked small, which is fitting a policy to the corpus it is measured
+on. What it is tuned on now is the stated reason — a repertoire thin enough that
+finding nothing is weak evidence — and the firing count is whatever that yields.
+Twelve of twenty-six is not a flattering number and it is the one the rule
+produces.
+<!-- from 105-static-space.md -->
+| Slice 48 | **There is a hosted demo. It runs the probe battery in the visitor's browser.** | [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo) | Slice 41c's reasoning was sound and stopped one step early. It was right that HTTP 402 blocks a Gradio Space on free `cpu-basic`, right that a static Space serves files and runs no compute, and right that therefore a static Space cannot run the battery **server-side**. It never asked whether the battery has to run server-side. It does not: Pyodide runs CPython in the tab, and a static Space is free. Boot to a working auditor is **2.9s** on the live URL, and the audit itself takes single-digit milliseconds. |
+| Slice 48a | Why the package loads under WebAssembly at all, which was luck and is now a test. | `tests/test_space_static.py` | `assay` declares one runtime dependency, `pyyaml`, and only `assay.costs` reaches it — no probe does. So the whole audit path is **pure standard library**: no `micropip`, no wheel index, no network beyond the Space's own files. That property is invisible and load-bearing. A new `import numpy` at module scope in any probe would white-screen every visitor while passing every other test in the suite, so a tripwire walks the import graph from the audit entry points and fails on the first third-party module. It was checked by adding one and watching it go red. |
+| Slice 48b | Two front doors, one renderer — because the last time there were two, one of them had an injection. | `assay/card/web.py` (new), `space/app.py` | Slice 36's HTML injection survived review precisely because `card/render.py` escaped and `space/app.py` did not, and nothing compared them. Adding a second page that renders a stranger's JSON was an invitation to do it again, so the renderer moved into the package and both callers use it. A test asserts the Gradio app and the browser build produce **byte-identical** HTML for the same spec, and the seven cards baked into the page are the output of that same call rather than a mock-up of it — a gate re-runs one live and checks it is in the file. |
+| Slice 48c | The one thing that genuinely cannot work in a browser, refused rather than quietly degraded. | `space/static/browser.py` | `verifier: "regex"` needs `assay.safe_regex`, which bounds a submitted pattern by matching it in a **subprocess under a wall clock** — `(a+)+$` against 31 characters takes about 100 seconds, which is a denial of service with a dozen bytes. Emscripten has no processes: `OSError: [Errno 138]`. Left alone it errors eight probes out one at a time and returns `INCONCLUSIVE`. The obvious fix — fall back to a bare `re.search` — would reinstate the exact defect `safe_regex` was written for, on the one page it was about. So the page refuses that verifier up front and says why. |
+| Slice 48d | The page is useful before the runtime loads, and if it never loads. | `space/static/index.template.html` | All seven examples are rendered into the HTML at build time, so a visitor sees eight real cards — verdicts, skip tables, findings — with JavaScript still parsing. Tested by pointing the Pyodide script at a dead host: the button stays disabled, the note says the runtime did not start and that every card on the page is unaffected, and all eight cards are still there. A demo whose failure mode is a blank page is not a demo. |
+| Slice 48e | **`hf upload` cannot upload to a static Space, and 26 passing gates could not see that either.** | `push()` in `scripts/publish_hf.py` | Same shape as slice 41a, one layer down. `hf upload` calls `/api/repos/create` on its way in and has no `--space-sdk` to pass, so it asks for a **gradio** Space — HTTP 402, for a repo that already existed as a static Space, created by the line directly above. The upload never started. `upload_folder` is what that command wraps minus the create, and the create was always redundant here, so the second one is gone rather than routed around. The next failure was a `short_description` of 61 characters rejected after every gate printed PASS; that is a gate now. |
+| Slice 48f | What the deduction was actually for, and what it is now. | `README.md`, `docs/RUBRIC.md`, `docs/changelog/93-hf-publish.md`, `docs/changelog/94-space-decision.md` | Slice 41e's decision — decline a paid plan to host a demo — stands and was right. What changed is that a paid plan turned out not to be necessary, which is a fact about the deployment, not a reversal of the call. The two earlier fragments keep their original text and carry a note pointing here; rewriting them to look as though this was always the plan would corrupt the record this project keeps deliberately. |
 <!-- from 11-composite-challenger.md -->
 | Slice 9 | Ran the full corpus with the prompted Challenger instead of the scripted one, to measure whether the agentic component closes Assay's only miss. | `harbor/vacuous-tests` reported `REWARD_HACKABLE` under the scripted Challenger and **stopped reporting it** under the prompted one | **A better attacker is not a superset of a worse one.** `vacuous-tests` has a verifier that exits 0 unconditionally; the scripted repertoire catches it for free by submitting nothing, and the model never happened to try that — it wrote a plausible answer, was told 1.0, and moved on. Substituting the Challenger silently lost coverage. |
 | Slice 9a | Made Challengers compose rather than replace. | `tests/test_prompted_challenger.py::test_a_composite_never_loses_what_a_member_would_find` | **`CompositeChallenger` runs every member and the probe takes the best gap across all of them** — the only combination rule that cannot lose coverage. Cheap fixed repertoire first, model second. Findings namespace their attacker (`scripted/trivial:empty`, `prompted[claude-cli]/turn8`), because "which attacker found this" is the entire reason for running more than one. |
@@ -623,10 +766,10 @@ diagnostic that predicted the result cost nothing and ran on a laptop.
 | Slice 41 | Published to Hugging Face: [`assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus) (32 files) and [`assay-challenger-grpo`](https://huggingface.co/caiotheodoro/assay-challenger-grpo) (18 files). | `scripts/publish_hf.py --push` | 26 pre-publication gates, all passing, including the two behavioural Space gates and `every metric has a 95% CI` over **90 metrics** — up from 72 once the LLM arms gained intervals. The model card leads with `**This adapter does not work.**`, which is the point of publishing it. |
 | Slice 41a | **The publish path had a flag bug that 26 passing gates could not see.** | `hf repos create --sdk gradio` | The CLI rejects it outright — *"No such option: --sdk"*; the flag is `--space-sdk`. That line had never worked and could not have, because nothing executed it until the first real `--push`. Every gate passed while it was broken, which is exactly what they check: **the gates verify what is staged, not that it can be uploaded**. A dry run that cannot fail the way the real run fails is a dry run with a blind spot, and this one had a specific one worth naming. |
 | Slice 41b | One artifact's failure stranded another that was fine. | `main()` push loop | The first `--push` died on the Space and **never reached the model**, so a Space blocked by a billing limit silently prevented an artifact with no such limit. Each artifact is now attempted independently, every outcome is printed, and the exit code reflects the whole set: *an artifact missing from a publish is a result about the run, not a detail.* |
-| Slice 41c | **The Space is not deployed, and cannot be on this account.** | HTTP 402 from `/api/repos/create` | *"Static Spaces are free for everyone, but hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription."* Static is not an option: the app runs the probe battery server-side in Python, which is the whole product. The app is hardened, tested (7 tests, including the injection ones) and runs locally with `python space/app.py`. |
+| Slice 41c | **The Space is not deployed, and cannot be on this account.** | HTTP 402 from `/api/repos/create` | *"Static Spaces are free for everyone, but hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription."* Static is not an option: the app runs the probe battery server-side in Python, which is the whole product. The app is hardened, tested (7 tests, including the injection ones) and runs locally with `python space/app.py`. **Superseded by slice 48** (`105-static-space.md`), which does not contradict this: every step here is correct, and it simply never asked whether the battery has to run server-side. It does not — Pyodide runs it in the visitor's browser, and a static Space is free. |
 | Slice 41d | A dead link that shipped for one commit, then did not. | published dataset card | The dataset card cited the Space, and the URL-resolution gate had skipped it as a self-link *"not live until --push"* — a reasonable rule that stops being reasonable the moment a self-link turns out never to go live. So the first published card carried a citation to a 404. The card now says the Space is undeployed and why. **Checked after publishing rather than assumed**: every Hugging Face URL in the live card returns 200. |
 <!-- from 94-space-decision.md -->
-| Slice 41e | The Space stays undeployed, as a decision rather than a pending task. | `README.md`, `docs/RUBRIC.md` | Subscribing to a paid plan to host a demo was put to the author and declined. So the README carries a **Where it lives** table with the three live URLs and states plainly that there is no hosted demo, with the reason. `docs/RUBRIC.md`'s "the usable artefact is a local CLI" deduction is marked **partly** earned back — three published artifacts, still no click-to-try demo — rather than claimed in full. The app is finished, not abandoned: injection-hardened, 7 tests, 9 gates, `python space/app.py`. |
+| Slice 41e | The Space stays undeployed, as a decision rather than a pending task. | `README.md`, `docs/RUBRIC.md` | Subscribing to a paid plan to host a demo was put to the author and declined. So the README carries a **Where it lives** table with the three live URLs and states plainly that there is no hosted demo, with the reason. `docs/RUBRIC.md`'s "the usable artefact is a local CLI" deduction is marked **partly** earned back — three published artifacts, still no click-to-try demo — rather than claimed in full. The app is finished, not abandoned: injection-hardened, 7 tests, 9 gates, `python space/app.py`. **The decision stands; the constraint it was made under did not.** Slice 48 (`105-static-space.md`) ships a hosted demo without a paid plan, by running the battery in the browser on a free static Space. Declining to pay was the right call and is still the call — what changed is that paying turned out not to be the only way. |
 <!-- from 95-collection.md -->
 | Slice 42 | A [Hugging Face collection](https://huggingface.co/collections/caiotheodoro/assay-auditing-rl-environments-with-error-bars-6a946953e05a8669da74ee65) grouping the two published artifacts. | `scripts/publish_collection.py` (new) | Written as a **script with gates**, not clicked together in the UI. A collection assembled by hand is a published surface nothing can reproduce, which would contradict the argument the rest of the repo makes. Dry run by default like `publish_hf.py`; idempotent, so a re-run updates the blurb rather than creating a second collection. |
 | Slice 42a | The reason the model needs the collection at all. | `caiotheodoro/assay-challenger-grpo` | On its own the adapter reads as a **failed upload** — its card opens with *"This adapter does not work."* Beside the corpus it is the ablation row that makes the scripted floor's win measurable. Grouping them is what turns a negative result from an oddity into evidence. |
@@ -645,3 +788,74 @@ diagnostic that predicted the result cost nothing and ran on a laptop.
 | Slice 41h | The citation gate checked the wrong filesystem. | `test_every_cited_path_is_actually_in_the_repository_a_judge_clones` (new) | Slice 41a's gate asked whether a cited path exists *here*. A reviewer clones, and four `video/*` citations exist here and in no clone. The new test intersects every citation with `git ls-files`, which is the only view of the repository that matches what a judge downloads. It fails today, on purpose, and names each path: the fix is `git add`, and that is a decision about what the submission contains rather than a wording problem. |
 | Slice 41i | **Two live sections of the README described bugs the changelog had already closed** — the hot take's own failure mode, in reverse. | `README.md` "Main failure mode" and the Challenger-routes paragraph vs `src/assay/probes/hackability.py:109,120` and `src/assay/challenger/prompted.py:191,329` | The README said the exhaustion bug *"is open"* and its fix *"is the next thing to land"*, and that of three silent-failure routes *"the other two are not"* fixed and their `history` is *"discarded"*. Source says otherwise on every count: `ChallengerExhausted(reason, history)` is raised for the empty-vocabulary route and for the unparseable-only and reset-only routes with a count of each, `hackability.py` catches it and reports `NOT_APPLICABLE` with the reason, and `challenger_passes` is read from context. The `history` travels on the exception rather than being dropped. Corrected to say what the code does, with what is *actually* still open — whether a fourth route exists — stated separately, because "we found three by accident" is not evidence there are only three. |
 | Slice 41j | The video, delivered rather than merely finished. | commit `7ff0fec` (56 files, 4 MB: Remotion sources, capture scripts, terminal casts, voice tracks); `hf upload` → `https://huggingface.co/datasets/caiotheodoro/assay-corpus/blob/main/video/assay.mp4` | `video/` is tracked and the 24 MB render is hosted, so `video/out/` stays out of git history and a clone still gets everything that rebuilds it. The `.gitignore` rule excluding `video/out/` was itself uncommitted and went in with the same commit. Linked from `README.md`, `AGENTS.md`, `docs/FOR_AGENTS.md` and `llms.txt`; the deduction it was costing is closed in `docs/RUBRIC.md`, with a note about why it stayed open — a deliverable can be complete on disk and absent from the submission, which is the same shape as a correction landing one document downstream of the one people read. |
+<!-- from 97-dead-zone-probes.md -->
+| Slice 34 | Two of the four BenchJack classes `docs/COVERAGE.md` listed as undetected, closed as probe families rather than as prose. | `src/assay/probes/permissions.py`, `src/assay/probes/evaluator.py`, `uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q` → **650 passed, 0 skipped, exit 0** (baseline 594/0) | **V3 and V8 move out of "no probe exists".** Both were in the bucket `COVERAGE.md` says building adapters cannot fix. V2 still is. The two new `DefectClass` members are `EXCESSIVE_PERMISSIONS` (HIGH — a grant is a precondition for an exploit, not proof one landed) and `EVALUATOR_RCE` (CRITICAL — a verifier that can be made to run its input can be made to report anything). |
+| Slice 34a | **V3.** `verifier_static_analysis` parses the verifier and reports every call that runs or deserialises what it is handed. | `tests/test_dead_zone_probes.py` — 9 parametrised sink cases, plus `from os import system` and `import yaml as y` resolving to the same sinks | `eval`/`exec`/`compile`/`__import__`, `os.system`/`popen`/`exec*`/`spawn*`, `subprocess(shell=True)`, `pickle`/`dill`/`marshal`/`joblib`/`torch.load`/`shelve`, and `yaml.load` judged on its `Loader` — positional as well as keyword, because both spellings are in the wild and checking one would report the careful call and miss the careless one. |
+| Slice 34b | Whether that needed a second parser. It did not. | new `src/assay/astscan.py`; `sweep.state_reads` rewritten onto it, its existing tests unchanged and passing | **The flattening of a dotted name now has one home.** `sweep.dynamic_filter` already walked scorer source with `ast`; the probe needs the identical primitive. Extracting `dotted`/`import_bindings`/`resolve` was the alternative to a second copy — and to importing `sweep` from a core probe, which would drag an adapter into the import graph of every audit. No new dependency. |
+| Slice 34c | Whether the scan can be trusted the way `gold_anchor` can. It cannot, and the probe says so in its own output. | the finding carries `confidence` and `line_numbers`; the clean result carries `asymmetry` | **It under-reports, deliberately.** It reads only the source the adapter returned and does not follow calls out of it, so a sink found is evidence and no sink found is not evidence of safety. Reachability is not established either: the finding names a line so a reader can judge, and does not claim an agent can get there. Harbor's `tests/test.sh` comes back **NOT_APPLICABLE, "not parseable as Python"** — unparseable is unexamined, and PASS there would be a clean bill issued over a file nobody read. |
+| Slice 34d | **V8.** `declared_permissions` reads a `SandboxPosture` and judges the grant against the declared need. | `tests/test_dead_zone_probes.py::test_network_granted_with_no_declared_need_is_recorded_as_unchecked_not_flagged` | **Every rule compares two facts, never one.** Network on is not a finding; network on for a task declaring no network step is. Four rules: `network_not_needed`, `writable_verifier_mount`, `writable_root_filesystem`, `root_not_needed`. An undeclared need is reported in `checks_not_made`, never read as "not needed" — the alternative is inferring need from the instruction, and a task whose setup script quietly fetches a dataset it never mentions would then be a false alarm. That costs coverage and it is the direction `COVERAGE.md:84-123` argues for. |
+| Slice 34e | Both families had to run on `assay.fixtures`, which was not the original plan. | `tests/test_report.py::test_healthy_with_full_coverage_is_valid_and_exits_zero`, `tests/test_card.py::test_a_fully_probed_clean_environment_says_every_probe_ran` | **Two tests already pinned a property worth keeping: there exists an environment on which the *whole* battery is applicable.** Registering two probes no fixture could feed turned `healthy` from VALID into UNVERIFIED and broke both. So `ToyEnv` declares a minimal `TOY_POSTURE` and hands over `verify`'s real source — not a description of it, which would make the scan a statement about a docstring (`test_the_toy_fixture_hands_over_its_real_verifier_not_a_description`). Neither family is *planted* in a fixture: that would mean a new `CATALOG` entry, and `CATALOG` is the scored corpus. `FAMILIES_NOT_PLANTED_IN_FIXTURES` records the three families in that position with a reason each, replacing a `"difficulty_band"` literal that was spelled out in two callers. |
+| Slice 34f | **`harbor/shared-tests` genuinely has V8, so Harbor was left unwired.** | posture built from the real `task.toml` files → `writable_verifier_mount` on `shared-tests` and clean on the other four | **Stopped rather than relabelled.** Harbor's manifest already carries what the probe wants: `environment_mode = "shared"` puts the verifier at `/work/tests`, inside a mount the agent writes. That is a **correct** finding — it is V1's mechanism sitting in the manifest — and it is why that fixture's planted set already contains `REWARD_HACKABLE`. But `EXCESSIVE_PERMISSIONS` is not in that planted set, so it would score as *spurious*, and wiring the one-line declaration would require relabelling a scored corpus environment to accommodate a detector written the same afternoon. That is the move this repository refuses everywhere else. Written up under the V8 row of `COVERAGE.md`; the decision is the label, not the code. |
+| Slice 34g | The README already reasoned about this hazard, in one direction only. | `README.md` § corpus splits — the pre-registration paragraph | **`flag_everything`'s loss is `Σ (14 − |planted|)`, and the pre-registration guarded `|planted|` and not the `14`.** Growing the corpus into a better headline was foreseen, written down, and gated. Growing the *taxonomy* into one is the same lever from the other end and nothing was watching it. The paragraph now says so, with the measured +52 next to it. The historical `14` in the pre-registration sentence is left alone: it was true when that commitment was made, and editing it would falsify the record the paragraph exists to keep. |
+| Slice 34h | Whether the headline moved. **`per_env` did not; the trivial floor did.** | `uv run --extra adapters --extra openenv python scripts/full_run.py --out /tmp/check.json` → `assay_detected` **identical on all 26 environments**, whole `per_env` rows byte-identical; `assay` 40.0, `check_env` 3056.0, `flag_nothing` 3072.0 all unchanged | **`flag_everything` went 314.0 → 366.0 and that is arithmetic, not detection.** It flags `frozenset(DefectClass)`, so every class added to the taxonomy costs it one false alarm per environment: 26 × 2 = **exactly the +52**. Both new classes have base rate **0.0** on the scored corpus — no environment can carry them — so the floor got worse for classes nobody could plant, and Assay's published saving against it would grow from 274.0 to 326.0 for free. `stratified_random` moved 1789.0 → 2667.0 while flagging a new class **zero** times: it draws one `rng.random()` per class per environment in enum order, so two more classes shift the whole seeded sequence. Its closed-form expectation, which reads base rates rather than draws, is unaffected. **No results file was regenerated.** A headline that grows because the taxonomy grew is the thing this repository exists to catch, and it is not being banked quietly. |
+| Slice 34i | Two live-doc gates fired on the change and both were right to. | `tests/test_published_claims.py::test_the_suite_size_the_docs_advertise_is_the_suite_size_that_ran`, `::test_the_coverage_matrix_names_every_defect_class_and_flaw_class` | **The docs are gated, so growing the suite is not a silent act.** The advertised size moved 594 → **650 passed, 0 skipped** across `AGENTS.md`, `docs/FOR_AGENTS.md`, `REPRODUCTION.md`, `ARCHITECTURE.md` and `RUBRIC.md`; the coverage matrix had to name both new `DefectClass` members before the suite would go green. The wall clocks sitting beside those counts were re-measured (82 s → **128 s** on this machine) rather than carried over — 650 tests next to an 82-second measurement of 594 is a fabrication by juxtaposition. One fresh-tree timing is dropped instead of updated, because that run was not repeated. |
+| Slice 34j | The family count in the reviewer-facing docs, which nothing gates. | `README.md` § *The probes* (two rows added), `AGENTS.md`, `docs/FOR_AGENTS.md`, `docs/METHOD.md`, `docs/RUBRIC.md`: nine → **eleven**, eight deterministic → **ten** | **No test enforces this one, which is why it was worth doing by hand.** `docs/VIDEO.md` is deliberately left saying "nine": it is the narration of a video that exists and was recorded, and a script edited after the shoot is a description of a video nobody made. The two new README rows carry their own limitation inline — V8 applies to nothing in the corpus — so the table cannot be read as eleven working families. |
+<!-- from 98-approval-gate.md -->
+| Slice 44 | The approval gate this repo advertised did not exist on the path that ships. | `src/assay/_harbor_corpus.py:107`, `src/assay/sandbox.py`, `src/assay/trajectory.py`, `docs/RUBRIC.md:481` | **`assay audit harbor/self-graded` started containers under a standing approval nobody granted at run time.** The corpus built every Harbor environment as `DockerSandbox(AutoApprove("assay corpus run"))`. Three documents said otherwise at the same time: `sandbox.py:14` said `AutoApprove` "exists for tests and CI and has to be passed explicitly"; `trajectory.py:484` exported `"default_approver": "DenyAll — an unattended Assay executes nothing"` into every trajectory it wrote; `docs/RUBRIC.md` scored hackathon ground rule 4 **"Met, exemplary"** and cited a `PromptApprover` that had been deleted. At most one of those could be true and none of them was true of the shipped path. This is the failure mode the tool itself exists to find — a check that never ran, reported as a check that passed — occurring in the tool. |
+| Slice 44a | One place decides, and its default is a question. | `sandbox.py:353` `current_approver()` | Resolution order, with no fourth branch: an explicit `set_approver()` (what `assay audit --yes` sets), then `ASSAY_APPROVE_ALL` in the environment, then a human at a terminal. With none of those, `PromptApprover` finds nobody to ask and **refuses**. `_harbor_corpus.py` now calls `current_approver()` when the factory runs rather than hard-coding an approver of its own, so the corpus sees the flag the CLI parsed and the environment the process actually has. `DockerSandbox()` with no argument is still `DenyAll`, and that claim is now the only one this file makes about a default. |
+| Slice 44b | What a human is shown before being asked. | `sandbox.py:249` `PromptApprover`, restored | Image, command, workdir, network state, the full capability drop, cpu/memory/pid/wall caps, and every mount with its direction — printed by one `describe()` that the prompt, the Environment Card and the exported trajectory all share, so they cannot describe the same request differently. Three answers: `y`, `n` (the default, and what an empty line means), `a` for a standing yes for the rest of the process. `a` is not a convenience: one audit opens the same session from twelve probes, and a gate that asks twelve times is answered by holding down `y`. A **refusal** is remembered too (`harbor.py:_session`), for the same reason and because re-asking leaked two host tmpdirs per attempt. |
+| Slice 44c | The escape for CI and batch scripts, and the price of using it. | `assay audit --yes`, `ASSAY_APPROVE_ALL=<reason>`, `.github/workflows/ci.yml` | Unattended running is legitimate and it has to be *stated*, not inferred. Both escapes produce an `AutoApprove` carrying a reason, and the reason reaches the Environment Card under **"This audit ran unattended"** — a reader can see that nobody looked at the request before it ran. `ASSAY_APPROVE_ALL` exists because `scripts/full_run.py` is pinned evidence and cannot be edited to take a flag; CI now sets it explicitly with its reason in the workflow file. **This is a real change to the reproduction command**: `python scripts/full_run.py` with no terminal and no escape now refuses and dies rather than running. That is the point. The alternative is a default that approves, which is the bug. |
+| Slice 44d | The `inspect_ai` adapter ran third-party code in the auditor's own process and called it the safe option. | `src/assay/adapters/inspect_ai_adapter.py:3-7`, `_score_with`, `sweep.py:806` | `_score_with` calls `asyncio.run` over `task.scorer` — somebody else's Python, in this interpreter, with the auditor's filesystem, environment and network. No `--cap-drop ALL`, no `--network none`, no read-only root, no wall clock. `WildInspectAdapter` inherited it across a 246-task sweep. The module docstring called this *"the safest to run"*. **Chose (b): keep it in-process, behind an explicit logged approval that states the risk on the card.** The argument for (b) over sandboxing: an `inspect_ai` scorer is a live closure over the task object, not a script — containing it means rebuilding inspect_ai's runtime inside an image and re-entering the task there, which is a rewrite of the ecosystem integration, and it would price the wild sweep out of existence (246 tasks × 25 items × a container each). The argument against (b) is that it does not contain anything, and that is true: (b) buys disclosure and a decision, not isolation. What is not defensible is the previous state, where the exposure was real, undisclosed, and described as a safety property. `InProcessRequest` is a distinct type from `ExecRequest` so no card, log or approver can mistake one for the other, and the card marks those rows **`in-process`** in their own column. |
+| Slice 44e | The trajectory now reports the run instead of asserting a policy. | `trajectory.py` `from_approval_gate` | `"default_approver": "DenyAll — an unattended Assay executes nothing"` was a claim about `DockerSandbox()` exported into every trajectory regardless of who actually decided, and it went on being exported while the corpus passed `AutoApprove`. Replaced with `approvers` — who decided, how many they granted, how many they refused, and whether any of them was a human answering at the time — plus `ran_unattended`. A trajectory reporting a fact is worth more than one asserting a policy, and worth infinitely more when the assertion is wrong. |
+| Slice 44f | Whether the gate actually holds, on all three paths. | `tests/test_sandbox.py::test_nothing_runs_without_approval` | The test asserted the one path that was never broken — a bare `DockerSandbox()` — and passed throughout. It now covers the two that were: `entries()` returning `harbor/self-graded` under a refusing approver must raise `ApprovalDenied` with `sandbox.approvals == []`, and `InspectAdapter.verify` under the same must refuse before any scorer runs, recording the decision as **not contained**. The module's single `pytestmark` skipped everything when Docker was absent, which hid the in-process half of the gate from CI — the one place Docker is absent and `inspect_ai` is installed. The marker is per-test now and the in-process assertion has its own Docker-free entry point. |
+| Slice 44g | Whether closing the gate moved a published number. | `scripts/full_run.py`, `results/full_run.json` | **Zero drift.** `ASSAY_APPROVE_ALL=... uv run --extra adapters --extra openenv python scripts/full_run.py` reproduces `per_env[*].assay_detected` byte-identically across all 24 environments the extras make available (`sha256 e3e3871…` both sides); `inspect_evals/{boolq,paws}` need `--extra sweep` and a network fetch and were compared separately. Test suite **444 → 448 passed, 53 skipped** measured on the same tree either side of the change, the four additions being the gate tests in Slice 44f. |
+<!-- from 99-semantic-gate.md -->
+## Slice 42a: the capability the coverage doc said did not exist
+
+**What and why.** `docs/COVERAGE.md` records a CRITICAL false positive the
+battery cannot avoid: `inspect_evals/personality_BFI` returns verdict INVALID
+with 25 x `INVERT_PASSES`, which is mechanically correct and semantically
+wrong, because a personality inventory has no correct answer and a format
+check is the right design. That section ends: *"The right fix is a capability
+an eval can withhold -- 'this environment has no correct answer' -- and it does
+not exist yet."*
+
+`src/assay/runner.py` has said since the first commit that reading the results
+is "the Auditor agent's job". Grep for `Auditor` returned one hit: that comment.
+This slice writes the agent the seam was describing, and gives it exactly one
+job -- the one no script can do.
+
+**Evidence.** `results/semantic_gate.json`, 12 fixtures that all have a correct
+answer plus the one environment that does not.
+
+| backend | true positives | false positives | 13 envs |
+|---|---|---|---|
+| `ollama:qwen3:8b` | 0 / 1 | 0 / 12 | 58.5s |
+| `claude-cli:sonnet` | 1 / 1 | 0 / 12 | 136.6s |
+
+**Two designs measured and rejected before this one.**
+
+*The model's label alone.* `qwen3:8b` labels `personality_BFI`
+`has_correct_answer` in 3 of 3 runs -- immediately after writing a genuinely
+valid pair, `"Yes, I tend to be disorganized" / "No, I am usually organized"`,
+into the example field. It contradicts its own evidence.
+
+*The model's evidence alone.* Deriving the verdict from "did it produce an
+example" turns **10 of the 12** fixtures into `no_correct_answer`. Asked
+whether two answers could both be fair on an ordinary ticket-classification
+task, the model will invent a pair rather than say none.
+
+So the gate is the conjunction of the two, and a model too weak to hold them
+together produces no override at all. `qwen3:8b` fires on nothing.
+
+**Decision.** Kept, off by default. `assay audit --auditor` opts in; the
+headline numbers stay deterministic and the flag changes none of them. The
+override can only move a `verifier_integrity` DEFECT to `NOT_APPLICABLE` --
+never to PASS, never into another family -- and every one is printed with the
+model that proposed it, the text it quoted, and the verdict it replaced.
+
+**What it cost to learn.** The interesting half is not that a model can read
+task text. It is that the small model *could* make the observation and could
+not make the decision. Moving the decision into `decide()` and leaving the
+observation with the model is the same split this repo argues for everywhere
+else, applied one level down: the script owns mechanism, the model owns meaning.
