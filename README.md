@@ -252,8 +252,8 @@ the modal run: across six full-corpus runs `harbor/broken-gold` reported a spuri
 
 **3. The corpus is 6 of 28 genuinely third-party, 3 of them externally *labelled*, and that is still
 the ceiling on all of it.** `flag_everything`'s loss is exactly `Σ (16 − |planted|)`, so **every
-clean environment added moves the floor by +16 and Assay by 0** — roughly seven would flip the
-headline with no change to the detector. Hence provenance declared in the registry before the corpus
+clean environment added moves the floor by +16 and Assay by 0** — **22 of them manufacture the whole
+351.0 margin** with no change to the detector. Hence provenance declared in the registry before the corpus
 grows, and every expansion pre-registered first
 ([`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md),
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md)).

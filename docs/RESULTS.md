@@ -215,9 +215,10 @@ one.
 ### And note what the arithmetic does here
 
 `flag_everything`'s loss is exactly `Σ_env (16 − |planted_env|)`, so **every clean
-environment added moves the floor by +16 and Assay by 0**. Roughly seven clean
-third-party environments would flip the headline without the detector changing at
-all. That is why provenance is declared before the corpus grows, and why any
+environment added moves the floor by +16 and Assay by 0**. At that rate **22 clean
+third-party environments manufacture the entire published margin of 351.0** with
+the detector unchanged, and seven of them manufacture 112 of it. That is why
+provenance is declared before the corpus grows, and why any
 expansion has to pre-register the expected mechanical shift — otherwise a bigger
 corpus is a manufactured win.
 
