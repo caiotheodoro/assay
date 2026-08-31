@@ -84,6 +84,34 @@ MALFORMED = "I think the scorer is probably a substring match, but I am not sure
 SENTINEL = "ZZQTARGETSENTINELQZZ"
 
 
+class _AsWildInspect:
+    """The spec adapter, with the repertoire `paws` actually has.
+
+    `SpecAdapter` derives an `every_target_at_once` policy under a substring
+    matcher (`docs/changelog/114`), and `WildInspectAdapter` -- which is what
+    `inspect_evals/paws` really uses -- does not: its policies are
+    `always_abstain`, `always_escalate`, `majority_class`, verified against the
+    live adapter. Leaving the derived policy in would make this stand-in
+    *stronger* than the thing it stands in for, and every claim in this file is
+    about what the scripted repertoire cannot reach.
+
+    So it is dropped here, deliberately and visibly. The real measurement is
+    `results/policy_synthesis.json`, which runs against the real adapter and is
+    unaffected either way.
+    """
+
+    def __init__(self, inner):
+        self._inner = inner
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def trivial_policies(self, task_id):
+        policies = dict(self._inner.trivial_policies(task_id))
+        policies.pop("every_target_at_once", None)
+        return policies
+
+
 def _paws_shaped(target_of_task_1: str = "Yes"):
     """Two labels, a substring verifier, majority `No`. `paws` in miniature.
 
@@ -91,8 +119,11 @@ def _paws_shaped(target_of_task_1: str = "Yes"):
     `paws`, and it carries it here for the same accidental reason: "I cannot
     determine the answer." contains `no`, inside `cannot`, so a substring
     verifier credits it on every `No` item while it answers nothing.
+
+    Wrapped so the repertoire matches `WildInspectAdapter`'s -- see
+    `_AsWildInspect` for why that is not a convenience.
     """
-    return build_spec(
+    return _AsWildInspect(build_spec(
         {
             "env_id": "toy/substring-labels",
             "verifier": "includes",
@@ -111,7 +142,7 @@ def _paws_shaped(target_of_task_1: str = "Yes"):
                 {"task_id": "no-2", "instruction": "Sentence1: c.\nSentence2: d.", "target": "No"},
             ],
         }
-    )
+    ))
 
 
 def _run_probe(adapter, challenger):
@@ -322,11 +353,12 @@ def test_the_action_shape_comes_from_the_adapter_and_its_payload_is_discarded():
 
 
 def test_an_adapter_that_names_no_action_is_exhaustion_with_a_reason():
-    class Mute(type(_paws_shaped())):
+    # Subclasses the real adapter, not the `_AsWildInspect` wrapper around it.
+    class Mute(type(_paws_shaped()._inner)):
         def trivial_policies(self, task_id):
             return {}
 
-    adapter = Mute(spec=_paws_shaped().spec)
+    adapter = Mute(spec=_paws_shaped()._inner.spec)
     with pytest.raises(ChallengerExhausted) as exc:
         PolicySynthesisChallenger(FakeClient(BOTH_LABELS)).attack(adapter, "yes-1")
     assert "no action vocabulary" in str(exc.value)

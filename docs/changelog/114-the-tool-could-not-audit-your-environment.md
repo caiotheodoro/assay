@@ -46,3 +46,23 @@ one of them was written by someone who knew what Assay would find. That is a
 test set drawn from the same head as the tool, which is the criticism this repo
 makes of every benchmark it audits, applied to its own front door. **The first
 stranger to write a spec found the gap in one attempt.**
+
+**A consequence worth naming.** The synthesis Challenger exists because the
+scripted repertoire could not reach this exploit. On **submitted specs** it now
+can — the adapter derives the policy and the deterministic probe finds it, with
+no model. That is the same compile-a-discovery-into-a-check move that beat the
+original Challenger, happening a second time, and it narrows where the agent is
+load-bearing rather than widening it.
+
+It does **not** touch `results/policy_synthesis.json`. That measures
+`inspect_evals/paws`, which uses `WildInspectAdapter` — policies
+`always_abstain`, `always_escalate`, `majority_class`, checked against the live
+adapter — and derives nothing. The floor there is still 14 of 25 and the agent
+still reaches 24–25.
+
+Two tests in `tests/test_synthesis_challenger.py` broke on this, correctly: they
+model `paws` with a spec adapter, and that stand-in had silently become
+*stronger* than the thing it stands in for. It is now wrapped to carry
+`WildInspectAdapter`'s repertoire, visibly and with the reason written down,
+because a stand-in that drifts stronger than its subject quietly turns every
+"the script cannot reach this" claim in that file into a false one.
