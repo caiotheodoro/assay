@@ -28,12 +28,12 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
   submission. The margin against `flag_everything` went 50.0 → 36.0 → 326.0 → **351.0**,
   and it is now **statistically separated**: 95% CI [263, 404], resampling environments
-  (n=32) rather than defects. The cost crossover moved 145 → 942 → **1326.0**, so the
+  (n=33) rather than defects. The cost crossover moved 145 → 942 → **1371.0**, so the
   headline survives an 878% error in the one number that was openly a guess. Four cost
   profiles are swept; Assay wins all four and **separates on all four**. Not 15/15, and
   the reasons got sharper rather than softer: the corpus is still only 7 genuinely
-  third-party environments out of 32, only 3 of those 7 carry ground truth decided
-  elsewhere, and **141.0 of the 402.0 margin is arithmetic rather than detection** —
+  third-party environments out of 33, only 3 of those 7 carry ground truth decided
+  elsewhere, and **141.0 of the 417.0 margin is arithmetic rather than detection** —
   probe families and clean environments made the floor worse, which is a different
   fact from the detector getting better. Against the taxonomy and corpus this was first
   measured on, the comparable margin is 274.0.
@@ -88,10 +88,15 @@ the numbers it quotes moved so far that the drift is itself worth reading.
    structural reason — the corpus held no environment the semantic gate could act on,
    so `assay+auditor` scored exactly `assay` by construction. Environments with no
    correct answer now sit in the corpus, the deterministic battery pays for them, and
-   turning the model off costs **13.0 of expected loss on an interval that excludes
-   zero**. That figure was written down in `docs/PRE-REGISTRATION-NOANSWER.md` before
-   the environments it acts on existed, together with the prediction that this
-   bootstrap was the thing most likely to fail. It did not.
+   turning the model off costs **13-14 of expected loss in six runs of seven, and the
+   seventh deletes real findings** (`results/gate_reliability.json`).
+
+   This row briefly claimed **13.0 on an interval excluding zero**, which was one draw
+   reported as though it were the result. `docs/PRE-REGISTRATION-NOANSWER.md` predicted
+   the 13.0 before the environments existed and named the criterion that fired: "the
+   agent has traded a false positive for a hidden true one, which is worse than the
+   disease." The bootstrap could not have caught it -- it resamples environments, and
+   this varies between runs of the same environments.
 
    What has *not* changed: the shipped default is still deterministic, on purpose, so
    the headline reproduces with no model and no API spend. And the model Challenger,

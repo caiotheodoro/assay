@@ -28,7 +28,7 @@
     "inspect_evals/boolq missed — no train split, contamination probe has nothing to compare",
     "precision is 0.9464, not 1.000 — three spurious findings, all three on the two tau2 environments",
     "4 of BenchJack's 8 flaw classes uncovered (docs/COVERAGE.md)",
-    "only 7 of 32 corpus environments are genuinely third-party, and only 3 of those 7 carry ground truth decided elsewhere (README.md, corpus split)",
+    "only 8 of 33 corpus environments are genuinely third-party, and only 3 of those 7 carry ground truth decided elsewhere (README.md, corpus split)",
     "the hosted demo refuses verifier:regex — safe_regex bounds a submitted pattern in a subprocess and WebAssembly has none"
   ]
 }
@@ -238,7 +238,7 @@ about this repository, not as a comparison against work not seen.
    remaining leak between them, and `:114-137` documents a capability wired but dead.
 
 4. **The correct bootstrap unit.** `results/intervals.json` resamples **environments**
-   (n=32), not defects, and carries a `"why"` field saying so. Resampling defects would
+   (n=33), not defects, and carries a `"why"` field saying so. Resampling defects would
    report an interval far too tight. Paired differences on a shared resample: assay vs
    `flag_everything` **351.0 [263, 404] separated**; assay vs `check_env` **3173.0 [2055, 4415]**.
 

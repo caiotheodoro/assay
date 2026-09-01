@@ -30,19 +30,19 @@ Published artifacts: [collection](https://huggingface.co/collections/caiotheodor
 
 ## The main result
 
-32 environments, 10,000 resamples, seed 11,
+33 environments, 10,000 resamples, seed 11,
 resampled over environments.
 
 | arm | expected loss | 95% CI |
 |---|---|---|
 | **assay+auditor** | 43 | [0, 125] |
-| **assay** | 56 | [7, 141] |
-| flag everything | 458 | [438, 476] |
+| **assay** | 57 | [7, 141] |
+| flag everything | 474 | [438, 476] |
 | `check_env` (the incumbent) | 3224 | [2040, 4528] |
 
 The comparison that decides it is not the incumbent — it is flagging everything, which catches
 every defect by construction. **402 saved, 95% CI
-[315, 456], separated.** Turning the agent on saves a further **13, 95% CI [1, 28],
+[330, 471], separated.** Turning the agent on saves a further **13, 95% CI [1, 28],
 separated** — pre-registered before the environments it acts on existed.
 `production-training` does not separate and is shown crossing zero rather than omitted.
 
@@ -83,7 +83,7 @@ the script now finds it in two seconds because the discovery was written down.
   a reason rather than failing.
 - The whole result rests on one constant nothing derives: a missed critical defect priced at
   120 engineer-hours. The ranking only flips at
-  1326 — 11.05× larger.
+  1371 — 11.05× larger.
 - The hosted demo is [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo),
   which runs the battery in the browser under Pyodide. It audits a spec you paste in; it does not
   reproduce the headline, because that still wants Docker and Ollama. `space/app.py`, the Gradio

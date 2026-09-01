@@ -149,8 +149,8 @@ error** in a number somebody guessed. That was the sharpest criticism of this
 work, and it was only sayable because we ran the sweep.
 
 *(After later work closed two detector misses the crossover moved to 942, a 685%
-margin. The check did not change; the tool did. It then moved again, to **1326.0**
-— a 1005% margin — and that time the tool did not change either: the crossover's
+margin. The check did not change; the tool did. It then moved again, to **1371.0**
+— a 1042% margin — and that time the tool did not change either: the crossover's
 numerator is `flag_everything`'s loss, and two probe families added to the
 taxonomy plus two τ² environments added to the corpus raised it. A safety margin
 that widens because the floor got worse is a different fact from one that widens
@@ -166,12 +166,12 @@ constant; its false alarms do not move at all. So the line is
 The published derivation was `shipped × floor / yours`, which is the `fa = 0`
 special case. It was exactly right for as long as the detector had perfect
 precision and went wrong silently the moment three false alarms arrived with the
-τ² environments — printing 1099.53 where the truth is **1326.0**, and a "tie" row
+τ² environments — printing 1099.53 where the truth is **1371.0**, and a "tie" row
 at a cost where the detector is actually at 369.5 against 394.0. A judge derived
 `C/3 + 3` from the published rows and caught it.
 
 Publish the crossover. "Costs are illustrative" hides whether the margin is 21%
-or 1005% — and publishing the rows is what let someone check the formula against
+or 1042% — and publishing the rows is what let someone check the formula against
 them.
 
 `scripts/cost_sensitivity.py`
@@ -276,16 +276,16 @@ second kind.
 
 It does not make the tool better at finding defects. On that axis we are behind
 the field and say so — ABA audits 34,285 tasks, BenchJack 219 flaws across ten
-benchmarks, and our corpus is 32 environments of which **7** are genuinely
+benchmarks, and our corpus is 33 environments of which **7** are genuinely
 third-party. Two of those seven are τ²-bench domains whose ground truth another
 organisation published at a commit, and on those 164 tasks, *per task*, our
 recall is 0.339 and does not beat flagging at random.
 
 What it buys is that every number here can be interpreted. When we say the
-detector separates from its floor — 402.0 saved, 95% CI [315, 456] — that
+detector separates from its floor — 417.0 saved, 95% CI [330, 471] — that
 sentence has a floor behind it, a cost sweep, a provenance split, a
 pre-registration, and an adversary who tried to break it and is quoted where it
-succeeded. It also has a decomposition: of that 402.0, **141.0 is the taxonomy
+succeeded. It also has a decomposition: of that 417.0, **141.0 is the taxonomy
 and the corpus growing and 261.0 is the detector**, and the first number is
 published because nothing forced it to be.
 

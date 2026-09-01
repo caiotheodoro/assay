@@ -25,19 +25,25 @@ to find more defects than the field; it claims to price them.
 | `stratified_random` | 2794.0 |
 | `direct_prompt` | 2299.0 |
 | `always_modal_defect` | 2054.0 |
-| `flag_everything` | 458.0 |
-| **Assay** | **56.0** |
+| `flag_everything` | 474.0 |
+| **Assay** | **57.0** |
 | **`assay+auditor`** | **43.0** |
 
-Assay saves **402.0 against `flag_everything`, 95% CI [315, 456], separated.**
+Assay saves **417.0 against `flag_everything`, 95% CI [330, 471], separated.**
 Wins 4 of 4 cost profiles and separates on all 4.
 
-**Turning the agent on saves a further 13.0, 95% CI [1, 28], separated.** Four
+**Turning the agent on saves 13-14 in six runs of seven, and loses 65 in the
+seventh.** `results/gate_reliability.json`: `assay+auditor` returns 43-44 across
+seven identical runs and once returns 122.0, because the gate decided
+`tau2/airline` had no correct answer and deleted two real planted defects with
+the false ones. The paired bootstrap resamples environments and cannot see this;
+the deterministic arm returned 57.0 every time. Do not quote the agent row as a
+point estimate. Five
 environments with no correct answer now sit in the corpus, so the deterministic battery
 pays 16 false positives where it used to pay 3, and the semantic gate recovers 13 of
 them while leaving the 3 τ² findings standing — the right answer on all 16.
 
-**141.0 of that 402.0 is arithmetic, not detection.** `flag_everything` flags
+**141.0 of that 417.0 is arithmetic, not detection.** `flag_everything` flags
 every class in the taxonomy on every environment, so its loss gets worse whenever the
 taxonomy or the corpus grows and no detector is involved: two probe families added two
 defect classes (+52), two τ² environments added 28 more free false alarms while costing
@@ -55,7 +61,7 @@ separation.
 Recall is 0.9815 and **precision is 0.9464** — no longer 1.000. Three spurious findings
 remain and all three are on the two τ² environments.
 
-Intervals resample **environments** (n=32), not defects — `results/intervals.json`
+Intervals resample **environments** (n=33), not defects — `results/intervals.json`
 carries a `"why"` field saying so.
 
 ## What is deliberately published as a weakness
@@ -64,7 +70,7 @@ carries a `"why"` field saying so.
   split, so the contamination probe has nothing to compare.
 - Four of BenchJack's eight flaw classes are uncovered (`docs/COVERAGE.md`, written
   in *their* vocabulary, not ours).
-- Only **7 of 32** corpus environments are genuinely third-party, and only **3 of those
+- Only **8 of 33** corpus environments are genuinely third-party, and only **3 of those
   6** carry ground truth this repository did not decide. The split is published because
   it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative

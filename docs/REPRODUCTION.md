@@ -126,9 +126,9 @@ Expect exactly this, under `research-run`:
 
 | arm | expected loss | recall | precision |
 |---|---|---|---|
-| assay | 56.0 | 0.982 | 0.768 |
+| assay | 57.0 | 0.982 | 0.757 |
 | assay+auditor | 43.0 | 0.982 | 0.946 |
-| flag_everything | 458.0 | 1.000 | 0.105 |
+| flag_everything | 474.0 | 1.000 | 0.105 |
 | always_modal_defect | 2054.0 | 0.185 | 0.313 |
 | direct_prompt | 2299.0 | 0.259 | 0.341 |
 | stratified_random | 2794.0 | 0.111 | 0.125 |

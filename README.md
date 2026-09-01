@@ -49,35 +49,49 @@ without them the `tau2` provider reports itself unavailable and every arm's loss
 
 | Arm | Expected loss (`research-run`) | 95% CI |
 |---|---|---|
-| `flag_nothing` | 3232.0 | [2056, 4536] |
-| `check_env`, the incumbent linter | 3224.0 | [2040, 4528] |
-| `flag_everything`, the floor that had to be beaten | 458.0 | [438, 476] |
-| **Assay** | **56.0** | **[7, 141]** |
-| **`assay+auditor`, the same battery with the agent on** | **43.0** | **[0, 125]** |
+| `flag_nothing` | 3232.0 | [2080, 4560] |
+| `check_env`, the incumbent linter | 3216.0 | [2056, 4552] |
+| `flag_everything`, the floor that had to be beaten | 474.0 | [453, 492] |
+| **Assay** | **57.0** | **[8, 142]** |
+| `assay+auditor`, the agent on — **one draw of seven** | 43–44, once 122 | see below |
 
-Assay saves 402.0 against `flag_everything`, 95% CI [315, 456], separated. 32 environments, 54
+Assay saves 417.0 against `flag_everything`, 95% CI [330, 471], separated. 33 environments, 54
 planted defects, 10,000 bootstrap resamples over environments, seed 11.
 
-**Turning the agent on saves a further 13.0, 95% CI [1, 28], separated.** That row used to
-read "identical on every figure", and it was — the corpus contained no environment the
-agent's semantic gate could act on, so `assay+auditor` scored exactly `assay` by
-construction. Four environments with no correct answer now do, and the deterministic
-battery pays for them: 16 false positives where it used to have 3.
-`docs/PRE-REGISTRATION-NOANSWER.md` predicted 13.0 before the environments existed, and
-named this bootstrap as the result most likely to fail.
+**The agent row is a distribution, not a number, and that is the honest form of it.**
+Five environments in the corpus have no correct answer, so every finding the
+deterministic battery reports on them is a false positive — 17 of them, precision
+0.757. The semantic gate withholds those and `assay+auditor` comes back at **43–44
+across seven runs of the same corpus, saving 13–14** — except once, where it came back
+at **122.0**, because it decided `tau2/airline` had no correct answer and deleted two
+real planted defects along with the false ones.
 
-Read the arms in the right order. Beating `check_env` proves almost nothing: 8.0 saved of
+**One run in seven.** `results/gate_reliability.json` is that measurement, and the
+failure mode it records is the bad kind: rare and catastrophic rather than common and
+mild. Six runs look like a clean win and would pass any casual check; the seventh hides
+real CRITICAL-class findings, which is the outcome this tool exists to prevent.
+`docs/PRE-REGISTRATION-NOANSWER.md` predicted the 13.0 and named a criterion for exactly
+this — "the agent has traded a false positive for a hidden true one, which is worse than
+the disease" — and that criterion fired.
+
+The paired bootstrap cannot see it. It resamples *environments*; the model is asked once
+per environment per run and does not always answer the same. **An interval from one run
+of an agentic arm is narrower than the truth by an unknown amount**, and that is a
+limitation of the method, not of this run. The deterministic arm returned 57.0 every
+single time.
+
+Read the arms in the right order. Beating `check_env` proves almost nothing: 16.0 saved of
 `flag_nothing`'s 3232.0, on an interval including zero. The arm that had to be beaten is
 `flag_everything`, which catches every defect by construction, and for most of this project's life
 Assay did not beat it.
 
-**A large part of that 402.0 is arithmetic rather than detection.** `flag_everything`'s loss is
+**A large part of that 417.0 is arithmetic rather than detection.** `flag_everything`'s loss is
 `Σ_env (n_classes − |planted_env|) × false_alarm`, so it gets worse whenever the taxonomy or the
 corpus grows, with no detector involved. The four environments with no correct answer plant nothing,
-so each hands the floor a free 16 — **64.0 of the margin's growth is arithmetic, and it cost the
-deterministic arm 13.0.** A larger standing figure sits underneath: four of the sixteen defect
-classes are planted nowhere in the corpus, which hands the floor `4 × 32 = 128` false alarms, 27.9%
-of its 458.0. The full decomposition is in [`docs/RESULTS.md`](docs/RESULTS.md), and
+so each hands the floor a free 16 — **80.0 of the margin's growth is arithmetic, and it cost the
+deterministic arm 14.0.** A larger standing figure sits underneath: four of the sixteen defect
+classes are planted nowhere in the corpus, which hands the floor `4 × 33 = 132` false alarms, 27.8%
+of its 474.0. The full decomposition is in [`docs/RESULTS.md`](docs/RESULTS.md), and
 [`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md) and
 [`docs/PRE-REGISTRATION-NOANSWER.md`](docs/PRE-REGISTRATION-NOANSWER.md) predicted every figure in
 it before the corpus grew.
@@ -92,22 +106,22 @@ Three caveats decide how the table should be read, all in full in [`docs/RESULTS
    and 2826.0 against `stratified_random`'s 2794.0, and the paired bootstrap gives 495.0, 95% CI
    [−93, 1123], not separated. Giving the model a tool loop bought nothing measurable — it scored
    *worse* than the coin, well inside the noise.
-2. **The deterministic arm's precision is 0.7681, not 0.9464.** Sixteen spurious findings across 32
-   environments: three on the two τ² environments, and thirteen on the four with no correct answer,
-   where every finding is a false positive by construction. The gate recovers all thirteen and
-   leaves the three τ² findings standing, which is the right answer on all sixteen —
-   `assay+auditor` precision 0.9464.
-3. **The corpus is 7 of 32 genuinely third-party**, 3 of them externally labelled. Every clean
+2. **The deterministic arm's precision is 0.7571, not 0.9464.** Seventeen spurious findings across
+   33 environments: three on the two τ² environments, and fourteen on the five with no correct
+   answer, where every finding is a false positive by construction. On six runs of seven the gate
+   recovers those and leaves the three τ² findings standing, which is the right answer on all
+   seventeen. On the seventh it also withheld `tau2/airline`, which has a correct answer.
+3. **The corpus is 8 of 33 genuinely third-party**, 3 of them externally labelled. Every clean
    environment added moves the floor by +16 and the deterministic arm by 0 to 4, so self-authored
-   environments carry most of the 402.0 margin. Provenance is declared in the registry before the
-   corpus grows, and every expansion is pre-registered first. Three of the four no-answer
+   environments carry most of the 417.0 margin. Provenance is declared in the registry before the
+   corpus grows, and every expansion is pre-registered first. Three of the five no-answer
    environments are written here, and `docs/PRE-REGISTRATION-NOANSWER.md` says so before reporting
    the result that rests on them.
 
 | split | n | assay | flag_everything |
 |---|---|---|---|
-| all (published) | 32 | 56.0 | 458.0 |
-| genuinely external | 7 | 44.0 | 105.0 |
+| all (published) | 33 | 57.0 | 474.0 |
+| genuinely external | 8 | 45.0 | 121.0 |
 | our content, third-party format | 10 | 0.0 | 132.0 |
 | in-process fixtures | 15 | 12.0 | 221.0 |
 
@@ -122,7 +136,7 @@ declining to answer.
 
 The whole ranking rests on one made-up number. `research-run.yaml` prices a missed CRITICAL defect at
 120 engineer-hours-equivalent and nothing derives that 120. Assay's loss is affine in `C`, so it
-crosses `flag_everything` at **1326.0**: the headline survives a 1005% error in a
+crosses `flag_everything` at **1371.0**: the headline survives a 1042% error in a
 constant nobody derives. That margin comes partly from the floor getting worse, which is weaker
 evidence than the detector getting better, and
 [`results/cost_sensitivity.json`](results/cost_sensitivity.json) has the sweep.
