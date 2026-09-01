@@ -382,7 +382,8 @@ class Auditor:
     """
 
     def __init__(
-        self, client: LLMClient | None = None, gate_input: str = "instructions"
+        self, client: LLMClient | None = None, gate_input: str = "instructions",
+        consensus: int = 2,
     ) -> None:
         self._client = client
         #: What the semantic gate is allowed to read. "instructions" is the
@@ -394,6 +395,23 @@ class Auditor:
                 f"gate_input must be 'instructions' or 'describe', not {gate_input!r}"
             )
         self.gate_input = gate_input
+        if consensus < 1:
+            raise ValueError(f"consensus must be at least 1, not {consensus}")
+        #: How many independent replies must agree before anything is withheld.
+        #:
+        #: Withholding deletes findings, and one run in seven deleted two real
+        #: planted defects on `tau2/airline` -- an environment graded on the end
+        #: state of a database (`results/gate_reliability.json`). That failure
+        #: was never explained: the wording was ablated and cleared 10 of 10,
+        #: the shape cache was ruled out, and the environment's task text is 50
+        #: concatenated personas on which a model occasionally answers
+        #: differently.
+        #:
+        #: An unexplained rare error still has a shape, and this is the remedy
+        #: for that shape: ask again, and act only on agreement. Asymmetric on
+        #: purpose -- a single `has_correct_answer` is enough to stand down,
+        #: because leaving findings standing is the direction that fails safe.
+        self.consensus = consensus
         #: shape signature -> the conclusion reached on the first
         #: environment that had it. The memory lever: two environments
         #: that pose the same question to a reader get one model call
@@ -509,6 +527,22 @@ class Auditor:
         derived = decide(answer)
         if derived is None:
             return None
+        if derived == "no_correct_answer" and self.consensus > 1:
+            # Ask again before deleting anything. One dissent is enough to stop.
+            for _ in range(self.consensus - 1):
+                again = self._ask(_SYSTEM, text)
+                if again is None or decide(again) != "no_correct_answer":
+                    answer = {
+                        **answer,
+                        "verdict": "has_correct_answer",
+                        "abstained": (
+                            f"{self.consensus} independent replies were required to "
+                            "agree before withholding and they did not"
+                        ),
+                        "dissent": (again or {}).get("verdict", "unusable"),
+                    }
+                    derived = "has_correct_answer"
+                    break
         # Captured before any rewrite below: `model_said` must stay the
         # model's own label, or the card reports the gate's conclusion as
         # though the model had produced it.

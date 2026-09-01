@@ -735,3 +735,55 @@ def test_only_the_safe_verdict_is_carried_between_environments():
         "has_correct_answer must still cache -- it is the saving auditor_memory.json "
         "measures, and carrying it can only leave findings standing"
     )
+
+
+class _Dissenting:
+    """Says no-correct-answer once, then disagrees with itself."""
+
+    name = "fake:dissenting"
+
+    def __init__(self, replies):
+        self._replies = list(replies)
+        self.calls = 0
+
+    def complete(self, system, user):
+        self.calls += 1
+        return self._replies[min(self.calls - 1, len(self._replies) - 1)]
+
+
+def test_one_dissent_is_enough_to_stop_a_withhold():
+    """Withholding deletes findings, so it takes agreement; standing down does not.
+
+    One run in seven deleted two real planted defects on `tau2/airline`, an
+    environment graded on database end state, and that failure was never
+    explained -- the wording ablated clean 10 of 10 and the shape cache was ruled
+    out. An unexplained rare error still has a shape, and asking again is the
+    remedy for that shape.
+    """
+    client = _Dissenting([NO_ANSWER, HAS_ANSWER])
+    auditor = Auditor(client, consensus=2)
+    answer = auditor.classify(_defective())
+    assert answer is not None
+    assert answer["verdict"] == "has_correct_answer", (
+        "a second reply that disagrees must stop the withhold"
+    )
+    assert "abstained" in answer
+    assert client.calls == 2, "it must actually ask again"
+
+
+def test_agreement_still_withholds():
+    """Two independent replies that agree do what one used to."""
+    client = _Dissenting([NO_ANSWER, NO_ANSWER])
+    answer = Auditor(client, consensus=2).classify(_defective())
+    assert answer["verdict"] == "no_correct_answer"
+    assert client.calls == 2
+
+
+def test_a_has_correct_answer_costs_only_one_call():
+    """The safe direction is asymmetric: standing down needs no second opinion."""
+    client = _Dissenting([HAS_ANSWER])
+    Auditor(client, consensus=3).classify(_defective())
+    assert client.calls == 1, (
+        "only the destructive direction pays for agreement; leaving findings "
+        "standing is already the safe answer"
+    )
