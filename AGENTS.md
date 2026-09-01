@@ -97,12 +97,15 @@ the workflow is for — and it means the agent is not load-bearing here.
 
 The **Auditor** (`--auditor`) is the case where no script can take over. It withholds
 the CRITICAL false positive on `inspect_evals/personality_BFI` — an inventory with no
-correct answer, where a format check is the right design. On the 2 environments with no
-correct answer it withholds in **6 of 6 runs**, and across the 18 that do have one it
-pays **0 false overrides in 54** (`results/semantic_gate.json`, `claude-cli:sonnet`,
-20 environments at k=3).
-`qwen3:8b` matches it on the positives and pays **6 false overrides in 54**, which is
-the column that matters, because a false override hides a real defect.
+correct answer, where a format check is the right design. On the 5 environments with no
+correct answer it withholds in **14 of 15 runs**, and across the 20 that do have one it
+pays **2 false overrides in 60** (`results/semantic_gate.json`, `claude-cli:sonnet`,
+25 environments at k=3). The false-override figure is not zero, and an earlier
+revision of this paragraph said it was, against a negative set that contained no
+multi-turn dialogue — the class the gate later got wrong on a real run.
+`qwen3:8b` is not in the current measurement, which used `--arms claude`, so its row was
+removed rather than carried forward. Read the false-override column: it hides a real
+defect, which is worse than missing one.
 **No model ever scores a probe.** It can only move a
 `verifier_integrity` DEFECT to `NOT_APPLICABLE`, never assert a verdict, and it is
 off by default: the headline numbers above are fully deterministic.

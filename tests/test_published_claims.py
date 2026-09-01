@@ -910,7 +910,23 @@ def test_the_agent_measurements_are_gated_like_every_other_number():
             m = re.search(r"(\d+)\s+environments\s*[-—,]\s*(\d+) with no correct answer", line)
             if m and (int(m.group(1)), int(m.group(2))) != (total, pos):
                 bad.append(f"{name}: says {m.group(1)}/{m.group(2)}; the artifact is {total}/{pos}")
-            # A false-positive denominator must be the measured run count.
+            # A false-positive denominator must be the measured run count. This
+            # matched only the literal `fp N / M` form, and the README states it
+            # as prose in a table -- "6 of 6 runs", "0 of 54 runs" -- so the table
+            # sat at 0 of 54 for five hours after the artifact was re-measured to
+            # 2 of 60. An independent reader found it; this gate could not have.
+            for hit, total_ in re.findall(r"(\d+)\s+of\s+(\d+)\s+runs", line):
+                measured_neg = {str(b["negative_runs"]) for b in backends}
+                measured_pos = {str(b["positive_runs"]) for b in backends}
+                # `k of k runs` is a per-environment claim -- "qwen labels it
+                # correct in 3 of 3 runs" -- not a denominator over the set.
+                allowed = measured_neg | measured_pos | {str(gate.get("k"))}
+                if total_ not in allowed:
+                    bad.append(
+                        f"{name}: 'of {total_} runs' matches no measured denominator; "
+                        f"the artifact has {sorted(measured_pos)} positive and "
+                        f"{sorted(measured_neg)} negative runs at k={gate.get('k')}"
+                    )
             for fp in re.findall(r"fp\s+\d+\s*/\s*(\d+)", line):
                 measured = {str(b["negative_runs"]) for b in backends}
                 if fp not in measured:
@@ -1132,8 +1148,13 @@ def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
 # remeasured.md`. Written the several ways this sweep found them still in use,
 # including the two argparse `help=` strings.
 _RETRACTED_K1 = re.compile(
+    # `2 false overrides` was pinned bare, and the current measured value on a
+    # k=3 run over 25 environments is *also* 2 -- "2 false overrides in 60".
+    # A gate that fails on a true sentence teaches people to reword around it,
+    # so the retracted figure is pinned with the denominator that made it
+    # retracted: 39 runs at k=1.
     r"\b[01][- ]of[- ]1\b|\b13[- ]environment|\bin 39\b"
-    r"|\b4 of 6 runs\b|\b2 false overrides\b",
+    r"|\b4 of 6 runs\b|\b2 false (overrides|positives) in 39\b",
     re.I,
 )
 # Only lines that are talking about the gate: "1 of 1" is an ordinary phrase.
