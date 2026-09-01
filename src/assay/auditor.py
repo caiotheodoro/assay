@@ -534,7 +534,22 @@ class Auditor:
             "verdict": derived,
             "_env": adapter.manifest().env_id,
         }
-        self._by_shape[signature] = settled
+        if derived == "has_correct_answer":
+            # Cache the safe answer only. `shape()` groups environments by task
+            # text, and it groups more than the twelve toy fixtures its docstring
+            # names: the five `harbor/*` environments share one shape and the
+            # five `inspect/*` another, 33 environments collapsing to 14. So one
+            # `no_correct_answer` would withhold across five environments from a
+            # single model call, and `harbor/self-graded` is measured returning
+            # exactly that verdict 3 of 3 times -- caught today only by the
+            # abstention guard above, which is one check deep.
+            #
+            # Re-asking for the dangerous direction costs nothing measurable:
+            # every environment that currently answers `no_correct_answer` is a
+            # shape of its own, so no cache hit is lost, and the twelve-fixture
+            # saving in `results/auditor_memory.json` is on environments that
+            # answer `has_correct_answer` and still cache.
+            self._by_shape[signature] = settled
         return settled
 
     #: Why each family's question is void when there is no correct answer. One

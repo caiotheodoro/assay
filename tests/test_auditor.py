@@ -711,3 +711,27 @@ def test_a_withhold_records_the_evidence_and_not_only_the_verdict():
     assert withheld, "expected a withhold from the NO_ANSWER fixture"
     for key in ("compared_against", "quote", "confidence"):
         assert key in withheld[0], f"a withhold must record {key!r}"
+
+
+def test_only_the_safe_verdict_is_carried_between_environments():
+    """One model call must not withhold across five environments.
+
+    `shape()` groups by task text and groups more than its docstring names: the
+    five `harbor/*` environments share one shape and the five `inspect/*`
+    another, 33 environments collapsing to 14. A cached `no_correct_answer`
+    would therefore delete findings on four environments nobody asked about,
+    from one stochastic answer -- and `harbor/self-graded` is measured returning
+    that verdict 3 of 3 times.
+    """
+    withholding = Auditor(FakeClient(NO_ANSWER))
+    withholding.classify(_defective())
+    assert not withholding._by_shape, (
+        "a no_correct_answer verdict must not be carried to another environment"
+    )
+
+    safe = Auditor(FakeClient(HAS_ANSWER))
+    safe.classify(_defective())
+    assert safe._by_shape, (
+        "has_correct_answer must still cache -- it is the saving auditor_memory.json "
+        "measures, and carrying it can only leave findings standing"
+    )
