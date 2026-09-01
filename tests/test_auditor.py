@@ -37,24 +37,27 @@ class FakeClient:
 
 #: Both signals agree that there is no correct answer. Only this overrides.
 NO_ANSWER = (
-    '{"both_valid_example": "A: strongly agree. B: strongly disagree.", '
+    '{"compared_against": "nothing; the trait score is summed from the reply", '
     '"verdict": "no_correct_answer", "elicitation": "personality trait rating", '
     '"quote": "I see myself as someone who is talkative", "confidence": "high"}'
 )
 HAS_ANSWER = (
-    '{"both_valid_example": "none", "verdict": "has_correct_answer", '
+    '{"compared_against": "the answer key", "verdict": "has_correct_answer", '
     '"elicitation": "factual question", "quote": "what is 2 + 2", '
     '"confidence": "high"}'
 )
-#: The label says no-correct-answer, the evidence does not back it.
+#: The label says no-correct-answer while naming something that decides
+#: correctness. This is the tau2/airline shape.
 LABEL_ONLY = (
-    '{"both_valid_example": "none", "verdict": "no_correct_answer", '
+    '{"compared_against": "the expected end state of the database", '
+    '"verdict": "no_correct_answer", '
     '"elicitation": "opinion", "quote": "x", "confidence": "high"}'
 )
-#: An example was invented, but the label disagrees. This is what qwen3:8b
-#: actually returns for personality_BFI, in 3 of 3 runs.
+#: The evidence says nothing decides correctness, and the label disagrees.
+#: The same contradiction qwen3:8b returned for personality_BFI 3 of 3
+#: times against the old question.
 EVIDENCE_ONLY = (
-    '{"both_valid_example": "A: yes, disorganized. B: no, organized.", '
+    '{"compared_against": "nothing", '
     '"verdict": "has_correct_answer", "elicitation": "self report", '
     '"quote": "Tends to be disorganized", "confidence": "high"}'
 )
@@ -403,7 +406,7 @@ def test_the_decision_always_states_a_reason_either_way():
 # -- abstention: the quote has to point at something ------------------------
 
 WHOLE_PROMPT_QUOTE = (
-    '{"both_valid_example": "one writes X, another writes Y", '
+    '{"compared_against": "nothing", '
     '"verdict": "no_correct_answer", "elicitation": "open ended", '
     '"quote": "Write the answer to the file out.txt in the working directory.", '
     '"confidence": "high"}'
@@ -597,4 +600,98 @@ def test_the_corpus_now_contains_environments_the_gate_can_act_on():
         note = declared[env_id].note
         assert note and len(note) > 40, (
             f"{env_id} carries an empty defect set and must say on what basis"
+        )
+
+
+# --- The question the gate asks, and the run that proved it was wrong ---------
+
+
+def test_a_named_referent_beats_a_no_correct_answer_label():
+    """The tau2/airline regression, in one assertion.
+
+    The gate used to ask whether two different responses could both be
+    legitimately correct. For a multi-turn customer-service dialogue the honest
+    answer is yes -- many phrasings, all valid -- so the model answered
+    `no_correct_answer` accurately and the gate withheld 25 findings on an
+    environment graded by database end state, destroying two real planted
+    defects (`results/gate_reliability.json`, 1 run in 7).
+
+    The evidence field is now the referent. Naming one is evidence that
+    correctness is decided somewhere, however many responses reach it, and the
+    conjunction refuses the override.
+    """
+    from assay.auditor import decide
+
+    airline = {
+        "verdict": "no_correct_answer",
+        "compared_against": "the required end state of the reservation database",
+        "elicitation": "customer service dialogue",
+        "quote": "You want to cancel reservation EHGLP3.",
+        "confidence": "high",
+    }
+    assert decide(airline) == "has_correct_answer", (
+        "an environment that names what it grades against has a correct answer, "
+        "however many different responses reach it"
+    )
+
+
+def test_only_nothing_agrees_with_a_no_correct_answer_label():
+    """A trait scale computes its score from the response; it compares nothing."""
+    from assay.auditor import decide
+
+    for referent in ("nothing", "Nothing.", "none", "n/a", ""):
+        assert decide({
+            "verdict": "no_correct_answer", "compared_against": referent
+        }) == "no_correct_answer", f"{referent!r} should agree with the label"
+
+    for referent in ("the answer key", "expected.txt", "a set of accepted letters"):
+        assert decide({
+            "verdict": "no_correct_answer", "compared_against": referent
+        }) == "has_correct_answer", f"{referent!r} names something that decides correctness"
+
+
+def test_the_prompt_says_that_many_valid_responses_do_not_settle_it():
+    """The sentence that stops the old failure recurring by wording.
+
+    Without it a model reads "what does it compare against" for a dialogue task
+    and still reaches for surface variety.
+    """
+    from assay.auditor import _SYSTEM
+
+    assert "NOT whether the correct response is unique" in _SYSTEM
+    assert "end state" in _SYSTEM, (
+        "the prompt must name the case that broke it -- a task graded on the "
+        "state it leaves behind"
+    )
+
+
+def test_a_referent_named_in_a_sentence_still_counts_as_naming_something():
+    """The matching must survive how a model actually writes.
+
+    Exact-matching "nothing" was too brittle -- asked what a personality
+    inventory grades against, a model replies "nothing; the trait score is
+    summed from the reply", which is the right answer in a sentence. It must
+    also refuse anything that names a thing, however casually phrased.
+    """
+    from assay.auditor import _names_nothing
+
+    for says_nothing in (
+        "nothing",
+        "nothing; the trait score is summed from the reply",
+        "none",
+        "no key exists",
+        "Nothing -- the score is computed from the response itself",
+        "",
+    ):
+        assert _names_nothing(says_nothing), f"{says_nothing!r} says nothing decides it"
+
+    for names_something in (
+        "the answer key",
+        "the required end state of the database",
+        "a set of accepted letters",
+        "expected.txt in the workspace",
+        "the gold trajectory",
+    ):
+        assert not _names_nothing(names_something), (
+            f"{names_something!r} names a thing that decides correctness"
         )

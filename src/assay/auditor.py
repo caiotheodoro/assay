@@ -83,23 +83,29 @@ ESCALATION_FLOOR = 5
 _SYSTEM = """\
 You read one evaluation environment and answer one concrete question about it:
 
-    Could two DIFFERENT responses to the same task both be legitimately correct,
-    such that a fair scorer ought to accept both?
+    When this environment scores a response, what does it compare that response
+    AGAINST?
 
-Answer that question first, with an example, and let the verdict follow from it.
+Name that thing first, and let the verdict follow from it.
 
-If no -- one response is right and the others are wrong -- the environment
-has a correct answer. Maths, code, question answering, classification.
+If there is something to compare against -- a key, a target, an expected output,
+a set of accepted answers, a required end state of a database or a file -- the
+environment HAS a correct answer. That stays true when many different responses
+reach it. A customer-service dialogue with a hundred valid phrasings still has
+a correct outcome; so does any task graded on the state it leaves behind.
 
-If yes -- two different responses are both legitimately correct -- the
-environment has no correct answer. It is eliciting an opinion, a preference, a
-self-report, a personality trait, or an open-ended piece of writing. On these a
-scorer that only checks the response FORMAT is correct design, not a bug: the
-result is computed from the response, not graded against a key.
+If there is nothing to compare against, and the score is computed FROM the
+response itself -- summing a trait scale, mapping a choice onto a bias score,
+checking only that the reply is well formed -- the environment has NO correct
+answer. On these a scorer that checks only FORMAT is correct design, not a bug.
+
+The question is NOT whether the correct response is unique. Many different
+responses being acceptable is normal and says nothing. The question is whether
+anything decides correctness at all.
 
 Reply with one JSON object and nothing else:
 
-{"both_valid_example": "<two different responses that would both be fair, or 'none'>",
+{"compared_against": "<the key, target or required end state, or 'nothing'>",
  "verdict": "has_correct_answer" | "no_correct_answer",
  "elicitation": "<what the environment elicits, three words>",
  "quote": "<the exact task text that shows it>",
@@ -152,40 +158,73 @@ def _parse(reply: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
-_NONE = {"none", "none.", "n/a", "na", "", "-", "null"}
+_NONE = {"none", "none.", "nothing", "nothing.", "n/a", "na", "", "-", "null"}
+
+
+def _names_nothing(referent: str) -> bool:
+    """Does this referent say that nothing decides correctness?
+
+    Exact-matching "nothing" is too brittle: a model asked what a personality
+    inventory grades against replies "nothing; the trait score is summed from
+    the reply", which is the right answer in a sentence. Matching the leading
+    word keeps that while still refusing anything that names a thing --
+    "the answer key", "the required end state of the database".
+
+    Conservative on purpose. A referent this cannot read is treated as naming
+    something, which blocks the override, which changes nothing.
+    """
+    text = referent.strip().lower().lstrip("-* ").strip()
+    if text.strip(".") in _NONE:
+        return True
+    head = text.split(",")[0].split(";")[0].split(" -- ")[0].strip().strip(".")
+    if head in _NONE:
+        return True
+    return head.split()[0] in {"nothing", "none", "no"} if head.split() else False
 
 
 def decide(answer: dict[str, Any]) -> str | None:
     """Two independent signals, and an override only when both agree.
 
-    The model is asked for a label and, separately, for a concrete example of
-    two different responses that would both be fair. Neither is trustworthy
-    alone, and the measurements say so:
+    The model is asked for a label and, separately, for the thing the scorer
+    compares a response against. Neither is trustworthy alone -- the
+    conjunction is the design, and a model too weak to hold the two together
+    produces no override at all, which is the degradation this wants: a weak
+    Auditor loses recall and cannot lose precision.
 
-    * The label alone misses. `qwen3:8b` labels `personality_BFI`
-      `has_correct_answer` in 3 of 3 runs, right after writing a genuinely
-      valid pair ("Yes, I tend to be disorganized" / "No, I am usually
-      organized") into the example field. It contradicts its own evidence.
-    * The example alone over-fires. Deriving the verdict from "is there an
-      example" turns 10 of the 12 toy-triage fixtures into
-      `no_correct_answer`; the model will invent a both-valid pair for an
-      ordinary ticket-classification task if the field is there to fill.
+    **The question this asks changed, and it changed because it was wrong.** It
+    used to ask whether two different responses could both be legitimately
+    correct, with the evidence field holding an example of such a pair. That is
+    a question about surface uniqueness, and for a multi-turn dialogue the
+    honest answer is always yes -- many phrasings, all valid. `tau2/airline` is
+    graded on the end state of a database, so it plainly has a correct answer,
+    and the gate concluded it did not and withheld 25 findings including two
+    real planted defects. The model answered accurately; the question was the
+    defect. `results/gate_reliability.json` measures how often that happened
+    (1 run in 7) and `docs/changelog/122-the-gate-asks-the-wrong-question.md`
+    is the diagnosis.
 
-    So the gate is the conjunction, and the conjunction is the point. A model
-    too weak to hold the two together produces no override at all, which is
-    the degradation this design wants: a weak Auditor loses recall and cannot
-    lose precision. `qwen3:8b` fires on nothing. `claude-cli` fires on
-    `personality_BFI` and nothing else.
+    So the evidence field is now the *referent*: name what decides correctness.
+    Naming anything -- a key, a target, a required end state -- is evidence
+    that correctness is decided somewhere, however many responses reach it.
+    Only "nothing" agrees with a `no_correct_answer` label.
+
+    The measurements that justified the conjunction were taken against the old
+    question and are kept here as the reason the shape is a conjunction, not as
+    claims about the current one: the label alone missed (`qwen3:8b` labelled
+    `personality_BFI` `has_correct_answer` in 3 of 3 runs while writing a
+    genuinely valid pair into the example field), and the evidence alone
+    over-fired (10 of 12 toy-triage fixtures). Both arms are re-measured against
+    the new question rather than assumed to carry over.
 
     Returns None when the reply is unusable, which also changes nothing.
     """
     label = answer.get("verdict")
-    example = answer.get("both_valid_example")
+    referent = answer.get("compared_against")
     if label not in ("has_correct_answer", "no_correct_answer"):
         return None
-    if not isinstance(example, str):
+    if not isinstance(referent, str):
         return None
-    evidence_says_no_answer = example.strip().lower().strip(".") not in _NONE
+    evidence_says_no_answer = _names_nothing(referent)
     if label == "no_correct_answer" and evidence_says_no_answer:
         return "no_correct_answer"
     return "has_correct_answer"
