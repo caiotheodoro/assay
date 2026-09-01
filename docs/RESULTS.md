@@ -13,7 +13,7 @@ artifacts disagree. Corrections this repository has had to publish are in
 
 ## The run
 
-32 environments, 54 planted defects. Needs Docker for the Harbor tasks. No GPU
+33 environments, 54 planted defects. Needs Docker for the Harbor tasks. No GPU
 and no API key.
 
 ```bash
@@ -43,8 +43,8 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 | arm | expected loss | 95% CI | recall | precision |
 |---|---|---|---|---|
 | **assay+auditor** | **43.0** | [0, 125] | 0.982 | 0.946 |
-| assay | **56.0** | [7, 141] | 0.982 | 0.768 |
-| flag_everything | 458.0 | [438, 476] | 1.000 | 0.105 |
+| assay | **57.0** | [8, 142] | 0.982 | 0.757 |
+| flag_everything | 474.0 | [453, 492] | 1.000 | 0.102 |
 | always_modal_defect | 2054.0 | [1300, 2891] | 0.185 | 0.313 |
 | direct_prompt (`qwen3:8b`) | 2299.0 | [1388, 3341] | 0.259 | 0.341 |
 | stratified_random | 2794.0 | [1702, 4030] | 0.111 | 0.125 |
@@ -52,17 +52,39 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 | **check_env** (incumbent) | **3224.0** | [2040, 4528] | **0.019** | 1.000 |
 | flag_nothing | 3232.0 | [2056, 4536] | 0.000 | 0.000 |
 
-**Every arm is measured on the same 32 environments**, in the same
+**Every arm is measured on the same 33 environments**, in the same
 `results/full_run.json`, with intervals from the same bootstrap. That was not
 always true — see `docs/RETRACTIONS.md` §3.
 
 The deterministic arm is **worse than it used to be**, and that is the point of
-the four environments added to the corpus. They have no correct answer, so every
-finding the battery reports on them is a false positive: 16 spurious where there
-were 3, precision 0.768 where it was 0.946. `assay+auditor` is the same battery
-with the semantic gate reading it, and it recovers all 13 —
-**13.0 saved, 95% CI [1, 28], separated.** Predicted before the environments
-existed, in `docs/PRE-REGISTRATION-NOANSWER.md`.
+the five environments added to the corpus. They have no correct answer, so every
+finding the battery reports on them is a false positive: 17 spurious where there
+were 3, precision 0.757 where it was 0.946.
+
+`assay+auditor` is the same battery with the semantic gate reading it, and **it
+is not a single number**. Seven identical runs on this corpus
+(`results/gate_reliability.json`):
+
+| | |
+|---|---|
+| `assay+auditor` | 43.0 x4, 44.0 x2, **122.0 x1** |
+| agent saves | 13–14 in six runs, **−65 in the seventh** |
+| `assay`, for contrast | **57.0 in all seven** |
+
+The outlier is the run where the gate decided `tau2/airline` had no correct
+answer and withheld 25 findings, two of them real planted defects. It has a
+correct answer: τ² grades the end state of a database.
+`docs/PRE-REGISTRATION-NOANSWER.md` predicted the 13.0 and registered the
+criterion this fired — "the agent has traded a false positive for a hidden true
+one, which is worse than the disease."
+
+**The bootstrap in this document cannot see that.** It resamples environments,
+and this varies between runs of the same environments. Every interval quoted for
+an agentic arm is therefore narrower than the truth by an amount nothing here
+measures, and the deterministic arm returning 57.0 seven times out of seven is
+the contrast that makes the gap visible. The failure is not explained; it is
+measured, and `docs/changelog/122-the-gate-asks-the-wrong-question.md` records
+two diagnoses that were tried and did not hold.
 
 ### That precision of 1.000 is the modal run, not every run
 
@@ -150,7 +172,7 @@ model's two hits is `fixture/flaky`, planted here.
 
 ## The corpus is almost entirely our own work, and the split is unflattering
 
-The 32 environments are 12 in-process `fixture/*`, 3 authored with no correct answer
+The 33 environments are 12 in-process `fixture/*`, 3 authored with no correct answer
 (`toy-triage/preference`, `noanswer/ranking`, `noanswer/openended`), 5 `harbor/`, 5 `inspect/`, 3
 `openenv/`, 2 `inspect_evals/`, 2 `tau2/`. Split on **who wrote the environment**, not on
 the id prefix:
@@ -176,7 +198,7 @@ two τ² environments drop out and the script recomputes every split on 26.
 
 | split | n | assay | flag_everything | who wins |
 |---|---|---|---|---|
-| all (published) | 32 | 56.0 | 458.0 | assay, by 402 |
+| all (published) | 33 | 57.0 | 474.0 | assay, by 417 |
 | our content, third-party format | 10 | 0.0 | 132.0 | assay |
 | genuinely external | 6 | 43.0 | 89.0 | assay — and all four of its errors are here |
 | in-process fixtures | 12 | 0.0 | 173.0 | assay — asserted, not measured |
@@ -248,7 +270,7 @@ one.
 
 `flag_everything`'s loss is exactly `Σ_env (16 − |planted_env|)`, so **every clean
 environment added moves the floor by +16 and Assay by 0**. At that rate **22 clean
-third-party environments manufacture most of the published margin of 402.0** with
+third-party environments manufacture most of the published margin of 417.0** with
 the detector unchanged, and seven of them manufacture 112 of it. That is why
 provenance is declared before the corpus grows, and why any
 expansion has to pre-register the expected mechanical shift — otherwise a bigger
@@ -257,9 +279,9 @@ corpus is a manufactured win.
 **The same arithmetic runs the other way, and it has never been stated in full.**
 Four of the sixteen classes in the taxonomy — `DIFFICULTY_SATURATED`,
 `DIFFICULTY_IMPOSSIBLE`, `EXCESSIVE_PERMISSIONS` and `EVALUATOR_RCE` — occur
-**nowhere in the corpus**: zero planted across all 32 environments. `flag_everything`
+**nowhere in the corpus**: zero planted across all 33 environments. `flag_everything`
 names each of them on every environment anyway, which is `4 × 28 = 112` false
-alarms, **27.9% of its 458.0**, on classes no other arm in the table ever names
+alarms, **27.8% of its 474.0**, on classes no other arm in the table ever names
 and no environment in the corpus can carry. Nothing is being detected on either
 side of that 112: it
 is not evidence Assay is better, it is the floor paying for a taxonomy the corpus
@@ -274,7 +296,7 @@ with environments nobody here wrote is the first thing worth doing next — care
 
 ---
 
-## The headline survives a 1005% error in one made-up number
+## The headline survives a 1042% error in one made-up number
 
 Every expected-loss figure is denominated in "engineer-hours-equivalent", and
 `src/assay/costs/profiles/research-run.yaml` prices a missed CRITICAL defect at
@@ -287,24 +309,24 @@ the severity shape fixed and moving only the miss/false-alarm exchange rate
 
 | CRITICAL miss cost | assay | assay+auditor | flag_everything | winner |
 |---|---|---|---|---|
-| 120 *(shipped)* | 56.0 | 43.0 | 458.0 | assay+auditor |
-| 400 | 149.33 | 136.33 | 458.0 | assay+auditor |
-| 800 | 282.67 | 269.67 | 458.0 | assay+auditor |
-| **1326.0** | **458.0** | **445.0** | **458.0** | **tie** (deterministic arm) |
-| 2000 | 682.67 | 669.67 | 458.0 | flag_everything |
+| 120 *(shipped)* | 57.0 | 43.0 | 474.0 | assay+auditor |
+| 400 | 150.33 | 136.33 | 474.0 | assay+auditor |
+| 800 | 283.67 | 269.67 | 474.0 | assay+auditor |
+| **1371.0** | **474.0** | **460.0** | **474.0** | **tie** (deterministic arm) |
+| 2000 | 683.67 | 669.67 | 474.0 | flag_everything |
 
 The crossover is exact rather than bisected. Every severity scales about the CRITICAL
 anchor, so each arm's loss is **affine** in `C` — the single unchecked HIGH scales with
-it and the constant false alarms do not, giving `assay(C) = C/3 + 16` and
-`assay+auditor(C) = C/3 + 3` — while `flag_everything` never misses and does not move
+it and the constant false alarms do not, giving `assay(C) = C/3 + 17` and
+`assay+auditor(C) = C/3 + 3` on a run where the gate behaves — while `flag_everything` never misses and does not move
 with `C` at all. The agent arm crosses at `3 × (458 − 3) = 1365.0` and the deterministic
-one at `3 × (458 − 16) = 1326.0`, and `results/cost_sensitivity.json` reports the
+one at `3 × (474 − 17) = 1371.0`, and `results/cost_sensitivity.json` reports the
 tighter of the two as `exact_crossover_critical_cost`. **A ratio stood here and it is
 not the solve**: `120 × 458 / 56` prices the constant false alarms as though they scaled
 too. The affine form is why the sweep's rows read 149.33 and 282.67 rather than 163.33
 and 306.67.
 
-**The shipped value is 120. The crossover is 1326.0.** That margin was **21%** before
+**The shipped value is 120. The crossover is 1371.0.** That margin was **21%** before
 the two Harbor misses were closed — the crossover sat at 145 against the same shipped
 120 — and **685%** before the taxonomy grew from 14 defect classes to 16. Worth stating
 plainly because the earliest number was the sharpest criticism of this work and it is
@@ -316,7 +338,7 @@ That is not a reason to distrust the ranking so much as a statement of what the 
 is: a claim about a specific cost regime, not about detectors in general. The one anchor
 available is that SWE-bench Verified needed **93 developers** reading tasks by hand —
 the observed price of finding these defects the other way, and why a miss is priced far
-above a false alarm rather than near it. It does not pin 120 versus 1326.0.
+above a false alarm rather than near it. It does not pin 120 versus 1371.0.
 
 Reported here rather than left for a reader to derive, because a paragraph saying "costs
 are illustrative" would have hidden that the margin was ever 21%.
@@ -336,7 +358,7 @@ differences drawn on a shared resample:
 | assay vs `stratified_random` | 2750.0 | [1716, 3926] | **separated** |
 | assay vs `direct_prompt` | 2411.0 | [1587, 3343] | **separated** |
 | assay vs `agent_with_tools` | 2693.0 | [1711, 3799] | **separated** |
-| **assay vs `flag_everything`** | **402.0** | **[315, 456]** | **separated** |
+| **assay vs `flag_everything`** | **417.0** | **[330, 471]** | **separated** |
 | `check_env` vs `flag_nothing` | 16.0 | [0, 40] | overlaps zero |
 
 The two LLM rows are the ones that carry "reading an environment is not auditing
@@ -388,8 +410,8 @@ every profile shipped, not the one that reads best.
 
 | profile | assay | assay+auditor | flag_everything | saved | |
 |---|---|---|---|---|---|
-| `flat` | **17.0** | 4.0 | 458.0 | 441.0 | separated, [420, 460] |
-| `research-run` | **56.0** | 43.0 | 458.0 | 402.0 | separated, [315, 456] |
+| `flat` | **18.0** | — | 474.0 | 456.0 | separated, [435, 475] |
+| `research-run` | **57.0** | — | 474.0 | 417.0 | separated, [330, 471] |
 | `production-training` | **272.0** | 246.0 | 916.0 | 644.0 | separated, [150, 912] |
 | `benchmark-publication` | **728.0** | 624.0 | 3664.0 | 2936.0 | separated, [1680, 3648] |
 
