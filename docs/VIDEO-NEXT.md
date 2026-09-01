@@ -53,8 +53,8 @@ removed. Every one has a beat below.
 > that cannot beat "assume every environment is broken" has not earned its
 > runtime.
 >
-> Thirty-two environments, fifty-four planted defects, one cost model. Flag
-> everything scores 458. Assay scores 56. The saving is 402, separated at 95% — the interval is
+> Thirty-three environments, fifty-four planted defects, one cost model. Flag
+> everything scores 474. Assay scores 57. The saving is 417, separated at 95% — the interval is
 > bootstrapped over environments, not defects, because a verifier that always
 > passes fails six probes at once and resampling defects would count that six
 > times.
@@ -90,17 +90,27 @@ removed. Every one has a beat below.
 
 > The largest single improvement was not a probe. It was pricing — moving from
 > "how many defects did you find" to expected loss under a cost model, which is
-> what took the margin from 50 to 402 and made it separate at all. A hundred and
-> forty-one of that 402 is arithmetic rather than detection, and the write-up
-> says which.
+> what took the margin from 50 to 417 and made it separate at all. A large part of
+> that 417 is arithmetic rather than detection, and the write-up says which.
 >
-> The second one is that the agent stopped being decoration. Four environments in
-> the corpus have no correct answer, so every finding the deterministic battery
-> reports on them is a false positive — sixteen where there used to be three. The
-> semantic gate withholds thirteen of them and leaves the three real ones
-> standing. Turning the model off costs thirteen points of expected loss, on an
-> interval that excludes zero. That number was written down before the
-> environments it acts on existed.
+> The second one is that the agent stopped being decoration, and then showed me
+> why that is dangerous. Five environments in the corpus have no correct answer,
+> so every finding the deterministic battery reports on them is a false
+> positive — seventeen where there used to be three. The semantic gate withholds
+> them and leaves the real ones standing, and turning the model off costs about
+> fourteen points. That number was written down before the environments it acts
+> on existed.
+>
+> Then I ran the same arm seven times. Six runs looked like that. In the seventh
+> the gate decided a customer-service task had no correct answer and deleted two
+> real defects along with the false ones. It has a correct answer — it is graded
+> on the end state of a database. I never found out why that run went wrong.
+> Three explanations were tested and none survived.
+>
+> The bootstrap could not have caught it. It resamples environments, and this
+> varies between runs of the same environments. So an interval from one run of
+> anything with a model in it is narrower than the truth, and that is a fact
+> about the method, not about a bad day.
 >
 > The most *interesting* change is newer, and it is where the agent lives now.
 
@@ -193,8 +203,8 @@ quote that justifies it printed on the card.
 |---|---|---|
 | 1 | three citations | `README.md` § the problem |
 | 2 | `assay audit harbor/self-graded` → exit 1 | live terminal, approval prompt un-cut |
-| 3 | arms table, 458 vs 56 vs 43 | `results/full_run.json` |
-| 4 | corpus split, 25 of 32 | `results/corpus_splits.json` |
+| 3 | arms table, 474 vs 57 vs 44 | `results/full_run.json` |
+| 4 | corpus split, 25 of 33 | `results/corpus_splits.json` |
 | 5 | Environment Card | `assay audit --card` |
 | 6 | `personality_BFI` INVALID → withheld | `--auditor`, both takes |
 | 7 | semantic gate table | `results/semantic_gate.json` |
