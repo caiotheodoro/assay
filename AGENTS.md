@@ -20,11 +20,11 @@ to find more defects than the field; it claims to price them.
 | Arm | Expected loss (`research-run`) |
 |---|---|
 | `flag_nothing` | 3232.0 |
-| `check_env` (the incumbent) | 3224.0 |
-| `agent_with_tools` | 2826.0 |
-| `stratified_random` | 2794.0 |
-| `direct_prompt` | 2299.0 |
-| `always_modal_defect` | 2054.0 |
+| `check_env` (the incumbent) | 3216.0 |
+| `agent_with_tools` | 2707.0 |
+| `stratified_random` | 2838.0 |
+| `direct_prompt` | 2461.0 |
+| `always_modal_defect` | 2055.0 |
 | `flag_everything` | 474.0 |
 | **Assay** | **57.0** |
 | **`assay+auditor`** | **43.0** |

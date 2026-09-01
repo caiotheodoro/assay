@@ -38,7 +38,7 @@ resampled over environments.
 | **assay+auditor** | 43 | [0, 125] |
 | **assay** | 57 | [7, 141] |
 | flag everything | 474 | [438, 476] |
-| `check_env` (the incumbent) | 3224 | [2040, 4528] |
+| `check_env` (the incumbent) | 3216 | [2056, 4552] |
 
 The comparison that decides it is not the incumbent — it is flagging everything, which catches
 every defect by construction. **402 saved, 95% CI

@@ -53,7 +53,7 @@ without them the `tau2` provider reports itself unavailable and every arm's loss
 | `check_env`, the incumbent linter | 3216.0 | [2056, 4552] |
 | `flag_everything`, the floor that had to be beaten | 474.0 | [453, 492] |
 | **Assay** | **57.0** | **[8, 142]** |
-| `assay+auditor`, the agent on — **one draw of seven** | 43–44, once 122 | see below |
+| `assay+auditor`, the agent on — **one draw** | 43.0 | [0, 125] |
 
 Assay saves 417.0 against `flag_everything`, 95% CI [330, 471], separated. 33 environments, 54
 planted defects, 10,000 bootstrap resamples over environments, seed 11.
@@ -102,8 +102,8 @@ did, and that is stated in [`docs/RESULTS.md`](docs/RESULTS.md) rather than bank
 
 Three caveats decide how the table should be read, all in full in [`docs/RESULTS.md`](docs/RESULTS.md):
 
-1. **The two LLM arms tie with random flagging.** `direct_prompt` and `agent_with_tools` score 2299.0
-   and 2826.0 against `stratified_random`'s 2794.0, and the paired bootstrap gives 495.0, 95% CI
+1. **The two LLM arms tie with random flagging.** `direct_prompt` and `agent_with_tools` score 2461.0
+   and 2707.0 against `stratified_random`'s 2838.0, and the paired bootstrap gives 495.0, 95% CI
    [−93, 1123], not separated. Giving the model a tool loop bought nothing measurable — it scored
    *worse* than the coin, well inside the noise.
 2. **The deterministic arm's precision is 0.7571, not 0.9464.** Seventeen spurious findings across

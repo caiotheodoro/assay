@@ -45,12 +45,12 @@ Expected loss under the `research-run` cost profile, with 95% bootstrap interval
 | **assay+auditor** | **43.0** | [0, 125] | 0.982 | 0.946 |
 | assay | **57.0** | [8, 142] | 0.982 | 0.757 |
 | flag_everything | 474.0 | [453, 492] | 1.000 | 0.102 |
-| always_modal_defect | 2054.0 | [1300, 2891] | 0.185 | 0.313 |
-| direct_prompt (`qwen3:8b`) | 2299.0 | [1388, 3341] | 0.259 | 0.341 |
-| stratified_random | 2794.0 | [1702, 4030] | 0.111 | 0.125 |
-| agent_with_tools (`qwen3:8b`) | 2826.0 | [1761, 4029] | 0.204 | 0.244 |
-| **check_env** (incumbent) | **3224.0** | [2040, 4528] | **0.019** | 1.000 |
-| flag_nothing | 3232.0 | [2056, 4536] | 0.000 | 0.000 |
+| always_modal_defect | 2055.0 | [1300, 2891] | 0.185 | 0.313 |
+| direct_prompt (`qwen3:8b`) | 2461.0 | [1388, 3341] | 0.259 | 0.341 |
+| stratified_random | 2838.0 | [1702, 4030] | 0.111 | 0.125 |
+| agent_with_tools (`qwen3:8b`) | 2707.0 | [1761, 4029] | 0.204 | 0.244 |
+| **check_env** (incumbent) | **3216.0** | [2056, 4552] | **0.019** | 1.000 |
+| flag_nothing | 3232.0 | [2080, 4560] | 0.000 | 0.000 |
 
 **Every arm is measured on the same 33 environments**, in the same
 `results/full_run.json`, with intervals from the same bootstrap. That was not
@@ -103,22 +103,30 @@ diagnosis.
 executing anything — the manifest, the instructions, the verifier source where it
 can be obtained — and names the defect classes it thinks are present.
 `agent_with_tools` gets the same plus a tool loop it can drive. They score
-**2299.0 and 2826.0 against `stratified_random`'s 2794.0** — the plain prompt is
+**2461.0 and 2707.0 against `stratified_random`'s 2838.0** — the plain prompt is
 ahead of the random arm and the tool-using agent is behind it, and neither is
 separated from it. The three paired differences, on the same shared resample as every
 other comparison in this file:
 
 | Comparison | Loss saved | 95% CI | |
 |---|---|---|---|
-| `direct_prompt` vs `stratified_random` | 495.0 | [−93, 1123] | **not separated** |
-| `stratified_random` vs `agent_with_tools` | 32.0 | [−396, 513] | **not separated** |
-| `direct_prompt` vs `agent_with_tools` | **527.0** | **[167, 931]** | **separated** |
+| `direct_prompt` vs `stratified_random` | 377.0 | [−260, 1027] | **not separated** |
+| `stratified_random` vs `agent_with_tools` | −131.0 | [−565, 327] | **not separated** |
+| `direct_prompt` vs `agent_with_tools` | 246.0 | [−73, 609] | **not separated** |
 
-**The one comparison among these that now separates says the tool loop hurt.** This
-pair used to sit at −282.0 on an interval crossing zero; it is now a 527.0 advantage to
-the *plain prompt*, and the interval clears zero. Giving the model a tool loop did not
-buy accuracy — it bought 34 spurious findings against `direct_prompt`'s 27, on the same
-corpus.
+**None of the three separates, and one of them briefly appeared to.** An earlier run of
+these arms put `direct_prompt` 527.0 ahead of `agent_with_tools` on an interval clearing
+zero, and this document said so: "the one comparison among these that now separates says
+the tool loop hurt." It does not reproduce. These two arms ask a model what is wrong with
+an environment, and a model asked twice does not answer twice the same — the point
+estimate moved from 527.0 to 246.0 between runs of an unchanged corpus, and the interval
+now crosses zero.
+
+**That is the same mistake as the agent row, in a different arm**, and it is worth
+leaving visible: a single run of anything with a model in it is a draw, not a result.
+What survives is the weaker claim the data actually supports — the two LLM baselines and
+the coin are indistinguishable here, and giving the model a tool loop bought nothing
+measurable.
 
 **That is a reversal from what this section used to report, and it is mostly not
 the LLM arms.** They previously lost to `stratified_random` at 2658.0 / 2654.0
@@ -128,7 +136,7 @@ each class independently at that class's corpus base rate, drawing one
 classes to the taxonomy reshuffled its whole seeded sequence and cost it **+878
 with no change to the corpus, the policy or the detector**. Against the policy's
 closed-form expectation rather than one draw of it — **2575.8** — `direct_prompt`
-at 2299.0 is inside the policy's own spread, which is the same answer the bootstrap
+at 2461.0 is inside the policy's own spread, which is the same answer the bootstrap
 gives. The arithmetic
 and the prediction that preceded it are in
 [`docs/PRE-REGISTRATION-TAU2.md`](PRE-REGISTRATION-TAU2.md).

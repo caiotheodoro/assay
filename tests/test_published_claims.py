@@ -101,10 +101,11 @@ def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
     """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
-    assert n == 7, (
+    assert n == 8, (
         f"external control is n={n}; it was 2, then 4 with paws and boolq, then 6 with "
-        "tau2/retail and tau2/airline, then 7 with personality_BFI. If this changed "
-        "again the README's honest-ceiling paragraph must change with it."
+        "tau2/retail and tau2/airline, then 7 with personality_BFI, then 8 with "
+        "stereoset. If this changed again the README's honest-ceiling paragraph must "
+        "change with it."
     )
 
     derived = sorted(

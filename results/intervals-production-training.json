@@ -30,10 +30,10 @@
       },
       "loss_saved_vs": {
         "agent_with_tools": {
-          "point": 19842.0,
+          "point": 19836.0,
           "ci95": [
-            11613.7,
-            29456.4
+            12209.75,
+            28360.35
           ],
           "separated": true
         },
@@ -46,12 +46,12 @@
           "separated": true
         },
         "assay+auditor": {
-          "point": 450.0,
+          "point": -28.0,
           "ci95": [
-            -50.0,
-            1422.0
+            -56.0,
+            -4.0
           ],
-          "separated": false
+          "separated": true
         },
         "check_env": {
           "point": 23046.0,
@@ -62,10 +62,10 @@
           "separated": true
         },
         "direct_prompt": {
-          "point": 17664.0,
+          "point": 17424.0,
           "ci95": [
-            10643.85,
-            25718.0
+            10471.9,
+            25298.0
           ],
           "separated": true
         },
@@ -97,88 +97,88 @@
     },
     "agent_with_tools": {
       "expected_loss": {
-        "point": 20116.0,
+        "point": 20110.0,
         "ci95": [
-          11883.95,
-          29636.05
+          12543.95,
+          28622.0
         ]
       },
       "recall": {
-        "point": 0.2037,
+        "point": 0.2593,
         "ci95": [
-          0.0943,
-          0.3333
+          0.1667,
+          0.3378
         ]
       },
       "precision": {
-        "point": 0.2245,
+        "point": 0.2857,
         "ci95": [
-          0.098,
-          0.36
+          0.1458,
+          0.4319
         ]
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -19842.0,
+          "point": -19836.0,
           "ci95": [
-            -29456.4,
-            -11613.7
+            -28360.35,
+            -12209.75
           ],
           "separated": true
         },
         "always_modal_defect": {
-          "point": -6270.0,
+          "point": -6264.0,
           "ci95": [
-            -10828.0,
-            -2192.0
+            -10338.0,
+            -2665.95
           ],
           "separated": true
         },
         "assay+auditor": {
-          "point": -19392.0,
+          "point": -19864.0,
           "ci95": [
-            -29032.7,
-            -11129.9
+            -28384.0,
+            -12247.9
           ],
           "separated": true
         },
         "check_env": {
-          "point": 3204.0,
+          "point": 3210.0,
           "ci95": [
-            966.0,
-            6148.25
+            1472.0,
+            5188.0
           ],
           "separated": true
         },
         "direct_prompt": {
-          "point": -2178.0,
+          "point": -2412.0,
           "ci95": [
-            -5776.0,
-            1184.0
+            -5536.0,
+            220.0
           ],
           "separated": false
         },
         "flag_everything": {
-          "point": -19168.0,
+          "point": -19162.0,
           "ci95": [
-            -28726.2,
-            -10902.0
+            -27696.4,
+            -11565.9
           ],
           "separated": true
         },
         "flag_nothing": {
-          "point": 3284.0,
+          "point": 3290.0,
           "ci95": [
-            1111.95,
-            6180.0
+            1596.0,
+            5224.0
           ],
           "separated": true
         },
         "stratified_random": {
-          "point": 16.0,
+          "point": 22.0,
           "ci95": [
-            -3344.0,
-            2676.0
+            -3362.0,
+            3136.0
           ],
           "separated": false
         }
@@ -216,18 +216,18 @@
           "separated": true
         },
         "agent_with_tools": {
-          "point": 6270.0,
+          "point": 6264.0,
           "ci95": [
-            2192.0,
-            10828.0
+            2665.95,
+            10338.0
           ],
           "separated": true
         },
         "assay+auditor": {
-          "point": -13122.0,
+          "point": -13600.0,
           "ci95": [
-            -19354.15,
-            -7767.9
+            -19786.15,
+            -8283.95
           ],
           "separated": true
         },
@@ -240,10 +240,10 @@
           "separated": true
         },
         "direct_prompt": {
-          "point": 4092.0,
+          "point": 3852.0,
           "ci95": [
-            956.0,
-            7936.0
+            492.0,
+            7704.0
           ],
           "separated": true
         },
@@ -275,88 +275,88 @@
     },
     "assay+auditor": {
       "expected_loss": {
-        "point": 724.0,
+        "point": 246.0,
         "ci95": [
           0.0,
-          1920.0
+          730.0
         ]
       },
       "recall": {
-        "point": 0.9444,
+        "point": 0.9815,
         "ci95": [
-          0.8444,
+          0.9322,
           1.0
         ]
       },
       "precision": {
-        "point": 0.9623,
+        "point": 0.9464,
         "ci95": [
-          0.8776,
+          0.8615,
           1.0
         ]
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -450.0,
+          "point": 28.0,
           "ci95": [
-            -1422.0,
-            50.0
+            4.0,
+            56.0
           ],
-          "separated": false
+          "separated": true
         },
         "agent_with_tools": {
-          "point": 19392.0,
+          "point": 19864.0,
           "ci95": [
-            11129.9,
-            29032.7
+            12247.9,
+            28384.0
           ],
           "separated": true
         },
         "always_modal_defect": {
-          "point": 13122.0,
+          "point": 13600.0,
           "ci95": [
-            7767.9,
-            19354.15
+            8283.95,
+            19786.15
           ],
           "separated": true
         },
         "check_env": {
-          "point": 22596.0,
+          "point": 23074.0,
           "ci95": [
-            13827.3,
-            32516.1
+            14341.4,
+            32958.75
           ],
           "separated": true
         },
         "direct_prompt": {
-          "point": 17214.0,
+          "point": 17452.0,
           "ci95": [
-            10167.95,
-            25344.45
+            10518.0,
+            25316.3
           ],
           "separated": true
         },
         "flag_everything": {
-          "point": 224.0,
+          "point": 702.0,
           "ci95": [
-            -970.0,
-            962.0
+            206.0,
+            970.0
           ],
-          "separated": false
+          "separated": true
         },
         "flag_nothing": {
-          "point": 22676.0,
+          "point": 23154.0,
           "ci95": [
-            13919.9,
-            32600.0
+            14439.95,
+            32998.0
           ],
           "separated": true
         },
         "stratified_random": {
-          "point": 19408.0,
+          "point": 19886.0,
           "ci95": [
-            11339.95,
-            28690.1
+            11817.95,
+            29140.2
           ],
           "separated": true
         }
@@ -394,10 +394,10 @@
           "separated": true
         },
         "agent_with_tools": {
-          "point": -3204.0,
+          "point": -3210.0,
           "ci95": [
-            -6148.25,
-            -966.0
+            -5188.0,
+            -1472.0
           ],
           "separated": true
         },
@@ -410,18 +410,18 @@
           "separated": true
         },
         "assay+auditor": {
-          "point": -22596.0,
+          "point": -23074.0,
           "ci95": [
-            -32516.1,
-            -13827.3
+            -32958.75,
+            -14341.4
           ],
           "separated": true
         },
         "direct_prompt": {
-          "point": -5382.0,
+          "point": -5622.0,
           "ci95": [
-            -9236.0,
-            -2215.95
+            -9750.0,
+            -2175.95
           ],
           "separated": true
         },
@@ -453,88 +453,88 @@
     },
     "direct_prompt": {
       "expected_loss": {
-        "point": 17938.0,
+        "point": 17698.0,
         "ci95": [
-          10953.95,
-          25926.1
+          10779.95,
+          25424.55
         ]
       },
       "recall": {
-        "point": 0.2037,
+        "point": 0.2222,
         "ci95": [
-          0.1224,
-          0.2885
+          0.125,
+          0.3115
         ]
       },
       "precision": {
-        "point": 0.275,
+        "point": 0.2927,
         "ci95": [
-          0.1458,
-          0.4186
+          0.1395,
+          0.4524
         ]
       },
       "loss_saved_vs": {
         "assay": {
-          "point": -17664.0,
+          "point": -17424.0,
           "ci95": [
-            -25718.0,
-            -10643.85
+            -25298.0,
+            -10471.9
           ],
           "separated": true
         },
         "agent_with_tools": {
-          "point": 2178.0,
+          "point": 2412.0,
           "ci95": [
-            -1184.0,
-            5776.0
+            -220.0,
+            5536.0
           ],
           "separated": false
         },
         "always_modal_defect": {
-          "point": -4092.0,
+          "point": -3852.0,
           "ci95": [
-            -7936.0,
-            -956.0
+            -7704.0,
+            -492.0
           ],
           "separated": true
         },
         "assay+auditor": {
-          "point": -17214.0,
+          "point": -17452.0,
           "ci95": [
-            -25344.45,
-            -10167.95
+            -25316.3,
+            -10518.0
           ],
           "separated": true
         },
         "check_env": {
-          "point": 5382.0,
+          "point": 5622.0,
           "ci95": [
-            2215.95,
-            9236.0
+            2175.95,
+            9750.0
           ],
           "separated": true
         },
         "flag_everything": {
-          "point": -16990.0,
+          "point": -16750.0,
           "ci95": [
-            -25016.0,
-            -9969.95
+            -24528.1,
+            -9798.0
           ],
           "separated": true
         },
         "flag_nothing": {
-          "point": 5462.0,
+          "point": 5702.0,
           "ci95": [
-            2330.0,
-            9312.0
+            2324.0,
+            9792.0
           ],
           "separated": true
         },
         "stratified_random": {
-          "point": 2194.0,
+          "point": 2434.0,
           "ci95": [
-            -2594.05,
-            6998.0
+            -2592.0,
+            7482.0
           ],
           "separated": false
         }
@@ -572,10 +572,10 @@
           "separated": true
         },
         "agent_with_tools": {
-          "point": 19168.0,
+          "point": 19162.0,
           "ci95": [
-            10902.0,
-            28726.2
+            11565.9,
+            27696.4
           ],
           "separated": true
         },
@@ -588,12 +588,12 @@
           "separated": true
         },
         "assay+auditor": {
-          "point": -224.0,
+          "point": -702.0,
           "ci95": [
-            -962.0,
-            970.0
+            -970.0,
+            -206.0
           ],
-          "separated": false
+          "separated": true
         },
         "check_env": {
           "point": 22372.0,
@@ -604,10 +604,10 @@
           "separated": true
         },
         "direct_prompt": {
-          "point": 16990.0,
+          "point": 16750.0,
           "ci95": [
-            9969.95,
-            25016.0
+            9798.0,
+            24528.1
           ],
           "separated": true
         },
@@ -661,10 +661,10 @@
           "separated": true
         },
         "agent_with_tools": {
-          "point": -3284.0,
+          "point": -3290.0,
           "ci95": [
-            -6180.0,
-            -1111.95
+            -5224.0,
+            -1596.0
           ],
           "separated": true
         },
@@ -677,10 +677,10 @@
           "separated": true
         },
         "assay+auditor": {
-          "point": -22676.0,
+          "point": -23154.0,
           "ci95": [
-            -32600.0,
-            -13919.9
+            -32998.0,
+            -14439.95
           ],
           "separated": true
         },
@@ -693,10 +693,10 @@
           "separated": false
         },
         "direct_prompt": {
-          "point": -5462.0,
+          "point": -5702.0,
           "ci95": [
-            -9312.0,
-            -2330.0
+            -9792.0,
+            -2324.0
           ],
           "separated": true
         },
@@ -750,10 +750,10 @@
           "separated": true
         },
         "agent_with_tools": {
-          "point": -16.0,
+          "point": -22.0,
           "ci95": [
-            -2676.0,
-            3344.0
+            -3136.0,
+            3362.0
           ],
           "separated": false
         },
@@ -766,10 +766,10 @@
           "separated": true
         },
         "assay+auditor": {
-          "point": -19408.0,
+          "point": -19886.0,
           "ci95": [
-            -28690.1,
-            -11339.95
+            -29140.2,
+            -11817.95
           ],
           "separated": true
         },
@@ -782,10 +782,10 @@
           "separated": true
         },
         "direct_prompt": {
-          "point": -2194.0,
+          "point": -2434.0,
           "ci95": [
-            -6998.0,
-            2594.05
+            -7482.0,
+            2592.0
           ],
           "separated": false
         },

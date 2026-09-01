@@ -19,11 +19,11 @@ uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py
 
 | | Expected loss | Recall | Precision | Normalized loss |
 |---|---|---|---|---|
-| **Baseline** — `check_env`, the incumbent structural linter | 3224 | 0.018 | 1.000 | 7.04 |
+| **Baseline** — `check_env`, the incumbent structural linter | 3216 | 0.018 | 1.000 | 7.04 |
 | **Baseline** — `flag_nothing`, the honest null | 3232 | 0.000 | 0.000 | 7.06 |
-| **The floor to beat** — `flag_everything` | 458 | 1.000 | 0.105 | 1.00 |
-| **Final** — Assay | **56.0** | **0.982** | **0.768** | **0.122** |
-| **Final** — `assay+auditor`, the agent on | **43.0** | **0.982** | **0.946** | **0.094** |
+| **The floor to beat** — `flag_everything` | 474 | 1.000 | 0.102 | 1.00 |
+| **Final** — Assay | **57.0** | **0.982** | **0.757** | **0.120** |
+| **Final** — `assay+auditor`, the agent on, **one draw of seven** | **43.0** | **0.982** | **0.946** | **0.091** |
 
 The incumbent scores within half a percent of doing nothing. It is not a weak
 detector of these defects; it is not a detector of them. That gap is the
