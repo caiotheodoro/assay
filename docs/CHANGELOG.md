@@ -232,8 +232,14 @@ with twelve different planted defects.
 
 | | model calls | wall clock | verdicts |
 |---|---|---|---|
-| a fresh Auditor per environment | 4 | 31.4s | — |
-| one Auditor across the run | **1** | **2.9s** | identical |
+| a fresh Auditor per environment | 7 | 28.2s | — |
+| one Auditor across the run | **1** | **3.2s** | identical |
+
+Re-measured by `scripts/auditor_memory.py`, which did not exist when this row was
+first written — the file had no `harness` field and nothing emitted it, which is
+`docs/RETRACTIONS.md` entry 20's failure. The uncached figure rose from 4 to 7
+because withholding now takes two agreeing replies
+(`docs/changelog/124-ask-again-before-deleting.md`).
 
 `Auditor.shape()` keys on ecosystem plus the sorted instruction set, and
 deliberately **not** on the manifest digest: capabilities and version differ

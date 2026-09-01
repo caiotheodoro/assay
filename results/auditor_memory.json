@@ -1,17 +1,52 @@
 {
+  "what": "What Auditor.shape()'s memory saves across environments that pose the same question, and what it costs now that only the safe verdict is cached and withholding needs two replies to agree.",
+  "why": "The previous version of this file had no harness field and no script that emitted it, which is docs/RETRACTIONS.md entry 20's failure. Its figures also predate two changes that both cost calls.",
+  "harness": "uv run --extra adapters python scripts/auditor_memory.py --backend qwen3:8b",
+  "assay_revision": {
+    "commit": "ab1dc1e0cfcda075e6bc6561525ddfc81230966f",
+    "dirty": true
+  },
+  "backend": "ollama:qwen3:8b",
+  "consensus": 2,
+  "corpus": "the 12 toy-triage fixtures, which share one instruction shape",
   "without_memory": {
-    "model_calls": 4,
-    "seconds": 31.4
+    "model_calls": 7,
+    "seconds": 28.2,
+    "verdicts": {
+      "fixture/healthy": "-",
+      "fixture/gold_broken": "GOLD_FAILS",
+      "fixture/solved_at_reset": "INVERT_PASSES,KNOWN_WRONG_PASSES,NOOP_PASSES,REWARD_HACKABLE,SEPARABILITY_LOSS,TRIVIAL_FLOOR_BREACH",
+      "fixture/unfalsifiable": "INVERT_PASSES",
+      "fixture/weak_oracle": "INVERT_PASSES,KNOWN_WRONG_PASSES,REWARD_HACKABLE",
+      "fixture/escalate_overrewarded": "REWARD_HACKABLE,TRIVIAL_FLOOR_BREACH",
+      "fixture/rationale_ignored": "SEPARABILITY_LOSS",
+      "fixture/leaky_splits": "CONTAMINATION_EXACT",
+      "fixture/paraphrased_splits": "CONTAMINATION_NEARDUP",
+      "fixture/artifact_splits": "SHORTCUT_LEAK",
+      "fixture/drifted_asserts": "SPEC_VERIFIER_MISMATCH",
+      "fixture/flaky": "NONDETERMINISM"
+    },
+    "consulted": 7
   },
   "with_memory": {
     "model_calls": 1,
-    "seconds": 2.9
+    "seconds": 3.2,
+    "verdicts": {
+      "fixture/healthy": "-",
+      "fixture/gold_broken": "GOLD_FAILS",
+      "fixture/solved_at_reset": "INVERT_PASSES,KNOWN_WRONG_PASSES,NOOP_PASSES,REWARD_HACKABLE,SEPARABILITY_LOSS,TRIVIAL_FLOOR_BREACH",
+      "fixture/unfalsifiable": "INVERT_PASSES",
+      "fixture/weak_oracle": "INVERT_PASSES,KNOWN_WRONG_PASSES,REWARD_HACKABLE",
+      "fixture/escalate_overrewarded": "REWARD_HACKABLE,TRIVIAL_FLOOR_BREACH",
+      "fixture/rationale_ignored": "SEPARABILITY_LOSS",
+      "fixture/leaky_splits": "CONTAMINATION_EXACT",
+      "fixture/paraphrased_splits": "CONTAMINATION_NEARDUP",
+      "fixture/artifact_splits": "SHORTCUT_LEAK",
+      "fixture/drifted_asserts": "SPEC_VERIFIER_MISMATCH",
+      "fixture/flaky": "NONDETERMINISM"
+    },
+    "consulted": 7
   },
   "verdicts_identical": true,
-  "corpus": "the 12 toy-triage fixtures, which share one instruction shape",
-  "backend": "ollama:qwen3:8b",
-  "what": "Does carrying state across environments buy anything measurable?",
-  "design": "The semantic gate is settled by the task text, not the verifier. Auditor.shape() keys on ecosystem plus the sorted instruction set and deliberately NOT on the manifest digest: the twelve toy-triage fixtures pair one ticket-classification prompt with twelve different planted defects, so keying on capabilities or version would defeat the point.",
-  "reading": "4 model calls become 1 and 31.4s becomes 2.9s, with every verdict identical. Only 4 of the 12 reach the gate at all -- it is consulted only when the battery flagged something in verifier_integrity, so a healthy environment costs nothing.",
-  "honesty": "This is a cost result, not a capability result. Memory makes the same answer cheaper; it does not make a better one. A cached conclusion is reported with carried_from naming the environment it was reached on, so no card claims a judgement it did not get."
+  "reading": "7 model calls become 1, and 28.2s becomes 3.2s, with every verdict identical. Only the environments whose battery flagged something in SEMANTIC_SCOPE reach the gate, so a healthy environment costs nothing."
 }
