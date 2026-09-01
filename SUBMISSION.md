@@ -77,7 +77,7 @@ the script now finds it in two seconds because the discovery was written down.
 
 ## Before you run it
 
-- The documented command installs every extra it names and gives **796 passed, 0 skipped,
+- The documented command installs every extra it names and gives **814 passed, 0 skipped,
   0 failed**. The minimal `uv sync --extra dev` install is honest about what it skips: the
   tests wanting Docker, Ollama, the pinned τ² snapshots and the optional providers announce
   a reason rather than failing.
