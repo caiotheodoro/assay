@@ -87,12 +87,54 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=10)
     ap.add_argument("--env", default="tau2/airline")
+    ap.add_argument("--questions", nargs="*", default=["old", "new"],
+                    choices=["old", "new"],
+                    help="which wordings to run; the arms are independent and a "
+                         "90-minute run should not have to redo a finished half")
     ap.add_argument("--all", action="store_true",
                     help="run every case in semantic_gate.py's POSITIVES and "
                          "NEGATIVES instead of one environment, so the two "
                          "wordings are compared on the same set")
     ap.add_argument("--out", default=str(ROOT / "results/gate_question_ablation.json"))
+    ap.add_argument("--from-logs", nargs="*", default=None,
+                    help="rebuild the artifact from run logs instead of calling "
+                         "the model; each log holds lines of the form "
+                         "'  <arm>: [FLAG] <env> <fired>/<k>'")
     args = ap.parse_args()
+
+    if args.from_logs:
+        import re as _re
+
+        line = _re.compile(
+            r"^\s+(old_question|new_question):\s+(?:HIT |FP  |    )?(\S+)\s+(\d+)/(\d+)\s*$"
+        )
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "semantic_gate", ROOT / "scripts/semantic_gate.py")
+        sg = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sg)
+        positives = {e for e, _, _ in sg.POSITIVES}
+
+        arms: dict[str, dict] = {}
+        for path in args.from_logs:
+            for raw in Path(path).read_text().splitlines():
+                m = line.match(raw)
+                if not m:
+                    continue
+                arm, env_id, fired, k = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
+                a = arms.setdefault(arm, {"k": k, "per_env": {}})
+                a["per_env"][env_id] = {"withheld": fired, "of": k,
+                                        "is_positive": env_id in positives}
+        for arm, a in arms.items():
+            tp = sum(v["withheld"] for v in a["per_env"].values() if v["is_positive"])
+            fn = sum(v["of"] - v["withheld"] for v in a["per_env"].values() if v["is_positive"])
+            fp = sum(v["withheld"] for v in a["per_env"].values() if not v["is_positive"])
+            tn = sum(v["of"] - v["withheld"] for v in a["per_env"].values() if not v["is_positive"])
+            a.update(true_positives=tp, false_negatives=fn,
+                     false_overrides=fp, true_negatives=tn,
+                     false_override_rate=fp / (fp + tn) if (fp + tn) else 0.0)
+        _write(args, arms)
+        return 0
 
     client = ClaudeCLIClient()
 
@@ -125,20 +167,35 @@ def main() -> int:
     task_text = texts[args.env] if not args.all else None
 
     arms = {}
-    for name, system, decider in (
-        ("old_question", OLD_SYSTEM, _old_decide),
-        ("new_question", NEW_SYSTEM, decide),
-    ):
+    wanted = {"old": "old_question", "new": "new_question"}
+    selected = [
+        (n, sy, de) for key, n, sy, de in (
+            ("old", "old_question", OLD_SYSTEM, _old_decide),
+            ("new", "new_question", NEW_SYSTEM, decide),
+        ) if key in args.questions
+    ]
+    for name, system, decider in selected:
         per_env, tp, fn, fp, tn = {}, 0, 0, 0, 0
         for env_id, is_positive in cases:
             fired = 0
+            unusable = 0
             for i in range(args.k):
-                raw = client.complete(system, texts[env_id])
+                try:
+                    raw = client.complete(system, texts[env_id])
+                except Exception as exc:  # noqa: BLE001
+                    # One 240s CLI timeout used to abort the whole 90-minute
+                    # measurement. The shipped gate treats an unreachable model
+                    # as "changes nothing", and so does this: the call is
+                    # recorded as unusable and counted against neither arm.
+                    print(f"    {name}: {env_id} call {i + 1} unusable: "
+                          f"{type(exc).__name__}", flush=True)
+                    unusable += 1
+                    continue
                 parsed = _parse(raw) or {}
                 v = decider(parsed) if parsed else None
                 fired += v == "no_correct_answer"
             per_env[env_id] = {"withheld": fired, "of": args.k,
-                               "is_positive": is_positive}
+                               "unusable": unusable, "is_positive": is_positive}
             if is_positive:
                 tp += fired
                 fn += args.k - fired
@@ -155,6 +212,10 @@ def main() -> int:
             "per_env": per_env,
         }
 
+    return _write(args, arms)
+
+
+def _write(args, arms: dict) -> int:
     payload = {
         "what": f"How often each wording of the gate's question calls {args.env} "
                 "an environment with no correct answer.",
@@ -167,15 +228,11 @@ def main() -> int:
         "assay_revision": _revision(),
         "environment": args.env,
         "arms": arms,
-        "reading": (
-            "old question: "
-            f"{arms['old_question']['true_positives']} true positives, "
-            f"{arms['old_question']['false_overrides']} false overrides; "
-            "new question: "
-            f"{arms['new_question']['true_positives']} true positives, "
-            f"{arms['new_question']['false_overrides']} false overrides. "
-            "Same environments, same k, same backend."
-        ),
+        "reading": " | ".join(
+            f"{name.replace('_', ' ')}: {a['true_positives']} true positives, "
+            f"{a['false_overrides']} false overrides"
+            for name, a in arms.items()
+        ) + ". Same environments, same k, same backend.",
     }
     Path(args.out).write_text(json.dumps(payload, indent=2) + "\n")
     print("\n" + payload["reading"])

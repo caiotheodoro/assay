@@ -10,6 +10,22 @@
 > `tau2/airline` correctly on demand. The reasoning below still describes a
 > real ambiguity in the question, and that ambiguity is *not* demonstrated to
 > be the cause of anything. The failure remains unexplained.
+>
+> **Second correction, after a head-to-head.** Both wordings run over the same
+> 25 cases, same k, same backend (`results/gate_question_ablation.json`):
+>
+> | | true positives | false overrides |
+> |---|---|---|
+> | old question | 14 of 15 | **6 of 60** |
+> | new question | 14 of 15 | **0 of 60** |
+>
+> All six are on Harbor's deliberately-broken verifiers -- `self-graded` 3 of 3,
+> `vacuous-tests`, `broken-gold` and `shared-tests` 1 of 3 each. So the wording
+> change **is** justified, at identical recall, and by a measurement I did not
+> have when I made it: it is safer where "the verifier cannot distinguish
+> answers" is easiest to mistake for "there is nothing to distinguish", which is
+> the confusion Harbor exists to provoke. It is still not shown to fix
+> `tau2/airline`, and that failure is still unexplained.
 
 **Found by running the auditor arm twice.** Same corpus, same code:
 

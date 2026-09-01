@@ -3,129 +3,281 @@
   "why": "It has one. tau2 is graded on the end state of a database. The corpus-level measurement saw this in 1 run of 7, which is too rare for five clean runs to demonstrate a fix -- at that rate five clean runs happen about 46% of the time with no fix at all.",
   "harness": "uv run ... python scripts/gate_question_ablation.py --k 10 --env tau2/airline",
   "assay_revision": {
-    "commit": "19ca0143e49b2bc5efefac81b8ea3ae158a8db41",
+    "commit": "de641d683b4e0e6f2ea98498b1c816b3a42aa52e",
     "dirty": true
   },
   "environment": "tau2/airline",
   "arms": {
     "old_question": {
-      "k": 10,
-      "counts": {
-        "has_correct_answer": 10
-      },
-      "false_override_rate": 0.0,
-      "replies": [
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+      "k": 3,
+      "per_env": {
+        "inspect_evals/personality_BFI": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "inspect_evals/stereoset": {
+          "withheld": 2,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/preference": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "noanswer/ranking": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "noanswer/openended": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/gold_broken": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/solved_at_reset": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/unfalsifiable": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "none",
-          "decided": "has_correct_answer"
+        "toy-triage/weak_oracle": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/escalate_overrewarded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/rationale_ignored": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/leaky_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/paraphrased_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/artifact_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/drifted_asserts": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/flaky": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "inspect_evals/bbq": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/vacuous-tests": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/self-graded": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/broken-gold": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/shared-tests": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/airline": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/retail": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         }
-      ]
+      },
+      "true_positives": 14,
+      "false_negatives": 1,
+      "false_overrides": 6,
+      "true_negatives": 54,
+      "false_override_rate": 0.1
     },
     "new_question": {
-      "k": 10,
-      "counts": {
-        "has_correct_answer": 10
-      },
-      "false_override_rate": 0.0,
-      "replies": [
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "the actual actions/DB state the agent produces (cancellations, bookings, refunds, payment splits) versus the task's specified ground-truth outcome",
-          "decided": "has_correct_answer"
+      "k": 3,
+      "per_env": {
+        "inspect_evals/personality_BFI": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "required final reservation/DB state and policy-compliant agent actions defined per task (correct refunds, cancellations, upgrades, payment splits, refusals)",
-          "decided": "has_correct_answer"
+        "inspect_evals/stereoset": {
+          "withheld": 2,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "expected DB end-state / correct action sequence per task (e.g. reward checks refund issued only when policy allows, correct payment split, correct passenger/flight actions)",
-          "decided": "has_correct_answer"
+        "toy-triage/preference": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "ground-truth task outcome \u2014 the exact end state/actions required (correct cancellations, refunds, bookings, dollar amounts) per task, e.g. task 14's required payment split",
-          "decided": "has_correct_answer"
+        "noanswer/ranking": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "task-specific gold outcome: correct tool actions/database end-state and refusals dictated by airline policy for each user task",
-          "decided": "has_correct_answer"
+        "noanswer/openended": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "expected end-state of the airline reservation/payment database (and required disclosures like membership tier) after the agent's tool calls, per each task's scripted correct outcome",
-          "decided": "has_correct_answer"
+        "toy-triage/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "task-specific expected end state/actions defined by airline policy (e.g. correct cancellation/refund eligibility, correct payment split, correct flight selection)",
-          "decided": "has_correct_answer"
+        "toy-triage/gold_broken": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "task-specific ground-truth end states/values (e.g. correct refund eligibility, exact compensation amount, correct passenger count, correct payment split) defined in each task spec, checked against the tau-bench airline policy + database state",
-          "decided": "has_correct_answer"
+        "toy-triage/solved_at_reset": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "the task's specified ground-truth outcome (correct reservation/refund/payment state and policy-compliant actions, e.g. exact dollar splits and refusal vs. completion of disallowed changes)",
-          "decided": "has_correct_answer"
+        "toy-triage/unfalsifiable": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         },
-        {
-          "verdict": "has_correct_answer",
-          "evidence": "ground-truth end state / required actions per task (DB state: correct reservations cancelled/changed, correct refund amounts, correct payment split, correct policy-compliant refusal), defined explicitly in each task spec",
-          "decided": "has_correct_answer"
+        "toy-triage/weak_oracle": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/escalate_overrewarded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/rationale_ignored": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/leaky_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/paraphrased_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/artifact_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/drifted_asserts": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/flaky": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "inspect_evals/bbq": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/vacuous-tests": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/self-graded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/broken-gold": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/shared-tests": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/airline": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/retail": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
         }
-      ]
+      },
+      "true_positives": 14,
+      "false_negatives": 1,
+      "false_overrides": 0,
+      "true_negatives": 60,
+      "false_override_rate": 0.0
     }
   },
-  "reading": "old question: 0% of 10 calls withheld; new question: 0%."
+  "reading": "old question: 14 true positives, 6 false overrides | new question: 14 true positives, 0 false overrides. Same environments, same k, same backend."
 }
