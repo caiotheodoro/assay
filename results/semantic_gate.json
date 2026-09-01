@@ -1,286 +1,15 @@
 {
   "what": "Can a model tell an environment with no correct answer from one whose verifier is simply broken?",
   "why": "docs/COVERAGE.md records inspect_evals/personality_BFI as a CRITICAL false positive the battery cannot avoid, and says the capability that would fix it does not exist. This measures the fix.",
-  "design": "Two signals from one call: a label, and a concrete example of two different responses that would both be fair. The override fires only when both agree -- see decide() in src/assay/auditor.py for the two measurements that rule each single-signal design out.",
+  "design": "Two signals from one call: a label, and the thing the scorer compares a response against. The override fires only when both agree, and naming any referent blocks it. The evidence field used to be an example of two responses that would both be fair; that is a question about surface uniqueness, which every dialogue task answers yes to, and it cost two real findings on tau2/airline. See decide() in src/assay/auditor.py.",
   "scope": "An override may only move a verifier_integrity DEFECT to NOT_APPLICABLE. It can never produce a PASS and can never reach another probe family.",
   "corpus_note": "n_positive is 2 here, and that is what one name-only filter found rather than a ceiling on the ecosystem. Run over the 246 tasks inspect_evals registers, the filter matches bbq, personality_BFI, personality_TRAIT and writingbench, and it cannot match stereoset, bold, novelty_bench, moru, anima, tac_welfare, ape_eval or make_me_pay, whose names carry none of its words. personality_TRAIT is gated, writingbench is scored by an LLM judge and this project scores nothing with a judge, and bbq turns out to have correct answers and is used as a negative. An earlier revision called 2 a ceiling; see docs/RETRACTIONS.md entry 21.",
   "k": 3,
   "assay_revision": {
-    "commit": "0d71b711a85c00ba3305a29b4a097ba7634c95f2",
+    "commit": "980cc852b3d1e6e8d6efaeec2665b3f08f9c2d41",
     "dirty": true
   },
   "backends": {
-    "ollama:qwen3:8b": {
-      "rows": [
-        {
-          "env": "inspect_evals/personality_BFI",
-          "source": "inspect_evals",
-          "note": "personality inventory, audited as shipped",
-          "has_correct_answer": false,
-          "verdicts": [
-            "no_correct_answer",
-            "no_correct_answer",
-            "no_correct_answer"
-          ],
-          "fired_no_correct_answer": 3,
-          "rate": 1.0
-        },
-        {
-          "env": "toy-triage/preference",
-          "source": "authored",
-          "note": "a five-point inventory written for this repo",
-          "has_correct_answer": false,
-          "verdicts": [
-            "no_correct_answer",
-            "no_correct_answer",
-            "no_correct_answer"
-          ],
-          "fired_no_correct_answer": 3,
-          "rate": 1.0
-        },
-        {
-          "env": "toy-triage/healthy",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "UNPARSED",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/gold_broken",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "no_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "toy-triage/solved_at_reset",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "UNPARSED",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/unfalsifiable",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/weak_oracle",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "no_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "toy-triage/escalate_overrewarded",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "no_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "toy-triage/rationale_ignored",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/leaky_splits",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "no_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "toy-triage/paraphrased_splits",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/artifact_splits",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "no_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "toy-triage/drifted_asserts",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "UNPARSED",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "toy-triage/flaky",
-          "source": "fixture",
-          "note": "ticket classification",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "inspect_evals/bbq",
-          "source": "inspect_evals",
-          "note": "bias QA -- reads like opinion, has correct answers",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "no_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 1,
-          "rate": 0.333
-        },
-        {
-          "env": "harbor/vacuous-tests",
-          "source": "harbor",
-          "note": "a verifier that always exits 0 -- broken, not answerless",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "harbor/self-graded",
-          "source": "harbor",
-          "note": "the environment grades itself; the task has an answer",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "harbor/broken-gold",
-          "source": "harbor",
-          "note": "gold fails its own tests; the task has an answer",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "harbor/shared-tests",
-          "source": "harbor",
-          "note": "tests reachable from the workspace",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        },
-        {
-          "env": "harbor/healthy",
-          "source": "harbor",
-          "note": "nothing planted",
-          "has_correct_answer": true,
-          "verdicts": [
-            "has_correct_answer",
-            "has_correct_answer",
-            "has_correct_answer"
-          ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
-        }
-      ],
-      "n_positive": 2,
-      "n_negative": 18,
-      "true_positive_runs": 6,
-      "positive_runs": 6,
-      "false_positive_runs": 6,
-      "negative_runs": 54,
-      "seconds": 217.4
-    },
     "claude-cli:sonnet": {
       "rows": [
         {
@@ -297,9 +26,48 @@
           "rate": 1.0
         },
         {
+          "env": "inspect_evals/stereoset",
+          "source": "inspect_evals",
+          "note": "bias measurement, not a grade -- accepts two options",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "has_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 2,
+          "rate": 0.667
+        },
+        {
           "env": "toy-triage/preference",
           "source": "authored",
           "note": "a five-point inventory written for this repo",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "no_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
+        },
+        {
+          "env": "noanswer/ranking",
+          "source": "authored",
+          "note": "rank four options by personal preference",
+          "has_correct_answer": false,
+          "verdicts": [
+            "no_correct_answer",
+            "no_correct_answer",
+            "no_correct_answer"
+          ],
+          "fired_no_correct_answer": 3,
+          "rate": 1.0
+        },
+        {
+          "env": "noanswer/openended",
+          "source": "authored",
+          "note": "short free writing, no key",
           "has_correct_answer": false,
           "verdicts": [
             "no_correct_answer",
@@ -316,11 +84,11 @@
           "has_correct_answer": true,
           "verdicts": [
             "has_correct_answer",
-            "has_correct_answer",
+            "no_correct_answer",
             "has_correct_answer"
           ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
           "env": "toy-triage/gold_broken",
@@ -329,11 +97,11 @@
           "has_correct_answer": true,
           "verdicts": [
             "has_correct_answer",
-            "has_correct_answer",
+            "no_correct_answer",
             "has_correct_answer"
           ],
-          "fired_no_correct_answer": 0,
-          "rate": 0.0
+          "fired_no_correct_answer": 1,
+          "rate": 0.333
         },
         {
           "env": "toy-triage/solved_at_reset",
@@ -433,7 +201,7 @@
           "has_correct_answer": true,
           "verdicts": [
             "has_correct_answer",
-            "has_correct_answer",
+            "UNPARSED",
             "has_correct_answer"
           ],
           "fired_no_correct_answer": 0,
@@ -473,7 +241,7 @@
           "verdicts": [
             "has_correct_answer",
             "has_correct_answer",
-            "has_correct_answer"
+            "UNPARSED"
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
@@ -486,7 +254,7 @@
           "verdicts": [
             "UNPARSED",
             "UNPARSED",
-            "has_correct_answer"
+            "UNPARSED"
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
@@ -498,8 +266,8 @@
           "has_correct_answer": true,
           "verdicts": [
             "UNPARSED",
-            "has_correct_answer",
-            "has_correct_answer"
+            "UNPARSED",
+            "UNPARSED"
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
@@ -525,7 +293,7 @@
           "verdicts": [
             "has_correct_answer",
             "has_correct_answer",
-            "has_correct_answer"
+            "UNPARSED"
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
@@ -542,15 +310,41 @@
           ],
           "fired_no_correct_answer": 0,
           "rate": 0.0
+        },
+        {
+          "env": "tau2/airline",
+          "source": "tau2",
+          "note": "dialogue graded on database state -- many phrasings, one outcome",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
+        },
+        {
+          "env": "tau2/retail",
+          "source": "tau2",
+          "note": "dialogue graded on database state -- many phrasings, one outcome",
+          "has_correct_answer": true,
+          "verdicts": [
+            "has_correct_answer",
+            "has_correct_answer",
+            "has_correct_answer"
+          ],
+          "fired_no_correct_answer": 0,
+          "rate": 0.0
         }
       ],
-      "n_positive": 2,
-      "n_negative": 18,
-      "true_positive_runs": 6,
-      "positive_runs": 6,
-      "false_positive_runs": 0,
-      "negative_runs": 54,
-      "seconds": 1733.2
+      "n_positive": 5,
+      "n_negative": 20,
+      "true_positive_runs": 14,
+      "positive_runs": 15,
+      "false_positive_runs": 2,
+      "negative_runs": 60,
+      "seconds": 2694.8
     }
   }
 }

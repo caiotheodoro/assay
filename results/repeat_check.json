@@ -1,0 +1,13 @@
+{
+  "what": "The same deterministic battery over the same corpus, twice in one process, compared on detections and on every probe's status.",
+  "why": "docs/REPRODUCTION.md claims the headline reruns identically. Nothing that runs had ever checked it, and one auditor-arm run disagreed with every other on openenv/textarena-wordle with no mechanism ever found.",
+  "harness": "uv run --extra adapters --extra sweep --extra openenv --extra tau2 python scripts/repeat_check.py",
+  "assay_revision": {
+    "commit": "980cc852b3d1e6e8d6efaeec2665b3f08f9c2d41",
+    "dirty": true
+  },
+  "corpus_size": 33,
+  "passes": 2,
+  "n_divergences": 0,
+  "divergences": []
+}
