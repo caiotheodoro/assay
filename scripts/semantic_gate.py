@@ -94,22 +94,39 @@ NEGATIVES = [(f"toy-triage/{v}", "fixture", "ticket classification") for v in CA
 
 
 def _adapter(env_id: str):
+    """Resolve an environment id, corpus first.
+
+    This used to be a prefix allowlist -- toy-triage, harbor, inspect_evals --
+    and anything else raised LookupError, which the caller printed as SKIP and
+    carried on. So adding `tau2/airline` to the negatives changed the list and
+    not the measurement: the run reported the same "0 false overrides" while
+    silently skipping the two environments that were added to test for one.
+    A prefix list here is the same failure the corpus registry avoids by
+    discovering its providers, so this asks the corpus.
+
+    The `toy-triage/` fallback stays because those twelve are registered under
+    `fixture/` and this file has always named them by their builder's name.
+    """
+    from assay.corpus import entries
+
+    for eid, factory, _ in entries():
+        if eid == env_id:
+            return factory()
     if env_id == "toy-triage/preference":
         return PreferenceEnv()
     if env_id.startswith("toy-triage/"):
         return build(env_id.split("/", 1)[1])
-    if env_id.startswith("harbor/"):
-        from assay.corpus import entries
-
-        for eid, factory, _ in entries():
-            if eid == env_id:
-                return factory()
-        raise LookupError(env_id)
     if env_id.startswith("inspect_evals/"):
+        # `bbq` is a negative here and deliberately not in the corpus: it reads
+        # like a matter of opinion and has documented correct answers, which is
+        # exactly what makes it a good negative and a bad corpus entry.
         from assay._inspect_evals_corpus import _build
 
         return _build(env_id.split("/", 1)[1])
-    raise LookupError(env_id)
+    raise LookupError(
+        f"{env_id} is named in this file's POSITIVES or NEGATIVES and the corpus "
+        "does not register it. A case that cannot be built is not a case that passed."
+    )
 
 
 def _revision() -> dict[str, str]:
@@ -134,6 +151,17 @@ def main() -> int:
         backends.append(OllamaClient(args.ollama_model))
     if "claude" in args.arms:
         backends.append(ClaudeCLIClient())
+
+    if not backends:
+        # Writing an artifact with zero backends silently replaced a real
+        # measurement with an empty one, because `--arms claude-cli` is not a
+        # name this accepts and nothing said so. An artifact that measured
+        # nothing must not overwrite one that measured something.
+        raise SystemExit(
+            f"no backend selected from --arms {args.arms}; valid names are "
+            "'ollama' and 'claude'. Refusing to write an empty measurement over "
+            f"{args.out}."
+        )
 
     cases = [(e, k, n, True) for e, k, n in POSITIVES] + [
         (e, k, n, False) for e, k, n in NEGATIVES

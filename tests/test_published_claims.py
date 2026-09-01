@@ -1380,3 +1380,37 @@ def test_the_historical_exemptions_all_name_a_real_file():
     """An exemption for a file that no longer exists is a hole, not a decision."""
     missing = [name for name in HISTORICAL_DOCS if not (ROOT / name).exists()]
     assert not missing, f"HISTORICAL_DOCS names files that do not exist: {missing}"
+
+
+def test_every_environment_the_gate_measurement_names_can_actually_be_built():
+    """A case that cannot be built is not a case that passed.
+
+    `scripts/semantic_gate.py` resolved environments through a prefix allowlist
+    and printed SKIP for anything else. Adding `tau2/airline` and `tau2/retail`
+    to the negatives -- the dialogue class whose absence let a false override go
+    unmeasured -- changed the list and not the measurement: the run reported the
+    same "0 false overrides in 54" while skipping both.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "semantic_gate", ROOT / "scripts/semantic_gate.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    from assay.corpus import entries
+
+    known = {env_id for env_id, _, _ in entries()}
+    named = [e for e, _, _ in module.POSITIVES] + [e for e, _, _ in module.NEGATIVES]
+    # Two builders resolve ids the corpus does not register: the toy-triage
+    # fixtures (registered under `fixture/`) and inspect_evals tasks such as
+    # `bbq`, which is a good negative precisely because it is not corpus-worthy.
+    unresolvable = [
+        e for e in named
+        if e not in known and not e.startswith(("toy-triage/", "inspect_evals/"))
+    ]
+    assert not unresolvable, (
+        "these environments are named in the gate measurement and the corpus does "
+        f"not register them, so they silently SKIP: {unresolvable}"
+    )
