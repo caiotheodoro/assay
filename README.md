@@ -221,17 +221,28 @@ after writing a valid contradicting pair into the evidence field, and reading th
 evidence alone turns 10 of the 12 healthy fixtures into `no_correct_answer`. The script owns
 mechanism and the model owns meaning.
 
-It is off by default and changes none of the numbers above. The override can only move a
-`verifier_integrity` DEFECT to `NOT_APPLICABLE`, never to PASS, never into another family, and each
-one prints the model, the text it quoted and the verdict it replaced.
+It is off by default, so the headline reproduces with no model and no API spend. The override can
+only move a scoped DEFECT to `NOT_APPLICABLE`, never to PASS, never into another family, and each
+one prints the model, the referent it named, the text it quoted and the verdict it replaced.
 
-**The agent is in the headline table and it changes nothing.** `assay+auditor` scores 43.0 on every
-figure, identical recall, precision, misses and spurious, because the corpus contains no environment
-without a correct answer for the gate to act on. Reproduce it with
-`scripts/auditor_arm.py`; the artifact is [`results/auditor_arm.json`](results/auditor_arm.json).
-The positive case is deliberately not reachable from the corpus:
-[`docs/COVERAGE.md`](docs/COVERAGE.md) argues that an environment the tool is wrong about does not
-belong in the set used to measure the tool.
+**This paragraph used to say the agent changed nothing, and that was true.** `assay+auditor` scored
+exactly `assay` on every figure, because the corpus contained no environment without a correct
+answer for the gate to act on — [`docs/COVERAGE.md`](docs/COVERAGE.md) had argued that an
+environment the tool is wrong about does not belong in the set used to measure the tool. That
+argument was right while nothing could withhold the false positive, and `--auditor` is the third
+option it lacked. Five such environments are now in the corpus and the agent moves the number.
+
+**What it costs when it is wrong is in [`results/gate_reliability.json`](results/gate_reliability.json).**
+In 1 run of 7 the gate concluded `tau2/airline` had no correct answer and withheld 25 findings, two
+of them real planted defects. That environment is graded on the end state of a database. The cause
+was never found: three hypotheses were tested and killed
+([`docs/changelog/122-the-gate-asks-the-wrong-question.md`](docs/changelog/122-the-gate-asks-the-wrong-question.md)),
+the amplifier that would have spread one such error across five environments was removed
+([`123`](docs/changelog/123-one-call-decided-five-environments.md)), withholding now takes two
+agreeing replies ([`124`](docs/changelog/124-ask-again-before-deleting.md)), and the per-decision
+rate on that environment is bounded at **below 5.8%, 0 of 50 trials**
+([`126`](docs/changelog/126-bounding-what-could-not-be-explained.md)). It is bounded, not explained,
+and the changelog says so.
 
 ```bash
 # the gate declining on a corpus environment, because this one has a correct answer
