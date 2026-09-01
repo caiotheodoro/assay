@@ -630,6 +630,14 @@ class Auditor:
             "outcome": "withheld",
             "why": "this environment has no correct answer",
             "model_said": answer.get("model_said"),
+            # The evidence, not just the label. A false override on tau2/airline
+            # deleted two real findings and the log recorded only
+            # "no_correct_answer", so there was nothing to diagnose it with: it
+            # could not be told from a hundred correct withholds. An override
+            # this trail cannot explain is one nobody can check.
+            "compared_against": answer.get("compared_against"),
+            "quote": answer.get("quote"),
+            "confidence": answer.get("confidence"),
             "findings_withheld": sum(len(r.findings) for r in flagged),
         })
         return report

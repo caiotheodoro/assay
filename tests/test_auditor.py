@@ -695,3 +695,19 @@ def test_a_referent_named_in_a_sentence_still_counts_as_naming_something():
         assert not _names_nothing(names_something), (
             f"{names_something!r} names a thing that decides correctness"
         )
+
+
+def test_a_withhold_records_the_evidence_and_not_only_the_verdict():
+    """A false override that the audit trail cannot explain is uncheckable.
+
+    One run withheld 25 findings on `tau2/airline`, destroying two real planted
+    defects, and the decision log held `model_said: no_correct_answer` and
+    nothing else -- indistinguishable from a hundred correct withholds. The
+    referent, the quote and the confidence are what make one diagnosable.
+    """
+    auditor = Auditor(FakeClient(NO_ANSWER))
+    auditor.audit(_defective())
+    withheld = [d for d in auditor.decisions if d["outcome"] == "withheld"]
+    assert withheld, "expected a withhold from the NO_ANSWER fixture"
+    for key in ("compared_against", "quote", "confidence"):
+        assert key in withheld[0], f"a withhold must record {key!r}"

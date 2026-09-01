@@ -1,4 +1,15 @@
-# The semantic gate asks a question that is wrong for dialogue environments
+# The semantic gate deleted real findings once in seven runs, and I misdiagnosed why
+
+> **Correction, added after the measurement below was written.** The title of
+> this slice used to read "the semantic gate asks a question that is wrong for
+> dialogue environments", and the argument under it was that the old wording
+> *caused* the false override. **That is not supported.** A direct ablation --
+> `scripts/gate_question_ablation.py`, k=10 per wording on the failing
+> environment -- returns `has_correct_answer` **10 times out of 10 under the
+> old question**, and 10 of 10 under the new one. The old wording answers
+> `tau2/airline` correctly on demand. The reasoning below still describes a
+> real ambiguity in the question, and that ambiguity is *not* demonstrated to
+> be the cause of anything. The failure remains unexplained.
 
 **Found by running the auditor arm twice.** Same corpus, same code:
 
@@ -53,9 +64,28 @@ It is also why this is intermittent rather than constant: a borderline question
 gets a borderline answer, and the same model answers it differently on different
 runs. `assay+auditor` at 43.0 is one draw.
 
-## Not fixed in this slice, deliberately
+## What was measured, in order
 
-A k=5 measurement of the current gate is running. Changing the prompt first
-would destroy the only quantification of how often this happens, and "we fixed
-it before we measured it" is not a claim anyone can check. The rate lands first,
-then the fix, then the same measurement again.
+1. **The rate, before touching anything.** Seven runs: 43.0 x4, 44.0 x2, 122.0
+   x1. One false override in seven (`results/gate_reliability.json`).
+2. **The wording changed**, on the reasoning above.
+3. **The rate after.** Five runs: 43.0 x2, 44.0 x3, no false overrides
+   (`results/gate_reliability_after.json`).
+4. **The ablation that undercuts step 2.** At a 1-in-7 rate, five clean runs
+   happen about 46% of the time with no fix at all, so step 3 demonstrates
+   nothing on its own. Asking the question directly, k=10 per wording:
+   **both wordings answer `has_correct_answer` 10 of 10.**
+
+**So the wording change is kept on clarity grounds and is not claimed as a
+fix.** The new question states the criterion the prompt already contained
+instead of a proxy for it, and the after distribution is no worse. Neither of
+those is evidence that it repaired the failure, and the failure is still
+unexplained.
+
+## What was actually wrong, and is now fixed
+
+The audit trail. The decision log recorded `model_said: no_correct_answer` and
+nothing else, so the one occurrence is indistinguishable from a hundred correct
+withholds and could not be diagnosed after the fact. Withholds now record the
+referent, the quote and the confidence, so a recurrence is explainable rather
+than merely countable.

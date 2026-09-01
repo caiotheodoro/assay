@@ -1,0 +1,131 @@
+{
+  "what": "How often each wording of the gate's question calls tau2/airline an environment with no correct answer.",
+  "why": "It has one. tau2 is graded on the end state of a database. The corpus-level measurement saw this in 1 run of 7, which is too rare for five clean runs to demonstrate a fix -- at that rate five clean runs happen about 46% of the time with no fix at all.",
+  "harness": "uv run ... python scripts/gate_question_ablation.py --k 10 --env tau2/airline",
+  "assay_revision": {
+    "commit": "19ca0143e49b2bc5efefac81b8ea3ae158a8db41",
+    "dirty": true
+  },
+  "environment": "tau2/airline",
+  "arms": {
+    "old_question": {
+      "k": 10,
+      "counts": {
+        "has_correct_answer": 10
+      },
+      "false_override_rate": 0.0,
+      "replies": [
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "none",
+          "decided": "has_correct_answer"
+        }
+      ]
+    },
+    "new_question": {
+      "k": 10,
+      "counts": {
+        "has_correct_answer": 10
+      },
+      "false_override_rate": 0.0,
+      "replies": [
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "the actual actions/DB state the agent produces (cancellations, bookings, refunds, payment splits) versus the task's specified ground-truth outcome",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "required final reservation/DB state and policy-compliant agent actions defined per task (correct refunds, cancellations, upgrades, payment splits, refusals)",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "expected DB end-state / correct action sequence per task (e.g. reward checks refund issued only when policy allows, correct payment split, correct passenger/flight actions)",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "ground-truth task outcome \u2014 the exact end state/actions required (correct cancellations, refunds, bookings, dollar amounts) per task, e.g. task 14's required payment split",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "task-specific gold outcome: correct tool actions/database end-state and refusals dictated by airline policy for each user task",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "expected end-state of the airline reservation/payment database (and required disclosures like membership tier) after the agent's tool calls, per each task's scripted correct outcome",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "task-specific expected end state/actions defined by airline policy (e.g. correct cancellation/refund eligibility, correct payment split, correct flight selection)",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "task-specific ground-truth end states/values (e.g. correct refund eligibility, exact compensation amount, correct passenger count, correct payment split) defined in each task spec, checked against the tau-bench airline policy + database state",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "the task's specified ground-truth outcome (correct reservation/refund/payment state and policy-compliant actions, e.g. exact dollar splits and refusal vs. completion of disallowed changes)",
+          "decided": "has_correct_answer"
+        },
+        {
+          "verdict": "has_correct_answer",
+          "evidence": "ground-truth end state / required actions per task (DB state: correct reservations cancelled/changed, correct refund amounts, correct payment split, correct policy-compliant refusal), defined explicitly in each task spec",
+          "decided": "has_correct_answer"
+        }
+      ]
+    }
+  },
+  "reading": "old question: 0% of 10 calls withheld; new question: 0%."
+}
