@@ -110,60 +110,60 @@
   "comparison": [
     {
       "startMs": 350,
-      "endMs": 1766,
+      "endMs": 1668,
       "text": "So what is that worth?"
     },
     {
-      "startMs": 1906,
-      "endMs": 5767,
+      "startMs": 1808,
+      "endMs": 5404,
       "beat": "arms",
       "text": "Every arm on the same corpus, priced by the same cost model."
     },
     {
-      "startMs": 5907,
-      "endMs": 10154,
-      "text": "Assay at forty. Flagging everything at three hundred and fourteen.",
-      "spoken": "Ass-ay at forty. Flagging everything at three hundred and fourteen."
+      "startMs": 5544,
+      "endMs": 10039,
+      "text": "Assay at forty-three. Flagging everything at three hundred and ninety-four.",
+      "spoken": "Ass-ay at forty-three. Flagging everything at three hundred and ninety-four."
     },
     {
-      "startMs": 10294,
-      "endMs": 18338,
+      "startMs": 10179,
+      "endMs": 17670,
       "text": "check_env is up here with the arms that barely try. It saves sixteen against doing nothing, on an interval that touches zero.",
       "spoken": "The incumbent is up here with the arms that barely try. It saves sixteen against doing nothing, on an interval that touches zero."
     },
     {
-      "startMs": 18478,
-      "endMs": 22404,
+      "startMs": 17810,
+      "endMs": 21466,
       "beat": "paired",
       "text": "So the floor is not the incumbent. It is flagging everything."
     },
     {
-      "startMs": 22544,
-      "endMs": 26856,
+      "startMs": 21606,
+      "endMs": 25621,
       "text": "Catch every defect by construction, and pay for it in false alarms."
     },
     {
-      "startMs": 26996,
-      "endMs": 33367,
+      "startMs": 25761,
+      "endMs": 31694,
       "text": "For most of this project Assay did not clear that floor. It does now, and the interval clears zero.",
       "spoken": "For most of this project Ass-ay did not clear that floor. It does now, and the interval clears zero."
     },
     {
-      "startMs": 33507,
-      "endMs": 40779,
+      "startMs": 31834,
+      "endMs": 38606,
       "beat": "profiles",
       "text": "Four cost profiles, pricing a missed critical defect from a hundred and twenty engineer-hours up to two thousand."
     },
     {
-      "startMs": 40919,
-      "endMs": 47419,
-      "text": "Wins all four. Separates on three. Production training still crosses zero, and it stays on the chart."
+      "startMs": 38746,
+      "endMs": 42581,
+      "text": "Wins all four cost profiles, and separates on every one of them."
     },
     {
-      "startMs": 47559,
-      "endMs": 60558,
+      "startMs": 42721,
+      "endMs": 54707,
       "beat": "crossover",
-      "text": "All of it rests on one number nobody derived. We price a missed critical defect at a hundred and twenty engineer-hours. That constant would have to be nearly eight times larger before the ranking flips."
+      "text": "All of it rests on one number nobody derived. We price a missed critical defect at a hundred and twenty engineer-hours. That constant would have to be nearly ten times larger before the ranking flips."
     }
   ],
   "changelog": [

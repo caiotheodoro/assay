@@ -149,8 +149,8 @@ error** in a number somebody guessed. That was the sharpest criticism of this
 work, and it was only sayable because we ran the sweep.
 
 *(After later work closed two detector misses the crossover moved to 942, a 685%
-margin. The check did not change; the tool did. It then moved again, to **1173.0**
-— an 878% margin — and that time the tool did not change either: the crossover's
+margin. The check did not change; the tool did. It then moved again, to **1371.0**
+— a 1042% margin — and that time the tool did not change either: the crossover's
 numerator is `flag_everything`'s loss, and two probe families added to the
 taxonomy plus two τ² environments added to the corpus raised it. A safety margin
 that widens because the floor got worse is a different fact from one that widens
@@ -166,12 +166,12 @@ constant; its false alarms do not move at all. So the line is
 The published derivation was `shipped × floor / yours`, which is the `fa = 0`
 special case. It was exactly right for as long as the detector had perfect
 precision and went wrong silently the moment three false alarms arrived with the
-τ² environments — printing 1099.53 where the truth is **1173.0**, and a "tie" row
+τ² environments — printing 1099.53 where the truth is **1371.0**, and a "tie" row
 at a cost where the detector is actually at 369.5 against 394.0. A judge derived
 `C/3 + 3` from the published rows and caught it.
 
 Publish the crossover. "Costs are illustrative" hides whether the margin is 21%
-or 878% — and publishing the rows is what let someone check the formula against
+or 1042% — and publishing the rows is what let someone check the formula against
 them.
 
 `scripts/cost_sensitivity.py`
@@ -276,21 +276,29 @@ second kind.
 
 It does not make the tool better at finding defects. On that axis we are behind
 the field and say so — ABA audits 34,285 tasks, BenchJack 219 flaws across ten
-benchmarks, and our corpus is 28 environments of which **6** are genuinely
-third-party. Two of those six are τ²-bench domains whose ground truth another
+benchmarks, and our corpus is 33 environments of which **7** are genuinely
+third-party. Two of those seven are τ²-bench domains whose ground truth another
 organisation published at a commit, and on those 164 tasks, *per task*, our
 recall is 0.339 and does not beat flagging at random.
 
 What it buys is that every number here can be interpreted. When we say the
-detector separates from its floor — 351.0 saved, 95% CI [263, 404] — that
+detector separates from its floor — 417.0 saved, 95% CI [330, 471] — that
 sentence has a floor behind it, a cost sweep, a provenance split, a
 pre-registration, and an adversary who tried to break it and is quoted where it
-succeeded. It also has a decomposition: of that 351.0, **77.0 is the taxonomy
-and the corpus growing and 274.0 is the detector**, and the first number is
+succeeded. It also has a decomposition: of that 417.0, **141.0 is the taxonomy
+and the corpus growing and 261.0 is the detector**, and the first number is
 published because nothing forced it to be.
 
 **Two rules underneath all six.** Absence of evidence is reported as loudly as
-evidence: a check that could not run must never read as a check that passed. And
+evidence: a check that could not run must never read as a check that passed.
+**This project broke that rule in its own scorer and did not notice for months.**
+`inspect_evals/boolq` ships no train split, so `partial_input_baseline` returns
+NOT_APPLICABLE and says why; `Outcome` carried only `planted` and `detected`, so
+the class fell into `missed` and every published run reported a failure to
+detect that never happened. The probes had the rule right and the code that
+scored them did not. `n_unchecked` and `recall_on_checkable` exist because of
+it, and the loss is unchanged — an unchecked defect is priced exactly as a
+missed one, so no number improved by finding this. And
 a correction that improves your own score carries the burden of proof — when
 relabelling two fixtures lifted our precision from 0.959 to 1.000, the labels
 were re-derived from the environments' own scripts with our tool out of the

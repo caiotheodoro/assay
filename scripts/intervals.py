@@ -145,8 +145,29 @@ def load_arms(
         "flag_nothing": frozenset(),
         "flag_everything": everything,
     }
+    # `assay` itself is rebuilt above from per_env, so skip it here. The guard
+    # used to be `name.startswith("assay")`, which also dropped every arm the
+    # agent runs in -- `assay+auditor` and `assay+<composite>` were recorded by
+    # the run, carried into full_run.json, and then filtered out of the only
+    # comparison that says whether a difference clears resampling noise. The
+    # comment above this loop warns against exactly that, about a different
+    # arm.
+    #
+    # An arm whose detections are identical to `assay`'s is still skipped: with
+    # `--challenger` the assay arm *is* the composite under another name, and
+    # bootstrapping a set against itself reports a 0.0 difference that means
+    # nothing.
+    # The arm rebuilt above from `per_env` is whichever one the run labelled
+    # `assay`. With `--challenger` that is the composite under another name, so
+    # the payload says which label it carried rather than leaving this to guess.
+    #
+    # This used to skip any arm whose detections matched assay's. That is right
+    # for the renamed arm and wrong for `--challenger-arm`, which adds a genuinely
+    # separate row: it was dropped from the bootstrap exactly when its result was
+    # "identical to assay", which is the finding the flag exists to publish.
+    assay_label = payload.get("assay_arm_label", "assay")
     for name in sorted(set(recorded) | set(fallbacks)):
-        if name in arms or name.startswith("assay"):
+        if name in arms or name == assay_label:
             continue
         per_env = recorded.get(name)
         if per_env is None and name not in fallbacks:

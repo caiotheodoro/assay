@@ -205,7 +205,7 @@ def auditor_run(client, agent: str, shows: str):
                 action={
                     "decide": {
                         "label_said": parsed.get("verdict"),
-                        "evidence_said": parsed.get("both_valid_example"),
+                        "evidence_said": parsed.get("compared_against"),
                     }
                 },
                 observation={

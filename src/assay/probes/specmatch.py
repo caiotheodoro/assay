@@ -39,6 +39,7 @@ def content_words(text: str) -> set[str]:
 class SpecVerifierMatch(Probe):
     family = "spec_verifier_match"
     name = "assert_traceability"
+    detects = (DefectClass.SPEC_VERIFIER_MISMATCH,)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
         findings, detail = [], {}

@@ -41,7 +41,7 @@ ASSAY_APPROVE_ALL="reproduction" uv run --extra adapters --extra openenv \
   --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json
 ```
 
-Skip the fetch and you get 26 environments, not 28. Neither τ² snapshot is redistributed here, so
+Skip the fetch and you get 31 environments, not 33. Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable and every arm's loss falls.
 `full_run.py` prints the reason rather than shrinking quietly.
 
@@ -49,29 +49,54 @@ without them the `tau2` provider reports itself unavailable and every arm's loss
 
 | Arm | Expected loss (`research-run`) | 95% CI |
 |---|---|---|
-| `flag_nothing` | 3232.0 | [2128, 4456] |
-| `check_env`, the incumbent linter | 3216.0 | [2104, 4448] |
-| `flag_everything`, the floor that had to be beaten | 394.0 | [375, 411] |
-| **Assay** | **43.0** | **[0, 125]** |
-| `assay+auditor`, the same battery with the agent on | 43.0 | — |
+| `flag_nothing` | 3232.0 | [2080, 4560] |
+| `check_env`, the incumbent linter | 3216.0 | [2056, 4552] |
+| `flag_everything`, the floor that had to be beaten | 474.0 | [453, 492] |
+| **Assay** | **57.0** | **[8, 142]** |
+| `assay+auditor`, the agent on — **one draw** | 44.0 | [1, 126] |
 
-Assay saves 351.0 against `flag_everything`, 95% CI [263, 404], separated. 28 environments, 54
+Assay saves 417.0 against `flag_everything`, 95% CI [330, 471], separated. 33 environments, 54
 planted defects, 10,000 bootstrap resamples over environments, seed 11.
+
+**The agent row is a distribution, not a number, and that is the honest form of it.**
+Five environments in the corpus have no correct answer, so every finding the
+deterministic battery reports on them is a false positive — 17 of them, precision
+0.757. The semantic gate withholds those and `assay+auditor` comes back at **43–44
+across seven runs of the same corpus, saving 13–14** — except once, where it came back
+at **122.0**, because it decided `tau2/airline` had no correct answer and deleted two
+real planted defects along with the false ones.
+
+**One run in seven, and it dominates the average.** Six runs save 13–14 and the seventh
+costs 65, so the agent's **mean saving over seven runs is 2.4, not 13**.
+`results/gate_reliability.json` publishes both, and the mean is the one that belongs in a
+headline about expected loss, because expected loss is an expectation. The failure mode is
+the bad kind: rare and catastrophic rather than common and mild. Six runs look like a clean win and would pass any casual check; the seventh hides
+real CRITICAL-class findings, which is the outcome this tool exists to prevent.
+`docs/PRE-REGISTRATION-NOANSWER.md` predicted the 13.0 and named a criterion for exactly
+this — "the agent has traded a false positive for a hidden true one, which is worse than
+the disease" — and that criterion fired.
+
+The paired bootstrap cannot see it. It resamples *environments*; the model is asked once
+per environment per run and does not always answer the same. **An interval from one run
+of an agentic arm is narrower than the truth by an unknown amount**, and that is a
+limitation of the method, not of this run. The deterministic arm returned 57.0 every
+single time.
 
 Read the arms in the right order. Beating `check_env` proves almost nothing: 16.0 saved of
 `flag_nothing`'s 3232.0, on an interval including zero. The arm that had to be beaten is
 `flag_everything`, which catches every defect by construction, and for most of this project's life
 Assay did not beat it.
 
-**Seventy-seven of that 351.0 is arithmetic rather than detection.** `flag_everything`'s loss is
+**A large part of that 417.0 is arithmetic rather than detection.** `flag_everything`'s loss is
 `Σ_env (n_classes − |planted_env|) × false_alarm`, so it gets worse whenever the taxonomy or the
-corpus grows, with no detector involved. Two probe families added two classes, and two τ²
-environments added 28 more free false alarms while costing Assay 3. Of the 351.0, 77.0 is arithmetic
-and 274.0 is the detector. A larger standing figure sits underneath: four of the sixteen defect
-classes are planted nowhere in the corpus, which hands the floor `4 × 28 = 112` false alarms, 28.4%
-of its 394.0. The full decomposition is in [`docs/RESULTS.md`](docs/RESULTS.md), and
-[`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md) predicted every figure in it before
-the corpus grew.
+corpus grows, with no detector involved. The four environments with no correct answer plant nothing,
+so each hands the floor a free 16 — **80.0 of the margin's growth is arithmetic, and it cost the
+deterministic arm 14.0.** A larger standing figure sits underneath: four of the sixteen defect
+classes are planted nowhere in the corpus, which hands the floor `4 × 33 = 132` false alarms, 27.8%
+of its 474.0. The full decomposition is in [`docs/RESULTS.md`](docs/RESULTS.md), and
+[`docs/PRE-REGISTRATION-TAU2.md`](docs/PRE-REGISTRATION-TAU2.md) and
+[`docs/PRE-REGISTRATION-NOANSWER.md`](docs/PRE-REGISTRATION-NOANSWER.md) predicted every figure in
+it before the corpus grew.
 
 Assay wins all four cost profiles and separates on all four. It previously won one and lost two
 outright. The `production-training` row changed because the floor moved, not because the detector
@@ -79,31 +104,41 @@ did, and that is stated in [`docs/RESULTS.md`](docs/RESULTS.md) rather than bank
 
 Three caveats decide how the table should be read, all in full in [`docs/RESULTS.md`](docs/RESULTS.md):
 
-1. **The two LLM arms tie with random flagging.** `direct_prompt` and `agent_with_tools` score 2454.0
-   and 2736.0 against `stratified_random`'s 2793.0, and the paired bootstrap gives 339.0, 95% CI
-   [−244, 942], not separated. Giving the model a tool loop bought nothing measurable.
-2. **Assay's precision is 0.9464, not 1.000.** Three spurious findings across 28 environments, all
-   three on the two τ² environments. Half that number is real and half is a property of the label:
-   τ² is the only place in the corpus where `frozenset()` means "an outside revision diff establishes
-   nothing else" rather than "we planted nothing else".
-3. **The corpus is 6 of 28 genuinely third-party**, 3 of them externally labelled. Every clean
-   environment added moves the floor by +16 and Assay by 0, so 22 self-authored environments
-   manufacture the whole 351.0 margin. Provenance is declared in the registry before the corpus
-   grows, and every expansion is pre-registered first.
+1. **The two LLM arms tie with random flagging.** `direct_prompt` and `agent_with_tools` score 2343.0
+   and 2746.0 against `stratified_random`'s 2838.0, and the paired bootstrap gives 495.0, 95% CI
+   [−93, 1123], not separated. Giving the model a tool loop bought nothing measurable — it scored
+   *worse* than the coin, well inside the noise.
+2. **The deterministic arm's precision is 0.7571, not 0.9464.** Seventeen spurious findings across
+   33 environments: three on the two τ² environments, and fourteen on the five with no correct
+   answer, where every finding is a false positive by construction. On six runs of seven the gate
+   recovers those and leaves the three τ² findings standing, which is the right answer on all
+   seventeen. On the seventh it also withheld `tau2/airline`, which has a correct answer.
+3. **The corpus is 8 of 33 genuinely third-party**, 3 of them externally labelled. Every clean
+   environment added moves the floor by +16 and the deterministic arm by 0 to 4, so self-authored
+   environments carry most of the 417.0 margin. Provenance is declared in the registry before the
+   corpus grows, and every expansion is pre-registered first. Three of the five no-answer
+   environments are written here, and `docs/PRE-REGISTRATION-NOANSWER.md` says so before reporting
+   the result that rests on them.
 
 | split | n | assay | flag_everything |
 |---|---|---|---|
-| all (published) | 28 | 43.0 | 394.0 |
-| genuinely external | 6 | 43.0 | 89.0 |
+| all (published) | 33 | 57.0 | 474.0 |
+| genuinely external | 8 | 45.0 | 121.0 |
 | our content, third-party format | 10 | 0.0 | 132.0 |
-| in-process fixtures | 12 | 0.0 | 173.0 |
+| in-process fixtures | 15 | 12.0 | 221.0 |
 
-One miss remains across 28 environments and it is external: `inspect_evals/boolq`, structurally, with
-no train split for the shortcut probe to compare against.
+**Assay has no true misses on this corpus.** The one that used to be reported —
+`inspect_evals/boolq`, `SHORTCUT_LEAK` — is not a miss: boolq ships no train split, so the probe
+returns `NOT_APPLICABLE` and says why. The scorer had no third state and charged it as a failure to
+detect, which is the defect class this tool exists to catch, in the code that produced its own
+headline. It is now reported as `n_unchecked: 1` with `recall_on_checkable` 1.000 beside the
+unchanged `recall` of 0.9815, and it is still priced at full miss cost — a defect nothing looked for
+is still in your environment, and any cheaper price would let a probe lower its own score by
+declining to answer.
 
 The whole ranking rests on one made-up number. `research-run.yaml` prices a missed CRITICAL defect at
 120 engineer-hours-equivalent and nothing derives that 120. Assay's loss is affine in `C`, so it
-crosses `flag_everything` at `3 × (394 − 3) = 1173.0`: the headline survives an 878% error in a
+crosses `flag_everything` at **1371.0**: the headline survives a 1042% error in a
 constant nobody derives. That margin comes partly from the floor getting worse, which is weaker
 evidence than the detector getting better, and
 [`results/cost_sensitivity.json`](results/cost_sensitivity.json) has the sweep.
@@ -176,11 +211,17 @@ that verdict, on 20 environments at three runs each per backend
 
 | backend | withheld the false positive | false overrides |
 |---|---|---|
-| `claude-cli:sonnet` | 6 of 6 runs | **0 of 54 runs** |
-| `ollama:qwen3:8b` | 6 of 6 runs | 6 of 54 runs |
+| `claude-cli:sonnet` | 14 of 15 runs | **2 of 60 runs** |
 
-Read the second column. A false override hides a real defect, which is worse than missing one, so
-`qwen3:8b` is not a backend to run this with.
+Both columns moved when the negative set gained the environment class it was missing.
+It read 6 of 6 and **0 of 54** against a set with no multi-turn dialogue in it, which is
+the class the gate later got wrong on a real run. `ollama:qwen3:8b` is not in the current
+measurement: this run used `--arms claude` and the row was not re-measured, so it is
+removed rather than carried forward.
+
+Read the second column. A false override hides a real defect, which is worse than missing one, and
+the recommended backend does it about 3% of the time on this set. That is the honest number and it
+is not zero.
 
 The gate is the conjunction of the model's label and its own quoted evidence, because each alone
 fails. `qwen3:8b` labels `personality_BFI` as having a correct answer in 3 of 3 runs immediately
@@ -188,17 +229,28 @@ after writing a valid contradicting pair into the evidence field, and reading th
 evidence alone turns 10 of the 12 healthy fixtures into `no_correct_answer`. The script owns
 mechanism and the model owns meaning.
 
-It is off by default and changes none of the numbers above. The override can only move a
-`verifier_integrity` DEFECT to `NOT_APPLICABLE`, never to PASS, never into another family, and each
-one prints the model, the text it quoted and the verdict it replaced.
+It is off by default, so the headline reproduces with no model and no API spend. The override can
+only move a scoped DEFECT to `NOT_APPLICABLE`, never to PASS, never into another family, and each
+one prints the model, the referent it named, the text it quoted and the verdict it replaced.
 
-**The agent is in the headline table and it changes nothing.** `assay+auditor` scores 43.0 on every
-figure, identical recall, precision, misses and spurious, because the corpus contains no environment
-without a correct answer for the gate to act on. Reproduce it with
-`scripts/auditor_arm.py`; the artifact is [`results/auditor_arm.json`](results/auditor_arm.json).
-The positive case is deliberately not reachable from the corpus:
-[`docs/COVERAGE.md`](docs/COVERAGE.md) argues that an environment the tool is wrong about does not
-belong in the set used to measure the tool.
+**This paragraph used to say the agent changed nothing, and that was true.** `assay+auditor` scored
+exactly `assay` on every figure, because the corpus contained no environment without a correct
+answer for the gate to act on — [`docs/COVERAGE.md`](docs/COVERAGE.md) had argued that an
+environment the tool is wrong about does not belong in the set used to measure the tool. That
+argument was right while nothing could withhold the false positive, and `--auditor` is the third
+option it lacked. Five such environments are now in the corpus and the agent moves the number.
+
+**What it costs when it is wrong is in [`results/gate_reliability.json`](results/gate_reliability.json).**
+In 1 run of 7 the gate concluded `tau2/airline` had no correct answer and withheld 25 findings, two
+of them real planted defects. That environment is graded on the end state of a database. The cause
+was never found: three hypotheses were tested and killed
+([`docs/changelog/122-the-gate-asks-the-wrong-question.md`](docs/changelog/122-the-gate-asks-the-wrong-question.md)),
+the amplifier that would have spread one such error across five environments was removed
+([`123`](docs/changelog/123-one-call-decided-five-environments.md)), withholding now takes two
+agreeing replies ([`124`](docs/changelog/124-ask-again-before-deleting.md)), and the per-decision
+rate on that environment is bounded at **below 5.8%, 0 of 50 trials**
+([`126`](docs/changelog/126-bounding-what-could-not-be-explained.md)). It is bounded, not explained,
+and the changelog says so.
 
 ```bash
 # the gate declining on a corpus environment, because this one has a correct answer

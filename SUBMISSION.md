@@ -3,7 +3,7 @@
 **Assay** — an agentic auditor for RL environments and eval suites.
 
 Labs and vendors buy RL environments and eval suites as products, and nothing checks whether
-they measure what they claim. Point Assay at one: it runs nine probe families, one of them an
+they measure what they claim. Point Assay at one: it runs eleven probe families, one of them an
 agent that tries to score well without doing the job, and returns an Environment Card — a
 verdict tied to evidence, plus a nonzero exit code that can block a training run.
 
@@ -30,22 +30,29 @@ Published artifacts: [collection](https://huggingface.co/collections/caiotheodor
 
 ## The main result
 
-28 environments, 10,000 resamples, seed 11,
+33 environments, 10,000 resamples, seed 11,
 resampled over environments.
 
 | arm | expected loss | 95% CI |
 |---|---|---|
-| **assay** | 43 | [0, 125] |
-| flag everything | 394 | [375, 411] |
-| `check_env` (the incumbent) | 3216 | [2104, 4448] |
+| **assay+auditor**, one draw | 44 | [1, 126] |
+| **assay** | 57 | [8, 142] |
+| flag everything | 474 | [453, 492] |
+| `check_env` (the incumbent) | 3216 | [2056, 4552] |
 
 The comparison that decides it is not the incumbent — it is flagging everything, which catches
-every defect by construction. **351 saved, 95% CI
-[263, 404], separated.**
+every defect by construction. **417 saved, 95% CI
+[330, 471], separated.** Turning the agent on saves a further **13 on this draw, 95% CI [1, 28]** — but that
+interval is over environments, and the arm also varies between runs. Across seven runs
+it saved a **mean of 2.4**: six runs saved 13–14 and one deleted two real defects and
+cost 65 (`results/gate_reliability.json`). The mean is the honest headline, because
+expected loss is an expectation.
 `production-training` does not separate and is shown crossing zero rather than omitted.
 
-Every figure above is read from `results/intervals.json` by the script that generates this
-file, not transcribed. Reproduce with
+Every figure above is checked against `results/intervals.json` by
+`tests/test_published_claims.py`, which fails the suite when a document and the
+artifact disagree. An earlier revision of this line claimed a script generated this
+file. No such script exists; see `docs/RETRACTIONS.md`.
 `uv run --extra adapters --extra openenv python scripts/full_run.py`, then
 `scripts/intervals.py --resamples 10000 --seed 11`.
 
@@ -75,11 +82,14 @@ the script now finds it in two seconds because the discovery was written down.
 
 ## Before you run it
 
-- The minimal install is honest about what it skips: `uv sync --extra dev && uv run pytest -q`
-  gives **430 passed, 56 skipped, 0 failed**. The full optional set collects 594.
+- The documented command installs every extra it names and gives **814 passed, 0 skipped,
+  0 failed**. The minimal `uv sync --extra dev` install is honest about what it skips: the
+  tests wanting Docker, Ollama, the pinned τ² snapshots and the optional providers announce
+  a reason rather than failing.
 - The whole result rests on one constant nothing derives: a missed critical defect priced at
   120 engineer-hours. The ranking only flips at
-  1173 — 9.78× larger.
-- There is no hosted demo. `space/app.py` is finished and gated, but Hugging Face returns
-  HTTP 402 for a Gradio Space on the free tier, so it runs locally instead. A decision,
-  documented rather than hidden.
+  1371 — 11.05× larger.
+- The hosted demo is [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo),
+  which runs the battery in the browser under Pyodide. It audits a spec you paste in; it does not
+  reproduce the headline, because that still wants Docker and Ollama. `space/app.py`, the Gradio
+  build, stays local: Hugging Face returns HTTP 402 for a Gradio Space on the free tier.

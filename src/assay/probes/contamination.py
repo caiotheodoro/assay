@@ -28,6 +28,7 @@ THRESHOLD = 0.8
 class Contamination(Probe):
     family = "contamination"
     name = "train_eval_leak"
+    detects = (DefectClass.CONTAMINATION_EXACT, DefectClass.CONTAMINATION_NEARDUP)
     requires = (Capability.SPLITS,)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):

@@ -54,6 +54,7 @@ def _part_accuracy(train: list[Item], evals: list[Item], part: str) -> float:
 class PartialInputBaseline(Probe):
     family = "shortcut_leakage"
     name = "partial_input_baseline"
+    detects = (DefectClass.SHORTCUT_LEAK,)
     requires = (Capability.SPLITS, Capability.ITEM_PARTS)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):

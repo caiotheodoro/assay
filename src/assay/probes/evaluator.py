@@ -216,6 +216,7 @@ class VerifierStaticAnalysis(Probe):
 
     family = "evaluator_code_execution"
     name = "verifier_static_analysis"
+    detects = (DefectClass.EVALUATOR_RCE,)
     requires = (Capability.VERIFIER_SOURCE,)
 
     def check(self, adapter: EnvAdapter, ctx: dict[str, Any]):
