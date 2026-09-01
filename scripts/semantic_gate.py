@@ -53,7 +53,10 @@ from assay.llm import ClaudeCLIClient, LLMUnavailable, OllamaClient  # noqa: E40
 #: a negative. That leaves one real environment, and one written here.
 POSITIVES = [
     ("inspect_evals/personality_BFI", "inspect_evals", "personality inventory, audited as shipped"),
+    ("inspect_evals/stereoset", "inspect_evals", "bias measurement, not a grade -- accepts two options"),
     ("toy-triage/preference", "authored", "a five-point inventory written for this repo"),
+    ("noanswer/ranking", "authored", "rank four options by personal preference"),
+    ("noanswer/openended", "authored", "short free writing, no key"),
 ]
 
 #: Everything that does have a correct answer. The twelve toy-triage fixtures
@@ -76,6 +79,17 @@ NEGATIVES = [(f"toy-triage/{v}", "fixture", "ticket classification") for v in CA
     ("harbor/broken-gold", "harbor", "gold fails its own tests; the task has an answer"),
     ("harbor/shared-tests", "harbor", "tests reachable from the workspace"),
     ("harbor/healthy", "harbor", "nothing planted"),
+    # The class this list was missing, and it cost more than the harbor one.
+    # tau2 is a multi-turn customer-service dialogue: many phrasings are
+    # legitimately correct, and it is graded on the end state of a database, so
+    # it plainly has a correct answer. The old question -- "could two different
+    # responses both be fair?" -- gets an honest yes here, and the gate withheld
+    # 25 findings on tau2/airline in 1 run of 7, destroying two real planted
+    # defects. No dialogue environment was in this list, so this measurement
+    # could not have caught it. See
+    # docs/changelog/122-the-gate-asks-the-wrong-question.md.
+    ("tau2/airline", "tau2", "dialogue graded on database state -- many phrasings, one outcome"),
+    ("tau2/retail", "tau2", "dialogue graded on database state -- many phrasings, one outcome"),
 ]
 
 
@@ -131,10 +145,13 @@ def main() -> int:
         "why": "docs/COVERAGE.md records inspect_evals/personality_BFI as a CRITICAL "
                "false positive the battery cannot avoid, and says the capability that "
                "would fix it does not exist. This measures the fix.",
-        "design": "Two signals from one call: a label, and a concrete example of two "
-                  "different responses that would both be fair. The override fires only "
-                  "when both agree -- see decide() in src/assay/auditor.py for the two "
-                  "measurements that rule each single-signal design out.",
+        "design": "Two signals from one call: a label, and the thing the scorer "
+                  "compares a response against. The override fires only when both "
+                  "agree, and naming any referent blocks it. The evidence field used "
+                  "to be an example of two responses that would both be fair; that is "
+                  "a question about surface uniqueness, which every dialogue task "
+                  "answers yes to, and it cost two real findings on tau2/airline. See "
+                  "decide() in src/assay/auditor.py.",
         "scope": "An override may only move a verifier_integrity DEFECT to "
                  "NOT_APPLICABLE. It can never produce a PASS and can never reach "
                  "another probe family.",
