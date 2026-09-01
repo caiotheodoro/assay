@@ -9,9 +9,10 @@ This file now carries **two** scores: the current one, and the 74/100 snapshot f
 after the fixes it prescribed would no longer be evidence of anything — and because
 the numbers it quotes moved so far that the drift is itself worth reading.
 
-## Current self-score — 82 / 100
+## Current self-score — 82 / 100, and an independent 78
 
-*Re-scored 2026-08-30 against the current tree.*
+*Self-scored 2026-08-30; independently re-scored cold on 2026-09-01. The lower
+number is the more useful one and the table below it says why.*
 
 | Criterion | Available | Scored | Was (2026-08-29) |
 |---|---|---|---|
@@ -112,13 +113,39 @@ are uncovered
 the battery in the visitor's browser on a free static Space. HTTP 402 for a *Gradio*
 Space on the free tier is still true and still why `space/app.py` is local-only.
 
-**On the number itself.** 82 is a self-score by the people who wrote the thing, marked
-hard, and an independent reviewer is entitled to a different one. An independent pass
-run cold against this tree scored it **75**, taking 3 more points off Reproducibility
-and 3 off Agent Solution; its Reproducibility deduction was the `byte-identically`
-overclaim now corrected above, and its Agent Solution deduction is the second one below,
-which is a matter of judgement rather than fact. Both numbers are published; the lower
-one was not solicited to be flattering and is the more useful of the two.
+**On the number itself.** A self-score by the people who wrote the thing is worth less
+than a cold one, and two cold passes have now scored lower than this page did.
+
+An earlier independent pass scored **75**. A second, run cold on 2026-09-01 against a
+larger corpus and told explicitly not to trust this page, scored **78**:
+
+| Criterion | Available | Cold read | This page |
+|---|---|---|---|
+| Problem & User Value | 15 | 13 | 13 |
+| Agent Solution & Engineering | 30 | **21** | 23 |
+| End to End Quality | 20 | 16 | 16 |
+| Measured Improvement | 15 | **12** | 14 |
+| Reproducibility | 15 | 12 | 12 |
+| Hot Take / Insights | 5 | 4 | 4 |
+| **Total** | **100** | **78** | 82 |
+
+**It was right about three things and all three are now fixed.** The README's
+semantic-gate table read `0 of 54` false overrides against an artifact that said `2 of
+60` — re-measured five hours earlier and never carried into the document. `SUBMISSION.md`
+claimed "the script that generates this file", and no such script exists. And
+`results/gate_reliability.json` reported the median saving and not the mean: six runs save
+13–14, the seventh costs 65, and **the mean is 2.4**. Choosing the median there is the
+statistic-shopping this document criticises elsewhere, and it took an outsider to say so.
+
+**Its band read is published because it is probably right.** Mechanical fixes reach the
+mid 80s; **95+ needs externally-labelled environments and an agent on the critical path**,
+and this project's own evidence argues against the second — the agentic Challenger is
+measured making the tool worse (`docs/changelog/120-challenger-arm.md`) and its one
+exclusive win was compiled into a 3.8-second script. Registering ScienceAgentBench's 12
+externally-labelled defects would raise the provenance ratio while adding twelve
+environments Assay structurally cannot check (`docs/SCIENCEAGENTBENCH.md`); that was
+considered and declined, because improving a ratio with environments the tool cannot
+audit is padding, and the credibility of everything else here rests on not doing that.
 
 ---
 
