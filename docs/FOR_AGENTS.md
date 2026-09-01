@@ -11,7 +11,7 @@
   "category": "agentic workflows — QA for evals",
   "user": "researcher about to spend GPU on an env they didn't write, or maintainer about to publish one",
   "incumbent": "gymnasium.utils.env_checker — linter for 'will this crash my trainer', recall 0.04",
-  "result": "assay 43.0 vs flag_everything 394.0, saved 351.0 [263, 404] separated, wins 4/4 cost profiles, separates 4/4",
+  "result": "assay 57.0 vs flag_everything 474.0, saved 417.0 [330, 471] separated, wins 4/4 cost profiles, separates 4/4; assay+auditor 44.0 on one draw but a mean of 2.4 saved over seven runs, one of which deleted two real defects -- see results/gate_reliability.json",
   "margin_that_is_not_detection": "77.0 of the 351.0 is arithmetic — two defect classes and two environments added to the floor, not detection. Against the taxonomy and corpus this was first measured on the margin is 274.0 (docs/PRE-REGISTRATION-TAU2.md)",
   "cost_crossover": "1173.0h vs shipped 120h — survives 878% error",
   "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q (814 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",

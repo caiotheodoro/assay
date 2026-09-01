@@ -184,8 +184,8 @@ model's two hits is `fixture/flaky`, planted here.
 ## The corpus is almost entirely our own work, and the split is unflattering
 
 The 33 environments are 12 in-process `fixture/*`, 3 authored with no correct answer
-(`toy-triage/preference`, `noanswer/ranking`, `noanswer/openended`), 5 `harbor/`, 5 `inspect/`, 3
-`openenv/`, 2 `inspect_evals/`, 2 `tau2/`. Split on **who wrote the environment**, not on
+(`toy-triage/preference`, `noanswer/ranking`, `noanswer/openended`), 5 `harbor/`, 5 `inspect/`, 4
+`inspect_evals/`, 2 `openenv/`, 2 `tau2/`. Split on **who wrote the environment**, not on
 the id prefix:
 
 | provenance | n | what it is |
@@ -211,9 +211,9 @@ two τ² environments drop out and the script recomputes every split on 26.
 |---|---|---|---|---|
 | all (published) | 33 | 57.0 | 474.0 | assay, by 417 |
 | our content, third-party format | 10 | 0.0 | 132.0 | assay |
-| genuinely external | 6 | 43.0 | 89.0 | assay — and all four of its errors are here |
-| in-process fixtures | 12 | 0.0 | 173.0 | assay — asserted, not measured |
-| self-authored | 22 | 0.0 | 305.0 | assay |
+| genuinely external | 8 | 45.0 | 121.0 | assay — and its errors are here |
+| in-process fixtures | 15 | 12.0 | 221.0 | assay — asserted, not measured |
+| self-authored | 25 | 12.0 | 353.0 | assay |
 
 ### The two external environments were added under a pre-registration
 
@@ -291,7 +291,7 @@ corpus is a manufactured win.
 Four of the sixteen classes in the taxonomy — `DIFFICULTY_SATURATED`,
 `DIFFICULTY_IMPOSSIBLE`, `EXCESSIVE_PERMISSIONS` and `EVALUATOR_RCE` — occur
 **nowhere in the corpus**: zero planted across all 33 environments. `flag_everything`
-names each of them on every environment anyway, which is `4 × 28 = 112` false
+names each of them on every environment anyway, which is `4 × 33 = 132` false
 alarms, **27.8% of its 474.0**, on classes no other arm in the table ever names
 and no environment in the corpus can carry. Nothing is being detected on either
 side of that 112: it
@@ -301,7 +301,7 @@ never contains those four classes, and `arm_detections` gives `flag_everything`
 28 of each and every other arm zero. The **+52** from the two newest classes,
 decomposed in `README.md`, is the *increment*; 112 is the standing total.
 
-The honest summary: **n=6 is the size of the third-party control, and only 3 of those carry a label we did not decide**, the corpus
+The honest summary: **n=8 is the size of the third-party control, and only 3 of those carry a label we did not decide**, the corpus
 is too small and too self-authored to support the pooled headline, and growing it
 with environments nobody here wrote is the first thing worth doing next — carefully.
 

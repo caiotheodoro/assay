@@ -3,7 +3,7 @@
 **Assay** — an agentic auditor for RL environments and eval suites.
 
 Labs and vendors buy RL environments and eval suites as products, and nothing checks whether
-they measure what they claim. Point Assay at one: it runs nine probe families, one of them an
+they measure what they claim. Point Assay at one: it runs eleven probe families, one of them an
 agent that tries to score well without doing the job, and returns an Environment Card — a
 verdict tied to evidence, plus a nonzero exit code that can block a training run.
 
@@ -35,19 +35,24 @@ resampled over environments.
 
 | arm | expected loss | 95% CI |
 |---|---|---|
-| **assay+auditor** | 43 | [0, 125] |
-| **assay** | 57 | [7, 141] |
-| flag everything | 474 | [438, 476] |
+| **assay+auditor**, one draw | 44 | [1, 126] |
+| **assay** | 57 | [8, 142] |
+| flag everything | 474 | [453, 492] |
 | `check_env` (the incumbent) | 3216 | [2056, 4552] |
 
 The comparison that decides it is not the incumbent — it is flagging everything, which catches
-every defect by construction. **402 saved, 95% CI
-[330, 471], separated.** Turning the agent on saves a further **13, 95% CI [1, 28],
-separated** — pre-registered before the environments it acts on existed.
+every defect by construction. **417 saved, 95% CI
+[330, 471], separated.** Turning the agent on saves a further **13 on this draw, 95% CI [1, 28]** — but that
+interval is over environments, and the arm also varies between runs. Across seven runs
+it saved a **mean of 2.4**: six runs saved 13–14 and one deleted two real defects and
+cost 65 (`results/gate_reliability.json`). The mean is the honest headline, because
+expected loss is an expectation.
 `production-training` does not separate and is shown crossing zero rather than omitted.
 
-Every figure above is read from `results/intervals.json` by the script that generates this
-file, not transcribed. Reproduce with
+Every figure above is checked against `results/intervals.json` by
+`tests/test_published_claims.py`, which fails the suite when a document and the
+artifact disagree. An earlier revision of this line claimed a script generated this
+file. No such script exists; see `docs/RETRACTIONS.md`.
 `uv run --extra adapters --extra openenv python scripts/full_run.py`, then
 `scripts/intervals.py --resamples 10000 --seed 11`.
 

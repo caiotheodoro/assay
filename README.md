@@ -41,7 +41,7 @@ ASSAY_APPROVE_ALL="reproduction" uv run --extra adapters --extra openenv \
   --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json
 ```
 
-Skip the fetch and you get 30 environments, not 32. Neither τ² snapshot is redistributed here, so
+Skip the fetch and you get 31 environments, not 33. Neither τ² snapshot is redistributed here, so
 without them the `tau2` provider reports itself unavailable and every arm's loss falls.
 `full_run.py` prints the reason rather than shrinking quietly.
 
@@ -66,9 +66,11 @@ across seven runs of the same corpus, saving 13–14** — except once, where it
 at **122.0**, because it decided `tau2/airline` had no correct answer and deleted two
 real planted defects along with the false ones.
 
-**One run in seven.** `results/gate_reliability.json` is that measurement, and the
-failure mode it records is the bad kind: rare and catastrophic rather than common and
-mild. Six runs look like a clean win and would pass any casual check; the seventh hides
+**One run in seven, and it dominates the average.** Six runs save 13–14 and the seventh
+costs 65, so the agent's **mean saving over seven runs is 2.4, not 13**.
+`results/gate_reliability.json` publishes both, and the mean is the one that belongs in a
+headline about expected loss, because expected loss is an expectation. The failure mode is
+the bad kind: rare and catastrophic rather than common and mild. Six runs look like a clean win and would pass any casual check; the seventh hides
 real CRITICAL-class findings, which is the outcome this tool exists to prevent.
 `docs/PRE-REGISTRATION-NOANSWER.md` predicted the 13.0 and named a criterion for exactly
 this — "the agent has traded a false positive for a hidden true one, which is worse than
@@ -209,11 +211,17 @@ that verdict, on 20 environments at three runs each per backend
 
 | backend | withheld the false positive | false overrides |
 |---|---|---|
-| `claude-cli:sonnet` | 6 of 6 runs | **0 of 54 runs** |
-| `ollama:qwen3:8b` | 6 of 6 runs | 6 of 54 runs |
+| `claude-cli:sonnet` | 14 of 15 runs | **2 of 60 runs** |
 
-Read the second column. A false override hides a real defect, which is worse than missing one, so
-`qwen3:8b` is not a backend to run this with.
+Both columns moved when the negative set gained the environment class it was missing.
+It read 6 of 6 and **0 of 54** against a set with no multi-turn dialogue in it, which is
+the class the gate later got wrong on a real run. `ollama:qwen3:8b` is not in the current
+measurement: this run used `--arms claude` and the row was not re-measured, so it is
+removed rather than carried forward.
+
+Read the second column. A false override hides a real defect, which is worse than missing one, and
+the recommended backend does it about 3% of the time on this set. That is the honest number and it
+is not zero.
 
 The gate is the conjunction of the model's label and its own quoted evidence, because each alone
 fails. `qwen3:8b` labels `personality_BFI` as having a correct answer in 3 of 3 runs immediately

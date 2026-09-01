@@ -108,9 +108,14 @@ def main() -> int:
         "deterministic_arm": {"expected_loss": base[0] if base else None,
                               "identical_every_run": len(set(base)) == 1},
         "auditor_arm": {
-            "expected_loss": {"min": min(losses), "median": statistics.median(losses),
+            # The mean is first because expected loss is an expectation. A
+            # median hides the run that cost 65, and choosing the kinder of two
+            # statistics is the move this repository criticises elsewhere.
+            "expected_loss": {"mean": round(statistics.mean(losses), 2),
+                              "min": min(losses), "median": statistics.median(losses),
                               "max": max(losses), "values": losses},
-            "saved_vs_deterministic": {"min": min(saved),
+            "saved_vs_deterministic": {"mean": round(statistics.mean(saved), 2),
+                                       "min": min(saved),
                                        "median": statistics.median(saved),
                                        "max": max(saved), "values": saved},
         },
@@ -127,10 +132,12 @@ def main() -> int:
         "runs": runs,
     }
     payload["reading"] = (
-        f"Over {len(runs)} identical runs the agent saved a median of "
-        f"{statistics.median(saved)} and ranged from {min(saved)} to {max(saved)}. "
-        f"{len(bad)} of {len(runs)} runs deleted real findings. The deterministic arm "
-        f"returned the same number every time. A single run of this arm is not a result."
+        f"Over {len(runs)} identical runs the agent saved a MEAN of "
+        f"{round(statistics.mean(saved), 2)} -- median {statistics.median(saved)}, range "
+        f"{min(saved)} to {max(saved)}. The mean is the number that matters, because "
+        f"expected loss is an expectation and {len(bad)} of {len(runs)} runs deleted real "
+        f"findings. The deterministic arm returned the same number every time. A single "
+        f"run of this arm is not a result, and neither is the median of several."
     )
     Path(args.out).write_text(json.dumps(payload, indent=2) + "\n")
     print(payload["reading"])

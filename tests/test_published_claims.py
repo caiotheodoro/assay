@@ -811,8 +811,19 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
             # read it as a stale 43.0. Same for the paired savings the docstring
             # already says this gate does not police; they were only escaping it
             # by wording.
+            # "saved " used to skip the line wholesale, which is how
+            # SUBMISSION.md kept "402 saved" against a measured 417. A paired
+            # saving is a real claim; it is checked against
+            # intervals.json:arms[*].loss_saved_vs by
+            # test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded,
+            # so it is skipped here only when the line also decomposes it.
             if re.search(r"\bof the [0-9]", low) or any(
-                w in low for w in ("is arithmetic", "margin", "saved ", "decomposition")
+                # "costing Assay 3" and "added 64 more" describe an increment,
+                # not what the arm costs. They only became visible when two-digit
+                # numbers started counting, and they are decomposition prose of
+                # exactly the kind the first two markers already cover.
+                w in low for w in ("is arithmetic", "margin", "decomposition",
+                                   "costing assay", "added ")
             ):
                 continue
             priced = _arms_priced_on(line, context, arm_res)
@@ -825,7 +836,17 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
             # Strip bracketed spans first -- an interval is always reported
             # beside a point estimate, never instead of one.
             bare = re.sub(r"\[[^\]]*\]", " ", line)
-            written = {n for n in _LOSS.findall(bare) if "." in n or len(n) >= 3}
+            # The `len(n) >= 3` filter was written when every arm cost hundreds.
+            # The headline arms are now 44, 57 and 43 -- two digits -- so the gate
+            # built to stop documents drifting from artifacts was blind to
+            # exactly the rows that matter, and SUBMISSION.md sat at 43 and "402
+            # saved" while the artifact said 44 and 417. Two-digit numbers count
+            # when the arm's own measured value is two digits.
+            small_arm = any(abs(current[a]) < 100 for a in priced)
+            written = {
+                n for n in _LOSS.findall(bare)
+                if "." in n or len(n) >= 3 or (small_arm and len(n) == 2)
+            }
             if not written:
                 continue
             measured = {
