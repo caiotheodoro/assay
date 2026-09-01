@@ -21,13 +21,13 @@ to find more defects than the field; it claims to price them.
 |---|---|
 | `flag_nothing` | 3232.0 |
 | `check_env` (the incumbent) | 3216.0 |
-| `agent_with_tools` | 2707.0 |
+| `agent_with_tools` | 2746.0 |
 | `stratified_random` | 2838.0 |
-| `direct_prompt` | 2461.0 |
+| `direct_prompt` | 2343.0 |
 | `always_modal_defect` | 2055.0 |
 | `flag_everything` | 474.0 |
 | **Assay** | **57.0** |
-| **`assay+auditor`** | **43.0** |
+| **`assay+auditor`**, one draw | **44.0** |
 
 Assay saves **417.0 against `flag_everything`, 95% CI [330, 471], separated.**
 Wins 4 of 4 cost profiles and separates on all 4.
