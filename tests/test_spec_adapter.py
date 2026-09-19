@@ -374,3 +374,74 @@ def test_one_distinct_target_is_not_an_exploit():
         ],
     }
     assert "every_target_at_once" not in build(spec).trivial_policies("q1")
+
+
+# --- YAML: advertised at cli.py:163,176,187 and unsupported until now ---------
+
+
+def _minimal(fmt: str) -> str:
+    if fmt == "json":
+        return (
+            '{"env_id": "demo/yaml", "tasks": [{"task_id": "t1", '
+            '"instruction": "say hi", "target": "hi"}]}'
+        )
+    return (
+        "env_id: demo/yaml\n"
+        "tasks:\n"
+        "  - task_id: t1\n"
+        "    instruction: say hi\n"
+        "    target: hi\n"
+    )
+
+
+def test_a_yaml_spec_parses_to_the_same_thing_as_the_equivalent_json():
+    """The CLI accepted .yaml, told the user it accepted YAML, then rejected it.
+
+    `cli.py:163` routes `.yaml`/`.yml` into the spec adapter, `:176` says "A spec
+    is JSON or YAML with `env_id` and a non-empty `tasks` list", and `:187` tells
+    the user to pass `.json/.yaml`. `EnvSpec.parse` called `json.loads` and
+    nothing else, so following the error message produced the same error message.
+    """
+    from assay.adapters.spec import EnvSpec
+
+    from_yaml = EnvSpec.parse(_minimal("yaml"))
+    from_json = EnvSpec.parse(_minimal("json"))
+    assert from_yaml.env_id == from_json.env_id == "demo/yaml"
+    assert len(from_yaml.tasks) == len(from_json.tasks) == 1
+    assert from_yaml.tasks[0].task_id == from_json.tasks[0].task_id == "t1"
+
+
+def test_a_broken_spec_still_reports_the_json_parser_error():
+    """When neither parser accepts it, the JSON error is the useful one.
+
+    It names a byte offset; YAML tends to report a structural surprise several
+    lines from the actual typo.
+    """
+    from assay.adapters.spec import EnvSpec, SpecError
+
+    with pytest.raises(SpecError) as caught:
+        EnvSpec.parse('{"env_id": "demo/broken", "tasks": [}')
+    assert "not valid JSON" in str(caught.value)
+
+
+def test_yaml_is_not_imported_at_module_scope():
+    """`adapters.spec` is the audit path the browser demo runs under Pyodide.
+
+    That build is deliberately stdlib-only. A module-scope `import yaml` would
+    load it for every JSON spec and break the static demo for a dependency
+    almost no caller reaches, so the import lives inside the fallback branch.
+    """
+    import ast
+    import pathlib
+
+    src = pathlib.Path(__file__).resolve().parents[1] / "src/assay/adapters/spec.py"
+    tree = ast.parse(src.read_text())
+    top_level = [
+        alias.name
+        for node in tree.body
+        if isinstance(node, (ast.Import, ast.ImportFrom))
+        for alias in getattr(node, "names", [])
+    ]
+    assert "yaml" not in top_level, (
+        "yaml must be imported inside the branch that needs it, not at module scope"
+    )

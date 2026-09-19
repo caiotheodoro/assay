@@ -1,0 +1,283 @@
+{
+  "what": "How often each wording of the gate's question calls tau2/airline an environment with no correct answer.",
+  "why": "It has one. tau2 is graded on the end state of a database. The corpus-level measurement saw this in 1 run of 7, which is too rare for five clean runs to demonstrate a fix -- at that rate five clean runs happen about 46% of the time with no fix at all.",
+  "harness": "uv run ... python scripts/gate_question_ablation.py --k 10 --env tau2/airline",
+  "assay_revision": {
+    "commit": "de641d683b4e0e6f2ea98498b1c816b3a42aa52e",
+    "dirty": true
+  },
+  "environment": "tau2/airline",
+  "arms": {
+    "old_question": {
+      "k": 3,
+      "per_env": {
+        "inspect_evals/personality_BFI": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "inspect_evals/stereoset": {
+          "withheld": 2,
+          "of": 3,
+          "is_positive": true
+        },
+        "toy-triage/preference": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "noanswer/ranking": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "noanswer/openended": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "toy-triage/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/gold_broken": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/solved_at_reset": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/unfalsifiable": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/weak_oracle": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/escalate_overrewarded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/rationale_ignored": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/leaky_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/paraphrased_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/artifact_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/drifted_asserts": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/flaky": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "inspect_evals/bbq": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/vacuous-tests": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/self-graded": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/broken-gold": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/shared-tests": {
+          "withheld": 1,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/airline": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/retail": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        }
+      },
+      "true_positives": 14,
+      "false_negatives": 1,
+      "false_overrides": 6,
+      "true_negatives": 54,
+      "false_override_rate": 0.1
+    },
+    "new_question": {
+      "k": 3,
+      "per_env": {
+        "inspect_evals/personality_BFI": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "inspect_evals/stereoset": {
+          "withheld": 2,
+          "of": 3,
+          "is_positive": true
+        },
+        "toy-triage/preference": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "noanswer/ranking": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "noanswer/openended": {
+          "withheld": 3,
+          "of": 3,
+          "is_positive": true
+        },
+        "toy-triage/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/gold_broken": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/solved_at_reset": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/unfalsifiable": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/weak_oracle": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/escalate_overrewarded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/rationale_ignored": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/leaky_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/paraphrased_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/artifact_splits": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/drifted_asserts": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "toy-triage/flaky": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "inspect_evals/bbq": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/vacuous-tests": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/self-graded": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/broken-gold": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/shared-tests": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "harbor/healthy": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/airline": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        },
+        "tau2/retail": {
+          "withheld": 0,
+          "of": 3,
+          "is_positive": false
+        }
+      },
+      "true_positives": 14,
+      "false_negatives": 1,
+      "false_overrides": 0,
+      "true_negatives": 60,
+      "false_override_rate": 0.0
+    }
+  },
+  "reading": "old question: 14 true positives, 6 false overrides | new question: 14 true positives, 0 false overrides. Same environments, same k, same backend."
+}

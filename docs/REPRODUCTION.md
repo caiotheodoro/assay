@@ -107,8 +107,16 @@ re-run writes a `full_run.json` with those two arms absent rather than an identi
 file. That is the check that caught them being
 three environments out of date.
 
-28 environments across six ecosystems: 12 fixture, 5 harbor, 5 inspect, 2
-openenv, 2 inspect_evals, 2 tau2, **54 planted defects**. Skip
+**Nor are those two arms byte-identical when you do supply Ollama.** They ask a model
+what it thinks is wrong with an environment, and a model asked twice does not answer
+twice the same. Their point estimates move between runs on an unchanged corpus, which
+is why they are reported with bootstrap intervals and why no claim in this repository
+rests on a difference between them smaller than one. The six deterministic arms are the
+ones the byte-identical claim is about, and `scripts/repeat_check.py` is what checks it.
+
+33 environments across eight ecosystems: 12 fixture, 5 harbor, 5 inspect,
+4 inspect_evals, 2 noanswer, 2 openenv, 2 tau2, 1 toy-triage, **54 planted
+defects**. Skip
 `scripts/tau2_fetch.py` and you get 26 and 50 instead, because neither τ²
 snapshot is redistributed here — `full_run.py` prints the reason rather than
 shrinking quietly. `intervals.py` adds 95% bootstrap CIs and paired
@@ -118,13 +126,14 @@ Expect exactly this, under `research-run`:
 
 | arm | expected loss | recall | precision |
 |---|---|---|---|
-| assay | 43.0 | 0.982 | 0.946 |
-| flag_everything | 394.0 | 1.000 | 0.120 |
-| always_modal_defect | 2050.0 | 0.185 | 0.357 |
-| direct_prompt | 2454.0 | 0.222 | 0.353 |
-| agent_with_tools | 2736.0 | 0.241 | 0.351 |
-| stratified_random | 2793.0 | 0.111 | 0.128 |
-| check_env | 3216.0 | 0.037 | 1.000 |
+| assay | 57.0 | 0.982 | 0.757 |
+| assay+auditor (one draw; see gate_reliability.json) | 44.0 | 0.982 | 0.930 |
+| flag_everything | 474.0 | 1.000 | 0.105 |
+| always_modal_defect | 2055.0 | 0.185 | 0.313 |
+| direct_prompt | 2343.0 | 0.259 | 0.341 |
+| stratified_random | 2838.0 | 0.111 | 0.125 |
+| agent_with_tools | 2746.0 | 0.204 | 0.244 |
+| check_env | 3216.0 | 0.019 | 1.000 |
 | flag_nothing | 3232.0 | 0.000 | 0.000 |
 
 Exactly **one** environment is missed corpus-wide — `inspect_evals/boolq`,
@@ -222,10 +231,10 @@ committed, and `uv sync` will not put it there:
 
 ```bash
 uv run --extra tau2 python scripts/tau2_fetch.py
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q
 ```
 
-**Measured: 765 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
+**Measured: 814 passed, 0 skipped, 0 failed, exit 0, 128 s** with Docker up.
 An earlier revision of this guide claimed 275 collected; the suite has roughly
 doubled since and that number was never re-measured. That count and the 128 s are
 one measurement of this command on one machine — an earlier revision quoted 594
@@ -234,7 +243,7 @@ in 82 s, and the wall clock is hardware, not a property of the suite.
 **`--extra tau2` is load-bearing on the test line too**, and this guide previously
 omitted it there. Without the snapshots `tests/test_tau2_adapter.py` skips (18 skips,
 measured); without the extra it *fails*, on `No module named 'loguru'`. Both were
-verified from a fresh tree with no `.venv`: the command above gives 765 passed, 0
+verified from a fresh tree with no `.venv`: the command above gives 814 passed, 0
 failed, exit 0, and dropping `--extra tau2` from it gives 7 failures. The
 fresh-tree timing that used to sit here (87 s) is dropped rather than carried
 over: the count was re-measured when the suite grew and that number was not.

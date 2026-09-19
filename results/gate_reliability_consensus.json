@@ -1,0 +1,193 @@
+{
+  "what": "The same auditor arm, on the same corpus, run repeatedly.",
+  "why": "The paired bootstrap resamples environments and cannot see run-to-run variance in the model's own answers. Two runs returned 43.0 and 122.0.",
+  "harness": "uv run --extra adapters --extra sweep --extra openenv --extra tau2 python scripts/gate_reliability.py --k 5",
+  "assay_revision": {
+    "commit": "1e5c92176a0d9b113761db38466987a6e38a3d92",
+    "dirty": true
+  },
+  "n_runs": 5,
+  "deterministic_arm": {
+    "expected_loss": 57.0,
+    "identical_every_run": true
+  },
+  "auditor_arm": {
+    "expected_loss": {
+      "mean": 43.6,
+      "min": 43.0,
+      "median": 44.0,
+      "max": 44.0,
+      "values": [
+        44.0,
+        44.0,
+        43.0,
+        44.0,
+        43.0
+      ]
+    },
+    "saved_vs_deterministic": {
+      "mean": 13.4,
+      "min": 13.0,
+      "median": 13.0,
+      "max": 14.0,
+      "values": [
+        13.0,
+        13.0,
+        14.0,
+        13.0,
+        14.0
+      ]
+    }
+  },
+  "false_override_rate": {
+    "runs_with_a_false_override": 0,
+    "of_runs": 5,
+    "environments": [],
+    "why_it_matters": "A false override deletes findings on an environment that does have a correct answer. Those findings can be real planted defects, so the agent trades a false positive for a hidden true one."
+  },
+  "reading": "Over 5 identical runs the agent saved a MEAN of 13.4 -- median 13.0, range 13.0 to 14.0. The mean is the number that matters, because expected loss is an expectation and 0 of 5 runs deleted real findings. The deterministic arm returned the same number every time. A single run of this arm is not a result, and neither is the median of several.",
+  "runs": [
+    {
+      "corpus_size": 33,
+      "assay": {
+        "expected_loss": 57.0,
+        "recall": 0.9815,
+        "precision": 0.7571,
+        "n_missed": 0,
+        "n_unchecked": 1,
+        "n_spurious": 17
+      },
+      "assay+auditor": {
+        "expected_loss": 44.0,
+        "recall": 0.9815,
+        "precision": 0.9298,
+        "n_missed": 1,
+        "n_unchecked": 0,
+        "n_spurious": 4
+      },
+      "model_calls": 24,
+      "withheld": [
+        "inspect_evals/personality_BFI",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "toy-triage/preference"
+      ],
+      "false_overrides": [],
+      "run": "run1"
+    },
+    {
+      "corpus_size": 33,
+      "assay": {
+        "expected_loss": 57.0,
+        "recall": 0.9815,
+        "precision": 0.7571,
+        "n_missed": 0,
+        "n_unchecked": 1,
+        "n_spurious": 17
+      },
+      "assay+auditor": {
+        "expected_loss": 44.0,
+        "recall": 0.9815,
+        "precision": 0.9298,
+        "n_missed": 1,
+        "n_unchecked": 0,
+        "n_spurious": 4
+      },
+      "model_calls": 24,
+      "withheld": [
+        "inspect_evals/personality_BFI",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "toy-triage/preference"
+      ],
+      "false_overrides": [],
+      "run": "run2"
+    },
+    {
+      "corpus_size": 33,
+      "assay": {
+        "expected_loss": 57.0,
+        "recall": 0.9815,
+        "precision": 0.7571,
+        "n_missed": 0,
+        "n_unchecked": 1,
+        "n_spurious": 17
+      },
+      "assay+auditor": {
+        "expected_loss": 43.0,
+        "recall": 0.9815,
+        "precision": 0.9464,
+        "n_missed": 1,
+        "n_unchecked": 0,
+        "n_spurious": 3
+      },
+      "model_calls": 25,
+      "withheld": [
+        "inspect_evals/personality_BFI",
+        "inspect_evals/stereoset",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "toy-triage/preference"
+      ],
+      "false_overrides": [],
+      "run": "run3"
+    },
+    {
+      "corpus_size": 33,
+      "assay": {
+        "expected_loss": 57.0,
+        "recall": 0.9815,
+        "precision": 0.7571,
+        "n_missed": 0,
+        "n_unchecked": 1,
+        "n_spurious": 17
+      },
+      "assay+auditor": {
+        "expected_loss": 44.0,
+        "recall": 0.9815,
+        "precision": 0.9298,
+        "n_missed": 1,
+        "n_unchecked": 0,
+        "n_spurious": 4
+      },
+      "model_calls": 24,
+      "withheld": [
+        "inspect_evals/personality_BFI",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "toy-triage/preference"
+      ],
+      "false_overrides": [],
+      "run": "run4"
+    },
+    {
+      "corpus_size": 33,
+      "assay": {
+        "expected_loss": 57.0,
+        "recall": 0.9815,
+        "precision": 0.7571,
+        "n_missed": 0,
+        "n_unchecked": 1,
+        "n_spurious": 17
+      },
+      "assay+auditor": {
+        "expected_loss": 43.0,
+        "recall": 0.9815,
+        "precision": 0.9464,
+        "n_missed": 1,
+        "n_unchecked": 0,
+        "n_spurious": 3
+      },
+      "model_calls": 26,
+      "withheld": [
+        "inspect_evals/personality_BFI",
+        "inspect_evals/stereoset",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "toy-triage/preference"
+      ],
+      "false_overrides": [],
+      "run": "run5"
+    }
+  ]
+}

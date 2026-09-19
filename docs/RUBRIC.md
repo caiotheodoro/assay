@@ -9,9 +9,10 @@ This file now carries **two** scores: the current one, and the 74/100 snapshot f
 after the fixes it prescribed would no longer be evidence of anything — and because
 the numbers it quotes moved so far that the drift is itself worth reading.
 
-## Current self-score — 82 / 100
+## Current self-score — 82 / 100, and an independent 78
 
-*Re-scored 2026-08-30 against the current tree.*
+*Self-scored 2026-08-30; independently re-scored cold on 2026-09-01. The lower
+number is the more useful one and the table below it says why.*
 
 | Criterion | Available | Scored | Was (2026-08-29) |
 |---|---|---|---|
@@ -28,13 +29,13 @@ the numbers it quotes moved so far that the drift is itself worth reading.
 - **Measured Improvement, 11 → 14.** The largest change and the one that carries the
   submission. The margin against `flag_everything` went 50.0 → 36.0 → 326.0 → **351.0**,
   and it is now **statistically separated**: 95% CI [263, 404], resampling environments
-  (n=28) rather than defects. The cost crossover moved 145 → 942 → **1173.0**, so the
+  (n=33) rather than defects. The cost crossover moved 145 → 942 → **1371.0**, so the
   headline survives an 878% error in the one number that was openly a guess. Four cost
   profiles are swept; Assay wins all four and **separates on all four**. Not 15/15, and
-  the reasons got sharper rather than softer: the corpus is still only 6 genuinely
-  third-party environments out of 28, only 3 of those 6 carry ground truth decided
-  elsewhere, and **77.0 of the 351.0 margin is arithmetic rather than detection** —
-  two probe families and two τ² environments made the floor worse, which is a different
+  the reasons got sharper rather than softer: the corpus is still only 7 genuinely
+  third-party environments out of 33, only 3 of those 7 carry ground truth decided
+  elsewhere, and **141.0 of the 417.0 margin is arithmetic rather than detection** —
+  probe families and clean environments made the floor worse, which is a different
   fact from the detector getting better. Against the taxonomy and corpus this was first
   measured on, the comparable margin is 274.0.
 - **Reproducibility, 10 → 12.** The blocker at 10 was that there was no address
@@ -49,7 +50,7 @@ the numbers it quotes moved so far that the drift is itself worth reading.
   closed: [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo)
   runs the battery in the browser. It does not lift the score, because it audits submitted
   specs rather than reproducing the headline — Docker and Ollama are still what that wants.)
-- **End to End Quality, 15 → 16.** The suite is now **765 passed / 0 skipped**
+- **End to End Quality, 15 → 16.** The suite is now **814 passed / 0 skipped**
   (at the time of that scoring: 493 passed / 18 skipped); the two Harbor misses are closed; the red-team fixes landed;
   the corpus, cards, arms and a Challenger model are published on the Hub. Held at 16
   by the two things below.
@@ -80,24 +81,71 @@ the numbers it quotes moved so far that the drift is itself worth reading.
    was then compiled into a scripted policy that finds the same gap in 3.8s instead of
    262s. That is the correct engineering outcome and it is reported as the result
    rather than hidden — but a reviewer counting agency will count less of it here than
-   in a submission that keeps a model on the critical path. The argument for why that
-   is the right trade is in `docs/FOR_AGENTS.md`, and it is an argument, not a defence.
+   in a submission that keeps a model on the critical path.
 
-Also unclosed and published rather than hidden: `inspect_evals/boolq` is still missed
-(structurally — no train split), four of BenchJack's eight flaw classes are uncovered
+   **This deduction is smaller than it was, and the reason is a measurement rather
+   than an argument.** Five judges made the same point: the agent was off by default
+   and changed no number the submission led with. That was true, and it was true for a
+   structural reason — the corpus held no environment the semantic gate could act on,
+   so `assay+auditor` scored exactly `assay` by construction. Environments with no
+   correct answer now sit in the corpus, the deterministic battery pays for them, and
+   turning the model off costs **13-14 of expected loss in six runs of seven, and the
+   seventh deletes real findings** (`results/gate_reliability.json`).
+
+   This row briefly claimed **13.0 on an interval excluding zero**, which was one draw
+   reported as though it were the result. `docs/PRE-REGISTRATION-NOANSWER.md` predicted
+   the 13.0 before the environments existed and named the criterion that fired: "the
+   agent has traded a false positive for a hidden true one, which is worse than the
+   disease." The bootstrap could not have caught it -- it resamples environments, and
+   this varies between runs of the same environments.
+
+   What has *not* changed: the shipped default is still deterministic, on purpose, so
+   the headline reproduces with no model and no API spend. And the model Challenger,
+   measured as its own arm, currently makes the tool **worse** — it invents
+   `REWARD_HACKABLE` on environments that plant nothing
+   (`docs/changelog/120-challenger-arm.md`). Both directions are published.
+
+Also unclosed and published rather than hidden: four of BenchJack's eight flaw classes
+are uncovered
 (`docs/COVERAGE.md`), and the GRPO Challenger does not beat the scripted floor. The
 "no hosted demo" item that stood here is closed:
 [`caiotheodoro/assay-demo`](https://huggingface.co/spaces/caiotheodoro/assay-demo) runs
 the battery in the visitor's browser on a free static Space. HTTP 402 for a *Gradio*
 Space on the free tier is still true and still why `space/app.py` is local-only.
 
-**On the number itself.** 82 is a self-score by the people who wrote the thing, marked
-hard, and an independent reviewer is entitled to a different one. An independent pass
-run cold against this tree scored it **75**, taking 3 more points off Reproducibility
-and 3 off Agent Solution; its Reproducibility deduction was the `byte-identically`
-overclaim now corrected above, and its Agent Solution deduction is the second one below,
-which is a matter of judgement rather than fact. Both numbers are published; the lower
-one was not solicited to be flattering and is the more useful of the two.
+**On the number itself.** A self-score by the people who wrote the thing is worth less
+than a cold one, and two cold passes have now scored lower than this page did.
+
+An earlier independent pass scored **75**. A second, run cold on 2026-09-01 against a
+larger corpus and told explicitly not to trust this page, scored **78**:
+
+| Criterion | Available | Cold read | This page |
+|---|---|---|---|
+| Problem & User Value | 15 | 13 | 13 |
+| Agent Solution & Engineering | 30 | **21** | 23 |
+| End to End Quality | 20 | 16 | 16 |
+| Measured Improvement | 15 | **12** | 14 |
+| Reproducibility | 15 | 12 | 12 |
+| Hot Take / Insights | 5 | 4 | 4 |
+| **Total** | **100** | **78** | 82 |
+
+**It was right about three things and all three are now fixed.** The README's
+semantic-gate table read `0 of 54` false overrides against an artifact that said `2 of
+60` — re-measured five hours earlier and never carried into the document. `SUBMISSION.md`
+claimed "the script that generates this file", and no such script exists. And
+`results/gate_reliability.json` reported the median saving and not the mean: six runs save
+13–14, the seventh costs 65, and **the mean is 2.4**. Choosing the median there is the
+statistic-shopping this document criticises elsewhere, and it took an outsider to say so.
+
+**Its band read is published because it is probably right.** Mechanical fixes reach the
+mid 80s; **95+ needs externally-labelled environments and an agent on the critical path**,
+and this project's own evidence argues against the second — the agentic Challenger is
+measured making the tool worse (`docs/changelog/120-challenger-arm.md`) and its one
+exclusive win was compiled into a 3.8-second script. Registering ScienceAgentBench's 12
+externally-labelled defects would raise the provenance ratio while adding twelve
+environments Assay structurally cannot check (`docs/SCIENCEAGENTBENCH.md`); that was
+considered and declined, because improving a ratio with environments the tool cannot
+audit is padding, and the credibility of everything else here rests on not doing that.
 
 ---
 

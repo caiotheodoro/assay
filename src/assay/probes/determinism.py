@@ -41,6 +41,7 @@ class SeedDeterminism(Probe):
 
     family = "determinism"
     name = "seed_determinism"
+    detects = (DefectClass.NONDETERMINISM,)
     requires = (Capability.SEEDED_RESET, Capability.LIVE_STEPPING)
 
     def _policy(self, adapter: EnvAdapter, task_id: str) -> list[Action]:

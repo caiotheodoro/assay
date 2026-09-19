@@ -1,0 +1,47 @@
+{
+  "run": "gate_k5",
+  "corpus_size": 33,
+  "assay": {
+    "expected_loss": 57.0,
+    "recall": 0.9815,
+    "precision": 0.7571,
+    "n_missed": 0,
+    "n_unchecked": 1,
+    "n_spurious": 17
+  },
+  "assay+auditor": {
+    "expected_loss": 44.0,
+    "recall": 0.9815,
+    "precision": 0.9298,
+    "n_missed": 1,
+    "n_unchecked": 0,
+    "n_spurious": 4
+  },
+  "model_calls": 19,
+  "withheld": [
+    "inspect_evals/personality_BFI",
+    "noanswer/openended",
+    "noanswer/ranking",
+    "toy-triage/preference"
+  ],
+  "declined": [
+    "harbor/broken-gold",
+    "harbor/self-graded",
+    "harbor/shared-tests",
+    "harbor/vacuous-tests",
+    "inspect/always-correct",
+    "inspect/constant-score",
+    "inspect/effort-scorer",
+    "inspect_evals/stereoset",
+    "tau2/airline",
+    "tau2/retail",
+    "toy-triage/drifted_asserts",
+    "toy-triage/escalate_overrewarded",
+    "toy-triage/gold_broken",
+    "toy-triage/rationale_ignored",
+    "toy-triage/solved_at_reset",
+    "toy-triage/unfalsifiable",
+    "toy-triage/weak_oracle"
+  ],
+  "false_overrides": []
+}

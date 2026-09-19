@@ -8,25 +8,21 @@ Blank lines are real pauses. Respellings (`Ass-ay`, `Q-A's`, `yes-no`, `S-W-E be
 `Open env's`, `Science Agent Bench`) are deliberate; the captions show the written forms.
 
 ---
-## execution  →  `public/voice/execution.mp3`
+## comparison  →  `public/voice/comparison.mp3`
 
-*141 words · 798 chars*
+*157 words · 905 chars*
 
 ```text
-So: nine probe families. The card says valid, invalid, or unverified. Unverified exits nonzero, the same as a failure. An empty card must not read as a clean bill of health.
+So what is that worth?
 
-Here is one run.
+Every arm on the same corpus, priced by the same cost model. Ass-ay at forty-three. Flagging everything at three hundred and ninety-four. The incumbent is up here with the arms that barely try. It saves sixteen against doing nothing, on an interval that touches zero.
 
-Does gold pass. Does a no op fail. Can this eval fail at all. The ninth is the agentic one. A Challenger that scores well without doing the job.
+So the floor is not the incumbent. It is flagging everything. Catch every defect by construction, and pay for it in false alarms. For most of this project Ass-ay did not clear that floor. It does now, and the interval clears zero.
 
-Nothing runs untrusted code unless an approver says yes. The default refuses everything.
+Four cost profiles, pricing a missed critical defect from a hundred and twenty engineer-hours up to two thousand. Wins all four cost profiles, and separates on every one of them.
 
-It wrote the same wrong answer into the output, and into the file the verifier checks against. It completed nothing, and scored perfect.
-
-So the card does not say pass. It says invalid, on a critical defect. And it lists five probes that could not run at all.
-
-Three choices did that. An independent verifier. A sandbox that denies by default. And deterministic probes.
+All of it rests on one number nobody derived. We price a missed critical defect at a hundred and twenty engineer-hours. That constant would have to be nearly ten times larger before the ranking flips.
 ```
 
 ---
-**798 characters.**
+**905 characters.**

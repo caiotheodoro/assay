@@ -8,14 +8,20 @@ a bill.
 
 `Auditor.should_escalate()` decides, in code, and states a reason either way.
 
-**Evidence.** `results/escalation_policy.json`, all 26 scored environments.
+**Evidence.** `results/escalation_policy.json`, all 28 scored environments.
 
 | | n |
 |---|---|
 | escalate | 12 |
 | refuse — the scripted attacker already found the exploit | 10 |
+| refuse — the probe did not run at all | 4 |
 | refuse — the declared repertoire is wide enough that silence is evidence | 2 |
-| refuse — the probe did not run at all | 2 |
+
+*(Re-measured at 28 environments after the τ² corpus landed. The two τ² domains
+both land in "the probe did not run": `reward_hackability` reports
+NOT_APPLICABLE there because tau2 exposes no `true_completion` for an exploit
+gap to be measured against, so there is nothing for a second attacker to
+improve on.)*
 
 **The refusals are the point.** The largest bucket is environments where the
 cheap attacker already won, and there a second one *cannot* add information:

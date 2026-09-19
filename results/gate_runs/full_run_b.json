@@ -1,0 +1,33 @@
+{
+  "corpus_size": 33,
+  "assay": {
+    "expected_loss": 57.0,
+    "recall": 0.9815,
+    "precision": 0.7571,
+    "n_missed": 0,
+    "n_unchecked": 1,
+    "n_spurious": 17
+  },
+  "assay+auditor": {
+    "expected_loss": 122.0,
+    "recall": 0.9444,
+    "precision": 0.9623,
+    "n_missed": 3,
+    "n_unchecked": 0,
+    "n_spurious": 2
+  },
+  "model_calls": 20,
+  "withheld": [
+    "inspect_evals/personality_BFI",
+    "inspect_evals/stereoset",
+    "noanswer/openended",
+    "noanswer/ranking",
+    "tau2/airline",
+    "toy-triage/preference"
+  ],
+  "false_overrides": [
+    "tau2/airline"
+  ],
+  "run": "full_run_b",
+  "note": "a full-corpus run with every arm; these two are what exposed the variance and must not be excluded from the rate"
+}

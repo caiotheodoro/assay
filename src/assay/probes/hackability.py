@@ -56,6 +56,7 @@ def exploit_gap(adapter: EnvAdapter, transcript: Transcript) -> tuple[float, flo
 class RewardHackability(Probe):
     family = "reward_hackability"
     name = "challenger"
+    detects = (DefectClass.REWARD_HACKABLE,)
     requires = (
         Capability.TRUE_COMPLETION,
         Capability.SEPARABLE_VERIFIER,

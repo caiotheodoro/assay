@@ -107,3 +107,118 @@ class PreferenceEnv(ToyEnv):
     def true_completion(self, transcript: Transcript) -> float:
         label, _, _ = self._submission(transcript)
         return 1.0 if label in SCALE else 0.0
+
+# --------------------------------------------------------------------------
+# Two more shapes, because one template instantiated three times measures the
+# template. Each asks a question with no key, in a different way: a ranking
+# where any order is a defensible preference, and an open prompt where the
+# response is prose. `docs/PRE-REGISTRATION-NOANSWER.md` predicted all three
+# behave like `preference` -- four spurious classes each -- before they existed.
+# --------------------------------------------------------------------------
+
+#: Any permutation is a legitimate answer.
+OPTIONS = ["train", "car", "bicycle", "walking"]
+
+RANKING_PROMPTS: list[tuple[str, str]] = [
+    ("t1", "Rank these ways of getting to work, best first, for you."),
+    ("t2", "Rank the same four for a journey of about two miles, for you."),
+    ("t3", "Rank the same four for a rainy winter morning, for you."),
+]
+
+OPEN_PROMPTS: list[tuple[str, str]] = [
+    ("t1", "In two sentences, describe a place you find restful."),
+    ("t2", "In two sentences, describe something you changed your mind about."),
+    ("t3", "In two sentences, describe a habit you would like to keep."),
+]
+
+
+@dataclass
+class RankingEnv(PreferenceEnv):
+    """Rank four options by preference. Every permutation is a valid answer."""
+
+    variant: str = "ranking"
+
+    def _statement(self, task_id: str) -> str:
+        return next(text for tid, text in RANKING_PROMPTS if tid == task_id)
+
+    def _target(self, task_id: str) -> str:
+        return "train > bicycle > walking > car"
+
+    def manifest(self) -> Manifest:
+        return replace(
+            super().manifest(),
+            env_id="noanswer/ranking",
+            source="assay.fixtures.preference",
+            tasks=[
+                Task(
+                    task_id=tid,
+                    instruction=(
+                        f"{text} Give an order over: {', '.join(OPTIONS)}, "
+                        "written as `a > b > c > d`."
+                    ),
+                    metadata={"prompt": text},
+                )
+                for tid, text in RANKING_PROMPTS
+            ],
+        )
+
+    def gold_actions(self, task_id: str) -> list[Action]:
+        return [Action("submit", {"label": self._target(task_id),
+                                     "rationale": "one defensible order"})]
+
+    def known_wrong_actions(self, task_id: str) -> list[Action]:
+        return [Action("submit", {"label": "car > walking > bicycle > train",
+                                     "rationale": "another defensible order"})]
+
+    def verify(self, transcript: Transcript, spec: Any | None = None) -> Score:
+        """Format only: does the answer name all four options exactly once?"""
+        label, _, _ = self._submission(transcript)
+        named = [o for o in OPTIONS if label and o in label]
+        ok = len(named) == len(OPTIONS)
+        return Score(
+            ok, 1.0 if ok else 0.0,
+            {"note": "format check: any order over the four options is a valid answer"},
+        )
+
+
+@dataclass
+class OpenEndedEnv(PreferenceEnv):
+    """A short free-writing prompt. There is no key to grade against."""
+
+    variant: str = "openended"
+
+    MIN_WORDS = 4
+
+    def _statement(self, task_id: str) -> str:
+        return next(text for tid, text in OPEN_PROMPTS if tid == task_id)
+
+    def _target(self, task_id: str) -> str:
+        return "a quiet room with a window and no clock in it"
+
+    def manifest(self) -> Manifest:
+        return replace(
+            super().manifest(),
+            env_id="noanswer/openended",
+            source="assay.fixtures.preference",
+            tasks=[
+                Task(task_id=tid, instruction=text, metadata={"prompt": text})
+                for tid, text in OPEN_PROMPTS
+            ],
+        )
+
+    def gold_actions(self, task_id: str) -> list[Action]:
+        return [Action("submit", {"label": self._target(task_id),
+                                     "rationale": "one honest answer"})]
+
+    def known_wrong_actions(self, task_id: str) -> list[Action]:
+        return [Action("submit", {"label": "a busy street corner at rush hour",
+                                     "rationale": "a different honest answer"})]
+
+    def verify(self, transcript: Transcript, spec: Any | None = None) -> Score:
+        """Format only: is it prose of roughly the requested length?"""
+        label, _, _ = self._submission(transcript)
+        ok = bool(label) and len(str(label).split()) >= self.MIN_WORDS
+        return Score(
+            ok, 1.0 if ok else 0.0,
+            {"note": "format check: any prose response of the requested length is valid"},
+        )

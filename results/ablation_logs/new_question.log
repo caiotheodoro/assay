@@ -1,0 +1,25 @@
+  new_question: HIT inspect_evals/personality_BFI      3/3
+  new_question: HIT inspect_evals/stereoset            2/3
+  new_question: HIT toy-triage/preference              3/3
+  new_question: HIT noanswer/ranking                   3/3
+  new_question: HIT noanswer/openended                 3/3
+  new_question:     toy-triage/healthy                 0/3
+  new_question:     toy-triage/gold_broken             0/3
+  new_question:     toy-triage/solved_at_reset         0/3
+  new_question:     toy-triage/unfalsifiable           0/3
+  new_question:     toy-triage/weak_oracle             0/3
+  new_question:     toy-triage/escalate_overrewarded   0/3
+  new_question:     toy-triage/rationale_ignored       0/3
+  new_question:     toy-triage/leaky_splits            0/3
+  new_question:     toy-triage/paraphrased_splits      0/3
+  new_question:     toy-triage/artifact_splits         0/3
+  new_question:     toy-triage/drifted_asserts         0/3
+  new_question:     toy-triage/flaky                   0/3
+  new_question:     inspect_evals/bbq                  0/3
+  new_question:     harbor/vacuous-tests               0/3
+  new_question:     harbor/self-graded                 0/3
+  new_question:     harbor/broken-gold                 0/3
+  new_question:     harbor/shared-tests                0/3
+  new_question:     harbor/healthy                     0/3
+  new_question:     tau2/airline                       0/3
+  new_question:     tau2/retail                        0/3

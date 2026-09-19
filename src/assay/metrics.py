@@ -35,10 +35,26 @@ class Outcome:
     env_id: str
     planted: frozenset[DefectClass]
     detected: frozenset[DefectClass]
+    #: Classes whose probe declined to run here -- NOT_APPLICABLE, not PASS.
+    #:
+    #: `inspect_evals/boolq` plants SHORTCUT_LEAK and ships no train split, so
+    #: `partial_input_baseline` returns NOT_APPLICABLE with that reason. With
+    #: only `planted` and `detected` to work with, that landed in `missed` and
+    #: was published as Assay failing to find a defect it had explicitly
+    #: declined to rule on -- the same "a check that could not run reported as
+    #: a check that ran" this tool exists to catch, in the scorer that produces
+    #: its own headline.
+    inconclusive: frozenset[DefectClass] = frozenset()
 
     @property
     def missed(self) -> frozenset[DefectClass]:
-        return self.planted - self.detected
+        """Planted, not found, and the probe that looks for it actually ran."""
+        return self.planted - self.detected - self.inconclusive
+
+    @property
+    def unchecked(self) -> frozenset[DefectClass]:
+        """Planted, not found, and nothing was in a position to look."""
+        return (self.planted - self.detected) & self.inconclusive
 
     @property
     def spurious(self) -> frozenset[DefectClass]:
@@ -73,15 +89,48 @@ class ArmResult:
         return sum(len(o.spurious) for o in self.outcomes)
 
     @property
+    def n_unchecked(self) -> int:
+        """Planted defects no probe was in a position to look for."""
+        return sum(len(o.unchecked) for o in self.outcomes)
+
+    @property
     def error_count(self) -> int:
-        """Raw errors, ignoring severity. The flat-cost view."""
-        return self.n_missed + self.n_spurious
+        """Raw errors, ignoring severity. The flat-cost view.
+
+        Unchecked counts here for the same reason it is priced as a miss in
+        `expected_loss`: flat cost or weighted, a defect nothing looked for is
+        still sitting in the user's environment. Splitting it out of `n_missed`
+        explains the number; it must not shrink it.
+        """
+        return self.n_missed + self.n_unchecked + self.n_spurious
 
     # -- rates -------------------------------------------------------------
 
     @property
     def recall(self) -> float:
+        """Of everything planted, what was found.
+
+        The denominator stays the full planted set on purpose. Dropping the
+        environments a probe declined on is how a detector flatters itself, and
+        this number is the one the write-ups lead with.
+        """
         return self.n_caught / self.n_planted if self.n_planted else 0.0
+
+    @property
+    def recall_on_checkable(self) -> float | None:
+        """Of what a probe was in a position to check, what was found.
+
+        Published beside `recall`, never instead of it. The gap between the two
+        is exactly the set of defects nothing could rule on, and a reader is
+        owed both numbers rather than whichever one is kinder.
+        """
+        den = self.n_planted - self.n_unchecked
+        if not den:
+            # Nothing was checkable, so the rate is undefined rather than zero.
+            # Returning 0.0 here would say "checked everything, found nothing",
+            # which is the conflation this whole property exists to remove.
+            return None
+        return self.n_caught / den
 
     @property
     def precision(self) -> float:
@@ -99,7 +148,13 @@ class ArmResult:
     def expected_loss(self, profile: CostProfile) -> float:
         total = 0.0
         for outcome in self.outcomes:
-            for defect in outcome.missed:
+            # An unchecked defect costs the user exactly what a missed one
+            # costs: it is still there and still undetected. Pricing it lower
+            # would let any probe cut this arm's reported loss by declining to
+            # answer, which is the one incentive a tool like this must not
+            # have. So the loss is unchanged by the third state -- only the
+            # account of *why* changes, and `recall_on_checkable` reports that.
+            for defect in outcome.missed | outcome.unchecked:
                 total += profile.cost_of_miss(DEFAULT_SEVERITY[defect])
             total += profile.false_alarm * len(outcome.spurious)
         return total
@@ -111,7 +166,12 @@ class ArmResult:
             "recall": round(self.recall, 4),
             "precision": round(self.precision, 4),
             "severity_weighted_recall": round(self.severity_weighted_recall(), 4),
+            "recall_on_checkable": (
+                None if self.recall_on_checkable is None
+                else round(self.recall_on_checkable, 4)
+            ),
             "n_missed": self.n_missed,
+            "n_unchecked": self.n_unchecked,
             "n_spurious": self.n_spurious,
             "error_count": self.error_count,
         }

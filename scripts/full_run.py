@@ -56,7 +56,10 @@ def run_assay(corpus, ctx: dict | None = None, label: str = "assay") -> ArmResul
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
             report = audit(adapter, ctx)
-        arm.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        arm.outcomes.append(
+            Outcome(env_id, planted, frozenset(report.detected),
+                    frozenset(report.unchecked))
+        )
         print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
               flush=True)
     return arm
@@ -83,7 +86,10 @@ def run_auditor_arm(
     for env_id, factory, planted in corpus:
         with _closing(factory()) as adapter:
             report = auditor.audit(adapter)
-        result.outcomes.append(Outcome(env_id, planted, frozenset(report.detected)))
+        result.outcomes.append(
+            Outcome(env_id, planted, frozenset(report.detected),
+                    frozenset(report.unchecked))
+        )
         print(f"  {label}: {env_id} -> {sorted(d.value for d in report.detected) or '-'}",
               flush=True)
     return result, {
@@ -92,6 +98,69 @@ def run_auditor_arm(
         "model_calls": auditor.calls,
         "decisions": auditor.decisions,
         "overrides": [o.to_dict() for o in auditor.overrides],
+    }
+
+
+def run_challenger_arm(
+    corpus, client, turns: int = 10, label: str | None = None
+) -> tuple[ArmResult, dict]:
+    """`assay` with the model Challenger added, as a row rather than a swap.
+
+    `--challenger` replaces the assay arm: the run produces
+    `assay+scripted+prompted[...]` *instead of* `assay`, so no artifact has ever
+    held both, and the submission could say "the agent is in the headline table
+    and it changes nothing" only because the default keeps it out of the table
+    entirely. This runs it as an extra arm so the two sit side by side on one
+    corpus.
+
+    The expensive attacker is gated by `Auditor.should_escalate`, which costs no
+    model calls and refused 16 of 28 environments when it was measured
+    (`results/escalation_policy.json`). Escalating everywhere is not a design,
+    it is a bill: where the scripted repertoire already saturates, the composite
+    takes the max gap, so a second attacker cannot add information -- only cost.
+    """
+    from assay.auditor import Auditor
+    from assay.challenger import CompositeChallenger, ScriptedChallenger
+    from assay.challenger.prompted import PromptedChallenger
+
+    composite = CompositeChallenger(
+        [ScriptedChallenger(), PromptedChallenger(client=client, turns=turns)]
+    )
+    policy = Auditor(client)
+    # `+gated` is load-bearing. CompositeChallenger.name does not depend on
+    # turns or on the escalation policy, so `--challenger ollama --challenger-arm
+    # qwen3:8b` produced the identical label twice and this arm silently
+    # overwrote the ungated one in `arms`, publishing the escalation-gated run as
+    # the headline.
+    label = label or f"assay+{composite.name}+gated"
+    result = ArmResult(label)
+    decisions = []
+
+    for env_id, factory, planted in corpus:
+        with _closing(factory()) as adapter:
+            baseline = audit(adapter, None)
+            escalate, why = policy.should_escalate(adapter, baseline)
+        report = baseline
+        if escalate:
+            with _closing(factory()) as adapter:
+                report = audit(adapter, {"challenger": composite})
+        decisions.append({"env_id": env_id, "escalated": escalate, "why": why})
+        result.outcomes.append(
+            Outcome(env_id, planted, frozenset(report.detected),
+                    frozenset(report.unchecked))
+        )
+        mark = "escalated" if escalate else "refused"
+        print(f"  {label}: {env_id} [{mark}] -> "
+              f"{sorted(d.value for d in report.detected) or '-'}", flush=True)
+
+    return result, {
+        "backend": getattr(client, "name", "unknown"),
+        "challenger": composite.name,
+        "turns": turns,
+        "escalation_policy": "Auditor.should_escalate; no model calls",
+        "n_escalated": sum(1 for d in decisions if d["escalated"]),
+        "n_refused": sum(1 for d in decisions if not d["escalated"]),
+        "decisions": decisions,
     }
 
 
@@ -190,6 +259,15 @@ def main() -> int:
              "a reduced run reports a *better* number and calls it success.",
     )
     ap.add_argument(
+        "--challenger-arm",
+        metavar="BACKEND",
+        help="also run `assay+<composite>`: the same battery with the model "
+             "Challenger composed onto the scripted one, gated by "
+             "Auditor.should_escalate. An ollama tag, or 'claude'. Unlike "
+             "--challenger this adds a row instead of replacing the assay arm, "
+             "so the artifact holds both.",
+    )
+    ap.add_argument(
         "--auditor-arm",
         metavar="BACKEND",
         help="also run `assay+auditor`: the same battery read by the Auditor "
@@ -260,6 +338,23 @@ def main() -> int:
                 arms[arm.arm] = result
                 arm_logs[arm.arm] = logs
 
+    if args.challenger_arm:
+        from assay.llm import ClaudeCLIClient, OllamaClient
+
+        client = (
+            ClaudeCLIClient() if args.challenger_arm == "claude"
+            else OllamaClient(args.challenger_arm)
+        )
+        usable, reason = client.availability()
+        if not usable:
+            print(f"SKIPPING challenger arm: {reason}")
+            print("an arm missing from a comparison is a result about the run, not the method")
+        else:
+            print(f"running challenger arm ({client.name}) ...", flush=True)
+            result, logs = run_challenger_arm(corpus, client, args.challenger_turns)
+            arms[result.arm] = result
+            arm_logs[result.arm] = logs
+
     if args.auditor_arm:
         from assay.llm import ClaudeCLIClient, OllamaClient
 
@@ -276,6 +371,10 @@ def main() -> int:
             result, logs = run_auditor_arm(corpus, client)
             arms[result.arm] = result
             arm_logs[result.arm] = logs
+
+    # Which label the assay arm carried. `--challenger` renames it rather than
+    # adding one, so downstream cannot recover it by guessing at the string.
+    assay_arm_label = label
 
     rows = {}
     for name, arm in arms.items():
@@ -302,6 +401,7 @@ def main() -> int:
         # exactly as much as one that silently shrank.
         "unscored": held_out,
         "total_planted_defects": sum(len(v) for v in truth.values()),
+        "assay_arm_label": assay_arm_label,
         "cost_profile": {"name": profile.name, "description": profile.description},
         "arms": rows,
         "per_env": {
@@ -309,6 +409,7 @@ def main() -> int:
                 "planted": sorted(d.value for d in o.planted),
                 "assay_detected": sorted(d.value for d in o.detected),
                 "missed": sorted(d.value for d in o.missed),
+                "unchecked": sorted(d.value for d in o.unchecked),
                 "spurious": sorted(d.value for d in o.spurious),
             }
             for o in arms[label].outcomes

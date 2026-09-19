@@ -1,0 +1,29 @@
+{
+  "corpus_size": 33,
+  "assay": {
+    "expected_loss": 57.0,
+    "recall": 0.9815,
+    "precision": 0.7571,
+    "n_missed": 0,
+    "n_unchecked": 1,
+    "n_spurious": 17
+  },
+  "assay+auditor": {
+    "expected_loss": 43.0,
+    "recall": 0.9815,
+    "precision": 0.9464,
+    "n_missed": 1,
+    "n_unchecked": 0,
+    "n_spurious": 3
+  },
+  "model_calls": 25,
+  "withheld": [
+    "inspect_evals/personality_BFI",
+    "inspect_evals/stereoset",
+    "noanswer/openended",
+    "noanswer/ranking",
+    "toy-triage/preference"
+  ],
+  "false_overrides": [],
+  "run": "run3"
+}

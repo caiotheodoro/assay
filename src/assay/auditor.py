@@ -47,10 +47,34 @@ from .llm import LLMClient, LLMUnavailable
 from .runner import AuditReport, audit as _run_battery
 from .types import Capability, Item, ProbeResult, ProbeStatus, digest
 
-#: The only family whose results the semantic gate may touch. Every probe in
-#: it asks a question that presumes the environment has a correct answer, which
-#: is exactly the presumption that can fail.
-SEMANTIC_SCOPE = "verifier_integrity"
+#: The families the semantic gate may touch, and the test for membership is one
+#: question: does this probe's question *presuppose that a correct answer
+#: exists*? If it does, the question is void on an environment that has none,
+#: and a DEFECT it reports there is an artefact of the presumption rather than a
+#: property of the environment.
+#:
+#: - `verifier_integrity` -- gold passes, no-op fails, an inverted spec fails.
+#:   Every one of those compares against a key. Void without one.
+#: - `separability` -- the best graded policy must beat the worst. There is no
+#:   grading to separate when five answers are equally valid.
+#: - `trivial_floor` -- an input-ignoring policy must not beat a graded one. On
+#:   an opinion inventory an input-ignoring policy *is* a legitimate response,
+#:   so it beating the floor is the design working.
+#: - `spec_verifier_match` -- lexical overlap between the instruction and the
+#:   verifier's asserts. A format check legitimately shares no content words
+#:   with the question it is checking the format of.
+#:
+#: `reward_hackability` is deliberately **out**, and it is the interesting
+#: exclusion. Its question does presuppose a correct answer -- an exploit gap is
+#: `env_score - true_completion`, and `true_completion` is meaningless without a
+#: key -- so on the argument above it belongs here. It stays out because it is
+#: the only CRITICAL class in the set, and a false withhold there hides the
+#: worst defect this tool can find. The cost of that choice is measured rather
+#: than assumed: `results/semantic_gate.json` records what still fires on a
+#: no-correct-answer environment after the gate has run.
+SEMANTIC_SCOPE = frozenset(
+    {"verifier_integrity", "separability", "trivial_floor", "spec_verifier_match"}
+)
 
 #: How many declared trivial policies count as a repertoire wide enough
 #: that finding nothing means something. Below this, silence is cheap.
@@ -59,23 +83,29 @@ ESCALATION_FLOOR = 5
 _SYSTEM = """\
 You read one evaluation environment and answer one concrete question about it:
 
-    Could two DIFFERENT responses to the same task both be legitimately correct,
-    such that a fair scorer ought to accept both?
+    When this environment scores a response, what does it compare that response
+    AGAINST?
 
-Answer that question first, with an example, and let the verdict follow from it.
+Name that thing first, and let the verdict follow from it.
 
-If no -- one response is right and the others are wrong -- the environment
-has a correct answer. Maths, code, question answering, classification.
+If there is something to compare against -- a key, a target, an expected output,
+a set of accepted answers, a required end state of a database or a file -- the
+environment HAS a correct answer. That stays true when many different responses
+reach it. A customer-service dialogue with a hundred valid phrasings still has
+a correct outcome; so does any task graded on the state it leaves behind.
 
-If yes -- two different responses are both legitimately correct -- the
-environment has no correct answer. It is eliciting an opinion, a preference, a
-self-report, a personality trait, or an open-ended piece of writing. On these a
-scorer that only checks the response FORMAT is correct design, not a bug: the
-result is computed from the response, not graded against a key.
+If there is nothing to compare against, and the score is computed FROM the
+response itself -- summing a trait scale, mapping a choice onto a bias score,
+checking only that the reply is well formed -- the environment has NO correct
+answer. On these a scorer that checks only FORMAT is correct design, not a bug.
+
+The question is NOT whether the correct response is unique. Many different
+responses being acceptable is normal and says nothing. The question is whether
+anything decides correctness at all.
 
 Reply with one JSON object and nothing else:
 
-{"both_valid_example": "<two different responses that would both be fair, or 'none'>",
+{"compared_against": "<the key, target or required end state, or 'nothing'>",
  "verdict": "has_correct_answer" | "no_correct_answer",
  "elicitation": "<what the environment elicits, three words>",
  "quote": "<the exact task text that shows it>",
@@ -128,40 +158,73 @@ def _parse(reply: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
-_NONE = {"none", "none.", "n/a", "na", "", "-", "null"}
+_NONE = {"none", "none.", "nothing", "nothing.", "n/a", "na", "", "-", "null"}
+
+
+def _names_nothing(referent: str) -> bool:
+    """Does this referent say that nothing decides correctness?
+
+    Exact-matching "nothing" is too brittle: a model asked what a personality
+    inventory grades against replies "nothing; the trait score is summed from
+    the reply", which is the right answer in a sentence. Matching the leading
+    word keeps that while still refusing anything that names a thing --
+    "the answer key", "the required end state of the database".
+
+    Conservative on purpose. A referent this cannot read is treated as naming
+    something, which blocks the override, which changes nothing.
+    """
+    text = referent.strip().lower().lstrip("-* ").strip()
+    if text.strip(".") in _NONE:
+        return True
+    head = text.split(",")[0].split(";")[0].split(" -- ")[0].strip().strip(".")
+    if head in _NONE:
+        return True
+    return head.split()[0] in {"nothing", "none", "no"} if head.split() else False
 
 
 def decide(answer: dict[str, Any]) -> str | None:
     """Two independent signals, and an override only when both agree.
 
-    The model is asked for a label and, separately, for a concrete example of
-    two different responses that would both be fair. Neither is trustworthy
-    alone, and the measurements say so:
+    The model is asked for a label and, separately, for the thing the scorer
+    compares a response against. Neither is trustworthy alone -- the
+    conjunction is the design, and a model too weak to hold the two together
+    produces no override at all, which is the degradation this wants: a weak
+    Auditor loses recall and cannot lose precision.
 
-    * The label alone misses. `qwen3:8b` labels `personality_BFI`
-      `has_correct_answer` in 3 of 3 runs, right after writing a genuinely
-      valid pair ("Yes, I tend to be disorganized" / "No, I am usually
-      organized") into the example field. It contradicts its own evidence.
-    * The example alone over-fires. Deriving the verdict from "is there an
-      example" turns 10 of the 12 toy-triage fixtures into
-      `no_correct_answer`; the model will invent a both-valid pair for an
-      ordinary ticket-classification task if the field is there to fill.
+    **The question this asks changed, and it changed because it was wrong.** It
+    used to ask whether two different responses could both be legitimately
+    correct, with the evidence field holding an example of such a pair. That is
+    a question about surface uniqueness, and for a multi-turn dialogue the
+    honest answer is always yes -- many phrasings, all valid. `tau2/airline` is
+    graded on the end state of a database, so it plainly has a correct answer,
+    and the gate concluded it did not and withheld 25 findings including two
+    real planted defects. The model answered accurately; the question was the
+    defect. `results/gate_reliability.json` measures how often that happened
+    (1 run in 7) and `docs/changelog/122-the-gate-asks-the-wrong-question.md`
+    is the diagnosis.
 
-    So the gate is the conjunction, and the conjunction is the point. A model
-    too weak to hold the two together produces no override at all, which is
-    the degradation this design wants: a weak Auditor loses recall and cannot
-    lose precision. `qwen3:8b` fires on nothing. `claude-cli` fires on
-    `personality_BFI` and nothing else.
+    So the evidence field is now the *referent*: name what decides correctness.
+    Naming anything -- a key, a target, a required end state -- is evidence
+    that correctness is decided somewhere, however many responses reach it.
+    Only "nothing" agrees with a `no_correct_answer` label.
+
+    The measurements that justified the conjunction were taken against the old
+    question and are kept here as the reason the shape is a conjunction, not as
+    claims about the current one: the label alone missed (`qwen3:8b` labelled
+    `personality_BFI` `has_correct_answer` in 3 of 3 runs while writing a
+    genuinely valid pair into the example field), and the evidence alone
+    over-fired (10 of 12 toy-triage fixtures). Both arms are re-measured against
+    the new question rather than assumed to carry over.
 
     Returns None when the reply is unusable, which also changes nothing.
     """
     label = answer.get("verdict")
-    example = answer.get("both_valid_example")
+    referent = answer.get("compared_against")
     if label not in ("has_correct_answer", "no_correct_answer"):
         return None
-    if not isinstance(example, str):
+    if not isinstance(referent, str):
         return None
-    evidence_says_no_answer = example.strip().lower().strip(".") not in _NONE
+    evidence_says_no_answer = _names_nothing(referent)
     if label == "no_correct_answer" and evidence_says_no_answer:
         return "no_correct_answer"
     return "has_correct_answer"
@@ -319,7 +382,8 @@ class Auditor:
     """
 
     def __init__(
-        self, client: LLMClient | None = None, gate_input: str = "instructions"
+        self, client: LLMClient | None = None, gate_input: str = "instructions",
+        consensus: int = 2,
     ) -> None:
         self._client = client
         #: What the semantic gate is allowed to read. "instructions" is the
@@ -331,6 +395,23 @@ class Auditor:
                 f"gate_input must be 'instructions' or 'describe', not {gate_input!r}"
             )
         self.gate_input = gate_input
+        if consensus < 1:
+            raise ValueError(f"consensus must be at least 1, not {consensus}")
+        #: How many independent replies must agree before anything is withheld.
+        #:
+        #: Withholding deletes findings, and one run in seven deleted two real
+        #: planted defects on `tau2/airline` -- an environment graded on the end
+        #: state of a database (`results/gate_reliability.json`). That failure
+        #: was never explained: the wording was ablated and cleared 10 of 10,
+        #: the shape cache was ruled out, and the environment's task text is 50
+        #: concatenated personas on which a model occasionally answers
+        #: differently.
+        #:
+        #: An unexplained rare error still has a shape, and this is the remedy
+        #: for that shape: ask again, and act only on agreement. Asymmetric on
+        #: purpose -- a single `has_correct_answer` is enough to stand down,
+        #: because leaving findings standing is the direction that fails safe.
+        self.consensus = consensus
         #: shape signature -> the conclusion reached on the first
         #: environment that had it. The memory lever: two environments
         #: that pose the same question to a reader get one model call
@@ -446,6 +527,22 @@ class Auditor:
         derived = decide(answer)
         if derived is None:
             return None
+        if derived == "no_correct_answer" and self.consensus > 1:
+            # Ask again before deleting anything. One dissent is enough to stop.
+            for _ in range(self.consensus - 1):
+                again = self._ask(_SYSTEM, text)
+                if again is None or decide(again) != "no_correct_answer":
+                    answer = {
+                        **answer,
+                        "verdict": "has_correct_answer",
+                        "abstained": (
+                            f"{self.consensus} independent replies were required to "
+                            "agree before withholding and they did not"
+                        ),
+                        "dissent": (again or {}).get("verdict", "unusable"),
+                    }
+                    derived = "has_correct_answer"
+                    break
         # Captured before any rewrite below: `model_said` must stay the
         # model's own label, or the card reports the gate's conclusion as
         # though the model had produced it.
@@ -471,13 +568,44 @@ class Auditor:
             "verdict": derived,
             "_env": adapter.manifest().env_id,
         }
-        self._by_shape[signature] = settled
+        if derived == "has_correct_answer":
+            # Cache the safe answer only. `shape()` groups environments by task
+            # text, and it groups more than the twelve toy fixtures its docstring
+            # names: the five `harbor/*` environments share one shape and the
+            # five `inspect/*` another, 33 environments collapsing to 14. So one
+            # `no_correct_answer` would withhold across five environments from a
+            # single model call, and `harbor/self-graded` is measured returning
+            # exactly that verdict 3 of 3 times -- caught today only by the
+            # abstention guard above, which is one check deep.
+            #
+            # Re-asking for the dangerous direction costs nothing measurable:
+            # every environment that currently answers `no_correct_answer` is a
+            # shape of its own, so no cache hit is lost, and the twelve-fixture
+            # saving in `results/auditor_memory.json` is on environments that
+            # answer `has_correct_answer` and still cache.
+            self._by_shape[signature] = settled
         return settled
 
+    #: Why each family's question is void when there is no correct answer. One
+    #: sentence per family, because a card that gives the same reason for four
+    #: different probes is telling the reader the gate did not look.
+    _VOID_BECAUSE = {
+        "verifier_integrity": "a verifier that cannot separate targets is the right "
+                              "design here, not a defect: there are no targets to separate",
+        "separability": "there is no grading to separate -- the responses are equally "
+                        "valid, so a graded policy cannot beat an ungraded one",
+        "trivial_floor": "an input-ignoring policy is a legitimate response to this "
+                         "question, so beating the floor is the design working",
+        "spec_verifier_match": "a format check legitimately shares no content words "
+                               "with the question whose format it checks",
+    }
+
     def _withhold(self, result: ProbeResult, answer: dict[str, Any], who: str) -> ProbeResult:
+        because = self._VOID_BECAUSE.get(
+            result.family, "this probe's question presupposes a correct answer"
+        )
         reason = (
-            "this environment has no correct answer, so a verifier that cannot "
-            "separate targets is the right design rather than a defect "
+            f"this environment has no correct answer, so {because} "
             f"({answer.get('elicitation', 'unstated')})"
         )
         self.overrides.append(
@@ -508,7 +636,7 @@ class Auditor:
         flagged = [
             r
             for r in report.results
-            if r.family == SEMANTIC_SCOPE and r.status is ProbeStatus.DEFECT
+            if r.family in SEMANTIC_SCOPE and r.status is ProbeStatus.DEFECT
         ]
         if not flagged:
             return report
@@ -551,6 +679,14 @@ class Auditor:
             "outcome": "withheld",
             "why": "this environment has no correct answer",
             "model_said": answer.get("model_said"),
+            # The evidence, not just the label. A false override on tau2/airline
+            # deleted two real findings and the log recorded only
+            # "no_correct_answer", so there was nothing to diagnose it with: it
+            # could not be told from a hundred correct withholds. An override
+            # this trail cannot explain is one nobody can check.
+            "compared_against": answer.get("compared_against"),
+            "quote": answer.get("quote"),
+            "confidence": answer.get("confidence"),
             "findings_withheld": sum(len(r.findings) for r in flagged),
         })
         return report

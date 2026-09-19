@@ -70,16 +70,22 @@ def test_the_corpus_split_is_published_on_provenance():
         "Assay lost the third-party-format split again; the README claims it "
         "scores 0.0 there and must be corrected."
     )
-    assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 0.0
+    # 0.0 until the three authored no-answer environments joined this split.
+    # They plant nothing and the battery reports four spurious classes on each
+    # of the two that trip four, so the deterministic arm now pays 12.0 here --
+    # deliberately, and the semantic gate is what recovers it. If this moves
+    # again the README's split table must move with it.
+    assert splits["in-process-fixtures"]["profiles"]["research-run"]["assay"]["expected_loss"] == 12.0
 
 
 def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
-    """6 of 28 environments are genuinely external, and 2 are externally labelled.
+    """7 of 32 environments are genuinely external, and 3 are externally labelled.
 
-    The count has moved three times: 2, then 4 when `inspect_evals/{paws,boolq}`
+    The count has moved four times: 2, then 4 when `inspect_evals/{paws,boolq}`
     were hand-triaged in, then 6 when `tau2/{retail,airline}` were registered
     under a mapping derived from a diff of two pinned revisions
-    (`docs/PRE-REGISTRATION-TAU2.md`). Each move forced the README's
+    (`docs/PRE-REGISTRATION-TAU2.md`), then 7 with `inspect_evals/personality_BFI`
+    (`docs/PRE-REGISTRATION-NOANSWER.md`). Each move forced the README's
     honest-ceiling paragraph to be rewritten, which is the entire purpose of
     asserting a literal here rather than a bound.
 
@@ -95,10 +101,11 @@ def test_the_readme_does_not_claim_a_third_party_corpus_it_does_not_have():
     """
     d = _load("corpus_splits.json")
     n = d["splits"]["external-envs"]["n_environments"]
-    assert n == 6, (
+    assert n == 8, (
         f"external control is n={n}; it was 2, then 4 with paws and boolq, then 6 with "
-        "tau2/retail and tau2/airline. If this changed again the README's honest-ceiling "
-        "paragraph must change with it."
+        "tau2/retail and tau2/airline, then 7 with personality_BFI, then 8 with "
+        "stereoset. If this changed again the README's honest-ceiling paragraph must "
+        "change with it."
     )
 
     derived = sorted(
@@ -361,14 +368,29 @@ def test_the_coverage_matrix_names_every_defect_class_and_flaw_class():
 
 
 def test_the_coverage_matrix_agrees_with_the_shipped_miss():
-    """Its central example must stay the environment actually missed."""
+    """Its central example must stay the environment actually not covered.
+
+    This asserted a *miss* set of exactly `{boolq: [SHORTCUT_LEAK]}` until the
+    scorer learned to tell a declined check from a failed one. boolq ships no
+    train split, so `partial_input_baseline` returns NOT_APPLICABLE and says so;
+    charging that as a failure to detect was the tool committing the defect
+    class it sells. The deterministic arm now has **no true misses on this
+    corpus**, and the same environment is the one thing it could not check.
+    """
     fr = _load("full_run.json")
     missed = {e: r["missed"] for e, r in fr["per_env"].items() if r["missed"]}
     coverage = (ROOT / "docs" / "COVERAGE.md").read_text()
-    assert missed == {"inspect_evals/boolq": ["SHORTCUT_LEAK"]}, (
-        f"the corpus miss set changed to {missed}; COVERAGE.md's closing "
-        "example and the README both describe the old one"
+    assert missed == {}, (
+        f"the corpus miss set changed to {missed}; it has been empty since the "
+        "scorer gained a third state, and COVERAGE.md and the README both "
+        "describe that. A real miss appearing here must be published."
     )
+    assay = fr["arms"]["assay"]
+    assert assay["n_missed"] == 0 and assay["n_unchecked"] == 1, (
+        f"expected 0 missed and 1 unchecked, got {assay['n_missed']} and "
+        f"{assay['n_unchecked']}"
+    )
+    assert assay["recall_on_checkable"] == 1.0
     assert "inspect_evals/boolq" in coverage
 
 
@@ -382,6 +404,7 @@ def test_the_coverage_matrix_agrees_with_the_shipped_miss():
 DOCS_THAT_CITE_PATHS = (
     "README.md",
     "AGENTS.md",
+    "SUBMISSION.md",
     "docs/FOR_AGENTS.md",
     "docs/RUBRIC.md",
 )
@@ -444,6 +467,7 @@ def test_the_suite_size_the_docs_advertise_is_the_suite_size_that_ran(request):
     live_docs = (
         "README.md",
         "AGENTS.md",
+        "SUBMISSION.md",
         "docs/FOR_AGENTS.md",
         "docs/REPRODUCTION.md",
         "docs/ARCHITECTURE.md",
@@ -649,6 +673,7 @@ def test_every_assay_audit_command_in_a_live_doc_names_a_real_environment():
 LIVE_DOCS = (
     "README.md",
     "AGENTS.md",
+    "SUBMISSION.md",
     "llms.txt",
     "docs/FOR_AGENTS.md",
     "docs/RESULTS.md",
@@ -721,6 +746,14 @@ def _arms_priced_on(line: str, context: str, arm_res: dict) -> set[str]:
         for arm, rx in arm_res.items():
             if any(its_own(m) for m in rx.finditer(low)):
                 priced.add(arm)
+    # `assay` is a prefix of `assay+auditor`, so a correct row for the agent arm
+    # credited the deterministic arm with the agent's number and read as stale.
+    # When a line names a longer arm that contains a shorter one, the longer name
+    # is the arm being priced -- `| assay+auditor | 43.0 |` is not a claim about
+    # `assay`.
+    for arm in list(priced):
+        if any(other != arm and arm in other and other in priced for other in priced):
+            priced.discard(arm)
     return priced
 
 
@@ -746,7 +779,11 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
     """
     run = json.loads((ROOT / "results" / "full_run.json").read_text())
     current = {name: arm["expected_loss"] for name, arm in run["arms"].items()}
-    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in current}
+    # re.escape: the arm name goes into a pattern, and `assay+auditor`
+    # unescaped compiles to "assa" + one-or-more "y" + "auditor", which
+    # matches nothing -- so the agent arm was invisible to this gate while
+    # `assay` matched inside its name and read a correct row as stale.
+    arm_res = {a: re.compile(rf"(?<![a-z_]){re.escape(a)}(?![a-z_])") for a in current}
     # Prose calls the arm under test "Assay", which is also the tool's own name.
     arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
 
@@ -774,14 +811,42 @@ def test_no_live_document_prices_an_arm_at_a_number_that_is_no_longer_measured()
             # read it as a stale 43.0. Same for the paired savings the docstring
             # already says this gate does not police; they were only escaping it
             # by wording.
+            # "saved " used to skip the line wholesale, which is how
+            # SUBMISSION.md kept "402 saved" against a measured 417. A paired
+            # saving is a real claim; it is checked against
+            # intervals.json:arms[*].loss_saved_vs by
+            # test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded,
+            # so it is skipped here only when the line also decomposes it.
             if re.search(r"\bof the [0-9]", low) or any(
-                w in low for w in ("is arithmetic", "margin", "saved ", "decomposition")
+                # "costing Assay 3" and "added 64 more" describe an increment,
+                # not what the arm costs. They only became visible when two-digit
+                # numbers started counting, and they are decomposition prose of
+                # exactly the kind the first two markers already cover.
+                w in low for w in ("is arithmetic", "margin", "decomposition",
+                                   "costing assay", "added ")
             ):
                 continue
             priced = _arms_priced_on(line, context, arm_res)
             if not priced:
                 continue
-            written = {n for n in _LOSS.findall(line) if "." in n or len(n) >= 3}
+            # A confidence interval is not a price. `| **assay** | 43 | [0, 125] |`
+            # states the point estimate and its interval, and both are correct;
+            # the gate read 125 as the claim because the point estimate 43 is
+            # two digits and the filter below keeps only 3+ digits or decimals.
+            # Strip bracketed spans first -- an interval is always reported
+            # beside a point estimate, never instead of one.
+            bare = re.sub(r"\[[^\]]*\]", " ", line)
+            # The `len(n) >= 3` filter was written when every arm cost hundreds.
+            # The headline arms are now 44, 57 and 43 -- two digits -- so the gate
+            # built to stop documents drifting from artifacts was blind to
+            # exactly the rows that matter, and SUBMISSION.md sat at 43 and "402
+            # saved" while the artifact said 44 and 417. Two-digit numbers count
+            # when the arm's own measured value is two digits.
+            small_arm = any(abs(current[a]) < 100 for a in priced)
+            written = {
+                n for n in _LOSS.findall(bare)
+                if "." in n or len(n) >= 3 or (small_arm and len(n) == 2)
+            }
             if not written:
                 continue
             measured = {
@@ -845,7 +910,23 @@ def test_the_agent_measurements_are_gated_like_every_other_number():
             m = re.search(r"(\d+)\s+environments\s*[-—,]\s*(\d+) with no correct answer", line)
             if m and (int(m.group(1)), int(m.group(2))) != (total, pos):
                 bad.append(f"{name}: says {m.group(1)}/{m.group(2)}; the artifact is {total}/{pos}")
-            # A false-positive denominator must be the measured run count.
+            # A false-positive denominator must be the measured run count. This
+            # matched only the literal `fp N / M` form, and the README states it
+            # as prose in a table -- "6 of 6 runs", "0 of 54 runs" -- so the table
+            # sat at 0 of 54 for five hours after the artifact was re-measured to
+            # 2 of 60. An independent reader found it; this gate could not have.
+            for hit, total_ in re.findall(r"(\d+)\s+of\s+(\d+)\s+runs", line):
+                measured_neg = {str(b["negative_runs"]) for b in backends}
+                measured_pos = {str(b["positive_runs"]) for b in backends}
+                # `k of k runs` is a per-environment claim -- "qwen labels it
+                # correct in 3 of 3 runs" -- not a denominator over the set.
+                allowed = measured_neg | measured_pos | {str(gate.get("k"))}
+                if total_ not in allowed:
+                    bad.append(
+                        f"{name}: 'of {total_} runs' matches no measured denominator; "
+                        f"the artifact has {sorted(measured_pos)} positive and "
+                        f"{sorted(measured_neg)} negative runs at k={gate.get('k')}"
+                    )
             for fp in re.findall(r"fp\s+\d+\s*/\s*(\d+)", line):
                 measured = {str(b["negative_runs"]) for b in backends}
                 if fp not in measured:
@@ -976,7 +1057,7 @@ def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
     """
     intervals = json.loads((ROOT / "results" / "intervals.json").read_text())
     arms = intervals["arms"]
-    arm_res = {a: re.compile(rf"(?<![a-z_]){a}(?![a-z_])") for a in arms}
+    arm_res = {a: re.compile(rf"(?<![a-z_]){re.escape(a)}(?![a-z_])") for a in arms}
     arm_res["assay"] = re.compile(r"(?<![a-z_])assay(?![a-z_])")
 
     def pair_on(scope: str) -> tuple[list[str], bool] | None:
@@ -1067,8 +1148,13 @@ def test_a_separation_claimed_in_prose_is_the_one_the_bootstrap_recorded():
 # remeasured.md`. Written the several ways this sweep found them still in use,
 # including the two argparse `help=` strings.
 _RETRACTED_K1 = re.compile(
+    # `2 false overrides` was pinned bare, and the current measured value on a
+    # k=3 run over 25 environments is *also* 2 -- "2 false overrides in 60".
+    # A gate that fails on a true sentence teaches people to reword around it,
+    # so the retracted figure is pinned with the denominator that made it
+    # retracted: 39 runs at k=1.
     r"\b[01][- ]of[- ]1\b|\b13[- ]environment|\bin 39\b"
-    r"|\b4 of 6 runs\b|\b2 false overrides\b",
+    r"|\b4 of 6 runs\b|\b2 false (overrides|positives) in 39\b",
     re.I,
 )
 # Only lines that are talking about the gate: "1 of 1" is an ordinary phrase.
@@ -1161,7 +1247,25 @@ def test_every_published_artifact_agrees_on_the_size_of_the_corpus():
         "n_defect_classes": len(DefectClass),
     }
     wrong = []
-    for name in ("baselines.json",):
+    # Widened from ("baselines.json",). Four intervals-*.json files and
+    # escalation_policy.json sat at 28 while the corpus was 33, and nothing
+    # noticed, because this gate only ever looked at one artifact. An artifact
+    # that claims to describe the whole corpus must agree with the corpus.
+    #
+    # Deliberately scoped artifacts are exempt by name and say what they are:
+    # a harbor-only slice is not wrong for having five environments.
+    scoped = {
+        "harbor_composite.json": "the harbor slice only",
+        "harbor_scripted.json": "the harbor slice only",
+        "full_run_llm.json": "a superseded run kept as a record",
+        "second_labelling.json": "the subset a second labeller was given",
+    }
+    whole_corpus = sorted(
+        f.name
+        for f in (ROOT / "results").glob("*.json")
+        if f.name not in scoped and f.name != "full_run.json"
+    )
+    for name in whole_corpus:
         path = ROOT / "results" / name
         if not path.exists():
             continue
@@ -1253,4 +1357,103 @@ def test_an_artifact_that_claims_a_producer_says_what_tree_it_ran_on():
     assert not missing, (
         "artifacts claim a producing command but not the tree it ran on:\n  "
         + "\n  ".join(missing)
+    )
+
+
+# --- The gate that stops the next SUBMISSION.md -------------------------------
+#
+# Four hand-maintained tuples in this file name the reviewer-facing documents:
+# DOCS_THAT_CITE_PATHS, the suite-size gate's `live_docs`, the `assay audit`
+# sweep's `live`, and LIVE_DOCS. `SUBMISSION.md` -- the document a judge opens
+# first -- was in none of them, so it sat two generations stale ("430 passed",
+# "collects 594") and claimed there was no hosted demo months after the Space
+# went up. Every individual gate was green the whole time.
+#
+# Adding it to the tuples fixes that document. This fixes the class: a new
+# reviewer-facing document must be claimed by a gate or explicitly exempted with
+# a reason, and there is no third option that quietly does nothing.
+
+#: Documents exempt from the live-claim gates, each for a stated reason. A
+#: record of what was true when it was written is not a promise about now.
+HISTORICAL_DOCS = {
+    "docs/RED-TEAM.md": "a log of claims broken on a dated tree",
+    "docs/RETRACTIONS.md": "the register of withdrawn claims; its numbers are the point",
+    "docs/PRE-REGISTRATION.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-TAU2.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-NOANSWER.md": "a prediction, fixed at the moment it was committed",
+    "docs/PRE-REGISTRATION-STEREOSET.md": "a prediction, fixed at the moment it was committed",
+    "docs/VIDEO.md": "the script as recorded, matching a video that cannot be edited",
+    "docs/LINEAGE.md": "attribution of borrowed work, not a claim about this suite",
+    "docs/SCIENCEAGENTBENCH.md": "an adapter note about an ecosystem not in the corpus",
+    "docs/VIDEO-NEXT.md": "a draft script for a cut that has not been recorded",
+}
+
+
+def test_every_reviewer_facing_document_is_claimed_by_a_gate_or_exempted():
+    """A new document must be gated or exempted -- never silently neither."""
+    import subprocess
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.split()
+
+    # Only the reviewer-facing surface: the repo root and docs/. Trajectories,
+    # disclosures, fixture instructions and vendored trees are not claims about
+    # this suite.
+    def reviewer_facing(name: str) -> bool:
+        if name.startswith("docs/"):
+            return name.count("/") == 1
+        return "/" not in name
+
+    gated = set(DOCS_THAT_CITE_PATHS) | set(LIVE_DOCS)
+    unclaimed = [
+        name
+        for name in sorted(tracked)
+        if reviewer_facing(name) and name not in gated and name not in HISTORICAL_DOCS
+    ]
+    assert not unclaimed, (
+        "reviewer-facing documents claimed by no gate and exempted by none:\n  "
+        + "\n  ".join(unclaimed)
+        + "\n\nAdd each to LIVE_DOCS (its claims get checked) or to HISTORICAL_DOCS "
+        "with the reason it records rather than promises."
+    )
+
+
+def test_the_historical_exemptions_all_name_a_real_file():
+    """An exemption for a file that no longer exists is a hole, not a decision."""
+    missing = [name for name in HISTORICAL_DOCS if not (ROOT / name).exists()]
+    assert not missing, f"HISTORICAL_DOCS names files that do not exist: {missing}"
+
+
+def test_every_environment_the_gate_measurement_names_can_actually_be_built():
+    """A case that cannot be built is not a case that passed.
+
+    `scripts/semantic_gate.py` resolved environments through a prefix allowlist
+    and printed SKIP for anything else. Adding `tau2/airline` and `tau2/retail`
+    to the negatives -- the dialogue class whose absence let a false override go
+    unmeasured -- changed the list and not the measurement: the run reported the
+    same "0 false overrides in 54" while skipping both.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "semantic_gate", ROOT / "scripts/semantic_gate.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    from assay.corpus import entries
+
+    known = {env_id for env_id, _, _ in entries()}
+    named = [e for e, _, _ in module.POSITIVES] + [e for e, _, _ in module.NEGATIVES]
+    # Two builders resolve ids the corpus does not register: the toy-triage
+    # fixtures (registered under `fixture/`) and inspect_evals tasks such as
+    # `bbq`, which is a good negative precisely because it is not corpus-worthy.
+    unresolvable = [
+        e for e in named
+        if e not in known and not e.startswith(("toy-triage/", "inspect_evals/"))
+    ]
+    assert not unresolvable, (
+        "these environments are named in the gate measurement and the corpus does "
+        f"not register them, so they silently SKIP: {unresolvable}"
     )

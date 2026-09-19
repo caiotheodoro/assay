@@ -21,21 +21,34 @@ to find more defects than the field; it claims to price them.
 |---|---|
 | `flag_nothing` | 3232.0 |
 | `check_env` (the incumbent) | 3216.0 |
-| `stratified_random` | 2793.0 |
-| `agent_with_tools` | 2736.0 |
-| `direct_prompt` | 2454.0 |
-| `always_modal_defect` | 2050.0 |
-| `flag_everything` | 394.0 |
-| **Assay** | **43.0** |
+| `agent_with_tools` | 2746.0 |
+| `stratified_random` | 2838.0 |
+| `direct_prompt` | 2343.0 |
+| `always_modal_defect` | 2055.0 |
+| `flag_everything` | 474.0 |
+| **Assay** | **57.0** |
+| **`assay+auditor`**, one draw | **44.0** |
 
-Assay saves **351.0 against `flag_everything`, 95% CI [263, 404], separated.**
+Assay saves **417.0 against `flag_everything`, 95% CI [330, 471], separated.**
 Wins 4 of 4 cost profiles and separates on all 4.
 
-**Seventy-seven of that 351.0 is arithmetic, not detection.** `flag_everything` flags
+**Turning the agent on saves 13-14 in six runs of seven, and loses 65 in the
+seventh.** `results/gate_reliability.json`: `assay+auditor` returns 43-44 across
+seven identical runs and once returns 122.0, because the gate decided
+`tau2/airline` had no correct answer and deleted two real planted defects with
+the false ones. The paired bootstrap resamples environments and cannot see this;
+the deterministic arm returned 57.0 every time. Do not quote the agent row as a
+point estimate. Five
+environments with no correct answer now sit in the corpus, so the deterministic battery
+pays 16 false positives where it used to pay 3, and the semantic gate recovers 13 of
+them while leaving the 3 τ² findings standing — the right answer on all 16.
+
+**141.0 of that 417.0 is arithmetic, not detection.** `flag_everything` flags
 every class in the taxonomy on every environment, so its loss gets worse whenever the
 taxonomy or the corpus grows and no detector is involved: two probe families added two
-defect classes (+52) and two τ² environments added 28 more free false alarms while
-costing Assay 3. Against the taxonomy and corpus this was first measured on, the
+defect classes (+52), two τ² environments added 28 more free false alarms while costing
+Assay 3, and the four environments with no correct answer added 64 more while costing
+Assay 13. Against the taxonomy and corpus this was first measured on, the
 comparable margin is **274.0**. `docs/PRE-REGISTRATION-TAU2.md` predicted both figures
 before the corpus grew.
 
@@ -48,7 +61,7 @@ separation.
 Recall is 0.9815 and **precision is 0.9464** — no longer 1.000. Three spurious findings
 remain and all three are on the two τ² environments.
 
-Intervals resample **environments** (n=28), not defects — `results/intervals.json`
+Intervals resample **environments** (n=33), not defects — `results/intervals.json`
 carries a `"why"` field saying so.
 
 ## What is deliberately published as a weakness
@@ -57,7 +70,7 @@ carries a `"why"` field saying so.
   split, so the contamination probe has nothing to compare.
 - Four of BenchJack's eight flaw classes are uncovered (`docs/COVERAGE.md`, written
   in *their* vocabulary, not ours).
-- Only **6 of 28** corpus environments are genuinely third-party, and only **3 of those
+- Only **8 of 33** corpus environments are genuinely third-party, and only **3 of those
   6** carry ground truth this repository did not decide. The split is published because
   it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative
@@ -84,12 +97,15 @@ the workflow is for — and it means the agent is not load-bearing here.
 
 The **Auditor** (`--auditor`) is the case where no script can take over. It withholds
 the CRITICAL false positive on `inspect_evals/personality_BFI` — an inventory with no
-correct answer, where a format check is the right design. On the 2 environments with no
-correct answer it withholds in **6 of 6 runs**, and across the 18 that do have one it
-pays **0 false overrides in 54** (`results/semantic_gate.json`, `claude-cli:sonnet`,
-20 environments at k=3).
-`qwen3:8b` matches it on the positives and pays **6 false overrides in 54**, which is
-the column that matters, because a false override hides a real defect.
+correct answer, where a format check is the right design. On the 5 environments with no
+correct answer it withholds in **14 of 15 runs**, and across the 20 that do have one it
+pays **2 false overrides in 60** (`results/semantic_gate.json`, `claude-cli:sonnet`,
+25 environments at k=3). The false-override figure is not zero, and an earlier
+revision of this paragraph said it was, against a negative set that contained no
+multi-turn dialogue — the class the gate later got wrong on a real run.
+`qwen3:8b` is not in the current measurement, which used `--arms claude`, so its row was
+removed rather than carried forward. Read the false-override column: it hides a real
+defect, which is worse than missing one.
 **No model ever scores a probe.** It can only move a
 `verifier_integrity` DEFECT to `NOT_APPLICABLE`, never assert a verdict, and it is
 off by default: the headline numbers above are fully deterministic.
@@ -98,14 +114,14 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 pytest -q   # 765 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 814 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **765 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **814 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

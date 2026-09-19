@@ -19,10 +19,11 @@ uv run --extra adapters --extra openenv --extra tau2 python scripts/intervals.py
 
 | | Expected loss | Recall | Precision | Normalized loss |
 |---|---|---|---|---|
-| **Baseline** — `check_env`, the incumbent structural linter | 3216 | 0.037 | 1.000 | 8.16 |
-| **Baseline** — `flag_nothing`, the honest null | 3232 | 0.000 | 0.000 | 8.20 |
-| **The floor to beat** — `flag_everything` | 394 | 1.000 | 0.121 | 1.00 |
-| **Final** — Assay | **43.0** | **0.982** | **0.946** | **0.109** |
+| **Baseline** — `check_env`, the incumbent structural linter | 3216 | 0.018 | 1.000 | 7.04 |
+| **Baseline** — `flag_nothing`, the honest null | 3232 | 0.000 | 0.000 | 7.06 |
+| **The floor to beat** — `flag_everything` | 474 | 1.000 | 0.102 | 1.00 |
+| **Final** — Assay | **57.0** | **0.982** | **0.757** | **0.120** |
+| **Final** — `assay+auditor`, the agent on, **one draw** | **44.0** | **0.982** | **0.930** | **0.093** |
 
 The incumbent scores within half a percent of doing nothing. It is not a weak
 detector of these defects; it is not a detector of them. That gap is the
@@ -231,8 +232,14 @@ with twelve different planted defects.
 
 | | model calls | wall clock | verdicts |
 |---|---|---|---|
-| a fresh Auditor per environment | 4 | 31.4s | — |
-| one Auditor across the run | **1** | **2.9s** | identical |
+| a fresh Auditor per environment | 7 | 28.2s | — |
+| one Auditor across the run | **1** | **3.2s** | identical |
+
+Re-measured by `scripts/auditor_memory.py`, which did not exist when this row was
+first written — the file had no `harness` field and nothing emitted it, which is
+`docs/RETRACTIONS.md` entry 20's failure. The uncached figure rose from 4 to 7
+because withholding now takes two agreeing replies
+(`docs/changelog/124-ask-again-before-deleting.md`).
 
 `Auditor.shape()` keys on ecosystem plus the sorted instruction set, and
 deliberately **not** on the manifest digest: capabilities and version differ

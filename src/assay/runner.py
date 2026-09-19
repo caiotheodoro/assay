@@ -69,6 +69,45 @@ class AuditReport:
         return [r for r in self.results if r.status is status]
 
     @property
+    def unchecked(self) -> set[DefectClass]:
+        """Classes whose probe declined to run, so nothing here rules them out.
+
+        The complement of `detected` that is *not* a clean bill of health. A
+        reader who sees neither a finding nor this set may conclude the
+        environment was checked and found clean; for anything in here, it was
+        not checked at all.
+
+        ERROR is deliberately excluded. A probe that declined for a stated
+        reason made a judgement; a probe that crashed is a bug in Assay, and
+        letting a crash quietly reclassify itself as "could not determine" is
+        how a tool stops noticing its own failures.
+        """
+        from .probes import all_probes
+
+        by_name = {p.name: p for p in all_probes()}
+        out: set[DefectClass] = set()
+        for result in self.by_status(ProbeStatus.NOT_APPLICABLE):
+            # An Auditor withhold rewrites a DEFECT into NOT_APPLICABLE
+            # (`auditor.py:_withhold`), keeping the family and probe name. That
+            # is a probe that ran and found something, and an agent that then
+            # deleted it -- the opposite of a probe nobody could run. Counting
+            # it here would let the gate move a real finding out of `missed` and
+            # inflate `recall_on_checkable`, which is precisely the self-flattery
+            # the third state exists to prevent.
+            if result.detail.get("auditor_override"):
+                continue
+            # A probe the caller could have run and did not is not a probe that
+            # could not run. Leaving it in would exempt its classes from
+            # `missed` on every default run, which is the same flattery in a
+            # slower form.
+            if result.detail.get("caller_input_missing"):
+                continue
+            probe = by_name.get(result.probe)
+            if probe is not None:
+                out.update(probe.detects)
+        return out - self.detected
+
+    @property
     def coverage(self) -> dict[str, int]:
         return {
             s.value: len(self.by_status(s))

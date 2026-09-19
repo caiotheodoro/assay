@@ -52,7 +52,9 @@ def _row(arm, profile) -> dict:
         "expected_loss": row["expected_loss"],
         "recall": row["recall"],
         "precision": row["precision"],
+        "recall_on_checkable": row["recall_on_checkable"],
         "n_missed": row["n_missed"],
+        "n_unchecked": row["n_unchecked"],
         "n_spurious": row["n_spurious"],
     }
 
@@ -65,7 +67,15 @@ def _reading(gate_input: str, arm_row: dict, base_row: dict) -> str:
     the condition it was written for and none of them fire otherwise.
     """
     delta = arm_row["expected_loss"] - base_row["expected_loss"]
-    extra_misses = arm_row["n_missed"] - base_row["n_missed"]
+    # n_missed alone stopped being comparable across arms when the scorer gained
+    # a third state: a planted defect the gate withheld, or one whose probe
+    # declined, lands in n_unchecked instead. Comparing only n_missed let the
+    # branch whose whole job is to say "the agent made the tool worse" report a
+    # near-zero regression while the gate deleted real findings.
+    def failures(row: dict) -> int:
+        return row["n_missed"] + row.get("n_unchecked", 0)
+
+    extra_misses = failures(arm_row) - failures(base_row)
     if delta > 0:
         return (
             f"The agent made the tool worse: {arm_row['expected_loss']} against "

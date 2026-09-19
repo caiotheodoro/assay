@@ -1,0 +1,424 @@
+{
+  "what": "How often the shipped semantic gate calls tau2/airline an environment with no correct answer. It has one.",
+  "why": "gate_reliability.json measures this per run and found 1 in 7, which no affordable number of corpus runs can bound. Per environment the same decision costs seconds, so it can be bounded rather than observed.",
+  "harness": "uv run ... python scripts/false_override_rate.py --k 50 --env tau2/airline",
+  "assay_revision": {
+    "commit": "45dc2b215d3612df94f881116f0056f601db09b3",
+    "dirty": true
+  },
+  "environment": "tau2/airline",
+  "backend": "claude-cli:sonnet",
+  "consensus": 2,
+  "trials": 50,
+  "scored": 50,
+  "false_overrides": 0,
+  "counts": {
+    "has_correct_answer": 50
+  },
+  "rate": 0.0,
+  "upper_95": 0.0582,
+  "seconds": 688,
+  "reading": "0 false overrides in 50 trials on the shipped path. One-sided 95% upper bound on the per-decision rate: 5.8%. That is a bound, not a demonstration that the rate is zero.",
+  "rows": [
+    {
+      "trial": 0,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific gold outcome: correct policy-compliant actions, exact refund/payment amounts, and correct end state of the reservation/database (e.g. required cancellations, correct membership tier, correct payment split)",
+      "abstained": null
+    },
+    {
+      "trial": 1,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected policy-compliant end state (correct reservation/refund/payment outcome and airline rule enforcement embedded in each task spec, e.g. exact dollar splits, cancel/no-cancel decision, membership status)",
+      "abstained": null
+    },
+    {
+      "trial": 2,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of the booking system / correct action sequence for each task (e.g. correct reservation changes, cancellations refused when not policy-compliant, correct payment split, correct passenger counts)",
+      "abstained": null
+    },
+    {
+      "trial": 3,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific ground-truth end state/policy outcome embedded in each task (exact refund amounts, correct payment splits, correct pass/fail on cancellation eligibility, correct passenger counts, correct flight selection)",
+      "abstained": null
+    },
+    {
+      "trial": 4,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "policy-defined ground-truth outcome per task (correct tool calls/refusals per airline policy, e.g. exact refund/payment split, correct passenger count, correct flight selection, correct cancel/refuse decision)",
+      "abstained": null
+    },
+    {
+      "trial": 5,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state / correct action sequence baked into each task (specific cancellations, refunds, compensation amounts, payment splits) that a policy-following airline agent must reach",
+      "abstained": null
+    },
+    {
+      "trial": 6,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the correct sequence of actions/end-state per task's ground-truth policy outcome (e.g. exact reservation changes, refunds, and payment splits)",
+      "abstained": null
+    },
+    {
+      "trial": 7,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific gold end-state (correct actions/refusals and exact payment amounts defined per task, e.g. reservation cancellations, refund eligibility, and payment splits)",
+      "abstained": null
+    },
+    {
+      "trial": 8,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "airline domain policy + ground-truth reservation/payment state (exact tool actions, refund eligibility, and computed amounts), e.g. task 14's required split: gift cards $327 + $500 certificate + $44 on mastercard for an $871 booking",
+      "abstained": null
+    },
+    {
+      "trial": 9,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state / correct action outcome for each task (exact refund amounts, correct passengers, correct payment split, correct flights cancelled/booked, policy-compliant refusals) as encoded in the task annotations",
+      "abstained": null
+    },
+    {
+      "trial": 10,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "policy-correct end state / required agent actions for each task (correct refund amounts, correct passenger counts, correct payment splits, correct cancellation/change decisions per airline policy)",
+      "abstained": null
+    },
+    {
+      "trial": 11,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "gold task-specific end state / required agent actions (correct reservations cancelled or refused, correct refund/compensation amounts, correct payment split, correct policy adherence)",
+      "abstained": null
+    },
+    {
+      "trial": 12,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state / correct actions per airline policy (e.g., specific refund amounts, whether a cancellation or change is actually permitted, correct payment split across gift cards/certificates/card, correct passenger counts)",
+      "abstained": null
+    },
+    {
+      "trial": 13,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the required end-state of the booking system (correct reservation actions/refunds/payment splits per airline policy, e.g. task 14's exact cost breakdown)",
+      "abstained": null
+    },
+    {
+      "trial": 14,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the resulting reservation/database state and specific expected values defined per task (e.g. correct refund/compensation amounts, correct passenger counts, correct payment splits), against which the agent's actions and outputs are checked for policy compliance",
+      "abstained": null
+    },
+    {
+      "trial": 15,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the task's ground-truth expected end state (correct reservation actions, refund/payment amounts, and policy-compliant refusals) \u2014 e.g. exact cancellation/refund outcomes, correct passenger counts, correct payment splits",
+      "abstained": null
+    },
+    {
+      "trial": 16,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific expected end state / policy-correct outcome for each scenario (e.g. exact refund amounts, correct passenger counts, correct payment splits, correct cancellation/refusal per airline policy)",
+      "abstained": null
+    },
+    {
+      "trial": 17,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth task outcome \u2014 the specific tool-call actions and end state (refund amounts, cancellations, payment splits, compensation amounts) the scenario specifies as correct, e.g. reservation cancelled with correct refund, or correctly rejected",
+      "abstained": null
+    },
+    {
+      "trial": 18,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the ground-truth database end-state and action sequence for each task (correct cancellations/bookings/refunds/payment splits per airline policy)",
+      "abstained": null
+    },
+    {
+      "trial": 19,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth expected end state (correct tool actions/DB state) and specific target values embedded in each task, e.g. exact refund/payment split",
+      "abstained": null
+    },
+    {
+      "trial": 20,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of the booking system (correct cancellations/changes/refunds/payment splits) plus the policy-compliance constraints spelled out per task",
+      "abstained": null
+    },
+    {
+      "trial": 21,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the task's annotated ground-truth outcome (exact required actions/end-state, e.g. correct refund eligibility, correct passenger counts, correct payment split) that the agent's actions and final reservation/database state are checked against",
+      "abstained": null
+    },
+    {
+      "trial": 22,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth action sequence / end-state per task (exact cancellations, refunds, seat/cabin changes, payment splits) that a correct agent must produce",
+      "abstained": null
+    },
+    {
+      "trial": 23,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state of bookings/cancellations/refunds and policy-correct agent actions defined per task (exact amounts, exact refusals, correct passenger counts, etc.)",
+      "abstained": null
+    },
+    {
+      "trial": 24,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state of the airline DB/reservations (correct actions taken or correctly refused) plus task-specific target values defined by the policy and scenario",
+      "abstained": null
+    },
+    {
+      "trial": 25,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of each task's reservations/refunds/compensation per tau-bench-style policy rules (e.g. correct cancellation eligibility, correct dollar amounts, correct payment split)",
+      "abstained": null
+    },
+    {
+      "trial": 26,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the tau-bench airline-domain policy engine's required end state (correct tool calls/DB state per task rules \u2014 e.g. task 14's exact $44 mastercard charge, task 41's refusal to cancel without refund, task 36's refusal to change basic economy)",
+      "abstained": null
+    },
+    {
+      "trial": 27,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the policy-correct end state of the airline reservation system after the agent acts (correct cancellations/refunds/changes/compensation amounts per task, matched against domain policy rules)",
+      "abstained": null
+    },
+    {
+      "trial": 28,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state of airline DB (reservations/cancellations/payments) plus policy-correct actions per task's annotated goal",
+      "abstained": null
+    },
+    {
+      "trial": 29,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth reservation/payment end-state and specific correct values (e.g. required refund/compensation amounts, correct passenger counts, correct payment split) that the tasks bake in as the answer key",
+      "abstained": null
+    },
+    {
+      "trial": 30,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific ground-truth end state (correct tool actions, policy compliance, and exact amounts baked into each scenario, e.g. correct refund/compensation figures and payment splits)",
+      "abstained": null
+    },
+    {
+      "trial": 31,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end-state / correct action outcome per task (correct reservation/cancellation/payment split, correct refund eligibility, correct membership tier, correct compensation amount)",
+      "abstained": null
+    },
+    {
+      "trial": 32,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the ground-truth end state of each task (correct reservation/payment actions and policy-compliant refusals), e.g. the exact required payment split and refund/cancellation outcomes specified per task",
+      "abstained": null
+    },
+    {
+      "trial": 33,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific expected end state/actions (e.g. correct reservations cancelled, correct flight chosen, correct refund/payment split, policy compliance) defined per task",
+      "abstained": null
+    },
+    {
+      "trial": 34,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth end state per task: correct tool actions taken/refused (cancel, book, modify) plus exact numeric outcomes (refund %, fee, payment split, compensation amount) baked into each task's hidden spec",
+      "abstained": null
+    },
+    {
+      "trial": 35,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific ground-truth end state (correct database/reservation state, refund/payment amounts, and policy-compliant agent decisions defined per task)",
+      "abstained": null
+    },
+    {
+      "trial": 36,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state/ground-truth actions (correct reservation changes, refund/payment amounts, and policy compliance) for each task",
+      "abstained": null
+    },
+    {
+      "trial": 37,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "required end state / gold action sequence for each task (correct reservation changes, cancellations, refunds, payment splits, and correct policy enforcement e.g. refusals) \u2014 this is tau-bench airline domain, graded against DB state + policy compliance, not the dialogue itself",
+      "abstained": null
+    },
+    {
+      "trial": 38,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of the airline reservation/user database (correct actions taken or refused, correct refunds/compensation amounts, correct payment splits) as defined by each task's gold outcome",
+      "abstained": null
+    },
+    {
+      "trial": 39,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "required end state of the booking system (correct reservation/cancellation/refund/compensation actions and amounts per airline policy)",
+      "abstained": null
+    },
+    {
+      "trial": 40,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the required end state of the airline reservation system (correct tool actions/refunds/bookings) plus explicit expected values given in the task, e.g. the exact payment split",
+      "abstained": null
+    },
+    {
+      "trial": 41,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of reservations/payments and correct policy-compliant agent actions (e.g. exact refund/charge splits, valid cancellations, correct passenger counts) as defined by each task's ground truth",
+      "abstained": null
+    },
+    {
+      "trial": 42,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific ground-truth outcomes embedded in each task (exact reservations to cancel/keep, correct passenger counts, correct compensation amounts, correct payment splits, and required refusals when policy disallows an action)",
+      "abstained": null
+    },
+    {
+      "trial": 43,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "the task's expected end state / ground-truth outcome (correct actions and amounts, e.g. required refund, correct passenger count, correct payment split) that the agent's tool calls must produce in the reservation database",
+      "abstained": null
+    },
+    {
+      "trial": 44,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "ground-truth task annotations: required end state of the reservations/payments database (correct cancellations, correct passenger counts, correct fare/refund/compensation amounts) plus specific correct facts the agent must state",
+      "abstained": null
+    },
+    {
+      "trial": 45,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "airline customer-service policy (refund/cancellation/change/compensation rules and correct reservation facts) that the agent must follow when acting on each task",
+      "abstained": null
+    },
+    {
+      "trial": 46,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "expected end state of the booking system / correct action outcomes defined per task (e.g. exact refund amounts, correct cancellations, correct payment splits)",
+      "abstained": null
+    },
+    {
+      "trial": 47,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific ground truth: required tool-call/DB end state and exact facts (refund/charge amounts, which reservations get cancelled, membership tier) defined per task",
+      "abstained": null
+    },
+    {
+      "trial": 48,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "each task's evaluation_criteria: a ground-truth list of required tool-call actions (exact name+arguments), required communicate_info, and nl_assertions about agent behavior, checked against the transcript/final DB state",
+      "abstained": null
+    },
+    {
+      "trial": 49,
+      "verdict": "has_correct_answer",
+      "calls": 1,
+      "model_said": "has_correct_answer",
+      "compared_against": "task-specific expected end state/ground truth (correct cancellation-refund decisions, correct flight/payment selections, exact dollar amounts) defined in each task's instructions",
+      "abstained": null
+    }
+  ]
+}

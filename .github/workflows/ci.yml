@@ -21,6 +21,45 @@ jobs:
         # test that assumed a runtime it never declared.
         run: uv run pytest -q
 
+  the-doc-gates-actually-run:
+    # `gradio` sat in no extra any documented command installed, so the
+    # advertised "765 passed, 0 skipped" was only reachable on a machine that
+    # already had it -- the same failure docs/CHANGELOG.md Slice 41c records for
+    # `loguru`, recurring with a different package. It survived because the gate
+    # that checks advertised suite size is guarded by
+    # `importorskip("inspect_evals")` and CI syncs without `--extra sweep`, so
+    # the gate skipped silently on every run.
+    #
+    # A gate that skips is not a gate. This job installs what the docs tell a
+    # reader to install and fails if the doc gate declines to run.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync exactly the extras the documented command names
+        run: uv sync --extra dev --extra adapters --extra sweep --extra openenv --extra tau2 --extra space
+      - name: Fetch the tau2 snapshots the guide tells you to fetch
+        continue-on-error: true
+        run: uv run python scripts/tau2_fetch.py
+      - name: The documented test command
+        env:
+          ASSAY_APPROVE_ALL: "ci: the documented test command, .github/workflows/ci.yml"
+        run: |
+          set -o pipefail
+          uv run pytest -q -rs 2>&1 | tee /tmp/suite.txt
+      - name: The suite-size gate must have run, not skipped
+        run: |
+          if grep -q "only meaningful on the full suite" /tmp/suite.txt; then
+            echo "::error::the suite-size doc gate skipped under the documented command"
+            exit 1
+          fi
+          if grep -qE "needs --extra (sweep|openenv)" /tmp/suite.txt; then
+            echo "::error::a doc gate skipped for a missing extra the docs claim to install"
+            exit 1
+          fi
+
   the-readme-command-works:
     # A judge followed the README literally, from a clean clone, and got 24
     # environments and assay 0.0 where it claims 28 and 43.0 -- because the

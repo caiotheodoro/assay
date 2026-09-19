@@ -356,6 +356,25 @@ def bundle_for(env_id: str) -> tuple[str, list[str]]:
         add(SRC / "tau2_truth.py")
         add(SRC / "_tau2_corpus.py")
         add(SRC / "adapters" / "tau2.py")
+    elif ecosystem in ("noanswer", "toy-triage"):
+        # Environments written here that have no correct answer -- a Likert
+        # scale, a preference ranking and a free-writing prompt. Three shapes
+        # on purpose: one template instantiated three times would measure the
+        # template. `toy-triage/preference` is the Likert one and keeps that
+        # id because two published trajectories already reference it. What a second reader has to judge
+        # is not whether a defect was planted correctly, because nothing is
+        # planted: it is whether "this task has no correct answer" is true. The
+        # environment source is the whole of the evidence, so it is bundled.
+        parts.append(
+            f"This environment is '{variant}', written in this repository, and it "
+            "carries frozenset() -- nothing is planted. That is the claim to "
+            "judge: a task with no correct answer cannot have a broken verifier, "
+            "so every finding the battery reports on it is a false positive. The "
+            "environment's own source is below, because here the source is the "
+            "entire basis for the label.\n"
+        )
+        add(SRC / "fixtures" / "preference.py")
+        add(SRC / "_noanswer_corpus.py")
     else:
         raise SystemExit(f"no source bundle rule for ecosystem {ecosystem!r}")
 
