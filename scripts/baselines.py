@@ -104,7 +104,12 @@ def main() -> int:
     assay = ArmResult(
         "assay",
         [
-            Outcome(env, truth[env], frozenset(DefectClass(d) for d in row["assay_detected"]))
+            Outcome(
+                env,
+                truth[env],
+                frozenset(DefectClass(d) for d in row["assay_detected"]),
+                frozenset(DefectClass(d) for d in row.get("unchecked", [])),
+            )
             for env, row in payload["per_env"].items()
         ],
     )

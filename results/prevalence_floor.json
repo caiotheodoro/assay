@@ -1,0 +1,1191 @@
+{
+  "measurement": "post hoc restricted and prevalence-aware constant floors",
+  "post_hoc": true,
+  "preanalysis_plan": "docs/changelog/129-paper-v2-preanalysis-plan.md",
+  "harness": "uv run --extra adapters --extra sweep --extra openenv --extra tau2 python scripts/prevalence_floor.py",
+  "assay_revision": {
+    "commit": "48ee1926227974104e2c0d36138d21454d64c0ea",
+    "dirty": true
+  },
+  "source": "results/full_run.json",
+  "resamples": 10000,
+  "seed": 11,
+  "resampling_unit": "environment",
+  "n_environments": 33,
+  "n_planted_defects": 54,
+  "n_defect_classes": 16,
+  "splits": {
+    "all": {
+      "n_environments": 33,
+      "n_planted": 54,
+      "environments": [
+        "fixture/artifact_splits",
+        "fixture/drifted_asserts",
+        "fixture/escalate_overrewarded",
+        "fixture/flaky",
+        "fixture/gold_broken",
+        "fixture/healthy",
+        "fixture/leaky_splits",
+        "fixture/paraphrased_splits",
+        "fixture/rationale_ignored",
+        "fixture/solved_at_reset",
+        "fixture/unfalsifiable",
+        "fixture/weak_oracle",
+        "harbor/broken-gold",
+        "harbor/healthy",
+        "harbor/self-graded",
+        "harbor/shared-tests",
+        "harbor/vacuous-tests",
+        "inspect/always-correct",
+        "inspect/constant-score",
+        "inspect/effort-scorer",
+        "inspect/healthy",
+        "inspect/leaky-split",
+        "inspect_evals/boolq",
+        "inspect_evals/paws",
+        "inspect_evals/personality_BFI",
+        "inspect_evals/stereoset",
+        "noanswer/openended",
+        "noanswer/ranking",
+        "openenv/echo",
+        "openenv/textarena-wordle",
+        "tau2/airline",
+        "tau2/retail",
+        "toy-triage/preference"
+      ],
+      "profiles": {
+        "research-run": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.008264,
+            "HIGH": 0.02439,
+            "MEDIUM": 0.111111,
+            "LOW": 0.333333
+          },
+          "n_present_classes": 12,
+          "present_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_n_flagged_classes": 11,
+          "arms": {
+            "assay": {
+              "expected_loss": 57.0,
+              "recall": 0.9815,
+              "precision": 0.7571,
+              "severity_weighted_recall": 0.9802,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 17,
+              "error_count": 18,
+              "ci95": [
+                8.0,
+                142.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 474.0,
+              "recall": 1.0,
+              "precision": 0.1023,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 474,
+              "error_count": 474,
+              "ci95": [
+                453.0,
+                492.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 342.0,
+              "recall": 1.0,
+              "precision": 0.1364,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 342,
+              "ci95": [
+                321.0,
+                360.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 327.0,
+              "recall": 0.963,
+              "precision": 0.1433,
+              "severity_weighted_recall": 0.9762,
+              "recall_on_checkable": 0.963,
+              "n_missed": 2,
+              "n_unchecked": 0,
+              "n_spurious": 311,
+              "error_count": 313,
+              "ci95": [
+                296.0,
+                361.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 367.0,
+              "recall": 0.9444,
+              "precision": 0.1409,
+              "severity_weighted_recall": 0.9563,
+              "recall_on_checkable": 0.9444,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 311,
+              "error_count": 314,
+              "ci95": [
+                303.0,
+                463.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 417.0,
+              "ci95": [
+                330.0,
+                471.0
+              ],
+              "separated": true
+            },
+            "flag_present": {
+              "point": 285.0,
+              "ci95": [
+                198.0,
+                339.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor": {
+              "point": 270.0,
+              "ci95": [
+                176.0,
+                336.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor_loo": {
+              "point": 310.0,
+              "ci95": [
+                194.975,
+                429.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "production-training": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.002079,
+            "HIGH": 0.008264,
+            "MEDIUM": 0.047619,
+            "LOW": 0.2
+          },
+          "n_present_classes": 12,
+          "present_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_n_flagged_classes": 12,
+          "arms": {
+            "assay": {
+              "expected_loss": 274.0,
+              "recall": 0.9815,
+              "precision": 0.7571,
+              "severity_weighted_recall": 0.9802,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 17,
+              "error_count": 18,
+              "ci95": [
+                16.0,
+                764.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 948.0,
+              "recall": 1.0,
+              "precision": 0.1023,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 474,
+              "error_count": 474,
+              "ci95": [
+                906.0,
+                984.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 684.0,
+              "recall": 1.0,
+              "precision": 0.1364,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 342,
+              "ci95": [
+                642.0,
+                720.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 684.0,
+              "recall": 1.0,
+              "precision": 0.1364,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 342,
+              "ci95": [
+                642.0,
+                720.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 1004.0,
+              "recall": 0.9444,
+              "precision": 0.1298,
+              "severity_weighted_recall": 0.9563,
+              "recall_on_checkable": 0.9444,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 345,
+              "ci95": [
+                680.0,
+                1542.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 674.0,
+              "ci95": [
+                180.0,
+                942.0
+              ],
+              "separated": true
+            },
+            "flag_present": {
+              "point": 410.0,
+              "ci95": [
+                -84.0,
+                678.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor": {
+              "point": 410.0,
+              "ci95": [
+                -84.0,
+                678.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor_loo": {
+              "point": 730.0,
+              "ci95": [
+                27.95,
+                1434.05
+              ],
+              "separated": true
+            }
+          }
+        },
+        "benchmark-publication": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.003984,
+            "HIGH": 0.013158,
+            "MEDIUM": 0.074074,
+            "LOW": 0.285714
+          },
+          "n_present_classes": 12,
+          "present_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_n_flagged_classes": 11,
+          "arms": {
+            "assay": {
+              "expected_loss": 736.0,
+              "recall": 0.9815,
+              "precision": 0.7571,
+              "severity_weighted_recall": 0.9802,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 17,
+              "error_count": 18,
+              "ci95": [
+                64.0,
+                1976.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 3792.0,
+              "recall": 1.0,
+              "precision": 0.1023,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 474,
+              "error_count": 474,
+              "ci95": [
+                3624.0,
+                3936.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 2736.0,
+              "recall": 1.0,
+              "precision": 0.1364,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 342,
+              "ci95": [
+                2568.0,
+                2880.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 2688.0,
+              "recall": 0.963,
+              "precision": 0.1433,
+              "severity_weighted_recall": 0.9762,
+              "recall_on_checkable": 0.963,
+              "n_missed": 2,
+              "n_unchecked": 0,
+              "n_spurious": 311,
+              "error_count": 313,
+              "ci95": [
+                2384.0,
+                3060.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 3288.0,
+              "recall": 0.9444,
+              "precision": 0.1409,
+              "severity_weighted_recall": 0.9563,
+              "recall_on_checkable": 0.9444,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 311,
+              "error_count": 314,
+              "ci95": [
+                2440.0,
+                4668.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 3056.0,
+              "ci95": [
+                1800.0,
+                3768.0
+              ],
+              "separated": true
+            },
+            "flag_present": {
+              "point": 2000.0,
+              "ci95": [
+                744.0,
+                2712.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor": {
+              "point": 1952.0,
+              "ci95": [
+                588.0,
+                2832.1
+              ],
+              "separated": true
+            },
+            "prevalence_floor_loo": {
+              "point": 2552.0,
+              "ci95": [
+                804.0,
+                4312.1
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flat": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.5,
+            "HIGH": 0.5,
+            "MEDIUM": 0.5,
+            "LOW": 0.5
+          },
+          "n_present_classes": 12,
+          "present_classes": [
+            "CONTAMINATION_EXACT",
+            "CONTAMINATION_NEARDUP",
+            "GOLD_FAILS",
+            "INVERT_PASSES",
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "NOOP_PASSES",
+            "REWARD_HACKABLE",
+            "SEPARABILITY_LOSS",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH",
+            "TRIVIAL_FLOOR_BREACH"
+          ],
+          "prevalence_floor_flagged_classes": [],
+          "prevalence_floor_n_flagged_classes": 0,
+          "arms": {
+            "assay": {
+              "expected_loss": 18.0,
+              "recall": 0.9815,
+              "precision": 0.7571,
+              "severity_weighted_recall": 0.9802,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 17,
+              "error_count": 18,
+              "ci95": [
+                6.0,
+                32.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 474.0,
+              "recall": 1.0,
+              "precision": 0.1023,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 474,
+              "error_count": 474,
+              "ci95": [
+                453.0,
+                492.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 342.0,
+              "recall": 1.0,
+              "precision": 0.1364,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 342,
+              "error_count": 342,
+              "ci95": [
+                321.0,
+                360.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 54.0,
+              "recall": 0.0,
+              "precision": 0.0,
+              "severity_weighted_recall": 0.0,
+              "recall_on_checkable": 0.0,
+              "n_missed": 54,
+              "n_unchecked": 0,
+              "n_spurious": 0,
+              "error_count": 54,
+              "ci95": [
+                36.0,
+                75.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 54.0,
+              "recall": 0.0,
+              "precision": 0.0,
+              "severity_weighted_recall": 0.0,
+              "recall_on_checkable": 0.0,
+              "n_missed": 54,
+              "n_unchecked": 0,
+              "n_spurious": 0,
+              "error_count": 54,
+              "ci95": [
+                36.0,
+                75.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 456.0,
+              "ci95": [
+                435.0,
+                475.0
+              ],
+              "separated": true
+            },
+            "flag_present": {
+              "point": 324.0,
+              "ci95": [
+                303.0,
+                343.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor": {
+              "point": 36.0,
+              "ci95": [
+                9.0,
+                64.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor_loo": {
+              "point": 36.0,
+              "ci95": [
+                9.0,
+                64.0
+              ],
+              "separated": true
+            }
+          }
+        }
+      }
+    },
+    "external-envs": {
+      "n_environments": 8,
+      "n_planted": 7,
+      "environments": [
+        "inspect_evals/boolq",
+        "inspect_evals/paws",
+        "inspect_evals/personality_BFI",
+        "inspect_evals/stereoset",
+        "openenv/echo",
+        "openenv/textarena-wordle",
+        "tau2/airline",
+        "tau2/retail"
+      ],
+      "profiles": {
+        "research-run": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.008264,
+            "HIGH": 0.02439,
+            "MEDIUM": 0.111111,
+            "LOW": 0.333333
+          },
+          "n_present_classes": 5,
+          "present_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_n_flagged_classes": 5,
+          "arms": {
+            "assay": {
+              "expected_loss": 45.0,
+              "recall": 0.8571,
+              "precision": 0.5455,
+              "severity_weighted_recall": 0.8485,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 5,
+              "error_count": 6,
+              "ci95": [
+                3.0,
+                124.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 121.0,
+              "recall": 1.0,
+              "precision": 0.0547,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 121,
+              "error_count": 121,
+              "ci95": [
+                117.0,
+                125.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 33.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                29.0,
+                37.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 33.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                29.0,
+                37.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 201.0,
+              "recall": 0.5714,
+              "precision": 0.1081,
+              "severity_weighted_recall": 0.6061,
+              "recall_on_checkable": 0.5714,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 36,
+              "ci95": [
+                38.0,
+                441.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 76.0,
+              "ci95": [
+                -4.0,
+                121.0
+              ],
+              "separated": false
+            },
+            "flag_present": {
+              "point": -12.0,
+              "ci95": [
+                -92.0,
+                33.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor": {
+              "point": -12.0,
+              "ci95": [
+                -92.0,
+                33.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor_loo": {
+              "point": 156.0,
+              "ci95": [
+                24.0,
+                399.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "production-training": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.002079,
+            "HIGH": 0.008264,
+            "MEDIUM": 0.047619,
+            "LOW": 0.2
+          },
+          "n_present_classes": 5,
+          "present_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_n_flagged_classes": 5,
+          "arms": {
+            "assay": {
+              "expected_loss": 250.0,
+              "recall": 0.8571,
+              "precision": 0.5455,
+              "severity_weighted_recall": 0.8485,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 5,
+              "error_count": 6,
+              "ci95": [
+                6.0,
+                728.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 242.0,
+              "recall": 1.0,
+              "precision": 0.0547,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 121,
+              "error_count": 121,
+              "ci95": [
+                234.0,
+                250.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 66.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                58.0,
+                74.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 66.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                58.0,
+                74.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 1306.0,
+              "recall": 0.5714,
+              "precision": 0.1081,
+              "severity_weighted_recall": 0.6061,
+              "recall_on_checkable": 0.5714,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 36,
+              "ci95": [
+                98.0,
+                3226.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": -8.0,
+              "ci95": [
+                -488.0,
+                242.0
+              ],
+              "separated": false
+            },
+            "flag_present": {
+              "point": -184.0,
+              "ci95": [
+                -664.0,
+                66.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor": {
+              "point": -184.0,
+              "ci95": [
+                -664.0,
+                66.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor_loo": {
+              "point": 1056.0,
+              "ci95": [
+                48.0,
+                2982.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "benchmark-publication": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.003984,
+            "HIGH": 0.013158,
+            "MEDIUM": 0.074074,
+            "LOW": 0.285714
+          },
+          "n_present_classes": 5,
+          "present_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_flagged_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_n_flagged_classes": 5,
+          "arms": {
+            "assay": {
+              "expected_loss": 640.0,
+              "recall": 0.8571,
+              "precision": 0.5455,
+              "severity_weighted_recall": 0.8485,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 5,
+              "error_count": 6,
+              "ci95": [
+                24.0,
+                1832.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 968.0,
+              "recall": 1.0,
+              "precision": 0.0547,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 121,
+              "error_count": 121,
+              "ci95": [
+                936.0,
+                1000.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 264.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                232.0,
+                296.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 264.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                232.0,
+                296.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 2964.0,
+              "recall": 0.5714,
+              "precision": 0.1081,
+              "severity_weighted_recall": 0.6061,
+              "recall_on_checkable": 0.5714,
+              "n_missed": 3,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 36,
+              "ci95": [
+                332.0,
+                6964.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 328.0,
+              "ci95": [
+                -872.0,
+                968.0
+              ],
+              "separated": false
+            },
+            "flag_present": {
+              "point": -376.0,
+              "ci95": [
+                -1576.0,
+                264.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor": {
+              "point": -376.0,
+              "ci95": [
+                -1576.0,
+                264.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor_loo": {
+              "point": 2324.0,
+              "ci95": [
+                192.0,
+                6348.0
+              ],
+              "separated": true
+            }
+          }
+        },
+        "flat": {
+          "thresholds_by_severity": {
+            "CRITICAL": 0.5,
+            "HIGH": 0.5,
+            "MEDIUM": 0.5,
+            "LOW": 0.5
+          },
+          "n_present_classes": 5,
+          "present_classes": [
+            "KNOWN_WRONG_PASSES",
+            "NONDETERMINISM",
+            "REWARD_HACKABLE",
+            "SHORTCUT_LEAK",
+            "SPEC_VERIFIER_MISMATCH"
+          ],
+          "prevalence_floor_flagged_classes": [],
+          "prevalence_floor_n_flagged_classes": 0,
+          "arms": {
+            "assay": {
+              "expected_loss": 6.0,
+              "recall": 0.8571,
+              "precision": 0.5455,
+              "severity_weighted_recall": 0.8485,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 1,
+              "n_spurious": 5,
+              "error_count": 6,
+              "ci95": [
+                2.0,
+                10.0
+              ]
+            },
+            "flag_everything": {
+              "expected_loss": 121.0,
+              "recall": 1.0,
+              "precision": 0.0547,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 121,
+              "error_count": 121,
+              "ci95": [
+                117.0,
+                125.0
+              ]
+            },
+            "flag_present": {
+              "expected_loss": 33.0,
+              "recall": 1.0,
+              "precision": 0.175,
+              "severity_weighted_recall": 1.0,
+              "recall_on_checkable": 1.0,
+              "n_missed": 0,
+              "n_unchecked": 0,
+              "n_spurious": 33,
+              "error_count": 33,
+              "ci95": [
+                29.0,
+                37.0
+              ]
+            },
+            "prevalence_floor": {
+              "expected_loss": 7.0,
+              "recall": 0.0,
+              "precision": 0.0,
+              "severity_weighted_recall": 0.0,
+              "recall_on_checkable": 0.0,
+              "n_missed": 7,
+              "n_unchecked": 0,
+              "n_spurious": 0,
+              "error_count": 7,
+              "ci95": [
+                3.0,
+                11.0
+              ]
+            },
+            "prevalence_floor_loo": {
+              "expected_loss": 7.0,
+              "recall": 0.0,
+              "precision": 0.0,
+              "severity_weighted_recall": 0.0,
+              "recall_on_checkable": 0.0,
+              "n_missed": 7,
+              "n_unchecked": 0,
+              "n_spurious": 0,
+              "error_count": 7,
+              "ci95": [
+                3.0,
+                11.0
+              ]
+            }
+          },
+          "assay_saved_vs": {
+            "flag_everything": {
+              "point": 115.0,
+              "ci95": [
+                108.0,
+                121.0
+              ],
+              "separated": true
+            },
+            "flag_present": {
+              "point": 27.0,
+              "ci95": [
+                20.0,
+                33.0
+              ],
+              "separated": true
+            },
+            "prevalence_floor": {
+              "point": 1.0,
+              "ci95": [
+                -3.0,
+                5.0
+              ],
+              "separated": false
+            },
+            "prevalence_floor_loo": {
+              "point": 1.0,
+              "ci95": [
+                -3.0,
+                5.0
+              ],
+              "separated": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

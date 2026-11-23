@@ -1386,6 +1386,7 @@ HISTORICAL_DOCS = {
     "docs/LINEAGE.md": "attribution of borrowed work, not a claim about this suite",
     "docs/SCIENCEAGENTBENCH.md": "an adapter note about an ecosystem not in the corpus",
     "docs/VIDEO-NEXT.md": "a draft script for a cut that has not been recorded",
+    "docs/DESIGN-V2.md": "a draft design for the next evaluation study; nothing here is frozen or run",
 }
 
 
@@ -1467,3 +1468,79 @@ def test_every_environment_the_gate_measurement_names_can_actually_be_built():
         "these environments are named in the gate measurement and the corpus does "
         f"not register them, so they silently SKIP: {unresolvable}"
     )
+
+
+def test_downstream_artifacts_agree_on_assay_missed_and_unchecked():
+    """`corpus_splits.json` and `baselines.json` must not drop `unchecked` when rebuilding Outcome.
+
+    `scripts/intervals.py:load_arms` and `scripts/baselines.py` rebuilt `Outcome`
+    for `assay` without passing `inconclusive=row.get("unchecked", [])`, causing
+    `corpus_splits.json` and `baselines.json` to report `n_missed=1, n_unchecked=0`
+    while `full_run.json` and `gate_reliability.json` reported `0` and `1` for the
+    identical run. Lock all five artifacts together so they cannot drift again.
+    """
+    fr = _load("full_run.json")
+    cs = _load("corpus_splits.json")
+    bl = _load("baselines.json")
+    gr = _load("gate_reliability.json")
+    pf = _load("prevalence_floor.json")
+
+    ref = fr["arms"]["assay"]
+    want = (ref["n_missed"], ref["n_unchecked"], ref["n_spurious"], ref["expected_loss"])
+    assert want == (0, 1, 17, 57.0)
+
+    for pname in ("research-run", "production-training", "benchmark-publication", "flat"):
+        cs_row = cs["splits"]["all"]["profiles"][pname]["assay"]
+        bl_row = bl["profiles"][pname]["arms"]["assay"]
+        pf_row = pf["splits"]["all"]["profiles"][pname]["arms"]["assay"]
+        for label, row in (("corpus_splits", cs_row), ("baselines", bl_row), ("prevalence_floor", pf_row)):
+            assert (row["n_missed"], row["n_unchecked"], row["n_spurious"]) == (0, 1, 17), (
+                f"{label}/{pname}: got {(row['n_missed'], row['n_unchecked'], row['n_spurious'])}, "
+                "expected (0, 1, 17)"
+            )
+            assert row["recall_on_checkable"] == 1.0, f"{label}/{pname}: recall_on_checkable drifted"
+
+    ext_row = cs["splits"]["external-envs"]["profiles"]["research-run"]["assay"]
+    assert (ext_row["n_missed"], ext_row["n_unchecked"], ext_row["recall_on_checkable"]) == (0, 1, 1.0)
+
+    for i, run in enumerate(gr["runs"]):
+        a = run["assay"]
+        assert (a["n_missed"], a["n_unchecked"], a["n_spurious"], a["expected_loss"]) == want, (
+            f"gate_reliability run {i} disagrees with full_run.json"
+        )
+
+
+def test_prevalence_floor_artifact_matches_elkan_rule():
+    """Verify the post hoc restricted and prevalence-aware constant floors."""
+    from assay.costs import load as load_profile
+    from assay.types import DEFAULT_SEVERITY, DefectClass
+
+    fr = _load("full_run.json")
+    pf = _load("prevalence_floor.json")
+    assert pf["post_hoc"] is True
+
+    truth = {e: set(row["planted"]) for e, row in fr["per_env"].items()}
+    n = len(truth)
+    counts = {d: sum(1 for p in truth.values() if d.value in p) for d in DefectClass}
+
+    for pname in ("research-run", "production-training", "benchmark-publication", "flat"):
+        profile = load_profile(pname)
+        block = pf["splits"]["all"]["profiles"][pname]
+        expected_flagged = sorted(
+            d.value
+            for d in DefectClass
+            if (counts[d] / n) * profile.cost_of_miss(DEFAULT_SEVERITY[d])
+            > (1.0 - counts[d] / n) * profile.false_alarm
+        )
+        assert block["prevalence_floor_flagged_classes"] == expected_flagged
+        arms = block["arms"]
+        # Bayes-optimal constant policy cannot be worse than flag_present or flag_everything
+        assert arms["prevalence_floor"]["expected_loss"] <= arms["flag_present"]["expected_loss"]
+        assert arms["flag_present"]["expected_loss"] <= arms["flag_everything"]["expected_loss"]
+
+    res = pf["splits"]["all"]["profiles"]["research-run"]
+    assert res["arms"]["flag_present"]["expected_loss"] == 342.0
+    assert res["assay_saved_vs"]["flag_present"]["point"] == 285.0
+    assert res["arms"]["prevalence_floor"]["expected_loss"] == 327.0
+    assert res["assay_saved_vs"]["prevalence_floor"]["point"] == 270.0
+    assert pf["splits"]["all"]["profiles"]["flat"]["arms"]["prevalence_floor"]["expected_loss"] == 54.0

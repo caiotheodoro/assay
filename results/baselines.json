@@ -52,13 +52,13 @@
         "assay": {
           "error_count": 18,
           "expected_loss": 736.0,
-          "n_missed": 1,
+          "n_missed": 0,
           "n_spurious": 17,
-          "n_unchecked": 0,
+          "n_unchecked": 1,
           "normalized_loss": 0.1941,
           "precision": 0.7571,
           "recall": 0.9815,
-          "recall_on_checkable": 0.9815,
+          "recall_on_checkable": 1.0,
           "severity_weighted_recall": 0.9802
         },
         "flag_everything": {
@@ -164,13 +164,13 @@
         "assay": {
           "error_count": 18,
           "expected_loss": 18.0,
-          "n_missed": 1,
+          "n_missed": 0,
           "n_spurious": 17,
-          "n_unchecked": 0,
+          "n_unchecked": 1,
           "normalized_loss": 0.3333,
           "precision": 0.7571,
           "recall": 0.9815,
-          "recall_on_checkable": 0.9815,
+          "recall_on_checkable": 1.0,
           "severity_weighted_recall": 0.9802
         },
         "flag_everything": {
@@ -276,13 +276,13 @@
         "assay": {
           "error_count": 18,
           "expected_loss": 274.0,
-          "n_missed": 1,
+          "n_missed": 0,
           "n_spurious": 17,
-          "n_unchecked": 0,
+          "n_unchecked": 1,
           "normalized_loss": 0.289,
           "precision": 0.7571,
           "recall": 0.9815,
-          "recall_on_checkable": 0.9815,
+          "recall_on_checkable": 1.0,
           "severity_weighted_recall": 0.9802
         },
         "flag_everything": {
@@ -388,13 +388,13 @@
         "assay": {
           "error_count": 18,
           "expected_loss": 57.0,
-          "n_missed": 1,
+          "n_missed": 0,
           "n_spurious": 17,
-          "n_unchecked": 0,
+          "n_unchecked": 1,
           "normalized_loss": 0.1203,
           "precision": 0.7571,
           "recall": 0.9815,
-          "recall_on_checkable": 0.9815,
+          "recall_on_checkable": 1.0,
           "severity_weighted_recall": 0.9802
         },
         "flag_everything": {
