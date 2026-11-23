@@ -579,7 +579,17 @@ def test_the_corpus_now_contains_environments_the_gate_can_act_on():
     scored. `docs/PRE-REGISTRATION-NOANSWER.md` predicted the arithmetic before
     they existed.
     """
-    from assay.corpus import entries, ground_truth, provenance
+    from assay.corpus import availability, entries, ground_truth, provenance
+
+    # `personality_BFI` is registered by the `inspect_evals` provider, which the
+    # `sweep` extra installs. CI's first job syncs without it, so on that runner
+    # this assertion measured the runner and not the corpus, and it failed the
+    # build on every push from 2026-09-19. Skip with the reason named; the job
+    # that installs the documented extras fails if this ever skips there
+    # (`.github/workflows/ci.yml`, the-doc-gates-actually-run).
+    usable, why = availability()["inspect_evals"]
+    if not usable:
+        pytest.skip(f"needs --extra sweep: the inspect_evals provider is unavailable ({why})")
 
     ids = {env_id for env_id, _, _ in entries()}
     expected = {

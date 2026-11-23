@@ -1442,7 +1442,17 @@ def test_every_environment_the_gate_measurement_names_can_actually_be_built():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    from assay.corpus import entries
+    from assay.corpus import availability, entries
+
+    # The gate measurement names `tau2/airline` and `tau2/retail`, which the
+    # `tau2` provider registers only when its extra and its snapshots are
+    # present. Without them the corpus does not contain those ids, and this test
+    # failed on CI's first job for that reason alone, not because anything
+    # silently skips. Skip with the reason named; the documented-command job
+    # fails if this skips there (`.github/workflows/ci.yml`).
+    usable, why = availability()["tau2"]
+    if not usable:
+        pytest.skip(f"needs --extra tau2: the tau2 provider is unavailable ({why.splitlines()[0]})")
 
     known = {env_id for env_id, _, _ in entries()}
     named = [e for e, _, _ in module.POSITIVES] + [e for e, _, _ in module.NEGATIVES]

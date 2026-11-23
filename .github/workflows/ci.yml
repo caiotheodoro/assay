@@ -55,7 +55,7 @@ jobs:
             echo "::error::the suite-size doc gate skipped under the documented command"
             exit 1
           fi
-          if grep -qE "needs --extra (sweep|openenv)" /tmp/suite.txt; then
+          if grep -qE "needs --extra (sweep|openenv)|needs --extra tau2: the tau2 provider" /tmp/suite.txt; then
             echo "::error::a doc gate skipped for a missing extra the docs claim to install"
             exit 1
           fi
