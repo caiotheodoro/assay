@@ -58,8 +58,7 @@ be beaten is `flag_everything`, which catches every defect by construction — a
 most of this project's life, Assay did not beat it. Every headline rests on that
 separation.
 
-Recall is 0.9815 and **precision is 0.9464** — no longer 1.000. Three spurious findings
-remain and all three are on the two τ² environments.
+Recall is 0.9815 and **precision is 0.7571**: 17 spurious findings, 3 on the two τ² environments and 14 on the five environments with no correct answer, where every finding is false by construction. The 0.9464 this file used to give was the figure before those five joined the corpus.
 
 Intervals resample **environments** (n=33), not defects — `results/intervals.json`
 carries a `"why"` field saying so.
@@ -70,9 +69,7 @@ carries a `"why"` field saying so.
   split, so the contamination probe has nothing to compare.
 - Four of BenchJack's eight flaw classes are uncovered (`docs/COVERAGE.md`, written
   in *their* vocabulary, not ours).
-- Only **8 of 33** corpus environments are genuinely third-party, and only **3 of those
-  6** carry ground truth this repository did not decide. The split is published because
-  it is unflattering.
+- Only **8 of 33** corpus environments are genuinely third-party, and only **3 of those 8** carry ground truth this repository did not decide (5 of the 54 planted defects). On those 8 the saving over `flag_everything` is 76.0 with a 95% interval of [-4, 121], not separated, and `production-training` goes to the floor. The split is published because it is unflattering.
 - The GRPO-trained Challenger **does not beat the scripted floor** — a negative
   result, published as one.
 - The hosted demo runs the battery **in the browser**:
@@ -114,21 +111,23 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 814 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 826 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **814 passed, 0 failed, exit 0** —
-123 s for the whole cold path, `uv sync` and the snapshot fetch included.
+skipping. Verified from a fresh tree with no `.venv`: **826 passed, 0 failed, exit 0** —
+123 s for the whole cold path, `uv sync` and the snapshot fetch included. The time was measured at 814 tests, before the 12 paper tests were added.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a
 nonzero exit is what blocks a training run. That is why it is separated by `;` and not
 `&&`: chained with `&&`, the card never prints.
 
 ## Map
+
+`paper/assay.tex` is the paper; every number in it is a macro written from `results/` by `scripts/export_paper_tables.py`, and `tests/test_paper.py` holds it there. Read its §Limitations before quoting the headline: the saving over the floor is 417.0 on the whole corpus and 285.0 against a floor restricted to the classes that occur, and on the 8 external environments its interval crosses zero.
 
 | | |
 |---|---|

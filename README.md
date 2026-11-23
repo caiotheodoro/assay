@@ -127,6 +127,10 @@ Three caveats decide how the table should be read, all in full in [`docs/RESULTS
 | our content, third-party format | 10 | 0.0 | 132.0 |
 | in-process fixtures | 15 | 12.0 | 221.0 |
 
+**The external row is the one to read, and it does not separate.** On those 8 environments the saving over
+`flag_everything` is 76.0, 95% CI [-4, 121], and under `production-training` Assay scores 250.0 against the floor's
+242.0, so it loses there. Only 5 of the 54 planted defects carry a label this repository did not decide.
+
 **Assay has no true misses on this corpus.** The one that used to be reported —
 `inspect_evals/boolq`, `SHORTCUT_LEAK` — is not a miss: boolq ships no train split, so the probe
 returns `NOT_APPLICABLE` and says why. The scorer had no third state and charged it as a failure to
@@ -356,7 +360,7 @@ The category is not new and Assay does not claim it is. Static auditors read a b
 ([arXiv 2605.26079](https://arxiv.org/abs/2605.26079)). Dynamic auditors execute it: **BenchJack**
 ([arXiv 2605.12673](https://arxiv.org/abs/2605.12673)), 219 flaws across 10 agent benchmarks, and
 [arXiv 2606.16062](https://arxiv.org/abs/2606.16062), whose gold-sanity gate on SWE-bench Verified
-found 28.5% of 49 tasks hackable. Partial-input baselines, reward-model overoptimization and
+found 22.4% of 49 tasks accepting a patch that differs from the gold patch (28.5% in the paper's first version). Partial-input baselines, reward-model overoptimization and
 separability-as-a-metric are ported, not invented.
 
 What Assay adds is the bundle, eleven families in one report under one expected-loss metric, plus
@@ -368,6 +372,7 @@ predates this repo is in [`docs/LINEAGE.md`](docs/LINEAGE.md), cited as lineage 
 | | |
 |---|---|
 | Orientation, 130 lines | [`AGENTS.md`](AGENTS.md) |
+| The paper, every number generated from `results/` | [`paper/assay.pdf`](paper/assay.pdf), source `paper/assay.tex`, built with `tectonic` |
 | Every claim, with the file that backs it | [`docs/FOR_AGENTS.md`](docs/FOR_AGENTS.md) |
 | Every number, with its caveats | [`docs/RESULTS.md`](docs/RESULTS.md) |
 | Everything this repo published and took back | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) |
@@ -385,6 +390,20 @@ server. Hugging Face returns HTTP 402 for a Gradio Space on free `cpu-basic`, wh
 `verifier: "regex"`, because `safe_regex` bounds a submitted pattern in a subprocess and WebAssembly
 has none. The video carries one erratum: it says "separates on three", and it is now four, with
 [`docs/VIDEO.md`](docs/VIDEO.md) on why the video's caution was the better instinct.
+
+## Paper, data and license
+
+- The paper, *Pricing Defects in Evaluation Environments by Expected Loss*, is `paper/assay.pdf` (source
+  `paper/assay.tex`, bibliography `paper/refs.bib`, `paper/assay.bbl` for arXiv). Its numbers, tables and figures are
+  written by `scripts/export_paper_tables.py` from `results/`, and `tests/test_paper.py` fails if they drift.
+  It is not peer reviewed. A Zenodo deposit is prepared and not yet published (`.zenodo.json`, `CITATION.cff`);
+  the DOI will be named here when it exists. A deposit date is not a registration clock
+  (`docs/changelog/127-the-paper-and-the-red-ci.md`).
+- The corpus and Environment Cards are a Hugging Face dataset,
+  [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus).
+- Code is `Apache-2.0` ([`LICENSE`](LICENSE)); the paper is `CC BY 4.0`. The author works on a commercial AI gateway;
+  nothing from that product is used here, and all data is public or synthetic. The paper and the code were written with an
+  AI coding assistant under the author's direction and review.
 
 ## License
 

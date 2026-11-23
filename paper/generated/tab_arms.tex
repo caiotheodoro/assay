@@ -1,0 +1,15 @@
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+arm & expected loss & 95\% CI & recall & precision \\
+\midrule
+\textsc{Assay}+auditor (one draw) & 44.0 & [1, 126] & 0.982 & 0.930 \\
+\textsc{Assay} & 57.0 & [8, 142] & 0.982 & 0.757 \\
+\texttt{flag\_everything} & 474.0 & [453, 492] & 1.000 & 0.102 \\
+\texttt{always\_modal\_defect} & 2055.0 & [1315, 2909] & 0.185 & 0.303 \\
+\texttt{direct\_prompt} & 2343.0 & [1451, 3366] & 0.241 & 0.295 \\
+\texttt{agent\_with\_tools} & 2746.0 & [1753, 3883] & 0.241 & 0.277 \\
+\texttt{stratified\_random} & 2838.0 & [1767, 4071] & 0.093 & 0.098 \\
+\texttt{check\_env} & 3216.0 & [2056, 4552] & 0.037 & 1.000 \\
+\texttt{flag\_nothing} & 3232.0 & [2080, 4560] & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}

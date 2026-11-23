@@ -35,9 +35,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # tests/test_paper.py checks that each pre-registration was committed
+          # before the code it registers, which needs history.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - name: poppler, so the rendered paper is read rather than assumed
+        run: sudo apt-get update -y && sudo apt-get install -y poppler-utils
       - name: Sync exactly the extras the documented command names
         run: uv sync --extra dev --extra adapters --extra sweep --extra openenv --extra tau2 --extra space
       - name: Fetch the tau2 snapshots the guide tells you to fetch
@@ -53,6 +59,10 @@ jobs:
         run: |
           if grep -q "only meaningful on the full suite" /tmp/suite.txt; then
             echo "::error::the suite-size doc gate skipped under the documented command"
+            exit 1
+          fi
+          if grep -qE "pdftotext not installed|shallow clone: the registration order" /tmp/suite.txt; then
+            echo "::error::a paper gate skipped; the PDF and the registration order must be read here"
             exit 1
           fi
           if grep -qE "needs --extra (sweep|openenv)|needs --extra tau2: the tau2 provider" /tmp/suite.txt; then

@@ -1,0 +1,170 @@
+{
+  "title": "Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery, the Floor It Had to Beat, and Twelve of Its Own Claims That Broke",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "creators": [
+    {
+      "name": "Theodoro, Caio",
+      "orcid": "0009-0005-7343-981X"
+    }
+  ],
+  "publication_date": "2026-11-23",
+  "license": "cc-by-4.0",
+  "description": "Reinforcement-learning environments and eval suites are used on the strength of a verifier nobody re-checks. Assay is a battery of probes, 16 defect classes in all, that executes an environment and prices each missed defect and each false alarm under a stated cost profile. The arm it had to beat is the trivial one, flag_everything. On 33 environments with 54 planted defects, Assay has an expected loss of 57.0 (95% CI 8-142) against 474.0 (453-492) for the floor, a saving of 417.0 (330-471), and the saving separates in all four cost profiles. It reads larger than it is, and 285.0 is the figure to carry. 27.8% of the floor's loss is paid on 4 defect classes planted in no environment, and 25 of the 33 environments were written by the author. On the 8 third-party environments the saving is 76.0 with an interval that crosses zero (-4 to 121), and under one of the four profiles Assay loses to the floor there. Precision is 0.757: 17 false alarms, 14 of them on environments with no planted defect. A language-model gate that withholds the false alarms on environments with no correct answer deleted two real defects in 1 of 7 identical runs, so its mean saving over the deterministic arm is 2.4 against a median of 14.0. Against defects an independent team confirmed in tau2-bench, the recall of 0.339 is indistinguishable from random flagging (p=0.486). The repository broke 12 of its own published claims under its own red team and has published 22 retractions. The code is Apache-2.0. The deterministic arms reproduce without a GPU or an API key; the language-model arms and the gate do not. Not peer reviewed. Code, registrations and artifacts: https://github.com/caiotheodoro/assay",
+  "keywords": [
+    "RL environments",
+    "benchmark auditing",
+    "expected loss",
+    "reward hacking",
+    "pre-registration",
+    "negative results"
+  ],
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/caiotheodoro/assay",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://huggingface.co/datasets/caiotheodoro/assay-corpus",
+      "resource_type": "dataset",
+      "scheme": "url"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://huggingface.co/spaces/caiotheodoro/assay-demo",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2604.24955",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2605.26079",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2605.12673",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2606.16062",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2210.10760",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2507.02825",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2410.06992",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2503.15223",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2406.12045",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2506.07982",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2310.06770",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2307.13854",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2410.07137",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2511.04703",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2610.15924",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2606.08960",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2610.09142",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2605.20744",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2610.01491",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2607.28367",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2407.17032",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    }
+  ],
+  "version": "paper-v1"
+}

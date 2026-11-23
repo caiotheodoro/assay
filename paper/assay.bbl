@@ -1,0 +1,221 @@
+\begin{thebibliography}{30}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abrich(2026)]{abrich2026loopholes}
+Richard Abrich.
+\newblock {Finding Side-Effect Loopholes in AppWorld and WorkArena Verifiers},
+  2026.
+\newblock arXiv:2610.09142.
+
+\bibitem[Aleithan et~al.(2024)Aleithan, Xue, Mohajer, Nnorom, Uddin, and
+  Wang]{aleithan2024swebenchplus}
+Reem Aleithan, Haoran Xue, Mohammad~Mahdi Mohajer, Elijah Nnorom, Gias Uddin,
+  and Song Wang.
+\newblock {SWE-Bench+: Enhanced Coding Benchmark for LLMs}, 2024.
+\newblock arXiv:2410.06992.
+
+\bibitem[{amazon-agi}()]{tau2verified}
+{amazon-agi}.
+\newblock {tau2-bench-verified}.
+\newblock \url{https://github.com/amazon-agi/tau2-bench-verified}.
+\newblock Dataset and task corrections; accessed 23 November 2026.
+
+\bibitem[Barres et~al.(2025)Barres, Dong, Ray, Si, and
+  Narasimhan]{barres2025tau2}
+Victor Barres, Honghua Dong, Soham Ray, Xujie Si, and Karthik Narasimhan.
+\newblock {$\tau^2$-Bench: Evaluating Conversational Agents in a Dual-Control
+  Environment}, 2025.
+\newblock arXiv:2506.07982.
+
+\bibitem[Bean et~al.(2025)Bean, Kearns, Romanou, Hafner, Mayne, Batzner,
+  Foroutan, Schmitz, Korgul, Batra, et~al.]{bean2025construct}
+Andrew~M. Bean, Ryan~Othniel Kearns, Angelika Romanou, Franziska~Sofia Hafner,
+  Harry Mayne, Jan Batzner, Negar Foroutan, Chris Schmitz, Karolina Korgul,
+  Hunar Batra, et~al.
+\newblock {Measuring what Matters: Construct Validity in Large Language Model
+  Benchmarks}, 2025.
+\newblock arXiv:2511.04703.
+
+\bibitem[Berg-Kirkpatrick et~al.(2012)Berg-Kirkpatrick, Burkett, and
+  Klein]{bergkirkpatrick2012}
+Taylor Berg-Kirkpatrick, David Burkett, and Dan Klein.
+\newblock An empirical investigation of statistical significance in {NLP}.
+\newblock In \emph{Proceedings of the 2012 Joint Conference on Empirical
+  Methods in Natural Language Processing and Computational Natural Language
+  Learning}, 2012.
+\newblock ACL Anthology D12-1091.
+
+\bibitem[Dong et~al.(2026)Dong, Ma, Wang, Li, Liu, Deng, Zhan, and
+  Qian]{dong2026misscore}
+Zihan Dong, Zhiyuan Ma, Zekun Wang, Yunqing Li, Zirou Liu, Ruixuan Deng, Qishi
+  Zhan, and Rui Qian.
+\newblock {How Benchmarks Mis-Score Computer-Use Agents}, 2026.
+\newblock arXiv:2607.28367.
+
+\bibitem[Efron(1979)]{efron1979}
+Bradley Efron.
+\newblock Bootstrap methods: Another look at the jackknife.
+\newblock \emph{The Annals of Statistics}, 7\penalty0 (1):\penalty0 1--26,
+  1979.
+
+\bibitem[El~Hattami et~al.(2025)El~Hattami, Thakkar, Chapados, and
+  Pal]{elhattami2025webarenaverified}
+Amine El~Hattami, Megh Thakkar, Nicolas Chapados, and Christopher Pal.
+\newblock {WebArena} verified: Reliable evaluation for web agents.
+\newblock NeurIPS 2025 workshop paper;
+  \url{https://neurips.cc/virtual/2025/124576}, 2025.
+
+\bibitem[Elkan(2001)]{elkan2001}
+Charles Elkan.
+\newblock The foundations of cost-sensitive learning.
+\newblock In \emph{Proceedings of the Seventeenth International Joint
+  Conference on Artificial Intelligence}, pages 973--978, 2001.
+
+\bibitem[Feng et~al.(2019)Feng, Wallace, and Boyd-Graber]{feng2019}
+Shi Feng, Eric Wallace, and Jordan Boyd-Graber.
+\newblock Misleading failures of partial-input baselines.
+\newblock In \emph{Proceedings of the 57th Annual Meeting of the Association
+  for Computational Linguistics}, 2019.
+\newblock ACL Anthology P19-1554.
+
+\bibitem[Gan et~al.(2026)Gan, He, Tsujii, Kobayashi, Itoh, and
+  Funakoshi]{gan2026webarenalite}
+Chengguang Gan, Zimeng He, Yoshihiro Tsujii, Ken-ichiro Kobayashi, Hiroki Itoh,
+  and Kotaro Funakoshi.
+\newblock {Auditing Web Agent Evaluation on WebArena-Lite: Human Review of
+  Outcomes and Trajectories}, 2026.
+\newblock arXiv:2610.01491.
+
+\bibitem[Gao et~al.(2022)Gao, Schulman, and Hilton]{gao2023overopt}
+Leo Gao, John Schulman, and Jacob Hilton.
+\newblock {Scaling Laws for Reward Model Overoptimization}, 2022.
+\newblock arXiv:2210.10760.
+
+\bibitem[Gururangan et~al.(2018)Gururangan, Swayamdipta, Levy, Schwartz,
+  Bowman, and Smith]{gururangan2018}
+Suchin Gururangan, Swabha Swayamdipta, Omer Levy, Roy Schwartz, Samuel~R.
+  Bowman, and Noah~A. Smith.
+\newblock Annotation artifacts in natural language inference data.
+\newblock In \emph{Proceedings of the 2018 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies, Volume 2 (Short Papers)}, pages 107--112, 2018.
+\newblock ACL Anthology N18-2017.
+
+\bibitem[{Hugging Face}()]{openenv}
+{Hugging Face}.
+\newblock {OpenEnv}.
+\newblock \url{https://github.com/huggingface/OpenEnv}.
+\newblock Software; accessed 23 November 2026.
+
+\bibitem[{OpenAI}(2024)]{openai2024verified}
+{OpenAI}.
+\newblock Introducing {SWE-bench} verified.
+\newblock \url{https://openai.com/index/introducing-swe-bench-verified/}, 2024.
+
+\bibitem[Poliak et~al.(2018)Poliak, Naradowsky, Haldar, Rudinger, and
+  Van~Durme]{poliak2018}
+Adam Poliak, Jason Naradowsky, Aparajita Haldar, Rachel Rudinger, and Benjamin
+  Van~Durme.
+\newblock Hypothesis only baselines in natural language inference.
+\newblock In \emph{Proceedings of the Seventh Joint Conference on Lexical and
+  Computational Semantics}, 2018.
+\newblock ACL Anthology S18-2023.
+
+\bibitem[Rajan(2026)]{rajan2026hackability}
+Shreshth Rajan.
+\newblock {Auditing Reward Hackability in Code RL Training Environments}, 2026.
+\newblock arXiv:2606.16062.
+
+\bibitem[Roth et~al.(2026)Roth, Samanta, Halevy, Levine, and
+  Efroni]{roth2026hackverifiable}
+Amit Roth, Ankur Samanta, Matan Halevy, Yoav Levine, and Yonathan Efroni.
+\newblock {Hack-Verifiable Environments: Towards Evaluating Reward Hacking at
+  Scale}, 2026.
+\newblock arXiv:2605.20744.
+
+\bibitem[Towers et~al.(2024)Towers, Kwiatkowski, Terry, Balis, Cola, Deleu,
+  Goul{\~a}o, Kallinteris, Krimmel, KG, et~al.]{towers2024gymnasium}
+Mark Towers, Ariel Kwiatkowski, Jordan Terry, John~U. Balis, Gianluca~De Cola,
+  Tristan Deleu, Manuel Goul{\~a}o, Andreas Kallinteris, Markus Krimmel, Arjun
+  KG, et~al.
+\newblock {Gymnasium: A Standard Interface for Reinforcement Learning
+  Environments}, 2024.
+\newblock arXiv:2407.17032.
+
+\bibitem[Tu et~al.(2026)Tu, Wang, Lu, Huang, Qu, and
+  Mostafavi]{tu2026benchguard}
+Xinming Tu, Tianze Wang, Yingzhou Lu, Kexin Huang, Yuanhao Qu, and Sara
+  Mostafavi.
+\newblock {Who Guards the Benchmarks? Automated Auditing of LLM Agent
+  Benchmarks}, 2026.
+\newblock arXiv:2604.24955.
+
+\bibitem[{UK AI Security Institute}()]{inspectai}
+{UK AI Security Institute}.
+\newblock Inspect {AI}: Framework for large language model evaluations.
+\newblock \url{https://github.com/UKGovernmentBEIS/inspect_ai}.
+\newblock Software; accessed 23 November 2026.
+
+\bibitem[Wang et~al.(2026{\natexlab{a}})Wang, Li, Mang, Cheung, Sen, and
+  Song]{wang2026benchjack}
+Hao Wang, Hanchen Li, Qiuyang Mang, Alvin Cheung, Koushik Sen, and Dawn Song.
+\newblock {Do Androids Dream of Breaking the Game? Systematically Auditing AI
+  Agent Benchmarks with BenchJack}, 2026{\natexlab{a}}.
+\newblock arXiv:2605.12673.
+
+\bibitem[Wang et~al.(2026{\natexlab{b}})Wang, Bianchi, Zhu, Nie, Kwon, Dhingra,
+  and Zou]{wang2026aba}
+Junlin Wang, Federico Bianchi, Shang Zhu, Fan Nie, Yongchan Kwon, Bhuwan
+  Dhingra, and James Zou.
+\newblock {Automated Benchmark Auditing for AI Agents and Large Language
+  Models}, 2026{\natexlab{b}}.
+\newblock arXiv:2605.26079.
+
+\bibitem[Wang et~al.(2025)Wang, Pradel, and Liu]{wang2025solved}
+You Wang, Michael Pradel, and Zhongxin Liu.
+\newblock {Are "Solved Issues" in SWE-bench Really Solved Correctly? An
+  Empirical Study}, 2025.
+\newblock arXiv:2503.15223.
+
+\bibitem[Yao et~al.(2024)Yao, Shinn, Razavi, and Narasimhan]{yao2024taubench}
+Shunyu Yao, Noah Shinn, Pedram Razavi, and Karthik Narasimhan.
+\newblock {$\tau$-bench: A Benchmark for Tool-Agent-User Interaction in
+  Real-World Domains}, 2024.
+\newblock arXiv:2406.12045.
+
+\bibitem[Zeng et~al.(2026)Zeng, Zhong, Zhang, Bercovich, Segal, Mao, Saxena,
+  and Raghunathan]{zeng2026verifierhardening}
+Chong Zeng, Ziqian Zhong, Kexun Zhang, Ivan Bercovich, Ivgeni Segal, Yuzhen
+  Mao, Shashwat Saxena, and Aditi Raghunathan.
+\newblock {Scalable Weak-to-Strong Verifier Hardening for Agent Environments},
+  2026.
+\newblock arXiv:2610.15924.
+
+\bibitem[Zheng et~al.(2024)Zheng, Pang, Du, Liu, Jiang, and
+  Lin]{zheng2025nullmodels}
+Xiaosen Zheng, Tianyu Pang, Chao Du, Qian Liu, Jing Jiang, and Min Lin.
+\newblock {Cheating Automatic LLM Benchmarks: Null Models Achieve High Win
+  Rates}, 2024.
+\newblock arXiv:2410.07137.
+
+\bibitem[Zhong et~al.(2026)Zhong, Segal, Bercovich, Saxena, Zhang, and
+  Raghunathan]{zhong2026hackerfixer}
+Ziqian Zhong, Ivgeni Segal, Ivan Bercovich, Shashwat Saxena, Kexun Zhang, and
+  Aditi Raghunathan.
+\newblock {Hardening Agent Benchmarks with Adversarial Hacker-Fixer Loops},
+  2026.
+\newblock arXiv:2606.08960.
+
+\bibitem[Zhu et~al.(2025)Zhu, Jin, Pruksachatkun, Zhang, Liu, Cui, Kapoor,
+  Longpre, Meng, Weiss, et~al.]{zhu2025abc}
+Yuxuan Zhu, Tengjun Jin, Yada Pruksachatkun, Andy Zhang, Shu Liu, Sasha Cui,
+  Sayash Kapoor, Shayne Longpre, Kevin Meng, Rebecca Weiss, et~al.
+\newblock {Establishing Best Practices for Building Rigorous Agentic
+  Benchmarks}, 2025.
+\newblock arXiv:2507.02825.
+
+\end{thebibliography}

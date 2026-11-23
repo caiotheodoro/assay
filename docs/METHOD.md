@@ -305,8 +305,7 @@ were re-derived from the environments' own scripts with our tool out of the
 loop, and **both numbers were published**, because the margin was 274.0 at the
 time either way and the result had to be shown not to depend on it.
 
-That 1.000 no longer holds and the rule is why we can say so cleanly. Precision
-is **0.9464**: registering two τ²-bench domains under a label an outside
+That 1.000 no longer holds and the rule is why we can say so cleanly. Precision was **0.9464** at the 28-environment revision (it is 0.7571 on the 33 environments of 2026-11-23, after the no-answer set joined): registering two τ²-bench domains under a label an outside
 organisation published cost three spurious findings, because an externally
 derived label is a lower bound on what is wrong with an environment and
 `Outcome.spurious` scores everything outside it as a false alarm. The

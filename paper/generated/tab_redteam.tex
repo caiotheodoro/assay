@@ -1,0 +1,18 @@
+\begin{tabular}{@{}rp{0.52\linewidth}p{0.34\linewidth}@{}}
+\toprule
+\# & claim as published & what the red team found \\
+\midrule
+1 & $\tau^2$-bench recall 0.339 against 62 defects & indistinguishable from random (p = 0.486) \\
+2 & 24-environment corpus, assay 240.0 vs check\_env 2816.0 & half the corpus is Assay's own pytest fixtures \\
+3 & ``Assay wins one of four profiles, loses two'' & flips entirely on the no-Docker corpus the README advertises \\
+4 & uv run -{}-extra adapters python scripts/full\_run.py reproduces the table & that command gives 22 envs / 45 defects \\
+5 & Challenger ablation table, and the ``winning policy'' snippet & matches no committed artifact \\
+6 & reward\_basis was the field that needed excluding & it does not exist in either revision \\
+7 & docs/REPRODUCTION.md ``expect exactly this'' & carries the retracted check\_env row \\
+8 & ``a signed Environment Card'' & unkeyed digest; forgeable in three lines \\
+9 & ``The incumbent is not statistically distinguishable from checking nothing'' & true by construction of the test, not by the data \\
+10 & REPRODUCTION.md test counts / ``nothing skips'' & 493 passed / 18 skipped, not 275 / 0 \\
+11 & SAB: ``R1 would score respectably'', ``41 findings on clean tasks'' & never scored; the file says 16 \\
+12 & ``with harbor/self-graded held out so the test would mean something'' & in the README; corrected only in the changelog \\
+\bottomrule
+\end{tabular}

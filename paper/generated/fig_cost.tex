@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\begin{axis}[xmode=log, width=0.92\linewidth, height=5.4cm, xlabel={cost of a missed CRITICAL defect (shipped profile: 120)},
+  ylabel={expected loss}, ymin=0, xmajorgrids, ymajorgrids, legend pos=north west, legend style={font=\scriptsize}]
+\addplot[thick, dashed] coordinates {(1,474.0) (2,474.0) (5,474.0) (10,474.0) (20,474.0) (40,474.0) (80,474.0) (120,474.0) (130,474.0) (140,474.0) (145,474.0) (150,474.0) (160,474.0) (200,474.0) (400,474.0) (800,474.0) (2000,474.0)};
+\addplot[thick, mark=*, mark size=1.4pt] coordinates {(1,17.33) (2,17.67) (5,18.67) (10,20.33) (20,23.67) (40,30.33) (80,43.67) (120,57.0) (130,60.33) (140,63.67) (145,65.33) (150,67.0) (160,70.33) (200,83.67) (400,150.33) (800,283.67) (2000,683.67)};
+\addplot[thick, dotted, mark=square*, mark size=1.2pt] coordinates {(1,4.33) (2,4.67) (5,5.67) (10,7.33) (20,10.67) (40,17.33) (80,30.67) (120,44.0) (130,47.33) (140,50.67) (145,52.33) (150,54.0) (160,57.33) (200,70.67) (400,137.33) (800,270.67) (2000,670.67)};
+\draw[black!60] (axis cs:1371,0) -- (axis cs:1371,474);
+\legend{\texttt{flag\_everything}, \textsc{Assay}, \textsc{Assay}+auditor (one draw)}
+\end{axis}
+\end{tikzpicture}

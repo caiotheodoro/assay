@@ -12,8 +12,7 @@ twelve of them: a correction that lands one document downstream of the one peopl
 read is how a broken benchmark stays broken. A repository arguing that unaudited
 numbers are the problem does not get to delete its own.
 
-Twenty-one entries. Twelve are the red-team's; the rest were found afterwards by the
-same method, three of them while collecting this file.
+Twenty-two entries. Twelve are the red-team's; the rest were found afterwards by the same method, three of them while collecting this file and the last while writing the paper (2026-11-23).
 
 ---
 
@@ -371,10 +370,38 @@ external no-answer environments is whatever the corpus actually holds.
 
 ---
 
+## 22. Documents that restated figures after the artifacts moved
+
+Found 2026-11-23, while tying `paper/assay.tex` to `results/` with a test. Each was a sentence
+or a table that was true when written and was not regenerated when the corpus grew from 28 to 33
+environments or when an outside source changed:
+
+> `docs/RESULTS.md`, per-arm table: `stratified_random` [1702, 4030], `direct_prompt` recall 0.259,
+> `check_env` recall 0.019; paired differences `assay vs direct_prompt` 2411.0 and
+> `assay vs agent_with_tools` 2693.0; per-profile rows 272.0 / 916.0 / 644.0 and 728.0 / 3664.0 / 2936.0;
+> provenance table "genuinely external 6", "22 planted here, 3 hand-triaged, 3 derived".
+
+The committed `results/intervals*.json` and `results/corpus_splits.json` say 8 external environments,
+25 / 5 / 3 by label source, and the figures now in the tables. The same pass found `AGENTS.md` giving
+precision 0.9464 with three spurious findings (the figure before the no-answer environments joined;
+it is 0.7571 with seventeen), `docs/FOR_AGENTS.md` quoting a crossover of 1173.0 and a margin of
+351.0 [263, 404], and three documents quoting "28.5% of 49 SWE-bench Verified tasks hackable" from the
+first version of arXiv 2606.16062, whose current version says 22.4% (57.8% against a stronger attacker).
+`results/agentic_profile.json` names a replacement run, `results/agentic_runs/harbor_post_taxonomy.json`,
+that is not in the tree and never was; the supersession it supports rests on the monotonicity argument
+it also gives, and the paper says so.
+
+Live claim: those tables now read from the committed intervals and
+`tests/test_paper.py::test_the_results_document_tables_are_the_committed_intervals` fails if they
+drift again; `test_retired_figures_do_not_return` holds the other strings. The missing agentic
+artifact is not recreated: it needs about 45 minutes of paid sampling, and the claim is stated without it.
+
+---
+
 ## What this list is evidence of
 
 Twelve of these were found by turning this repository's own instruments on itself
-(`docs/RED-TEAM.md`). Nine were found afterwards, by the same method, in the documents
+(`docs/RED-TEAM.md`). Ten were found afterwards, by the same method, in the documents
 that recorded the first twelve — the most recent by an outside judge who went looking
 for the command behind a number and found prose. That rate is the point: **an auditing tool is not
 exempt from the thing it audits, and the only defence is to run the audit on yourself
