@@ -5,7 +5,18 @@
   "creators": [
     {
       "name": "Theodoro, Caio",
+      "affiliation": "Avenza Labs",
       "orcid": "0009-0005-7343-981X"
+    },
+    {
+      "name": "Basso Sberse, João Vitor",
+      "affiliation": "Avenza Labs",
+      "orcid": "0009-0005-7111-1474"
+    },
+    {
+      "name": "Theodoro, Matheus",
+      "affiliation": "Avenza Labs",
+      "orcid": "0009-0001-4061-4117"
     }
   ],
   "publication_date": "2026-08-28",

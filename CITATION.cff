@@ -5,7 +5,16 @@ type: article
 authors:
   - family-names: Theodoro
     given-names: Caio
+    affiliation: "Avenza Labs"
     orcid: "https://orcid.org/0009-0005-7343-981X"
+  - family-names: Basso Sberse
+    given-names: "João Vitor"
+    affiliation: "Avenza Labs"
+    orcid: "https://orcid.org/0009-0005-7111-1474"
+  - family-names: Theodoro
+    given-names: Matheus
+    affiliation: "Avenza Labs"
+    orcid: "https://orcid.org/0009-0001-4061-4117"
 date-released: 2026-08-28
 doi: 10.5281/zenodo.24454920
 url: "https://doi.org/10.5281/zenodo.24454920"
