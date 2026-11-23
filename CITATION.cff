@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite the paper."
-title: "Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery, the Floor It Had to Beat, and Twelve of Its Own Claims That Broke"
+title: "Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery Evaluated Against Trivial and Prevalence-Aware Floors"
 type: article
 authors:
   - family-names: Theodoro
     given-names: Caio
     orcid: "https://orcid.org/0009-0005-7343-981X"
-date-released: 2026-11-23
+date-released: 2026-08-28
 doi: 10.5281/zenodo.24454920
 url: "https://doi.org/10.5281/zenodo.24454920"
 repository-code: "https://github.com/caiotheodoro/assay"
@@ -17,9 +17,9 @@ keywords:
   - expected loss
   - reward hacking
   - pre-registration
-  - negative results
 abstract: >-
-  A probe battery that prices defects in RL environments and eval suites by expected
-  loss, compared against the trivial arm that flags everything, with the splits where
-  the saving does not separate and the published claims the repository broke in itself.
-  The code is Apache-2.0, the paper CC BY 4.0.
+  An execution-based probe battery across 11 families and 16 defect classes that
+  prices defects in RL environments and evaluation suites by expected loss,
+  evaluated against unrestricted, restricted, and post hoc prevalence-aware
+  constant floors, external provenance splits, and independently confirmed
+  benchmark defects. The code is Apache-2.0, the paper CC BY 4.0.

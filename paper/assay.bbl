@@ -1,4 +1,4 @@
-\begin{thebibliography}{30}
+\begin{thebibliography}{32}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -111,6 +111,14 @@ Suchin Gururangan, Swabha Swayamdipta, Omer Levy, Roy Schwartz, Samuel~R.
 \newblock \url{https://github.com/huggingface/OpenEnv}.
 \newblock Software; accessed 23 November 2026.
 
+\bibitem[Kapoor et~al.(2025)Kapoor, Stroebl, Siegel, Nadgir, and
+  Narayanan]{kapoor2024agents}
+Sayash Kapoor, Benedikt Stroebl, Zachary~S. Siegel, Nitya Nadgir, and Arvind
+  Narayanan.
+\newblock {AI Agents That Matter}.
+\newblock \emph{Transactions on Machine Learning Research}, 2025.
+\newblock arXiv:2407.01502 (2024).
+
 \bibitem[{OpenAI}(2024)]{openai2024verified}
 {OpenAI}.
 \newblock Introducing {SWE-bench} verified.
@@ -129,6 +137,16 @@ Adam Poliak, Jason Naradowsky, Aparajita Haldar, Rachel Rudinger, and Benjamin
 Shreshth Rajan.
 \newblock {Auditing Reward Hackability in Code RL Training Environments}, 2026.
 \newblock arXiv:2606.16062.
+
+\bibitem[Reuel et~al.(2024)Reuel, Hardy, Smith, Lamparth, Hardy, and
+  Kochenderfer]{reuel2024betterbench}
+Anka Reuel, Amelia Hardy, Chandler Smith, Max Lamparth, Malcolm Hardy, and
+  Mykel~J. Kochenderfer.
+\newblock {BetterBench: Assessing AI Benchmarks, Uncovering Issues, and
+  Establishing Best Practices}.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~37, 2024.
+\newblock arXiv:2411.12990.
 
 \bibitem[Roth et~al.(2026)Roth, Samanta, Halevy, Levine, and
   Efroni]{roth2026hackverifiable}

@@ -1,0 +1,24 @@
+\begin{tabular}{@{}lllrrrr@{}}
+\toprule
+probe family & defect class & severity & planted & caught & unchk. & spur. \\
+\midrule
+Verifier integrity & \texttt{GOLD\_FAILS} & HIGH & 3 & 3 & 0 & 2 \\
+Verifier integrity & \texttt{NOOP\_PASSES} & HIGH & 3 & 3 & 0 & 2 \\
+Verifier integrity & \texttt{INVERT\_PASSES} & CRITICAL & 5 & 5 & 0 & 4 \\
+Verifier integrity & \texttt{KNOWN\_WRONG\_PASSES} & HIGH & 7 & 7 & 0 & 3 \\
+Trivial floor & \texttt{TRIVIAL\_FLOOR\_BREACH} & HIGH & 9 & 9 & 0 & 0 \\
+Separability & \texttt{SEPARABILITY\_LOSS} & MEDIUM & 7 & 7 & 0 & 3 \\
+Contamination & \texttt{CONTAMINATION\_EXACT} & CRITICAL & 2 & 2 & 0 & 0 \\
+Contamination & \texttt{CONTAMINATION\_NEARDUP} & HIGH & 1 & 1 & 0 & 0 \\
+Shortcut leakage & \texttt{SHORTCUT\_LEAK} & HIGH & 2 & 1 & 1 & 0 \\
+Spec$\leftrightarrow$verifier & \texttt{SPEC\_VERIFIER\_MISMATCH} & HIGH & 3 & 3 & 0 & 3 \\
+Determinism & \texttt{NONDETERMINISM} & MEDIUM & 2 & 2 & 0 & 0 \\
+Difficulty band & \texttt{DIFFICULTY\_SATURATED} & MEDIUM & 0 & 0 & 0 & 0 \\
+Difficulty band & \texttt{DIFFICULTY\_IMPOSSIBLE} & MEDIUM & 0 & 0 & 0 & 0 \\
+Reward hackability & \texttt{REWARD\_HACKABLE} & CRITICAL & 10 & 10 & 0 & 0 \\
+Sandbox permissions & \texttt{EXCESSIVE\_PERMISSIONS} & HIGH & 0 & 0 & 0 & 0 \\
+Evaluator RCE & \texttt{EVALUATOR\_RCE} & CRITICAL & 0 & 0 & 0 & 0 \\
+\midrule
+\textbf{total (11 families)} & \textbf{16 classes} & & \textbf{54} & \textbf{53} & \textbf{1} & \textbf{17} \\
+\bottomrule
+\end{tabular}

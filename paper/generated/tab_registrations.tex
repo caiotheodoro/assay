@@ -1,0 +1,13 @@
+\begin{tabular}{@{}p{0.19\linewidth}p{0.20\linewidth}p{0.26\linewidth}p{0.28\linewidth}@{}}
+\toprule
+registration & expansion & deterministic predictions & falsification / deviations \\
+\midrule
+1.\ External tasks (\texttt{PRE-REGISTRATION}) & +2 external (\texttt{paws}, \texttt{boolq}; $n=24 \to 26$) & All held (\assay{} 280.0, floor 316.0, margin 36.0; \texttt{boolq} \texttt{NOT\_APPLICABLE}). & Reproducibility criterion fired: \texttt{harbor/broken-gold} flaked \texttt{NONDETERMINISM} in 1 of 6 full runs under load. \\
+\addlinespace[3pt]
+2.\ $\tau^2$-bench (\texttt{...-TAU2}) & +2 external ($\tau^2$ retail, airline; $n=26 \to 28$; 14$\to$16 classes) & All deterministic corpus predictions held (\assay{} 43.0, floor 394.0, 3 spurious). & One arithmetic error in external floor prediction (81.0 vs.\ 89.0); LLM vs.\ random order flipped (criterion fired). \\
+\addlinespace[3pt]
+3.\ No-answer set (\texttt{...-NOANSWER}) & +4 no-answer (1 external \texttt{personality\_BFI}, 3 authored; $n=28 \to 32$) & Deterministic arm held (\assay{} 56.0, floor 458.0, 16 spurious). & Gate criterion 1 fired on repeated runs (false override on \texttt{tau2/airline}); name-filter ceiling claim retracted (\#21). \\
+\addlinespace[3pt]
+4.\ StereoSet (\texttt{...-STEREOSET}) & +1 external no-answer (\texttt{stereoset}; $n=32 \to 33$) & All held (\assay{} 57.0, floor 474.0, 17 spurious; gate withheld \texttt{GOLD\_FAILS}). & All four criteria passed on registration run; gate later declined \texttt{stereoset} in 2 of 7 reliability runs. \\
+\bottomrule
+\end{tabular}

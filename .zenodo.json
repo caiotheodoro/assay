@@ -1,5 +1,5 @@
 {
-  "title": "Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery, the Floor It Had to Beat, and Twelve of Its Own Claims That Broke",
+  "title": "Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery Evaluated Against Trivial and Prevalence-Aware Floors",
   "upload_type": "publication",
   "publication_type": "preprint",
   "creators": [
@@ -8,16 +8,16 @@
       "orcid": "0009-0005-7343-981X"
     }
   ],
-  "publication_date": "2026-11-23",
+  "publication_date": "2026-08-28",
   "license": "cc-by-4.0",
-  "description": "Reinforcement-learning environments and eval suites are used on the strength of a verifier nobody re-checks. Assay is a battery of probes, 16 defect classes in all, that executes an environment and prices each missed defect and each false alarm under a stated cost profile. The arm it had to beat is the trivial one, flag_everything. On 33 environments with 54 planted defects, Assay has an expected loss of 57.0 (95% CI 8-142) against 474.0 (453-492) for the floor, a saving of 417.0 (330-471), and the saving separates in all four cost profiles. It reads larger than it is, and 285.0 is the figure to carry. 27.8% of the floor's loss is paid on 4 defect classes planted in no environment, and 25 of the 33 environments were written by the author. On the 8 third-party environments the saving is 76.0 with an interval that crosses zero (-4 to 121), and under one of the four profiles Assay loses to the floor there. Precision is 0.757: 17 false alarms, 14 of them on environments with no planted defect. A language-model gate that withholds the false alarms on environments with no correct answer deleted two real defects in 1 of 7 identical runs, so its mean saving over the deterministic arm is 2.4 against a median of 14.0. Against defects an independent team confirmed in tau2-bench, the recall of 0.339 is indistinguishable from random flagging (p=0.486). The repository broke 12 of its own published claims under its own red team and has published 22 retractions. The code is Apache-2.0. The deterministic arms reproduce without a GPU or an API key; the language-model arms and the gate do not. Not peer reviewed. Code, registrations and artifacts: https://github.com/caiotheodoro/assay",
+  "description": "Reinforcement-learning environments and evaluation suites are routinely deployed on the strength of verifiers that are rarely checked mechanically. Assay is a deterministic-by-default battery of eleven probe families covering 16 defect classes that executes an environment and prices missed defects and false alarms on a single expected-loss scale under a stated cost profile. On 33 environments carrying 54 planted defects under the research-run profile, Assay achieves an expected loss of 57.0 (95% CI 8-142), saving 285.0 (198-339, separated) against the restricted constant floor that flags only the 12 occurring defect classes (342.0) and 417.0 (330-471, separated) against the unrestricted flag_everything floor (474.0, CI 453-492), separating against flag_everything on all four cost profiles. Post hoc against an in-sample Bayes-optimal prevalence-aware constant floor (327.0), Assay saves 270.0 (176-336, separated on three of four cost profiles, not separated on production-training). Precision is 0.757 (17 false alarms, 14 on five environments with no correct answer) and recall is 0.982 (0 true misses, 1 unchecked defect priced as a miss). Because 25 of 33 environments are author-constructed, the 8 third-party environments form the external control: there the saving over flag_everything is 76.0 (95% CI -4 to 121, not separated), and against 62 defects an independent team confirmed in tau2-bench, full-battery recall is 0.339 (p=0.486, indistinguishable from random flagging). An opt-in language-model gate meant to withhold false alarms on no-answer environments deleted two real defects in 1 of 7 identical runs, reducing its mean saving over the deterministic battery to 2.4 (median 14.0). The code is Apache-2.0; deterministic arms reproduce without a GPU or API key. Not peer reviewed. Code, registrations and artifacts: https://github.com/caiotheodoro/assay",
+  "notes": "Work begun 28 August 2026 (first repository commit e2ca9d4); first paper version (paper-v1.0, Zenodo record 24454920) compiled and deposited 23 November 2026. This version, paper-v2.0, is of 23 November 2026.",
   "keywords": [
     "RL environments",
     "benchmark auditing",
     "expected loss",
     "reward hacking",
-    "pre-registration",
-    "negative results"
+    "pre-registration"
   ],
   "language": "eng",
   "related_identifiers": [
@@ -164,7 +164,19 @@
       "identifier": "arXiv:2407.17032",
       "resource_type": "publication-preprint",
       "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2407.01502",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2411.12990",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
     }
   ],
-  "version": "paper-v1"
+  "version": "paper-v2.0"
 }

@@ -14,7 +14,7 @@
   "result": "assay 57.0 vs flag_everything 474.0, saved 417.0 [330, 471] separated, wins 4/4 cost profiles, separates 4/4; assay+auditor 44.0 on one draw but a mean of 2.4 saved over seven runs, one of which deleted two real defects -- see results/gate_reliability.json",
   "margin_that_is_not_detection": "132.0 of the floor's 474.0 is paid on four defect classes planted in no environment; against the floor restricted to the twelve classes that occur the saving is 285.0 (paper/assay.tex, Section 4.2; docs/PRE-REGISTRATION-TAU2.md predicted the earlier steps)",
   "cost_crossover": "1371.0h vs shipped 120h — survives a 1042% error (results/cost_sensitivity.json)",
-  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q (826 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
+  "repro": "uv sync --extra dev; uv run --extra tau2 python scripts/tau2_fetch.py; uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q (828 passed, 0 skipped) + ASSAY_APPROVE_ALL=repro uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json (22s, no GPU, no API key; the env var is the explicit unattended-approval escape, see docs/changelog/98-approval-gate.md)",
   "agentic_core": "10 deterministic probe families + 1 Challenger (agent found the exploit class; scripted policy now finds it in 3.8s vs 261.7s (results/scripted_floor.json))",
   "self_audit": "12 published claims broke when pointed at itself, 3 real bugs found",
   "deliverables": {
@@ -108,7 +108,7 @@ actually stopping things, and a cost table. One command per result:
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 826 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 828 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # headline: 33 envs, 54 defects, 22s, no GPU/key
 uv run --extra adapters assay audit harbor/self-graded --card card.html   # one env, card + exit code; asks before it runs anything, add --yes to skip the prompt
 ```
@@ -249,7 +249,7 @@ about this repository, not as a comparison against work not seen.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 826 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 828 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 python3 -m json.tool < results/intervals.json | head -30
 node video/capture/check-shot-reality.mjs                            # shot-vs-reality gate
@@ -258,7 +258,7 @@ uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html;
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **826 passed, 0 failed, exit 0** —
+skipping. Verified from a fresh tree with no `.venv`: **828 passed, 0 failed, exit 0** —
 123 s for the whole cold path, `uv sync` and the snapshot fetch included. The time was measured at 814 tests, before the 12 paper tests were added.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a

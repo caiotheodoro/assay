@@ -163,13 +163,23 @@ def macros_from_results() -> None:
     put("loSavedRandomVsAT", f"{aw['ci95'][0]:.0f}")
     put("hiSavedRandomVsAT", f"{aw['ci95'][1]:.0f}")
 
-    # ---- profiles -----------------------------------------------------------
+    # ---- profiles & post hoc prevalence-aware floors ------------------------
+    pf = load("prevalence_floor.json")
+    pf_all = pf["splits"]["all"]["profiles"]
+    pf_ext = pf["splits"]["external-envs"]["profiles"]
     prof_rows = []
     for p in PROFILES:
         d = load(f"intervals-{p}.json")
         a, fe = d["arms"]["assay"], d["arms"]["flag_everything"]
         au = d["arms"]["assay+auditor"]
         sv = a["loss_saved_vs"]["flag_everything"]
+        pfp = pf_all[p]
+        fp_arm = pfp["arms"]["flag_present"]
+        pv_arm = pfp["arms"]["prevalence_floor"]
+        loo_arm = pfp["arms"]["prevalence_floor_loo"]
+        sv_fp = pfp["assay_saved_vs"]["flag_present"]
+        sv_pv = pfp["assay_saved_vs"]["prevalence_floor"]
+        sv_loo = pfp["assay_saved_vs"]["prevalence_floor_loo"]
         tag = {"research-run": "Research", "production-training": "Prod",
                "benchmark-publication": "Bench", "flat": "Flat"}[p]
         put(f"profAssay{tag}", f1(a["expected_loss"]["point"]))
@@ -177,25 +187,77 @@ def macros_from_results() -> None:
         put(f"profSaved{tag}", f1(sv["point"]))
         put(f"profLoSaved{tag}", f"{sv['ci95'][0]:.0f}")
         put(f"profHiSaved{tag}", f"{sv['ci95'][1]:.0f}")
-        prof_rows.append((p, a["expected_loss"], au["expected_loss"], fe["expected_loss"], sv))
+        put(f"lossRestricted{tag}", f1(fp_arm["expected_loss"]))
+        put(f"savedRestricted{tag}", f1(sv_fp["point"]))
+        put(f"loSavedRestricted{tag}", f"{sv_fp['ci95'][0]:.0f}")
+        put(f"hiSavedRestricted{tag}", f"{sv_fp['ci95'][1]:.0f}")
+        put(f"lossPrev{tag}", f1(pv_arm["expected_loss"]))
+        put(f"savedPrev{tag}", f1(sv_pv["point"]))
+        put(f"loSavedPrev{tag}", f"{sv_pv['ci95'][0]:.0f}")
+        put(f"hiSavedPrev{tag}", f"{sv_pv['ci95'][1]:.0f}")
+        put(f"sepPrev{tag}", "separated" if sv_pv["separated"] else "not separated")
+        put(f"lossPrevLoo{tag}", f1(loo_arm["expected_loss"]))
+        put(f"savedPrevLoo{tag}", f1(sv_loo["point"]))
+        put(f"loSavedPrevLoo{tag}", f"{sv_loo['ci95'][0]:.0f}")
+        put(f"hiSavedPrevLoo{tag}", f"{sv_loo['ci95'][1]:.0f}")
+        put(f"prevFlaggedN{tag}", pfp["prevalence_floor_n_flagged_classes"])
+        prof_rows.append((p, a["expected_loss"], fe["expected_loss"], fp_arm, pv_arm, sv_fp, sv_pv))
+
+    # Shortcut aliases for the primary research-run restricted-floor CI
+    sv_res_main = pf_all["research-run"]["assay_saved_vs"]["flag_present"]
+    put("loSavedRestricted", f"{sv_res_main['ci95'][0]:.0f}")
+    put("hiSavedRestricted", f"{sv_res_main['ci95'][1]:.0f}")
+    put("sepRestricted", "separated" if sv_res_main["separated"] else "not separated")
+
+    # External split post hoc prevalence-aware floor macros (research-run)
+    pfe_r = pf_ext["research-run"]
+    put("extPrevPresentClasses", pfe_r["n_present_classes"])
+    put("extLossPrev", f1(pfe_r["arms"]["prevalence_floor"]["expected_loss"]))
+    put("extSavedPrev", f1(pfe_r["assay_saved_vs"]["prevalence_floor"]["point"]))
+    put("extLoSavedPrev", f"{pfe_r['assay_saved_vs']['prevalence_floor']['ci95'][0]:.0f}")
+    put("extHiSavedPrev", f"{pfe_r['assay_saved_vs']['prevalence_floor']['ci95'][1]:.0f}")
+    put("extLossPrevLoo", f1(pfe_r["arms"]["prevalence_floor_loo"]["expected_loss"]))
+    put("extSavedPrevLoo", f1(pfe_r["assay_saved_vs"]["prevalence_floor_loo"]["point"]))
+    put("extLoSavedPrevLoo", f"{pfe_r['assay_saved_vs']['prevalence_floor_loo']['ci95'][0]:.0f}")
+    put("extHiSavedPrevLoo", f"{pfe_r['assay_saved_vs']['prevalence_floor_loo']['ci95'][1]:.0f}")
+
     rows = [
-        r"\begin{tabular}{@{}lrrrrl@{}}", r"\toprule",
-        r"profile & \textsc{Assay} & +auditor (one draw) & \texttt{flag\_everything} & saved & 95\% CI of saved \\",
+        r"\begin{tabular}{@{}lrrrrll@{}}", r"\toprule",
+        r"profile & \textsc{Assay} & \texttt{flag\_all} & restr.$^\dagger$ & prev.$^\dagger$ & saved vs.\ restr.\ [95\% CI] & saved vs.\ prev.\ [95\% CI] \\",
         r"\midrule",
     ]
-    for p, a, au, fe, sv in prof_rows:
-        sep = "" if sv["separated"] else " (not separated)"
-        rows.append(f"\\texttt{{{p}}} & {f1(a['point'])} & {f1(au['point'])} & {f1(fe['point'])} & "
-                    f"{f1(sv['point'])} & {ci(sv['ci95'])}{sep} \\\\")
+    for p, a, fe, fp_arm, pv_arm, sv_fp, sv_pv in prof_rows:
+        f_fp = "" if sv_fp["separated"] else r"\,$^\circ$"
+        f_pv = "" if sv_pv["separated"] else r"\,$^\circ$"
+        rows.append(
+            f"\\texttt{{{p}}} & {f1(a['point'])} & {f1(fe['point'])} & "
+            f"{f1(fp_arm['expected_loss'])} & {f1(pv_arm['expected_loss'])} & "
+            f"{f1(sv_fp['point'])} {ci(sv_fp['ci95'])}{f_fp} & "
+            f"{f1(sv_pv['point'])} {ci(sv_pv['ci95'])}{f_pv} \\\\"
+        )
     rows += [r"\bottomrule", r"\end{tabular}"]
     write("tab_profiles.tex", "\n".join(rows))
 
-    # ---- arms table ---------------------------------------------------------
+    # ---- arms table (including post hoc restricted & prevalence floors) -----
+    pf_res = pf_all["research-run"]["arms"]
     rows = [
         r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
         r"arm & expected loss & 95\% CI & recall & precision \\", r"\midrule",
     ]
-    for arm in ARM_ORDER:
+    for arm in ("assay+auditor", "assay"):
+        a, b = arms[arm], iv["arms"][arm]
+        rows.append(f"{ARM_TEX[arm]} & {f1(a['expected_loss'])} & {ci(b['expected_loss']['ci95'])} & "
+                    f"{f3(a['recall'])} & {f3(a['precision'])} \\\\")
+    rows.append(r"\midrule")
+    for pkey, plabel in (
+        ("prevalence_floor", r"\texttt{prevalence\_floor}$^\dagger$ (in-sample)"),
+        ("flag_present", r"\texttt{flag\_present}$^\dagger$ (restricted floor)"),
+        ("prevalence_floor_loo", r"\texttt{prevalence\_floor\_loo}$^\dagger$ (LOO)"),
+    ):
+        a = pf_res[pkey]
+        rows.append(f"{plabel} & {f1(a['expected_loss'])} & {ci(a['ci95'])} & "
+                    f"{f3(a['recall'])} & {f3(a['precision'])} \\\\")
+    for arm in ARM_ORDER[2:]:
         a, b = arms[arm], iv["arms"][arm]
         rows.append(f"{ARM_TEX[arm]} & {f1(a['expected_loss'])} & {ci(b['expected_loss']['ci95'])} & "
                     f"{f3(a['recall'])} & {f3(a['precision'])} \\\\")
@@ -255,6 +317,8 @@ def macros_from_results() -> None:
     put("extRec", f3(er["assay"]["recall"]))
     put("extSpur", er["assay"]["n_spurious"])
     put("extMiss", er["assay"]["n_missed"])
+    put("extUnchecked", er["assay"]["n_unchecked"])
+    put("extRecChecked", f3(er["assay"]["recall_on_checkable"]))
     put("extLossAuditor", f1(er["assay+auditor"]["expected_loss"]))
     put("extLossCheckEnv", f1(er["check_env"]["expected_loss"]))
     put("extLossNothing", f1(er["flag_nothing"]["expected_loss"]))
@@ -331,7 +395,7 @@ def macros_from_results() -> None:
     put("pctFloorAbsent", f"{100 * cells['absent'][0] / floor_total:.1f}")
     put("pctFloorClean", f"{100 * cells['clean'][0] / floor_total:.1f}")
     restricted_floor = floor_total - cells["absent"][0]
-    put("floorRestricted", restricted_floor)
+    put("floorRestricted", f1(restricted_floor))
     put("savedRestricted", f1(restricted_floor - arms["assay"]["expected_loss"]))
     put("floorPerEnvClean", n_cls)
     fe_cost = arms["flag_everything"]["expected_loss"]
@@ -522,6 +586,145 @@ def macros_from_results() -> None:
     rt_rows += [r"\bottomrule", r"\end{tabular}"]
     write("tab_redteam.tex", "\n".join(rt_rows))
     put("nRedTeamFoundAfter", n_ret - counts.get("BROKEN", 0))
+
+    # ---- corpus composition table (from provenance + full_run) --------------
+    from collections import Counter, defaultdict
+
+    from assay.probes import all_probes
+    from assay.types import DEFAULT_SEVERITY, DefectClass
+
+    author_label = {
+        "authored_here": "authored here",
+        "third_party_format": "third-party format",
+        "external": "genuinely external",
+    }
+    author_order = {"authored_here": 0, "third_party_format": 1, "external": 2}
+    source_label = {
+        "planted_here": "planted here",
+        "hand_triaged": "hand-triaged",
+        "externally_derived": "externally derived",
+    }
+    groups: dict[tuple[str, str, str], list[str]] = defaultdict(list)
+    for eid, p in sorted(prov.items()):
+        groups[(p["env_author"], p["label_source"], eid.split("/", 1)[0])].append(eid)
+
+    corp_rows = [
+        r"\begin{tabular}{@{}lllrrrr@{}}", r"\toprule",
+        r"provenance & label source & ecosystem & envs & clean & planted & spurious \\",
+        r"\midrule",
+    ]
+    tot_e = tot_c = tot_p = tot_s = 0
+    for (auth, lsrc, eco), eids in sorted(
+        groups.items(), key=lambda kv: (author_order[kv[0][0]], kv[0][1], kv[0][2])
+    ):
+        n_e = len(eids)
+        n_c = sum(1 for e in eids if not fr["per_env"][e]["planted"])
+        n_p = sum(len(fr["per_env"][e]["planted"]) for e in eids)
+        n_s = sum(len(fr["per_env"][e]["spurious"]) for e in eids)
+        tot_e += n_e
+        tot_c += n_c
+        tot_p += n_p
+        tot_s += n_s
+        corp_rows.append(
+            f"{author_label[auth]} & {source_label[lsrc]} & \\texttt{{{tex_escape(eco)}}} & "
+            f"{n_e} & {n_c} & {n_p} & {n_s} \\\\"
+        )
+    assert (tot_e, tot_p, tot_s) == (fr["corpus_size"], fr["total_planted_defects"], arms["assay"]["n_spurious"])
+    corp_rows += [
+        r"\midrule",
+        f"\\textbf{{total}} & & & \\textbf{{{tot_e}}} & \\textbf{{{tot_c}}} & \\textbf{{{tot_p}}} & \\textbf{{{tot_s}}} \\\\",
+        r"\bottomrule", r"\end{tabular}",
+    ]
+    write("tab_corpus.tex", "\n".join(corp_rows))
+
+    # ---- 16 defect classes table (from types, probes, and full_run) ---------
+    class_to_fam: dict[DefectClass, str] = {}
+    for pr in all_probes():
+        for d in pr.detects:
+            class_to_fam[d] = pr.family
+    fam_tex = {
+        "verifier_integrity": "Verifier integrity",
+        "trivial_floor": "Trivial floor",
+        "separability": "Separability",
+        "contamination": "Contamination",
+        "shortcut_leakage": "Shortcut leakage",
+        "spec_verifier_match": r"Spec$\leftrightarrow$verifier",
+        "determinism": "Determinism",
+        "difficulty_band": "Difficulty band",
+        "reward_hackability": "Reward hackability",
+        "sandbox_permissions": "Sandbox permissions",
+        "evaluator_code_execution": "Evaluator RCE",
+    }
+    planted_c: Counter[str] = Counter()
+    caught_c: Counter[str] = Counter()
+    unchk_c: Counter[str] = Counter()
+    spur_c: Counter[str] = Counter()
+    for row in fr["per_env"].values():
+        p_set = set(row["planted"])
+        d_set = set(row["assay_detected"])
+        u_set = set(row["unchecked"])
+        for x in p_set:
+            planted_c[x] += 1
+        for x in p_set & d_set:
+            caught_c[x] += 1
+        for x in u_set:
+            unchk_c[x] += 1
+        for x in d_set - p_set:
+            spur_c[x] += 1
+
+    cls_rows = [
+        r"\begin{tabular}{@{}lllrrrr@{}}", r"\toprule",
+        r"probe family & defect class & severity & planted & caught & unchk. & spur. \\",
+        r"\midrule",
+    ]
+    for d in DefectClass:
+        v = d.value
+        cls_rows.append(
+            f"{fam_tex[class_to_fam[d]]} & \\texttt{{{tex_escape(v)}}} & "
+            f"{DEFAULT_SEVERITY[d].value} & {planted_c[v]} & {caught_c[v]} & "
+            f"{unchk_c[v]} & {spur_c[v]} \\\\"
+        )
+    cls_rows += [
+        r"\midrule",
+        f"\\textbf{{total ({len(fam_tex)} families)}} & \\textbf{{{len(DefectClass)} classes}} & & "
+        f"\\textbf{{{sum(planted_c.values())}}} & \\textbf{{{sum(caught_c.values())}}} & "
+        f"\\textbf{{{sum(unchk_c.values())}}} & \\textbf{{{sum(spur_c.values())}}} \\\\",
+        r"\bottomrule", r"\end{tabular}",
+    ]
+    write("tab_classes.tex", "\n".join(cls_rows))
+
+    # ---- pre-registrations outcomes & deviations table (Appendix A) ---------
+    for reg_file in (
+        "docs/PRE-REGISTRATION.md",
+        "docs/PRE-REGISTRATION-TAU2.md",
+        "docs/PRE-REGISTRATION-NOANSWER.md",
+        "docs/PRE-REGISTRATION-STEREOSET.md",
+    ):
+        assert (ROOT / reg_file).exists(), f"missing frozen registration {reg_file}"
+    reg_rows = [
+        r"\begin{tabular}{@{}p{0.19\linewidth}p{0.20\linewidth}p{0.26\linewidth}p{0.28\linewidth}@{}}",
+        r"\toprule",
+        r"registration & expansion & deterministic predictions & falsification / deviations \\",
+        r"\midrule",
+        r"1.\ External tasks (\texttt{PRE-REGISTRATION}) & +2 external (\texttt{paws}, \texttt{boolq}; $n=24 \to 26$) & "
+        r"All held (\assay{} 280.0, floor 316.0, margin 36.0; \texttt{boolq} \texttt{NOT\_APPLICABLE}). & "
+        r"Reproducibility criterion fired: \texttt{harbor/broken-gold} flaked \texttt{NONDETERMINISM} in 1 of 6 full runs under load. \\",
+        r"\addlinespace[3pt]",
+        r"2.\ $\tau^2$-bench (\texttt{...-TAU2}) & +2 external ($\tau^2$ retail, airline; $n=26 \to 28$; 14$\to$16 classes) & "
+        r"All deterministic corpus predictions held (\assay{} 43.0, floor 394.0, 3 spurious). & "
+        r"One arithmetic error in external floor prediction (81.0 vs.\ 89.0); LLM vs.\ random order flipped (criterion fired). \\",
+        r"\addlinespace[3pt]",
+        r"3.\ No-answer set (\texttt{...-NOANSWER}) & +4 no-answer (1 external \texttt{personality\_BFI}, 3 authored; $n=28 \to 32$) & "
+        r"Deterministic arm held (\assay{} 56.0, floor 458.0, 16 spurious). & "
+        r"Gate criterion 1 fired on repeated runs (false override on \texttt{tau2/airline}); name-filter ceiling claim retracted (\#21). \\",
+        r"\addlinespace[3pt]",
+        r"4.\ StereoSet (\texttt{...-STEREOSET}) & +1 external no-answer (\texttt{stereoset}; $n=32 \to 33$) & "
+        r"All held (\assay{} 57.0, floor 474.0, 17 spurious; gate withheld \texttt{GOLD\_FAILS}). & "
+        r"All four criteria passed on registration run; gate later declined \texttt{stereoset} in 2 of 7 reliability runs. \\",
+        r"\bottomrule",
+        r"\end{tabular}",
+    ]
+    write("tab_registrations.tex", "\n".join(reg_rows))
 
 
 # ---- figures (pgfplots) ------------------------------------------------------

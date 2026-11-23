@@ -393,10 +393,10 @@ has none. The video carries one erratum: it says "separates on three", and it is
 
 ## Paper, data and license
 
-- The paper, *Pricing Defects in Evaluation Environments by Expected Loss*, is `paper/assay.pdf` (source
-  `paper/assay.tex`, bibliography `paper/refs.bib`, `paper/assay.bbl` for arXiv). Its numbers, tables and figures are
-  written by `scripts/export_paper_tables.py` from `results/`, and `tests/test_paper.py` fails if they drift.
-  It is not peer reviewed. It is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454920) (`.zenodo.json` and `CITATION.cff` carry the metadata). A deposit date is not a registration clock (`docs/changelog/128-the-paper-is-deposited.md`).
+- The paper, *Pricing Defects in Evaluation Environments by Expected Loss: A Probe Battery Evaluated Against Trivial and Prevalence-Aware Floors*, is `paper/assay.pdf` (source
+  `paper/assay.tex`, bibliography `paper/refs.bib`, `paper/assay.bbl` for arXiv; revision `paper-v2.0`, work begun `2026-08-28`, revised `2026-11-23`). Its numbers, tables and figures are
+  written by `scripts/export_paper_tables.py` from `results/` (including the post hoc restricted and prevalence-aware constant floors in [`results/prevalence_floor.json`](results/prevalence_floor.json)), and `tests/test_paper.py` fails if they drift.
+  It is not peer reviewed. The first preprint version (`paper-v1.0`) is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454920); `.zenodo.json` and `CITATION.cff` carry the updated `paper-v2.0` metadata (`date-released: 2026-08-28`). A deposit date is not a registration clock (`docs/changelog/128-the-paper-is-deposited.md`). Next-study design (30+ external environments, blind human labels, single registered external endpoint, and a third-party auditor arm) is drafted in [`docs/DESIGN-V2.md`](docs/DESIGN-V2.md).
 - The corpus and Environment Cards are a Hugging Face dataset,
   [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus).
 - Code is `Apache-2.0` ([`LICENSE`](LICENSE)); the paper is `CC BY 4.0`. The author works on a commercial AI gateway;

@@ -6,7 +6,7 @@
 % tests/test_paper.py fails if a digit appears in the prose outside a short
 % allow-list, if generated/ is stale, or if the built PDF loses a number.
 \documentclass[11pt]{article}
-\usepackage[margin=1.1in]{geometry}
+\usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb}
@@ -19,383 +19,612 @@
 \usepackage[font=footnotesize,skip=3pt]{caption}
 \usepackage{microtype}
 \sloppy
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {1.6ex \@plus .4ex \@minus .2ex}{-1em}{\normalfont\normalsize\bfseries}}
+\makeatother
 \setlength{\tabcolsep}{4pt}
-\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
 
 \input{generated/numbers}
 \newcommand{\assay}{\textsc{Assay}}
 \newcommand{\fe}{\texttt{flag\_everything}}
+\newcommand{\fp}{\texttt{flag\_present}}
+\newcommand{\pf}{\texttt{prevalence\_floor}}
 
 \title{Pricing Defects in Evaluation Environments by Expected Loss:\\
-A Probe Battery, the Floor It Had to Beat, and Twelve of Its Own Claims That Broke}
+A Probe Battery Evaluated Against Trivial and Prevalence-Aware Floors}
 \author{Caio Theodoro\\\small Independent}
-\date{23 November 2026}
+\date{First version 28 August 2026; this version 23 November 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 \noindent
-Reinforcement-learning environments and eval suites are used on the strength of a verifier nobody
-re-checks. \assay{} is a battery of probes, \nClasses{} defect classes in all, that executes an environment and prices
-each missed defect and each false alarm under a stated cost profile. The arm it had to beat is the trivial
-one, \fe{}. On \nEnv{} environments with \nPlanted{} planted defects, \assay{} has an expected loss of \lossAssay{}
-(95\% CI \loLossAssay--\hiLossAssay) against \lossFlagEverything{} (\loLossFlagEverything--\hiLossFlagEverything)
-for the floor, a saving of \savedFlagEverything{} (\loSavedFlagEverything--\hiSavedFlagEverything), and the saving separates in all four cost profiles. It reads larger than it is, and \savedRestricted{} is the figure to carry. \pctFloorAbsent{}\% of the floor's loss is paid on \nClassesAbsent{}
-defect classes planted in no environment, and \nSelfAuthored{} of the \nEnv{} environments were written by the author. On the
-\nExternal{} third-party environments the saving is \extSaved{} with an interval that crosses zero
-(\extLoSaved{} to \extHiSaved), and under one of the four profiles \assay{} loses to the floor there. Precision is \precAssay{}: \nSpurAssay{} false alarms, \assayCleanFA{} of them on environments with no planted defect. A language-model gate that withholds the false alarms
-on environments with no correct answer deleted two real defects in \gateBadRuns{} of \gateRuns{} identical runs, so its mean saving over the deterministic arm is \gateMeanSaved{} against a median of \gateMedianSaved{}. Against defects an independent team
-confirmed in $\tau^2$-bench, the recall of \tauAllRec{} is indistinguishable from random flagging
-($p=\tauAllP$). The repository broke \rtBroken{} of its own published claims under its own red team and has
-published \nRetractions{} retractions. The code is Apache-2.0. The deterministic arms reproduce without a GPU or an API key; the language-model arms and the gate do not.
+Reinforcement-learning environments and evaluation suites are routinely deployed on the strength of
+verifiers that are rarely checked mechanically. \assay{} is a deterministic-by-default battery of
+eleven probe families covering \nClasses{} defect classes that executes an environment and prices
+missed defects and false alarms on a single expected-loss scale under a stated cost profile.
+On \nEnv{} environments carrying \nPlanted{} planted defects under the \texttt{research-run}
+profile, \assay{} achieves an expected loss of \lossAssay{} (95\% CI \loLossAssay--\hiLossAssay{}),
+saving \savedRestricted{} (\loSavedRestricted--\hiSavedRestricted{}, \sepRestricted{}) against the
+restricted constant floor that flags only the \nClassesPresent{} occurring defect classes
+(\floorRestricted{}) and \savedFlagEverything{} (\loSavedFlagEverything--\hiSavedFlagEverything{},
+\sepFlagEverything{}) against the unrestricted \fe{} floor (\lossFlagEverything{}, CI
+\loLossFlagEverything--\hiLossFlagEverything{}), separating against \fe{} on all four cost
+profiles. Post hoc against an in-sample Bayes-optimal prevalence-aware constant floor
+(\lossPrevResearch{}), \assay{} saves \savedPrevResearch{} (\loSavedPrevResearch--\hiSavedPrevResearch{},
+separated on three of four cost profiles and not separated on \texttt{production-training}).
+Precision is \precAssay{} (\nSpurAssay{} false alarms, \assayCleanFA{} on five environments with no
+correct answer) and recall is \recAssay{} (\missAssay{} true misses, \nUnchecked{} unchecked defect
+priced as a miss). Because \nSelfAuthored{} of \nEnv{} environments are author-constructed, the
+\nExternal{} third-party environments form the external control: there the saving over \fe{} is
+\extSaved{} (95\% CI \extLoSaved{} to \extHiSaved{}, not separated), and against \tauPos{} defects
+an independent team confirmed in $\tau^2$-bench, full-battery recall is \tauAllRec{} ($p=\tauAllP$,
+indistinguishable from random flagging). An opt-in language-model gate meant to withhold false
+alarms on no-answer environments deleted two real defects in \gateBadRuns{} of \gateRuns{}
+identical runs, reducing its mean saving over the deterministic battery to \gateMeanSaved{} (median
+\gateMedianSaved{}). The code is Apache-2.0; deterministic arms reproduce without a GPU or API key.
 \end{abstract}
 
-\section{The question}
+\section{Introduction}
+\label{sec:intro}
 
-An RL environment or an eval suite is a verifier plus a task. When the verifier does not mean what the task
-says, the failure is silent. A policy trained against it learns the verifier, and the evidence arrives weeks later
-as a reward curve, or as a benchmark that is retracted or re-issued by hand. SWE-bench Verified is the
-well-known case: a hand audit by 93 developers over 1,699 samples~\citep{openai2024verified}, after which audits of SWE-bench and its Verified subset found
-plausible-but-wrong patches that still pass~\citep{wang2025solved} and solutions leaked in the issue text~\citep{aleithan2024swebenchplus}.
-WebArena was audited and re-issued for the same reason, a substring-match evaluator~\citep{elhattami2025webarenaverified}.
+An RL environment or evaluation suite pairs a task with a verifier. When the verifier diverges from
+the task, the failure is silent: a trained policy optimises the verifier instead of the intended
+behaviour, and the flaw surfaces weeks later as an implausible reward curve or a benchmark that must
+be repaired by hand. SWE-bench Verified required manual triage by 93 developers over 1,699
+samples~\citep{openai2024verified}, and subsequent audits still uncovered plausible-but-wrong
+patches that pass~\citep{wang2025solved} and solutions leaked in issue
+text~\citep{aleithan2024swebenchplus}. WebArena was re-issued for a loose substring
+evaluator~\citep{elhattami2025webarenaverified}. Across agent benchmarks more broadly, systematic
+reviews have argued for cost-controlled, variance-aware evaluation~\citep{kapoor2024agents} and
+explicit benchmark-quality standards~\citep{reuel2024betterbench}.
 
-This paper reports on \assay{}, a tool that tries to do that audit by running the environment. It does not claim to find more
-defects than the field. It claims to price them: a defect found is worth the cost of the miss it prevents, a
-false alarm costs someone an hour of reading, and the two are on one scale. That puts one comparison at the centre. The
-arm that has to be beaten is not the incumbent linter. It is \fe{}, which names every defect class on every
-environment, never misses, and pays for it in false alarms. For most of the project's life \assay{} did not beat it.
+This paper evaluates \assay{}, an execution-based probe battery that checks environments before
+training or reporting. Rather than claiming higher raw recall than existing auditors, \assay{}
+frames environment auditing as cost-sensitive classification~\citep{elkan2001}: every missed defect
+carries a severity-weighted failure cost, every false alarm carries an inspection cost, and both
+are measured on one scale. That framing changes the decisive baseline. Beating an incumbent
+interface linter proves little when the linter checks almost nothing; the baseline an auditor must
+clear is an input-ignoring floor that achieves high or complete recall by construction---\fe{}, a
+restricted floor over occurring defect classes, and a prevalence-aware Bayes-optimal constant
+policy.
 
-\paragraph{What this paper reports.}
-\begin{enumerate}
-\item A headline: \assay{} saves \savedFlagEverything{} expected-loss points over the floor on a \nEnv{}-environment corpus, separated on all four cost profiles (Section~\ref{sec:headline}), and \savedRestricted{} against a floor restricted to the classes that occur.
-\item Three reasons that headline is weaker than it reads, each measured: the floor's loss is mostly arithmetic
-about the taxonomy and corpus (Section~\ref{sec:floor}); the cost that decides the ranking is not derived
-(Section~\ref{sec:cost}); and on the \nExternal{} third-party environments the saving does not separate
-(Section~\ref{sec:splits}).
-\item Two measurements against defect lists other people confirmed: on one the full battery is at chance and a subset chosen after seeing that result clears it, and on the other the tool could not run (Section~\ref{sec:external}).
-\item An agent layer whose measured contribution is small and, in one configuration, harmful (Section~\ref{sec:agent}).
-\item An account of the repository auditing itself: \rtBroken{} published claims broken by its own red team,
-\nRetractions{} retractions in all, and what the CI failure on main exposed (Section~\ref{sec:selfaudit}).
-\end{enumerate}
-The honest summary is that on environments the author did not write, a saving over the floor is not established. The limitations come in Section~\ref{sec:limits}; the one that matters most is in the abstract. The corpus is
-mostly the author's own, so a good number on it is evidence about the detector's agreement with its author, and the
-only evidence that is not is the \nExternal{}-environment split.
+On a \nEnv{}-environment corpus under the \texttt{research-run} cost profile, \assay{} attains an
+expected loss of \lossAssay{}, saving \savedRestricted{} (\loSavedRestricted--\hiSavedRestricted{})
+over the restricted floor (\floorRestricted{}) and \savedPrevResearch{}
+(\loSavedPrevResearch--\hiSavedPrevResearch{}) over a post hoc Bayes-optimal prevalence-aware floor
+(\lossPrevResearch{}), while also revealing clearly where evidence stops: on the \nExternal{}
+third-party environments the saving over \fe{} does not separate from zero, and on independently
+labelled $\tau^2$-bench defects full-battery recall is at chance. Our contributions are:
+
+\begin{itemize}\setlength\itemsep{1pt}\setlength\parskip{0pt}
+\item \textbf{A cost-sensitive execution-based probe battery.} Eleven deterministic-by-default probe
+families covering \nClasses{} defect classes across four ecosystems, with explicit
+\texttt{NOT\_APPLICABLE} reporting and an expected-loss harness across four cost profiles
+(\S\ref{sec:method}, Tables~\ref{tab:classes}--\ref{tab:costs}).
+\item \textbf{Evaluation against unrestricted, restricted, and prevalence-aware floors.} A unified
+comparison of nine arms alongside post hoc restricted and Bayes-optimal prevalence-aware constant
+floors across all four cost profiles, plus exact sensitivity to the miss-cost constant
+(\S\ref{sec:headline}--\ref{sec:cost}).
+\item \textbf{External-scope and independent-label measurements.} Provenance-split scoring isolating
+the \nExternal{} third-party environments, task-level recall against \tauPos{} independently
+confirmed $\tau^2$-bench defects, and a third-party-scored evaluation on ScienceAgentBench
+(\S\ref{sec:splits}--\ref{sec:external}).
+\item \textbf{Empirical boundaries of an opt-in agent layer.} Repeated-run reliability of a semantic
+LLM gate across \gateRuns{} identical runs and ablations comparing prompted, trained, and scripted
+reward-hack challengers (\S\ref{sec:agent}).
+\end{itemize}
 
 \section{Related work}
 \label{sec:related}
 
-\paragraph{Auditing benchmarks and environments.} The category is not new. Static auditors read a
-benchmark's files with a language model: BenchGuard cross-checks instructions, verifier and environment and reports 12
-author-confirmed issues in ScienceAgentBench~\citep{tu2026benchguard}; ABA audits 168 benchmarks and flags issues in over
-25.7\% of the tasks it evaluates~\citep{wang2026aba}. Dynamic auditors execute: BenchJack drives coding agents to
-find reward-hacking exploits and derives a taxonomy of eight flaw patterns, V1 to V8, from reported incidents, with 219 distinct
-flaws across ten benchmarks~\citep{wang2026benchjack}. An audit of code RL environments checks hackable tasks by execution against the gold
-patch and reports that 22.4\% of 49 SWE-bench Verified tasks accept a Docker-verified patch that behaves differently from the gold
-one~\citep{rajan2026hackability}. The first version of that paper reported 28.5\%, and the repository's earlier text quoted that figure. Repair loops that alternate a hacker and a fixer harden verifiers~\citep{zhong2026hackerfixer,zeng2026verifierhardening}, and
-mutation testing finds verifiers that accept unrequested side effects~\citep{abrich2026loopholes}. A different approach embeds
-detectable hacking opportunities so exploitation is verifiable by design~\citep{roth2026hackverifiable}. The checklist line asks
-the same question as a design rule~\citep{zhu2025abc}, and a systematic review of 445 benchmarks frames it as construct
-validity~\citep{bean2025construct}. A human audit of WebArena Lite recovers 5.45 to 8.49 points of success its evaluator missed~\citep{gan2026webarenalite}, and an audit of 150
-failure-scored computer-use trajectories finds 15.3\% of the FAIL verdicts wrong, 10.7\% of them evaluator false negatives~\citep{dong2026misscore}.
+\paragraph{Auditing benchmarks and environments.} Benchmark auditing divides into static inspection
+and execution-based probing. Static auditors use language models to cross-check instructions,
+verifiers, and environment files: BenchGuard reports 12 author-confirmed issues in
+ScienceAgentBench~\citep{tu2026benchguard}, and ABA audits 168 benchmarks, flagging issues in over
+25.7\% of evaluated tasks~\citep{wang2026aba}. Dynamic auditors execute environments: BenchJack
+drives coding agents to find reward-hacking exploits and derives an eight-class flaw taxonomy (V1 to
+V8) spanning 219 flaws across ten benchmarks~\citep{wang2026benchjack}; an execution audit of code
+RL environments finds that 22.4\% of 49 SWE-bench Verified tasks accept a Docker-verified patch
+whose behaviour differs from the gold patch~\citep{rajan2026hackability}. Iterative hacker--fixer
+loops harden verifiers automatically~\citep{zhong2026hackerfixer,zeng2026verifierhardening},
+mutation testing surfaces verifiers that tolerate unrequested side
+effects~\citep{abrich2026loopholes}, and hack-verifiable designs embed detectable exploits to study
+hacking directly~\citep{roth2026hackverifiable}. Complementary work establishes benchmark-quality
+frameworks and checklists---BetterBench~\citep{reuel2024betterbench}, the ABC
+checklist~\citep{zhu2025abc}, construct-validity reviews across 445
+benchmarks~\citep{bean2025construct}, and cost-aware agent-evaluation
+principles~\citep{kapoor2024agents}---while targeted human audits quantify mis-scoring in
+WebArena-Lite (5.45 to 8.49 success points recovered)~\citep{gan2026webarenalite} and computer-use
+benchmarks (15.3\% of 150 FAIL verdicts erroneous, 10.7\% evaluator false
+negatives)~\citep{dong2026misscore}.
 
-\paragraph{What is different here.} \assay{} is a bundle of probes over \nClasses{} defect classes under one report, and its only claim to novelty is
-the metric: expected loss under a cost profile, compared with the trivial policy that ignores the input. A related
-observation is old and robust in NLP: partial-input baselines~\citep{gururangan2018,poliak2018} measure what a benchmark can be
-scored on without doing the task, and there is a caution on reading their failures~\citep{feng2019}; a constant output beats automatic LLM
-benchmarks~\citep{zheng2025nullmodels}. The floor in this paper is the same idea applied to the auditor. An audit recall reported without the number of tasks flagged cannot be checked against that floor. For BenchGuard's published \fofDetected{} of \fofPos{} on \fofTasks{} tasks the repository's \texttt{floor\_of\_the\_field.json} finds that the recall clears a random flagger only if fewer than \fofThreshold{} tasks were flagged, and the published table does not say how many were. That is a statement about what the table reports, not a criticism of the method.
+\paragraph{Floors, baselines, and cost-sensitive scoring.} \assay{} contributes a unified expected-loss
+evaluation of eleven probe families against input-ignoring floors under explicit cost profiles.
+Input-ignoring floors are standard in NLP evaluation, from partial-input
+baselines~\citep{gururangan2018,poliak2018} and caveats on their interpretation~\citep{feng2019} to
+null models that achieve high win rates on automatic LLM judges~\citep{zheng2025nullmodels}.
+Applying the same discipline to benchmark auditors requires reporting how many tasks an auditor
+flagged alongside its recall. For example, given BenchGuard's published \fofDetected{} of \fofPos{}
+confirmed issues on \fofTasks{} tasks, exact hypergeometric scoring shows that recall clears random
+flagging at the five-percent level only if fewer than \fofThreshold{} tasks were flagged---a count
+the published table omits.
 
-\paragraph{Measurement.} The loss is cost-sensitive classification in the sense of~\citet{elkan2001}. Intervals are paired
-bootstrap resamples~\citep{efron1979,bergkirkpatrick2012} with the environment as the unit. The environments are
-\texttt{inspect\_ai}~\citep{inspectai}, OpenEnv~\citep{openenv}, Harbor-format task directories, and
-$\tau^2$-bench~\citep{barres2025tau2,yao2024taubench}, the last with the corrected tasks of an independent team~\citep{tau2verified}.
-Reward-model over-optimisation~\citep{gao2023overopt} is the ancestor of the hackability family. The real-checker
-comparison uses Gymnasium's environment checker~\citep{towers2024gymnasium}.
+\paragraph{Statistical and platform foundations.} Our scoring follows cost-sensitive
+classification~\citep{elkan2001}, with paired environment-level bootstrap
+intervals~\citep{efron1979,bergkirkpatrick2012}. Reward-model over-optimisation~\citep{gao2023overopt}
+motivates the hackability family. Adapters target \texttt{inspect\_ai}~\citep{inspectai},
+OpenEnv~\citep{openenv}, Harbor task directories, and $\tau^2$-bench~\citep{barres2025tau2,yao2024taubench}
+with independent task corrections~\citep{tau2verified}; the incumbent linter baseline models
+Gymnasium's environment checker~\citep{towers2024gymnasium}.
 
 \section{Method}
 \label{sec:method}
 
-\paragraph{Probes and classes.} An environment is audited through an adapter that exposes what it can: a verifier, a gold
-answer, splits, a task text, a sandbox posture. Eleven probe families report \nClasses{} defect classes. Verifier integrity asks
-whether the gold answer passes, a no-op fails, an inverted spec fails and a known-wrong answer fails. The others ask whether a
-policy that ignores the input wins, whether policies known to differ can be separated, whether the train split
-leaks into the eval split, whether the answer is recoverable from part of the input, whether the verifier checks
-what the instruction asked, whether the same seed gives the same result, whether the solve rate sits in a learnable band, whether a
-policy can score without doing the job, whether the sandbox grants more than the task needs, and whether the verifier can be
-made to run what it grades. A probe that cannot run returns \texttt{NOT\_APPLICABLE} with a reason. No model scores a probe. A
-Challenger proposes actions for the hackability probe, and a program scores each.
+\paragraph{Probes and defect taxonomy.} Each environment is audited through an adapter that declares
+which capabilities it exposes (separable verifier, gold trajectory, invertible specification, data
+splits, item parts, seeded reset, sandbox posture, or verifier source). Eleven probe families test
+\nClasses{} defect classes (Table~\ref{tab:classes}): verifier integrity (gold passes, no-op fails,
+inverted spec fails, known-wrong fails), trivial floor (whether an input-ignoring policy wins),
+separability (whether graded policies are distinguished), train--eval contamination (exact and
+near-duplicate), shortcut leakage (partial-input predictability), specification--verifier lexical
+traceability, seed determinism, difficulty band (saturated or impossible solve rates), reward
+hackability, declared sandbox permissions, and static verifier code-execution checks. Any probe
+whose required capability is absent returns \texttt{NOT\_APPLICABLE} with an explicit reason rather
+than passing silently. No model scores a probe: in the hackability family, a Challenger proposes
+actions and a deterministic verifier scores each attempt against an independent completion signal.
 
-\paragraph{Corpus and provenance.}
-The corpus has \nEnv{} environments and \nPlanted{} planted defects. Each environment declares in the registry who wrote it
-and who established its labels, before it is scored; an environment with no declaration fails a test. By author:
-\nAuthored{} written here (\nFixtures{} in-process fixtures and three authored with no correct answer), \nThirdFormat{}
-our content in somebody else's format (\texttt{inspect\_ai} tasks and Harbor task directories we wrote), and
-\nExternal{} genuinely external, audited as shipped. Of those \nExternal{}, \nExtDerived{} carry labels derived from a diff between two pinned
-upstream revisions and \nExtHand{} were hand-triaged by the author. Of the \nPlanted{} planted defects, \nPlantedExtDerived{} have a label the
-author did not decide. Five environments have no correct answer, so every finding on them is false by construction: the three authored here and two external ones (\texttt{personality\_BFI}, a personality inventory, and \texttt{stereoset}, a bias measurement read as a grade).
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_classes}
+\caption{The \nClasses{} defect classes across eleven probe families, default severities, and
+\assay{} corpus outcomes (\nEnv{} environments, \nPlanted{} planted defects). Four classes are
+planted in no environment (\nClassesAbsent{} absent classes); \texttt{SHORTCUT\_LEAK} carries the
+single unchecked defect (\texttt{inspect\_evals/boolq}).}
+\label{tab:classes}
+\end{table}
 
-\paragraph{Loss and the floor.} For environment $e$ with planted set $P_e$ and flagged set $F_e$, the loss is the
-cost of each missed class (by severity, from the profile) plus the false-alarm cost for each flagged class that is not
-planted. A probe that declined to run on a planted class is priced as a miss, and reported separately as unchecked. The floor
-flags all \nClasses{} classes on every environment, so with a false alarm priced at one it pays exactly
+\paragraph{Corpus and provenance.} The scored corpus contains \nEnv{} environments and \nPlanted{}
+planted defects (Table~\ref{tab:corpus}). Every registered environment declares both who authored it
+and how its ground-truth labels were established before scoring. By authorship, \nAuthored{} are
+written in-house (\nFixtures{} in-process fixtures plus three authored no-correct-answer
+environments), \nThirdFormat{} are author-written tasks packaged in third-party runtimes
+(\texttt{inspect\_ai} and Harbor), and \nExternal{} are genuinely external environments audited as
+shipped. Among those \nExternal{} external environments, \nExtDerived{} carry labels derived from
+upstream state or a revision diff (\nPlantedExtDerived{} of the \nPlanted{} planted defects) and
+\nExtHand{} were hand-triaged (\nPlantedHand{} planted defects). Five environments have no correct
+answer---three authored here and two external (\texttt{inspect\_evals/personality\_BFI}, a
+personality inventory, and \texttt{inspect\_evals/stereoset}, a bias measurement read as a
+grade)---so any finding reported on them is a false alarm by construction.
+
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_corpus}
+\caption{Corpus composition by authorship provenance, label source, and ecosystem. Clean
+environments carry zero planted defects; spurious counts are \assay{}'s deterministic false alarms.}
+\label{tab:corpus}
+\end{table}
+
+\paragraph{Expected loss, cost profiles, and constant floors.} For environment $e$ with planted
+defect set $P_e$, flagged set $F_e$, and unchecked set $U_e$ (planted defects whose probe returned
+\texttt{NOT\_APPLICABLE}), expected loss under a cost profile is
 \[
-\sum_e (\nClasses{} - |P_e|) = \nEnv{}\cdot\nClasses{} - \nPlanted{} = \lossFlagEverything{},
+L = \sum_e \left(\sum_{d \in (P_e \setminus F_e)} c_{\text{miss}}(\mathrm{sev}(d)) + c_{\text{fa}}\,|F_e \setminus P_e|\right).
 \]
-and nothing about any detector enters. Four profiles (Table~\ref{tab:costs}) change only the exchange rate; \texttt{research-run} prices a
-missed CRITICAL defect at \critShipped{} and a false alarm at one.
+Unchecked defects $U_e$ are priced at full miss cost so a detector can never lower its loss by
+declining to run, while being tracked separately via \texttt{recall\_on\_checkable}. Four cost
+profiles vary the miss-to-false-alarm exchange rate (Table~\ref{tab:costs}); \texttt{research-run}
+prices a missed CRITICAL defect at \critShipped{} engineer-hours-equivalent and a false alarm at one.
 
 \begin{table}[t]\centering\small
 \input{generated/tab_costprofiles}
-\caption{The four cost profiles. Units are engineer-hours-equivalent. Nothing derives the CRITICAL cost
-(Section~\ref{sec:cost}).}
+\caption{The four cost profiles (engineer-hours-equivalent). \texttt{flat} verifies that expected
+loss equals raw error count; Section~\ref{sec:cost} analyses sensitivity to the CRITICAL anchor.}
 \label{tab:costs}
 \end{table}
 
-\paragraph{Arms.} Nine arms are scored on the same environments in one file. Five are trivial or incumbent: \fe{},
-\texttt{flag\_nothing}, \texttt{stratified\_random} (each class at its corpus base rate), \texttt{always\_modal\_defect}, and
-\texttt{check\_env}, a reimplementation of what the gymnasium and stable-baselines3 checkers assert. The real checkers cannot be
-pointed at most of these environments; they were run on \realCheckPlanted{} purpose-built shims and caught \realCheckDetected{}.
-Two arms are language-model baselines (\texttt{qwen3:8b}): \texttt{direct\_prompt} reads what a careful reviewer could read and names the
-classes; \texttt{agent\_with\_tools} adds a tool loop. The last two are \assay{} and \assay{} with the semantic gate, one draw.
+We evaluate \assay{} against three constant, input-ignoring floors:
+\begin{enumerate}\setlength\itemsep{1pt}\setlength\parskip{0pt}
+\item \emph{Unrestricted floor (\fe{}):} flags all \nClasses{} classes on every environment, paying
+exactly $c_{\text{fa}}\sum_e (\nClasses{} - |P_e|)$ with zero misses (\lossFlagEverything{} under
+\texttt{research-run}).
+\item \emph{Restricted floor (\fp{}, post hoc):} flags only the \nClassesPresent{} defect classes
+that occur at least once in the corpus, removing the \floorAbsent{} false alarms paid on the
+\nClassesAbsent{} absent classes (\floorRestricted{} under \texttt{research-run}).
+\item \emph{Prevalence-aware floor (\pf{}, post hoc):} the Bayes-optimal constant policy under
+cost-sensitive loss~\citep{elkan2001}. Given class prevalence $p_d$ and costs
+$(M_d, F) = (c_{\text{miss}}(\mathrm{sev}(d)), c_{\text{fa}})$, flagging class $d$ on every
+environment beats never flagging it iff $p_d > F / (M_d + F)$. We report both the in-sample optimum
+(which achieves the minimum loss of any constant policy on the corpus) and a leave-one-out variant
+(\texttt{prevalence\_floor\_loo}) that estimates $p_{d,-e}$ from the other environments before
+deciding on $e$.
+\end{enumerate}
 
-\paragraph{Intervals.} \nResamples{} bootstrap resamples with seed \bootSeed{}, over environments, because defects within an
-environment are not independent. Comparisons are paired on one shared resample. An arm with a model in it has a second source of
-variance that this interval does not contain (Section~\ref{sec:agent}).
-
-\paragraph{Pre-registration.} The four expansions that added external or no-answer environments (two external eval tasks, the $\tau^2$ domains, the no-answer set, and one more
-external bias measurement) were each registered in a frozen document before the code that adds them; the order is checked against git history by the test suite. Each states predictions for
-every row of the changed table, the direction the margin should move, and the criteria that would falsify the method. They bind the
-author to a number before it is seen. They do not prevent the detector from having been written with the corpus in mind, which
-Section~\ref{sec:limits} takes up, and a registration is a commit by the same author, not an independent clock.
+\paragraph{Arms, intervals, and pre-registration.} Nine arms are scored on the same \nEnv{}
+environments: five trivial or incumbent baselines (\fe{}, \texttt{flag\_nothing},
+\texttt{stratified\_random} flagging each class at its corpus base rate,
+\texttt{always\_modal\_defect}, and \texttt{check\_env}, a reimplementation of the Gymnasium and
+Stable-Baselines3 checks; the real checkers ran on \realCheckPlanted{} shims and caught
+\realCheckDetected{}), two local 8B language-model baselines (\texttt{direct\_prompt} and
+\texttt{agent\_with\_tools}, using \texttt{qwen3:8b}), deterministic \assay{}, and
+\assay{}+auditor (one draw of the opt-in semantic gate). Uncertainty is quantified with
+\nResamples{} paired bootstrap resamples over environments (seed \bootSeed{}), because defects
+within an environment are correlated; an arm is called \emph{separated} from another when the 95\%
+bootstrap interval of their paired loss difference excludes zero. All four corpus expansions adding
+external or no-answer environments were pre-registered in frozen documents committed ahead of the
+corresponding code; Appendix~\ref{app:registrations} summarises their predictions, outcomes, and
+deviations.
 
 \section{Results}
+\label{sec:results}
 
-\subsection{The headline, and the comparison that decides it}
+\subsection{Overall expected-loss comparison and floor sensitivity}
 \label{sec:headline}
 
-Table~\ref{tab:arms} and Figure~\ref{fig:arms} give every arm on one corpus. \assay{}'s loss is below every other arm's, by a factor of eight against the floor and of thirty-six or more against the rest.
-The incumbent saves \savedCheckEnvVsNothing{} over flagging nothing, \pctCheckEnvVsNothing{}\% of \lossFlagNothing{}, with an interval
-of \loSavedCheckEnvVsNothing--\hiSavedCheckEnvVsNothing{}; beating it proves almost nothing. The paired saving over the floor is
-\savedFlagEverything{} (\loSavedFlagEverything--\hiSavedFlagEverything, \sepFlagEverything).
+Table~\ref{tab:arms} and Figure~\ref{fig:arms} compare all arms on \texttt{research-run}.
+Deterministic \assay{} achieves an expected loss of \lossAssay{} (95\% CI
+\loLossAssay--\hiLossAssay{}). Against the restricted constant floor (\fp{}, \floorRestricted{}),
+\assay{} saves \savedRestricted{} (\loSavedRestricted--\hiSavedRestricted{}, \sepRestricted{}).
+Against the unrestricted \fe{} floor (\lossFlagEverything{}, CI
+\loLossFlagEverything--\hiLossFlagEverything{}), the saving is \savedFlagEverything{}
+(\loSavedFlagEverything--\hiSavedFlagEverything{}, \sepFlagEverything{}). The incumbent linter
+\texttt{check\_env} saves \savedCheckEnvVsNothing{} over \texttt{flag\_nothing}'s
+\lossFlagNothing{} (\pctCheckEnvVsNothing{}\%, CI
+\loSavedCheckEnvVsNothing--\hiSavedCheckEnvVsNothing{}), confirming that beating the incumbent
+proves almost nothing without an input-ignoring floor beside it.
 
 \begin{table}[t]\centering\small
 \input{generated/tab_arms}
-\caption{Every arm on the same \nEnv{} environments, \texttt{research-run}, \nResamples{} bootstrap resamples over environments.
-\assay{}+auditor is one draw of an arm that varies between runs (Section~\ref{sec:agent}); its interval understates that.}
+\caption{Expected loss, recall, and precision on all \nEnv{} environments under
+\texttt{research-run} (\nResamples{} environment bootstrap resamples). Rows marked $^\dagger$ are
+post hoc constant floors computed from the committed ground truth. \assay{}+auditor is one draw of
+a stochastic arm (\S\ref{sec:agent}); its environment-bootstrap interval omits run-to-run variance.}
 \label{tab:arms}
 \end{table}
 
 \begin{figure}[t]\centering
 \input{generated/fig_arms}
-\caption{Expected loss by arm, log scale. The floor's whiskers are narrow because its loss is a fixed function of the corpus.}
+\caption{Expected loss by arm under \texttt{research-run} (log scale; whiskers show 95\%
+environment-bootstrap intervals).}
 \label{fig:arms}
 \end{figure}
 
-Recall is \recAssay{} and precision is \precAssay{}. \assay{} misses \missAssay{} planted defects outright; one
-(\texttt{inspect\_evals/boolq}, a shortcut leak) was never checked, because the environment ships no train split and the probe returned
-\texttt{NOT\_APPLICABLE}. The scorer originally had no state for that and charged it as a failed detection, which is the defect class
-the tool exists to catch, in the code that produced its own headline. It is now reported as \nUnchecked{} unchecked, recall on the checkable
-defects is \recChecked{}, and it is still priced at full miss cost, because a defect that nothing looked for is still in the environment and a cheaper price would
-let a probe lower its own loss by declining to answer. The \nSpurAssay{} false alarms are \assayCleanFA{} on environments with no planted defect
-and \assayDirtyFA{} on environments that have one.
-
-\begin{table}[t]\centering\small
-\input{generated/tab_profiles}
-\caption{All four cost profiles, not the one that reads best. Intervals are on the saving over \fe{}. The \texttt{production-training} lower
-bound is thin.}
-\label{tab:profiles}
-\end{table}
-
-Table~\ref{tab:profiles} gives the saving on every profile. It separates on all four. It did not always: at an earlier corpus
-\assay{} won one profile and lost two. What moved those rows was largely the floor getting worse, which the next section
-quantifies.
-
-\subsection{How much of the margin is arithmetic}
-\label{sec:floor}
-
-The floor's loss is a count of cells, one per environment and class, minus the planted ones. Growing the taxonomy or adding a clean
-environment raises it with no detector involved. Two partitions of the same \lossFlagEverything{} cells, computed from the committed per-environment
-labels (Figure~\ref{fig:floor}):
-
-\begin{itemize}
-\item \nClassesAbsent{} of the \nClasses{} classes are planted in no environment (excessive permissions, evaluator code execution, and both difficulty classes).
-The floor names them on every environment anyway: $\nClassesAbsent{}\times\nEnv{}=\floorAbsent{}$ false alarms, \pctFloorAbsent{}\% of its loss, on classes
-no other arm ever names and no environment here can carry. Against a floor restricted to the \nClassesPresent{} classes that occur, the
-floor is \floorRestricted{} and the saving is \savedRestricted{}.
-\item \nCleanEnv{} environments plant nothing. Each hands the floor \nClassesPresent{} false alarms in the classes that occur
-(\floorClean{} in all, \pctFloorClean{}\% of the floor) and costs a detector nothing unless it too flags them. \assay{} pays \assayCleanFA{} there.
-\end{itemize}
-
-The saving over the restricted floor, \savedRestricted{}, is the one to carry. It is still large, but it is not \savedFlagEverything{}, and the
-extra \floorAbsent{} is a property of the taxonomy and not evidence about \assay{}. The repository's registrations state this arithmetic before each expansion.
+\paragraph{Why we lead with the restricted and prevalence-aware floors.} Figure~\ref{fig:floor}
+decomposes \fe{}'s \lossFlagEverything{} false alarms. Exactly \nClassesAbsent{} of the \nClasses{}
+defect classes (\texttt{EXCESSIVE\_PERMISSIONS}, \texttt{EVALUATOR\_RCE},
+\texttt{DIFFICULTY\_SATURATED}, and \texttt{DIFFICULTY\_IMPOSSIBLE}) are planted in zero
+environments, contributing $\nClassesAbsent{}\times\nEnv{}=\floorAbsent{}$ false alarms
+(\pctFloorAbsent{}\% of \fe{}) that reflect taxonomy width rather than detection. Another
+\floorClean{} false alarms (\pctFloorClean{}\%) come from \nCleanEnv{} clean environments across the
+\nClassesPresent{} occurring classes, where \assay{} pays \assayCleanFA{}. Dropping the
+\nClassesAbsent{} absent classes yields the restricted floor (\floorRestricted{}) and the cleaner
+saving of \savedRestricted{}. Post hoc under the Bayes-optimal prevalence-aware floor (\pf{}),
+\texttt{NONDETERMINISM} (MEDIUM severity, occurring in two of \nEnv{} environments, below the
+threshold $1/9$) is also left unflagged on \texttt{research-run}, lowering the constant floor to
+\lossPrevResearch{} (\prevFlaggedNResearch{} flagged classes). \assay{} still saves
+\savedPrevResearch{} (\loSavedPrevResearch--\hiSavedPrevResearch{}, \sepPrevResearch{}); against
+leave-one-out \texttt{prevalence\_floor\_loo} (\lossPrevLooResearch{}), which misses the singleton
+\texttt{CONTAMINATION\_NEARDUP} defect, \assay{} saves \savedPrevLooResearch{}
+(\loSavedPrevLooResearch--\hiSavedPrevLooResearch{}).
 
 \begin{figure}[t]\centering
 \input{generated/fig_floor}
-\caption{Where the floor's loss comes from, and what \assay{} pays.}
+\caption{Decomposition of \fe{}'s loss versus \assay{}'s loss under \texttt{research-run}. Removing
+the \floorAbsent{} false alarms on classes planted nowhere yields the restricted floor
+(\floorRestricted{}).}
 \label{fig:floor}
 \end{figure}
 
-\subsection{The cost that decides the ranking}
+\paragraph{All four cost profiles.} Table~\ref{tab:profiles} shows \assay{} across every cost
+profile. Against unrestricted \fe{}, \assay{} separates on all four profiles (saving
+\profSavedResearch{}, \profSavedProd{}, \profSavedBench{}, and \profSavedFlat{}). Against the
+post hoc restricted and in-sample prevalence-aware floors, \assay{} separates on three of four
+profiles (\texttt{research-run}, \texttt{benchmark-publication}, and \texttt{flat}, where \pf{}
+reduces to \texttt{flag\_nothing} at \lossPrevFlat{} and \assay{} saves \savedPrevFlat{}
+[\loSavedPrevFlat, \hiSavedPrevFlat]). On \texttt{production-training}, where the restricted and
+prevalence-aware floors coincide at \lossRestrictedProd{}, the point saving is \savedRestrictedProd{}
+but the interval crosses zero (\loSavedRestrictedProd{} to \hiSavedRestrictedProd{}): removing the
+absent-class penalty reveals that separation on \texttt{production-training} rested on the
+unrestricted floor. Against \texttt{prevalence\_floor\_loo} (\lossPrevLooProd{}), \assay{} separates
+on all four profiles (saving \savedPrevLooProd{}, CI \loSavedPrevLooProd--\hiSavedPrevLooProd{}, on
+\texttt{production-training}).
+
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_profiles}
+\caption{Expected loss across all four cost profiles (\texttt{flag\_all} = \fe{}; restr. =
+\fp{}; prev. = in-sample \pf{}). Columns marked $^\dagger$ are post hoc; intervals marked $^\circ$
+cross zero (not separated). Against \fe{}, \assay{} separates on all four profiles.}
+\label{tab:profiles}
+\end{table}
+
+\paragraph{Precision, recall, and unchecked defects.} Across the \nEnv{} environments, \assay{}
+achieves recall \recAssay{} (\nTP{} of \nPlanted{} planted defects) and precision \precAssay{}
+(\nSpurAssay{} spurious findings: \assayCleanFA{} on the five no-correct-answer environments and
+\assayDirtyFA{} on the two $\tau^2$-bench domains). \assay{} has \missAssay{} true misses on
+checkable probes (\texttt{recall\_on\_checkable} = \recChecked{}) and \nUnchecked{} unchecked defect
+(\texttt{SHORTCUT\_LEAK} on \texttt{inspect\_evals/boolq}, which ships no train split so
+\texttt{partial\_input\_baseline} returns \texttt{NOT\_APPLICABLE}), priced at full miss cost
+(\assayMissCost{} under \texttt{research-run}).
+
+\subsection{Sensitivity to the miss-cost constant}
 \label{sec:cost}
 
-\assay{}'s loss is affine in the CRITICAL cost $C$, because the only miss it pays is one HIGH-severity defect priced at $C/3$: it equals $\nSpurAssay{}+C/3$.
-The floor never misses and does not move with $C$. They cross at $3(\lossFlagEverything{}-\nSpurAssay{})=\critCross{}$ (Figure~\ref{fig:cost}); the shipped
-value is \critShipped{}. The headline therefore survives a \critErrPct{}\% error in a constant nothing derives, and no more. Two anchors bracket it without pinning it. The floor is compute only: \costGpuLo{} to \costGpuHi{} GPU-hours of one discarded training run at a \$\costSpot{} spot price, converted at \$\costEngLo{} to \$\costEngHi{} per engineer-hour, which gives \costFloorLo{} to \costFloorHi{} engineer-hours. The ceiling is repair effort, \costMinLo{} to \costMinHi{} minutes for each of the \costSamples{} samples of the SWE-bench Verified annotation, \costCeilLo{} to \costCeilHi{} engineer-hours; it was not measured here. The crossover is above the
-ceiling. That is reassuring about the sign on the whole corpus and silent about the number, and the \critShipped{} remains a judgement. It is not reassuring on the independent split: there \assay{}'s loss is \extSpur{} plus $C/3$ against a floor of \extLossFloor{}, so they cross at $C=\extCross{}$, inside the repair-effort range. Equivalently the sweep is over the ratio of a HIGH miss to a false alarm, since that is the only miss \assay{} pays, and the whole-corpus crossover is a HIGH miss priced at \highCross{} false alarms.
+Because \assay{}'s only priced miss is a single HIGH-severity defect priced at $C/3$, its
+\texttt{research-run} loss is affine in the CRITICAL miss cost $C$: $\nSpurAssay{} + C/3$.
+Unrestricted \fe{} never misses and stays constant at \lossFlagEverything{}, so the two cross at
+$C = 3(\lossFlagEverything{} - \nSpurAssay{}) = \critCross{}$ (Figure~\ref{fig:cost}),
+\critCrossRatio{}$\times$ the shipped anchor of \critShipped{} (a \critErrPct{}\% margin;
+equivalently a HIGH miss priced at \highCross{} false alarms). Against the restricted floor
+(\floorRestricted{}), the crossover is still well above the shipped anchor. Two empirical anchors
+bracket $C$ without deriving it: a compute-only floor (\costGpuLo--\costGpuHi{} GPU-hours at
+\$\costSpot{}/h converted at \$\costEngLo--\$\costEngHi{}/engineer-hour, giving
+\costFloorLo--\costFloorHi{} engineer-hours) and a manual-repair ceiling (\costMinLo--\costMinHi{}
+minutes per item over SWE-bench Verified's \costSamples{} samples, giving
+\costCeilLo--\costCeilHi{} engineer-hours). On the full corpus the crossover exceeds the repair
+ceiling; on the \nExternal{}-environment external split, however, \assay{} crosses \fe{} at
+$C = \extCross{}$, inside the repair-effort range.
 
 \begin{figure}[t]\centering
 \input{generated/fig_cost}
-\caption{Expected loss against the cost of a missed CRITICAL defect. The vertical line is the exact crossover with the floor. The shipped cost is far to its left.}
+\caption{Expected loss versus CRITICAL miss cost $C$ (\texttt{research-run} severity ratios held
+fixed). Vertical line marks the exact crossover with \fe{} ($C=\critCross{}$).}
 \label{fig:cost}
 \end{figure}
 
-\subsection{Provenance splits: where the win is and is not}
+\subsection{Provenance splits}
 \label{sec:splits}
 
-\begin{table}[t]\centering\footnotesize \input{generated/tab_splits}
-\caption{The headline cut by who wrote the environment, \texttt{research-run}. The in-process row is not a measurement: a test asserts exact detection on its \nFixtures{} fixtures, and its loss is the false alarms on the three authored no-answer environments.}
+Splitting the corpus by authorship provenance isolates how much of the headline comes from
+third-party environments (Table~\ref{tab:splits}). On the \nSelfAuthored{} self-authored
+environments, \assay{} scores \selfLossAssay{} against \selfLossFloor{} for \fe{}; the
+\tpfN{} third-party-format tasks score \tpfLossAssay{} against \tpfLossFloor{} after two BenchJack
+exploit policies were added to the scripted Challenger during development, so neither split is
+held-out evidence.
+
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_splits}
+\caption{Expected loss by authorship provenance under \texttt{research-run}. The in-process split is
+asserted exact by unit tests on its \nFixtures{} fixtures (its loss is the twelve false alarms on
+the three authored no-answer environments).}
 \label{tab:splits}
 \end{table}
 
-Table~\ref{tab:splits} is the table the headline needs beside it. On the \nSelfAuthored{} environments written here, \assay{}'s loss is \selfLossAssay{} against \selfLossFloor{}. On the \tpfN{} in somebody else's format it is \tpfLossAssay{} against \tpfLossFloor{}, and that
-zero is not independent evidence: those environments used to lose, two exploit classes from BenchJack's taxonomy were then written as scripted
-policies after the misses were seen, and the result was a zero. The cross-wise check (V7 fires on one fixture and not the other, V1 the reverse, neither on the
-healthy one) argues against fitting to a single environment and does not make the split a held-out one.
-
-The \nExternal{} third-party environments are the control. \assay{} scores \extLossAssay{} against \extLossFloor{}, a saving of
-\extSaved{}, and the interval is \extLoSaved{} to \extHiSaved{}. It is not separated. Precision there is \extPrec{} (\extSpur{} false alarms, one planted defect not
-credited), recall is \extRec{} on \nExtPlanted{} planted defects, and only \nPlantedExtDerived{} of the corpus's \nPlanted{} planted defects
-have a label the author did not decide. Table~\ref{tab:extprof} shows the same split under every profile. Under
-\texttt{production-training}, which prices a missed CRITICAL defect at \prodRatio{} times a false alarm, \assay{} scores \extProdAssay{} against \extProdFloor{}: it loses by \extProdDelta{}.
-At that exchange rate flagging everything and reading the cards is a good policy, and on eight environments \assay{} has not shown it is better. The paired interval for the other profiles is not computed in any committed artifact, so Table~\ref{tab:extprof} gives points only.
+On the \nExternal{} genuinely external environments (\nExtPlanted{} planted defects, of which
+\nPlantedExtDerived{} carry externally derived labels), \assay{} scores \extLossAssay{} against
+\extLossFloor{} for \fe{}, a saving of \extSaved{} with a 95\% interval of \extLoSaved{} to
+\extHiSaved{} (not separated). Precision there is \extPrec{} (\extSpur{} false alarms), recall is
+\extRec{} (\extMiss{} true misses, \extUnchecked{} unchecked defect, checkable recall
+\extRecChecked{}). Under \texttt{production-training} (CRITICAL cost \prodRatio{}$\times$ false
+alarm), \assay{} loses to \fe{} on the external split by \extProdDelta{} (\extProdAssay{} vs.\
+\extProdFloor{}, Table~\ref{tab:extprof}). Post hoc on these \nExternal{} environments under
+\texttt{research-run}, only \extPrevPresentClasses{} defect classes occur, so an oracle-prior
+in-sample \pf{} scores \extLossPrev{} (saving \extSavedPrev{}, CI \extLoSavedPrev{} to
+\extHiSavedPrev{}), whereas leave-one-out \texttt{prevalence\_floor\_loo} scores \extLossPrevLoo{}
+(saving \extSavedPrevLoo{}, CI \extLoSavedPrevLoo{} to \extHiSavedPrevLoo{}) because three of the
+five classes appear in only one external environment.
 
 \begin{table}[t]\centering\small
 \input{generated/tab_external_profiles}
-\caption{The \nExternal{} genuinely external environments under every profile. Point estimates; the interval is committed only for \texttt{research-run}.}
+\caption{Expected loss on the \nExternal{} genuinely external environments across all four cost
+profiles. Bootstrap intervals are computed for \texttt{research-run}; other profiles show points.}
 \label{tab:extprof}
 \end{table}
 
-\subsection{Defect lists other people confirmed}
+\subsection{Independently confirmed defect lists}
 \label{sec:external}
 
-\paragraph{$\tau^2$-bench.} An independent team read all \tauTasks{} tasks in two domains, judged some wrong and shipped corrected files~\citep{tau2verified}.
-Labels here are the diff between two pinned revisions, so anyone can recompute them: \tauPos{} defective tasks, a base rate of \tauBase{}. The
-rule the project applies to every environment it audits is applied to itself here: a flagger that picks the same number of tasks at random is the floor.
-With all twelve probe checks \assay{} flags \tauAllFlag{} tasks and lands \tauAllTP{} on positives, against \tauAllExpTP{} expected at random
-(recall \tauAllRec{}, precision \tauAllPrec{}, exact one-sided $p=\tauAllP{}$). That is chance. Removing one advisory probe, whose own docstring says its findings are not to be believed, leaves \tauNarFlag{} flagged and \tauNarTP{} true positives against \tauNarExpTP{} expected
-(recall \tauNarRec{}, precision \tauNarPrec{}, $p=\tauNarP{}$), which clears the floor. That exclusion was made after the full-battery result was seen, the test is one-sided and uncorrected for the two looks, and the \tauNarP{} should be read as exploratory. The advisory probe, which was the headline, supplies a fraction of the true positives and most of the false ones, and including it removes the signal. Table~\ref{tab:tau2} splits recall by the upstream team's own categories. Evaluation ambiguity, the largest, has \tauEvalAmbPos{} positives and \assay{} detects \tauEvalAmbDet{}:
-it reads verifiers, and an instruction too vague to grade is not a verifier fault. One category has no word in \assay{}'s taxonomy:
-\tauDbPos{} positives are reference data that disagrees with the domain's database.
+\paragraph{$\tau^2$-bench.} To test detection outside our own labels, we evaluated \assay{} at task
+level against \tauPos{} defects confirmed by an independent team across \tauTasks{} tasks in
+$\tau^2$-bench retail and airline (base rate \tauBase{}), defined mechanically as the diff between
+the base and verified revisions~\citep{tau2verified}. Comparing against a random flagger issuing the
+same number of flags, the full twelve-probe battery flags \tauAllFlag{} tasks and hits \tauAllTP{}
+positives versus \tauAllExpTP{} expected at random (recall \tauAllRec{}, precision \tauAllPrec{},
+exact one-sided $p=\tauAllP{}$): indistinguishable from chance. Excluding one advisory lexical probe
+(\texttt{assert\_traceability}) leaves \tauNarFlag{} flagged tasks and \tauNarTP{} true positives
+versus \tauNarExpTP{} expected (recall \tauNarRec{}, precision \tauNarPrec{}, $p=\tauNarP{}$). That
+exclusion was made after inspecting the full-battery result and is uncorrected for two looks, so
+$p=\tauNarP{}$ is exploratory rather than confirmatory. By upstream category (Table~\ref{tab:tau2}),
+signal concentrates in verifier/annotation errors rather than evaluation ambiguity
+(\tauEvalAmbDet{} of \tauEvalAmbPos{} detected), and one upstream category (\texttt{database\_accuracy},
+\tauDbPos{} positives) has no corresponding class in \assay{}'s taxonomy.
 
 \begin{table}[t]\centering\small
 \input{generated/tab_tau2_categories}
-\caption{Recall on $\tau^2$-bench by the upstream team's categories, all twelve probes (the floor-clearing result excludes one).}
+\caption{Task-level recall on $\tau^2$-bench by upstream team category (all twelve probes).}
 \label{tab:tau2}
 \end{table}
 
-\paragraph{ScienceAgentBench.} Scored by BenchGuard's own matcher and metric against its \sabGold{} confirmed defects, \assay{} detects \sabDetected{} and
-submitted \sabFindings{} findings. This is not a statement that \assay{} finds instruction defects hard. All probes returned \texttt{NOT\_APPLICABLE}: the benchmark is a static
-task set, and the probes need an executable environment with a separable verifier. The tools are not competitors on this benchmark, and the zero is a coverage statement.
+\paragraph{ScienceAgentBench.} Scored with BenchGuard's own matcher against its \sabGold{} confirmed
+defects, \assay{} detects \sabDetected{} and submits \sabFindings{} findings: every probe returned
+\texttt{NOT\_APPLICABLE} because ScienceAgentBench is a static task set without an executable
+environment or separable verifier. Taken together, the two external sets delineate \assay{}'s
+structural boundary: deterministic execution probes do not detect instruction ambiguity or static
+specification defects.
 
-\paragraph{Reading the two together.} The blind spot is measured twice on two independently labelled sets: \assay{} does not detect instruction defects, because ``this instruction is
-ambiguous'' is a judgement and nothing in it scores with a judge.
-
-\subsection{The agent layer}
+\subsection{The opt-in agent layer}
 \label{sec:agent}
 
-\paragraph{The language-model baselines tie the coin.} \texttt{direct\_prompt} and \texttt{agent\_with\_tools} (\lossDirectPrompt{} and \lossAgentTools{}) are not separated
-from \texttt{stratified\_random} (\lossStratRandom{}): the loss \texttt{direct\_prompt} saves over the random policy is \savedDPvsRandom{} (\loSavedDPvsRandom{} to \hiSavedDPvsRandom{}), and the loss the random policy saves over \texttt{agent\_with\_tools} is \savedRandomVsAT{} (\loSavedRandomVsAT{} to \hiSavedRandomVsAT{}), so the tool-using arm is below the coin. Across three runs of an unchanged corpus the ordering of the two baselines flipped (the results document records the three draws), so no ordering is claimed.
-The random baseline moved as much through the taxonomy growing as these arms did through anything the model did. Reading an environment is not auditing it, and the
-comparison that carries that is against the probes: \assay{} saves \savedDirectPrompt{} over the first and \savedAgentTools{} over the second, both separated. The baselines are a
-single 8-billion-parameter local model; a stronger model reading the same artifacts is a different arm that was not run here.
+\paragraph{Language-model reader baselines.} Neither local \texttt{qwen3:8b} baseline separates from
+\texttt{stratified\_random} (\lossStratRandom{}): \texttt{direct\_prompt} (\lossDirectPrompt{})
+saves \savedDPvsRandom{} (\loSavedDPvsRandom{} to \hiSavedDPvsRandom{}), and
+\texttt{agent\_with\_tools} (\lossAgentTools{}) scores below the random policy by
+\savedRandomVsAT{} (\loSavedRandomVsAT{} to \hiSavedRandomVsAT{}). Deterministic \assay{} saves
+\savedDirectPrompt{} over \texttt{direct\_prompt} and \savedAgentTools{} over
+\texttt{agent\_with\_tools} (both separated).
 
-\paragraph{The semantic gate.} \assay{} with the gate asks a model whether an environment has a correct answer, and may only move a verifier-integrity defect to not-applicable. It was
-built for environments with no right answer, where the deterministic battery is wrong by construction. On the \sgNPos{} such environments it withholds in \sgTPRuns{} of \sgPosRuns{} runs, and
-across \sgNNeg{} environments with a correct answer it overrides falsely in \sgFPRuns{} of \sgNegRuns{} (\sgFPPct{}\%); that measurement set is its own list of environments at three runs each, not the corpus, and the backend is Claude Sonnet through the Claude command-line client. A false override hides a real defect and is worse than a missed one.
-Over \gateRuns{} identical runs of the whole arm (Figure~\ref{fig:gate}; savings \gateRunValues), the gate saved \gateGoodMin--\gateGoodMax{} in \gateGoodRuns{} runs and lost \gateWorstSaved{} in \gateBadRuns{}, where it decided one $\tau^2$ environment had no correct
-answer and withheld two real planted defects with the false ones. The deterministic arm returned \gateDetLoss{} every time. The mean saving is \gateMeanSaved{}, and the mean is the figure that belongs in a statement about
-expected loss. The paired bootstrap resamples environments and cannot see this variance, so every interval quoted for an agentic arm is narrower than the truth by an unmeasured amount. The failure was not explained after three diagnoses were tried and rejected (changelog slices 122 to 124); the shipped path was then measured on that environment, \foFalse{} false overrides in \foTrials{} trials, an upper bound of \foUpper{}\%, which bounds it and does not explain it.
-The registration for this arm predicted a saving of \predGateSaving{} and named, in advance, the criterion that this run fired: the agent has traded a false positive for a hidden true one.
+\paragraph{Semantic gate reliability.} To address false alarms on environments without a correct
+answer, \assay{}+auditor adds an opt-in language-model gate (Claude Sonnet via CLI) that may only
+move scoped \texttt{DEFECT} verdicts to \texttt{NOT\_APPLICABLE}. On a standalone evaluation set
+(\sgNPos{} no-answer and \sgNNeg{} graded environments at three runs each), the gate withheld false
+positives in \sgTPRuns{} of \sgPosRuns{} positive runs and produced false overrides in \sgFPRuns{}
+of \sgNegRuns{} negative runs (\sgFPPct{}\%). Across \gateRuns{} identical full-corpus runs
+(Figure~\ref{fig:gate}; savings \gateRunValues{}), deterministic \assay{} returned \gateDetLoss{}
+every time, while \assay{}+auditor saved \gateGoodMin--\gateGoodMax{} in \gateGoodRuns{} runs and
+lost \gateWorstSaved{} in \gateBadRuns{} run (loss \gateWorstLoss{}), where it misclassified
+\texttt{tau2/airline} as having no correct answer and suppressed two real planted defects. Because
+expected loss is an expectation, the relevant summary is the mean saving of \gateMeanSaved{} rather
+than the median of \gateMedianSaved{}. Three diagnostic hypotheses failed to isolate the root cause;
+subsequent stress-testing of the shipped path on \texttt{tau2/airline} recorded \foFalse{} false
+overrides in \foTrials{} trials (95\% upper bound \foUpper{}\%), bounding rather than explaining the
+failure. Crucially, environment-level bootstrap intervals from a single draw omit this run-to-run
+model variance and therefore understate uncertainty for agentic arms.
 
 \begin{figure}[t]\centering
 \input{generated/fig_gate}
-\caption{Loss saved by the gated arm against the deterministic arm over \gateRuns{} identical runs. One run is negative.}
+\caption{Expected-loss saving of \assay{}+auditor over deterministic \assay{} across \gateRuns{}
+identical full-corpus runs. One catastrophic false override on \texttt{tau2/airline} reduces the
+mean saving to \gateMeanSaved{} despite a median of \gateMedianSaved{}.}
 \label{fig:gate}
 \end{figure}
 
-\paragraph{The Challenger.} A prompted Challenger found one reward-hack class, overwriting the expected answer, in \ablClaudeSec{} seconds where a scripted attacker
-(\ablScriptedThenSec{} s, missed) and a local model (\ablQwenSec{} s, \ablQwenAttempts{} attempts, missed) did not. That class was written down as a fixed policy and the scripted Challenger
-now finds it in \scriptedSeconds{} seconds with no model in the loop. The reliability of the composite of that date on that environment is \chHits{} of \chK{}; it was measured the day before the scripted policy existed, so it describes the prompted half. The agent demonstrated that a class
-exists and a script then replaced it, which is good engineering for the tool and means the agent is not load-bearing for the headline. An earlier measurement of what the agent buys
-over the scripted floor was taken on \agSlice{} environments at $k=\agK{}$ against a repertoire that has since been replaced (scripted loss \agDetLossThen{} then, zero on that slice now); the repository marks it superseded. The artifact it
-names for the replacement run is not in the tree, so the current claim that the agent adds nothing on that slice rests on the monotonicity argument, that the composite takes the maximum exploit gap over
-attempts and so cannot score below the scripted arm it contains, and not on a committed re-measurement. A trained Challenger (GRPO) did not close the miss; its held-out environment was contaminated, as \grpoRows{} of
-\grpoTotalRows{} training rows (\grpoPct{}\%) carried the held-out prompt byte for byte, so the negative result is weaker than it reads.
+\paragraph{Adversarial Challenger.} In the reward-hackability probe, a prompted Claude Challenger
+originally discovered an exploit class (overwriting the expected-answer file) in \ablClaudeSec{} s
+where an earlier scripted attacker (\ablScriptedThenSec{} s) and \texttt{qwen3:8b} (\ablQwenSec{} s,
+\ablQwenAttempts{} attempts) missed; composite reliability on that task before scripting was
+\chHits{} of \chK{}. Compiling that exploit into a deterministic policy reduced runtime to
+\scriptedSeconds{} s (\scriptedAttempts{} attempts) with zero model calls, leaving the prompted
+agent non-load-bearing for the headline. A GRPO-trained Challenger did not close the gap, and
+subsequent deduplication checks found \grpoRows{} of \grpoTotalRows{} training rows (\grpoPct{}\%)
+duplicated the held-out prompt verbatim, weakening the negative result.
 
-\section{What \assay{} cannot see}
+\section{Coverage against an external taxonomy}
 \label{sec:coverage}
 
-The vocabulary here is BenchJack's, not \assay{}'s, so the list cannot be drawn around what the tool happens to do~\citep{wang2026benchjack}. V1 (isolation failure) and V7 (trusting untrusted output) are detected for
-Harbor only, by two scripted policies; V5 (weak string matching) and V6 (evaluation logic gaps) are detected broadly and are the best covered. V3 (RCE into the evaluator) is read statically for Python verifiers and has found
-nothing on this corpus. V8 (excessive permissions) has a probe that no shipped adapter feeds with a posture on any third-party environment, so on those it has never run. V2 (answers shipped with the test) is not detected, and V4
-(LLM-judge prompt injection) is structurally out: the response to a judge-scored environment is to decline it with a reason. Nine of the sixteen defect classes have no BenchJack counterpart, and two of the seven that map were written
-after BenchJack told the repository what it had missed, so that part of the overlap proves nothing about either taxonomy. The overlap points the other way too: one $\tau^2$ category has no home in the sixteen. A tool that
-reports what it could not check is only useful if someone has written down what it cannot check in principle, and the repository's coverage document is that list.
+Mapping \assay{} onto BenchJack's eight flaw patterns (V1--V8)~\citep{wang2026benchjack} avoids
+evaluating coverage solely in our own vocabulary. V5 (weak string matching) and V6 (evaluation logic
+gaps) are covered broadly across adapters. V1 (isolation failure) and V7 (trusting untrusted output)
+are detected for Harbor tasks via two scripted exploit policies added during development. V3 (RCE
+into the evaluator) is checked statically for Python verifiers and has fired zero times on the
+corpus. V8 (excessive permissions) has a probe, but no shipped third-party adapter exposes a
+declared sandbox posture, so it has never executed on an external environment. V2 (answers shipped
+with the test) is unimplemented, and V4 (LLM-judge prompt injection) is structurally out of scope
+because \assay{} declines judge-scored verifiers. Conversely, nine of \assay{}'s \nClasses{} defect
+classes have no BenchJack counterpart, and $\tau^2$-bench's \texttt{database\_accuracy} category has
+no counterpart in \assay{}.
 
-\section{The audit of the audit}
-\label{sec:selfaudit}
-
-\paragraph{The red team.} After the project's numbers were published, its instruments were turned on its own README, changelog and reproduction guide with the brief to falsify. Of \rtClaims{} claims examined, \rtBroken{} broke,
-\rtPartial{} held in part, \rtWeak{} was weak and \rtSurvives{} survived. Table~\ref{tab:redteam} lists the \rtBroken{} that broke. The most damaging was the headline external measurement itself, which had no floor applied to it.
-Half the headline corpus at that time was the project's own test fixtures, on which a test asserts exact detection: a passing build in a measurement's clothes. An exploit was printed as ``the winning policy, scored 1.0'' that appears in no
-run that succeeded. The Environment Card was described as signed and was an unkeyed digest. Nothing was fixed during the red team; every correction came after, and the document is kept unedited.
-
-\begin{table}[t]\centering\footnotesize
-\input{generated/tab_redteam}
-\caption{The claims the red team broke, as it recorded them. The numbers are those claims', not the current results.}
-\label{tab:redteam}
-\end{table}
-
-\paragraph{The retractions.} The repository keeps every claim it published and took back, verbatim: \nRetractions{} in all, of which \rtBroken{} are the red team's and the other \nRedTeamFoundAfter{} were found afterwards by the same
-method, one by an outside reader who went looking for the command behind a number and found prose, and the last while tying this paper to the artifacts. They include a mis-citation of someone else's paper, a claim about a pre-fix agent arm that nothing shipped could reproduce, and a ceiling on the number of available
-no-answer environments that was a property of a name-matching filter and not of the ecosystem. A repository that argues unaudited numbers are the problem does not get to delete its own.
-
-\paragraph{What the red CI exposed.} The CI run on main was red from 2026-09-19. The cause was two corpus tests that required the \texttt{inspect\_evals} and $\tau^2$ providers, which the first CI job does not install
-(\texttt{uv sync} with the \texttt{dev}, \texttt{adapters} and \texttt{openenv} extras). Both tests measured the runner and not the corpus, and they were not an error in a published claim. The job's own comment says the suite must skip with a reason
-rather than fail. Both now skip naming the extra, and the job that installs the documented extras fails if either skips there. This release also found the following, none of them a number in this paper:
-\emph{(i)} the per-profile table in the results document was stale against the committed intervals, and so were the counts of genuinely external environments in two of its sections; \emph{(ii)} the orientation file still gave the precision and the false-alarm count from before the no-answer environments joined the corpus; \emph{(iii)} the outside figure for the code-RL audit was the superseded 28.5\%; \emph{(iv)} one superseded agentic result names a replacement artifact that was never committed. Each is recorded as the last retraction, and the first three are now held by the test that holds this paper.
-
-\section{Limitations and threats to validity}
+\section{Limitations}
 \label{sec:limits}
 
-\paragraph{Circularity.} \nSelfAuthored{} of \nEnv{} environments and \nPlantedHere{} of \nPlanted{} planted defects were written or planted by the author, who also wrote the probes. Detection of a planted defect measures agreement between the planter and the detector. The registered
-expansions are the only prospective evidence. Each stated per-environment predictions before the code existed. In the $\tau^2$ registration every deterministic prediction held, one arithmetic prediction was wrong (the floor's external figure), and one falsification criterion fired (the order of the language-model baselines against the random policy flipped); in the \texttt{stereoset} registration, the prediction judged most likely to fail, that the gate would withhold at all, held. The registrations are left unedited and carry their own errata. A second labeller (a local \texttt{qwen3:8b}, blind, majority of three) agreed with the registry on
-\kappaAgree{}\% of cells with Cohen's $\kappa=\kappaVal{}$ over \kappaEnvs{} environments of an earlier corpus; the number says the labels are not independently confirmed, and the rater is not a human.
+\begin{itemize}\setlength\itemsep{1pt}\setlength\parskip{0pt}
+\item \textbf{Corpus authorship and external sample size.} \nSelfAuthored{} of \nEnv{} environments
+and \nPlantedHere{} of \nPlanted{} planted defects were authored or planted here. On the
+\nExternal{} third-party environments, \assay{} does not separate from \fe{} under
+\texttt{research-run} and loses under \texttt{production-training}. A blind second-rater check over
+\kappaEnvs{} environments of an earlier corpus used a local \texttt{qwen3:8b} model rather than
+humans and achieved \kappaAgree{}\% cell agreement ($\kappa=\kappaVal{}$), leaving labels
+unconfirmed by independent human annotators.
+\item \textbf{Development-set fitting and exploratory endpoints.} Probes and two scripted exploit
+policies were refined on the same corpus used for scoring, with no post-freeze held-out test set.
+On $\tau^2$-bench, the floor-clearing $p=\tauNarP{}$ comes from an exploratory exclusion after
+seeing the chance full-battery result ($p=\tauAllP{}$) and is uncorrected for multiple looks.
+\item \textbf{Floor and cost-profile dependence.} Constant floors depend on corpus class prevalence,
+and removing the four absent classes eliminates bootstrap separation on
+\texttt{production-training} (Table~\ref{tab:profiles}). The CRITICAL miss cost (\critShipped{}) is
+a judgement rather than a derived quantity; rankings are claims about a stated cost regime.
+\item \textbf{Agent variance and baseline strength.} The semantic gate's catastrophic false override
+(\gateBadRuns{} of \gateRuns{} full runs) is bounded at \foUpper{}\% but unexplained, relies on a
+closed model client, and is not captured by environment-level bootstrapping. The two LLM reader
+baselines used a single 8B local model; a frontier reader baseline and published third-party
+auditors (BenchGuard, ABA, BenchJack) were not run as comparative arms.
+\item \textbf{Structural coverage.} Probes require an executable environment with a separable
+verifier, placing static suites such as ScienceAgentBench and instruction-ambiguity defects out of
+reach. Two real defects in shipping software (\texttt{inspect\_evals/paws} and OpenEnv's
+\texttt{textarena\_env}) were verified independently and disclosed upstream; \assay{} found one and
+manual inspection found the other. No claim is made about defect prevalence in the wild.
+\item \textbf{Next-study scope.} Closing the external-sample, human-label, single-endpoint, and
+comparator-arm gaps requires new third-party environments (thirty or more), blind human labelling
+(about fifteen environments), a single pre-registered external endpoint, and paid API runs; a draft
+protocol is recorded in \texttt{docs/DESIGN-V2.md} and not yet frozen or run.
+\end{itemize}
 
-\paragraph{Fitting.} The probes and the two scripted exploit policies were revised against the same environments they are scored on. There is no held-out set that was untouched during development. The \nExternal{}-environment split is the nearest thing, and it is \nExternal{} environments and \nExtPlanted{} planted defects, so a bootstrap over environments resamples \nExternal{} units, and it is not separated from the floor.
+\section{Conclusion}
+\label{sec:conclusion}
 
-\paragraph{The floor.} \fe{} is a trivial arm whose loss depends on the taxonomy and the corpus. The right reading is the restricted floor of Section~\ref{sec:floor}, and no one has fixed what a fair floor is. A reader who thinks the right floor is a prevalence-aware policy would give a smaller saving than the one reported.
+Treating environment auditing as cost-sensitive classification forces an auditor to clear
+input-ignoring floors rather than merely beat an interface linter. Across \nEnv{} environments,
+\assay{}'s deterministic probe battery lowers expected loss to \lossAssay{}, saving
+\savedRestricted{} over the restricted constant floor (\floorRestricted{}) and \savedPrevResearch{}
+over a post hoc Bayes-optimal prevalence-aware floor (\lossPrevResearch{}), while maintaining
+complete recall on checkable defects and exposing every unchecked probe explicitly.
 
-\paragraph{The cost model.} The CRITICAL cost, \critShipped{}, is a judgement. The ranking is a claim about a regime, not about detectors in general. The one comparison where the regime decides the winner, \texttt{production-training} on the external split, goes against \assay{}.
-
-\paragraph{The agent.} The agentic arm is a distribution and is reported as one draw in the table. Its failure mode is rare and catastrophic, so the mean saving over runs is \gateMeanSaved{}, and the interval around one run is too narrow. Its backend is a closed model through a command-line client, which a reader may not be able to rerun. The direct comparison
-of an agent that reads an environment is with a single small local model. The cause of the failing run is unknown.
-
-\paragraph{Coverage and generality.} The probes need an executable environment with a separable verifier; ScienceAgentBench is out of reach. Of BenchJack's eight classes, V2 and V4 are not detected, V8 has never run on a third-party environment, and V3 has found nothing. Instruction defects are not detected. Two real defects in shipping software, one in \texttt{inspect\_evals} and one in OpenEnv, were verified from the upstream code with \assay{} out of the loop and filed; by the repository's own account \assay{} found one of the two and a human found the other. No claim is made about the rate of
-defects in the wild.
-
-\paragraph{Independence of the self-audit.} The red team, the retractions and this paper's review were done by the author with an AI coding assistant, which is not independent of the author's instructions. A fresh reviewer model, given only the text of the PDF, supplied the objections this section and the earlier ones answer. An outside reader did find retractable claims, which is evidence the method works and not evidence it is complete. Two outside graded reviews of an earlier revision (28 environments) found the precision drop on the external corpus, the zero-gain agentic arm and the partial BenchJack coverage; the sections above report all three. A review is not a replication.
-
-\paragraph{What was not run.} A published auditor (BenchGuard, ABA, BenchJack) as an arm on this corpus, a prevalence-aware floor, a stronger language-model reader as a baseline, an independent human re-labelling of the corpus, a held-out corpus built after the detector froze, and a fresh run of the agentic Challenger would each need paid sampling or an outside person. They are the next work, and none is claimed here.
+The same evaluation framework clearly bounds what is and is not established. Savings on the
+\nExternal{} genuinely external environments do not yet separate from the floor, full-battery
+recall on independently labelled $\tau^2$-bench tasks is indistinguishable from random flagging due
+to instruction-level defects outside execution probes' reach, and an opt-in LLM gate trades
+deterministic reliability for rare catastrophic false overrides. Establishing external
+generalisation requires a larger held-out third-party corpus, blind human ground truth, one
+pre-registered external endpoint, and head-to-head evaluation against published benchmark auditors.
 
 \section*{Disclosures and availability}
 
-The code, the analysis scripts and the text were written with an AI coding assistant, under the author's direction and review. The author works on a commercial AI gateway; nothing from that product is used, every component
-is open source or written here, and all data is public or synthetic. The code is Apache-2.0 and this paper is CC BY 4.0. The repository, with every registration, changelog slice, result artifact and the script that generates every number and table
-here, is at \url{https://github.com/caiotheodoro/assay}. The corpus and Environment Cards are at \url{https://huggingface.co/datasets/caiotheodoro/assay-corpus}, and a browser demo runs the battery in the tab at
-\url{https://huggingface.co/spaces/caiotheodoro/assay-demo}. The paper was written after the registrations it cites; a Zenodo deposit date is not a registration clock. It has not been peer reviewed.
+The code, analysis scripts, and manuscript text were written with an AI coding assistant under the
+author's direction and review. The author works on a commercial AI gateway; nothing from that
+product is used here, every component is open source or written in this repository, and all data is
+public or synthetic. Code is licensed Apache-2.0 and this paper CC BY 4.0. Work on the repository
+began on 2026-08-28; the first preprint version (\texttt{paper-v1.0}) was compiled and deposited on
+2026-11-23, and this revision (\texttt{paper-v2.0}) is of 2026-11-23. A deposit date is not a
+registration clock; pre-registrations are ordered ahead of their code in git history. This preprint
+has not been peer reviewed. Code, registrations, artifacts, and table-generation scripts are at
+\url{https://github.com/caiotheodoro/assay}; the corpus and Environment Cards are at
+\url{https://huggingface.co/datasets/caiotheodoro/assay-corpus}; and a browser demo runs the
+deterministic battery client-side at
+\url{https://huggingface.co/spaces/caiotheodoro/assay-demo}.
 
 \bibliographystyle{plainnat}
 {\footnotesize\setlength{\bibsep}{1pt}\bibliography{refs}}
+
+\appendix
+
+\section{Pre-registrations, outcomes, and post hoc analyses}
+\label{app:registrations}
+
+All four corpus expansions that added external or no-correct-answer environments were registered in
+frozen markdown documents committed before the corresponding corpus modules; the commit ordering is
+verified automatically against git history by the test suite. Registrations are local repository
+commits by the author rather than externally timestamped deposits. Table~\ref{tab:registrations}
+summarises each registration's scope, deterministic predictions, and deviations or fired
+falsification criteria.
+
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_registrations}
+\caption{Summary of the four frozen pre-registrations, their deterministic outcomes, and every
+deviation or falsification criterion that fired.}
+\label{tab:registrations}
+\end{table}
+
+\paragraph{Post hoc analyses in this revision.} Two local, zero-spend additions were specified in a
+pre-analysis changelog entry ahead of execution and produce no change to any pre-registered verdict:
+(i) reconciling downstream \texttt{n\_missed} / \texttt{n\_unchecked} accounting in
+\texttt{results/corpus\_splits.json} and \texttt{results/baselines.json} with
+\texttt{results/full\_run.json} and \texttt{results/gate\_reliability.json} (fixing two loader
+calls that omitted \texttt{unchecked} when rebuilding \texttt{Outcome} objects; expected loss,
+recall, precision, and bootstrap intervals were unchanged, while \assay{}'s split counts moved from
+one missed / zero unchecked to zero missed / one unchecked); and (ii) computing the post hoc
+restricted (\fp{}) and Bayes-optimal prevalence-aware constant floors (\pf{} and
+\texttt{prevalence\_floor\_loo}) across all four cost profiles in
+\texttt{results/prevalence\_floor.json}.
+
+\section{Internal red team, retractions, and repository hygiene}
+\label{app:selfaudit}
+
+During development, the repository subjected its own published documentation to an internal
+red-team pass designed to falsify live claims against committed artifacts. Of \rtClaims{} claims
+examined, \rtBroken{} broke, \rtPartial{} held in part, \rtWeak{} was weak, and \rtSurvives{}
+survived (Table~\ref{tab:redteam}). Combined with \nRedTeamFoundAfter{} subsequent corrections
+identified by external readers and automated claim checks, the repository maintains an unedited log
+of \nRetractions{} retractions (\texttt{docs/RETRACTIONS.md}). Automated tests now enforce that
+every number in this manuscript is generated from committed \texttt{results/*.json} files, that
+downstream tables match committed bootstrap intervals, that corpus-split and reliability artifacts
+agree on unchecked defects, and that CI jobs requiring optional extras skip explicitly rather than
+failing silently or producing reduced-corpus headlines.
+
+\begin{table}[t]\centering\footnotesize
+\input{generated/tab_redteam}
+\caption{The \rtBroken{} claims broken by the internal red team, recorded verbatim as originally
+published. Numbers in this table are the retracted claims, not current results.}
+\label{tab:redteam}
+\end{table}
 
 \end{document}

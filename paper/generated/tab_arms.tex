@@ -4,6 +4,10 @@ arm & expected loss & 95\% CI & recall & precision \\
 \midrule
 \textsc{Assay}+auditor (one draw) & 44.0 & [1, 126] & 0.982 & 0.930 \\
 \textsc{Assay} & 57.0 & [8, 142] & 0.982 & 0.757 \\
+\midrule
+\texttt{prevalence\_floor}$^\dagger$ (in-sample) & 327.0 & [296, 361] & 0.963 & 0.143 \\
+\texttt{flag\_present}$^\dagger$ (restricted floor) & 342.0 & [321, 360] & 1.000 & 0.136 \\
+\texttt{prevalence\_floor\_loo}$^\dagger$ (LOO) & 367.0 & [303, 463] & 0.944 & 0.141 \\
 \texttt{flag\_everything} & 474.0 & [453, 492] & 1.000 & 0.102 \\
 \texttt{always\_modal\_defect} & 2055.0 & [1315, 2909] & 0.185 & 0.303 \\
 \texttt{direct\_prompt} & 2343.0 & [1451, 3366] & 0.241 & 0.295 \\

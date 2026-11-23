@@ -111,15 +111,15 @@ off by default: the headline numbers above are fully deterministic.
 
 ```bash
 uv sync --extra dev && uv run --extra tau2 python scripts/tau2_fetch.py   # snapshots; not committed
-uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 826 passed, 0 skipped
+uv run --extra adapters --extra sweep --extra openenv --extra tau2 --extra space pytest -q   # 828 passed, 0 skipped
 ASSAY_APPROVE_ALL="reproduction run" uv run --extra adapters --extra openenv --extra tau2 --extra sweep python scripts/full_run.py --out /tmp/check.json   # 22s; compare results/full_run.json
 uv run --extra adapters assay audit harbor/self-graded --yes --card /tmp/c.html; head -40 /tmp/c.html   # --yes because this runs unattended; without it you are asked
 ```
 
 `--extra tau2` and the fetch are both load-bearing: `.tau2_cache/` is not committed, and
 without the extra `tests/test_tau2_adapter.py` fails on a missing `loguru` rather than
-skipping. Verified from a fresh tree with no `.venv`: **826 passed, 0 failed, exit 0** —
-123 s for the whole cold path, `uv sync` and the snapshot fetch included. The time was measured at 814 tests, before the 12 paper tests were added.
+skipping. Verified from a fresh tree with no `.venv`: **828 passed, 0 failed, exit 0** —
+123 s for the whole cold path, `uv sync` and the snapshot fetch included. The time was measured at 814 tests, before the paper and reconciliation tests were added.
 
 The last command **exits 1 on purpose** — `harbor/self-graded` is reward-hackable, and a
 nonzero exit is what blocks a training run. That is why it is separated by `;` and not
@@ -127,7 +127,7 @@ nonzero exit is what blocks a training run. That is why it is separated by `;` a
 
 ## Map
 
-`paper/assay.tex` is the paper; every number in it is a macro written from `results/` by `scripts/export_paper_tables.py`, and `tests/test_paper.py` holds it there. Read its §Limitations before quoting the headline: the saving over the floor is 417.0 on the whole corpus and 285.0 against a floor restricted to the classes that occur, and on the 8 external environments its interval crosses zero.
+`paper/assay.tex` is the paper (`paper-v2.0`); every number in it is a macro written from `results/` by `scripts/export_paper_tables.py`, and `tests/test_paper.py` holds it there. Read its §Limitations before quoting the headline: the saving over the restricted floor is 285.0 (95% CI [198, 339]), over the post hoc prevalence-aware floor is 270.0 ([176, 336], `results/prevalence_floor.json`), over the unrestricted floor is 417.0, and on the 8 external environments its interval crosses zero. The next-study protocol is drafted in `docs/DESIGN-V2.md`.
 
 | | |
 |---|---|
