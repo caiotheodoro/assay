@@ -396,9 +396,7 @@ has none. The video carries one erratum: it says "separates on three", and it is
 - The paper, *Pricing Defects in Evaluation Environments by Expected Loss*, is `paper/assay.pdf` (source
   `paper/assay.tex`, bibliography `paper/refs.bib`, `paper/assay.bbl` for arXiv). Its numbers, tables and figures are
   written by `scripts/export_paper_tables.py` from `results/`, and `tests/test_paper.py` fails if they drift.
-  It is not peer reviewed. A Zenodo deposit is prepared and not yet published (`.zenodo.json`, `CITATION.cff`);
-  the DOI will be named here when it exists. A deposit date is not a registration clock
-  (`docs/changelog/127-the-paper-and-the-red-ci.md`).
+  It is not peer reviewed. It is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454920) (`.zenodo.json` and `CITATION.cff` carry the metadata). A deposit date is not a registration clock (`docs/changelog/128-the-paper-is-deposited.md`).
 - The corpus and Environment Cards are a Hugging Face dataset,
   [`caiotheodoro/assay-corpus`](https://huggingface.co/datasets/caiotheodoro/assay-corpus).
 - Code is `Apache-2.0` ([`LICENSE`](LICENSE)); the paper is `CC BY 4.0`. The author works on a commercial AI gateway;
